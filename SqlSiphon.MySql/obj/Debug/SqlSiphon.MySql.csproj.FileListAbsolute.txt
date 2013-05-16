@@ -1,0 +1,8 @@
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\obj\Debug\SqlSiphon.MySql.csprojResolveAssemblyReference.cache
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.MySql.dll
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.MySql.pdb
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\Debug\MySql.Data.dll
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.dll
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.pdb
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\obj\Debug\SqlSiphon.MySql.dll
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\obj\Debug\SqlSiphon.MySql.pdb

@@ -1,0 +1,7 @@
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.TSql\bin\Debug\SqlSiphon.TSql.dll
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.TSql\bin\Debug\SqlSiphon.TSql.pdb
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.TSql\bin\Debug\SqlSiphon.dll
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.TSql\bin\Debug\SqlSiphon.pdb
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.TSql\obj\Debug\SqlSiphon.SqlServer.csprojResolveAssemblyReference.cache
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.TSql\obj\Debug\SqlSiphon.TSql.dll
+C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.TSql\obj\Debug\SqlSiphon.TSql.pdb
