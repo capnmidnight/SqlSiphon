@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon", "SqlSiphon\SqlS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.MySql", "SqlSiphon.MySql\SqlSiphon.MySql.csproj", "{C103798D-9CBB-402C-BF99-32A7A150FD4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.SqlServer", "SqlSiphon.TSql\SqlSiphon.SqlServer.csproj", "{1C09319B-01E7-4F56-B29B-61FD4E546F54}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.SqlServer", "SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj", "{1C09319B-01E7-4F56-B29B-61FD4E546F54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
