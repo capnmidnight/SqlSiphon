@@ -37,17 +37,21 @@ namespace SqlSiphon
     public class UnifiedSetter
     {
         private MemberInfo member;
-        private bool isField;
-        public UnifiedSetter(FieldInfo field)
+        public UnifiedSetter(MemberInfo member)
         {
-            member = field;
-            isField = true;
+            this.member = member;
         }
-        public UnifiedSetter(PropertyInfo property)
+
+        private Type TypeToSet
         {
-            member = property;
-            isField = false;
+            get
+            {
+                return member.MemberType == MemberTypes.Field
+                    ? ((FieldInfo)member).FieldType
+                    : ((PropertyInfo)member).PropertyType;
+            }
         }
+
 
         public void SetValue(object obj, object value)
         {
@@ -55,23 +59,21 @@ namespace SqlSiphon
             {
                 if (value != DBNull.Value)
                 {
-                    if (isField)
-                    {
+                    if (TypeToSet.IsEnum && value is string)
+                        value = Enum.Parse(TypeToSet, (string)value);
+
+                    if (member.MemberType == MemberTypes.Field)
                         ((FieldInfo)member).SetValue(obj, value);
-                    }
                     else
-                    {
                         ((PropertyInfo)member).SetValue(obj, value, null);
-                    }
                 }
             }
             catch (ArgumentException exp)
             {
-                string type = isField ? ((FieldInfo)member).FieldType.Name : ((PropertyInfo)member).PropertyType.Name;
                 string message = string.Format("Could not set member {0}:{1}({2}) with value {3}({4}). Reason: {5}",
                     member.DeclaringType.FullName,
                     member.Name,
-                    type,
+                    TypeToSet.Name,
                     value,
                     value != null ? value.GetType().Name : "N/A",
                     exp.Message);
