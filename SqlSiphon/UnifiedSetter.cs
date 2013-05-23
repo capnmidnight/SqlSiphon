@@ -59,8 +59,13 @@ namespace SqlSiphon
             {
                 if (value != DBNull.Value)
                 {
-                    if (TypeToSet.IsEnum && value is string)
-                        value = Enum.Parse(TypeToSet, (string)value);
+                    if (TypeToSet.IsEnum)
+                    {
+                        if (value is string)
+                            value = Enum.Parse(TypeToSet, (string)value);
+                        else if (!TypeToSet.IsEnumDefined(value))
+                            throw new ArgumentException(string.Format("\"{0}\" is not a valid value for the enumeration", value));
+                    }
 
                     if (member.MemberType == MemberTypes.Field)
                         ((FieldInfo)member).SetValue(obj, value);
@@ -68,7 +73,7 @@ namespace SqlSiphon
                         ((PropertyInfo)member).SetValue(obj, value, null);
                 }
             }
-            catch (ArgumentException exp)
+            catch (Exception exp)
             {
                 string message = string.Format("Could not set member {0}:{1}({2}) with value {3}({4}). Reason: {5}",
                     member.DeclaringType.FullName,

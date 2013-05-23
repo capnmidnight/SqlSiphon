@@ -6,3 +6,11 @@ C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.dll
 C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.pdb
 C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\obj\Debug\SqlSiphon.MySql.dll
 C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\obj\Debug\SqlSiphon.MySql.pdb
+D:\Sean\Projects\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.MySql.dll
+D:\Sean\Projects\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.MySql.pdb
+D:\Sean\Projects\SqlSiphon\SqlSiphon.MySql\bin\Debug\MySql.Data.dll
+D:\Sean\Projects\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.dll
+D:\Sean\Projects\SqlSiphon\SqlSiphon.MySql\bin\Debug\SqlSiphon.pdb
+D:\Sean\Projects\SqlSiphon\SqlSiphon.MySql\obj\Debug\SqlSiphon.MySql.csprojResolveAssemblyReference.cache
+D:\Sean\Projects\SqlSiphon\SqlSiphon.MySql\obj\Debug\SqlSiphon.MySql.dll
+D:\Sean\Projects\SqlSiphon\SqlSiphon.MySql\obj\Debug\SqlSiphon.MySql.pdb

@@ -42,11 +42,19 @@ namespace SqlSiphon.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(Exception))]
         public void FailOnOutOfRangeInt()
         {
             var setter = new SqlSiphon.UnifiedSetter(TestFieldInfo);
-            setter.SetValue(this, 3);
+            setter.SetValue(this, 99);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void FailOnOutOfBadString()
+        {
+            var setter = new SqlSiphon.UnifiedSetter(TestFieldInfo);
+            setter.SetValue(this, "Garbage");
         }
     }
 }
