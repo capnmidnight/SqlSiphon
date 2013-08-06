@@ -46,7 +46,7 @@ namespace SqlSiphon.Mapping
         public int Timeout = -1;
         public CommandType CommandType = CommandType.StoredProcedure;
         public string Query;
-        public bool EnableTransaction = true;
+        public bool EnableTransaction = false;
 
         private List<MappedParameterAttribute> parameters;
 

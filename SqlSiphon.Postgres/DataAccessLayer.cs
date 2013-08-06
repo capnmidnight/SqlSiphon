@@ -54,5 +54,8 @@ namespace SqlSiphon.Postgres
             : base(connection)
         {
         }
+
+        protected override string IdentifierPartBegin { get { return "\""; } }
+        protected override string IdentifierPartEnd { get { return "\""; } }
     }
 }

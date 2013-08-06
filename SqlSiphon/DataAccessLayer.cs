@@ -142,9 +142,7 @@ namespace SqlSiphon
                 throw new Exception("The mapped method's parameter list is a different length than what was passed to the processing method.");
 
             // To support calling stored procedures from non-default schemas:
-            var procName = meta.Name ?? method.Name;
-            if (meta.Schema != null)
-                procName = MakeIdentifier(meta.Schema, procName);
+            var procName = MakeIdentifier(meta.Schema, meta.Name ?? method.Name);
 
             var command = ConstructCommand(
                 meta.CommandType == CommandType.Text ? meta.Query : procName,

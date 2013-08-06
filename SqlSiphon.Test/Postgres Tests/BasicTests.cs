@@ -27,18 +27,23 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "select * from test_table order by id",
-            EnableTransaction = false)]
+            Query = "select * from test_table order by id")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public List<Name> GetNames()
         {
             return this.GetList<Name>();
         }
 
+        [MappedMethod]
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
+        public List<Name> GetAllNames()
+        {
+            return this.GetList<Name>();
+        }
+
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "select * from test_table order by id",
-            EnableTransaction = false)]
+            Query = "select * from test_table order by id")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public List<string> GetNamesPrimitiveByName()
         {
@@ -47,8 +52,7 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "select * from test_table order by id",
-            EnableTransaction = false)]
+            Query = "select * from test_table order by id")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public List<string> GetNamesPrimitiveByIndex()
         {
@@ -62,8 +66,7 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "select * from test_table where id = :id",
-            EnableTransaction = false)]
+            Query = "select * from test_table where id = :id")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public Name GetName(int id)
         {
@@ -73,8 +76,7 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "select * from test_table where id >= :id limit 1",
-            EnableTransaction = false)]
+            Query = "select * from test_table where id >= :id limit 1")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public Name FindName(int id)
         {
@@ -83,8 +85,7 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "select * from test_table where id = :id",
-            EnableTransaction = false)]
+            Query = "select * from test_table where id = :id")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public string GetNamePrimitiveByName(int id)
         {
@@ -93,8 +94,7 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "select * from test_table where id = :id",
-            EnableTransaction = false)]
+            Query = "select * from test_table where id = :id")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public string GetNamePrimitiveByIndex(int id)
         {
@@ -108,8 +108,7 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "update test_table set name = :name where id = :id",
-            EnableTransaction = false)]
+            Query = "update test_table set name = :name where id = :id")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public void UpdateName(int id, string name)
         {
@@ -118,8 +117,7 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "delete from test_table where id >= :id",
-            EnableTransaction = false)]
+            Query = "delete from test_table where id >= :id")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public void DeleteName(int id)
         {
@@ -128,8 +126,7 @@ namespace SqlSiphon.Test.Postgres_Tests
 
         [MappedMethod(
             CommandType = CommandType.Text,
-            Query = "insert into test_table(name) values(:name)",
-            EnableTransaction = false)]
+            Query = "insert into test_table(name) values(:name)")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public void InsertName(string name)
         {
@@ -158,6 +155,20 @@ namespace SqlSiphon.Test.Postgres_Tests
         public void GetList()
         {
             var names = d.GetNames();
+            var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
+            Assert.AreEqual(names.Count, expected.Length);
+            for (int i = 0; i < expected.Length; ++i)
+            {
+                if (i < expected.Length - 1)
+                    Assert.AreEqual(i + 1, names[i].id);
+                Assert.AreEqual(expected[i], names[i].name);
+            }
+        }
+
+        [TestMethod]
+        public void GetListFromFunction()
+        {
+            var names = d.GetAllNames();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
             Assert.AreEqual(names.Count, expected.Length);
             for (int i = 0; i < expected.Length; ++i)
