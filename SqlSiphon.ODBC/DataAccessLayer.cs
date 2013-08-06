@@ -29,52 +29,24 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System.Data.OleDb;
+using System.Data.Odbc;
 using System.IO;
 
-namespace SqlSiphon
+namespace SqlSiphon.ODBC
 {
-    public abstract class OleDbDataAccessLayer : DataAccessLayer<OleDbConnection, OleDbCommand, OleDbParameter, OleDbDataAdapter, OleDbDataReader>
+    public abstract class DataAccessLayer : DataAccessLayer<OdbcConnection, OdbcCommand, OdbcParameter, OdbcDataAdapter, OdbcDataReader>
     {
-        private static string MakeConnectionString(FileSystemInfo container, string options, string provider = "Microsoft.Jet.OLEDB.4.0")
-        {
-            if (container.Exists)
-            {
-                return string.Format(@"Provider={2};Data Source=""{0}"";{1};", container.FullName, options, provider);
-            }
-            return null;
-        }
-
-        public static string MakeExcel97ConnectionString(string filename)
-        {
-            return MakeConnectionString(new FileInfo(filename), @"Extended Properties=""Excel 8.0;HDR=Yes"""); // add IMEX=1 to extended properties if columns have mixed data
-        }
-
-        public static string MakeExcel2007ConnectionString(string filename)
-        {
-            return MakeConnectionString(new FileInfo(filename), @"Extended Properties=""Excel 12.0;HDR=Yes""", "Microsoft.ACE.OLEDB.12.0");
-        }
-
-        public static string MakeAccess97ConnectionString(string filename)
-        {
-            return MakeConnectionString(new FileInfo(filename), "Persist Security Info=True");
-        }
-
-        public static string MakeCsvConnectionString(string directoryName)
-        {
-            return MakeConnectionString(new DirectoryInfo(directoryName), @"Extended Properties=""Text""");
-        }
         /// <summary>
-        /// creates a new connection to a OleDb database and automatically
+        /// creates a new connection to a Odbc database and automatically
         /// opens the connection. 
         /// </summary>
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
-        public OleDbDataAccessLayer(string connectionString)
+        public DataAccessLayer(string connectionString)
             : base(connectionString)
         {
         }
 
-        public OleDbDataAccessLayer(OleDbConnection connection)
+        public DataAccessLayer(OdbcConnection connection)
             : base(connection)
         {
         }

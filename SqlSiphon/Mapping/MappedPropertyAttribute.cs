@@ -31,15 +31,24 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
 
-namespace SqlSiphon
+namespace SqlSiphon.Mapping
 {
-    [AttributeUsage(
-        AttributeTargets.Class 
-        | AttributeTargets.Method,
-        Inherited = false, 
-        AllowMultiple = false)]
-    public class MappedSchemaObjectAttribute: MappedObjectAttribute
+    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    public class MappedPropertyAttribute : MappedTypeAttribute
     {
-        public string Schema;
+        public bool IsIdentity = false;
+        public int IdentityStartValue = 1;
+        public bool IncludeInPrimaryKey = false;
+        public bool Ignore = false;
+        public bool PrefixColumnNames = true;
+        public bool Cascade = true;
+        public bool IncludeInInsert = true;
+        public MappedPropertyAttribute() { }
+
+        internal void SetInfo(System.Reflection.PropertyInfo property)
+        {
+            if (this.Name == null)
+                this.Name = property.Name;
+        }
     }
 }

@@ -30,18 +30,48 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
+using System.Data;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
-namespace SqlSiphon
+namespace SqlSiphon.Mapping
 {
-    [AttributeUsage(
-        AttributeTargets.Class 
-        | AttributeTargets.Method 
-        | AttributeTargets.Parameter 
-        | AttributeTargets.Property, 
-        Inherited = false, 
-        AllowMultiple = false)]
-    public class MappedObjectAttribute: Attribute
+    /// <summary>
+    /// An attribute to use for tagging methods as being mapped to a stored procedure call.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+    public sealed class MappedMethodAttribute : MappedSchemaObjectAttribute
     {
-        public string Name;
+        public int Timeout = -1;
+        public CommandType CommandType = CommandType.StoredProcedure;
+        public string Query;
+        public bool EnableTransaction = true;
+
+        private List<MappedParameterAttribute> parameters;
+
+        public MappedMethodAttribute() { }
+
+        public void SetInfo(MethodInfo method)
+        {
+            if (this.Name == null)
+                this.Name = method.Name;
+
+            foreach (var parameter in method.GetParameters())
+            {
+                AddParameter(parameter);
+            }
+        }
+
+        private void AddParameter(ParameterInfo parameter)
+        {
+            var attr = GetAttribute<MappedParameterAttribute>(parameter);
+            if (attr == null)
+            {
+                attr = new MappedParameterAttribute();
+            }
+            attr.SetInfo(parameter);
+            this.parameters.Add(attr);
+        }
     }
 }

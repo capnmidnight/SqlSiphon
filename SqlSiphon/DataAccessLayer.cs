@@ -36,26 +36,15 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using SqlSiphon.Mapping;
 
 namespace SqlSiphon
 {
-    public interface IDataAccessLayer<ParameterT, DataReaderT>
-        where ParameterT : DbParameter, new()
-        where DataReaderT : DbDataReader
-    {
-        ParameterT[] MakeProcedureParameters(ParameterInfo[] methParams, object[] parametersValues);
-        MappedMethodAttribute GetCommandDescription(MethodBase method);
-        EntityT GetQuery<EntityT>(string query);
-        void ExecuteQuery(string query);
-        DataReaderT GetReaderQuery(string query);
-    }
-
     /// <summary>
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
     public abstract class DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> :
-        IDataAccessLayer<ParameterT, DataReaderT>,
         IDisposable
         where ConnectionT : DbConnection, new()
         where CommandT : DbCommand, new()
@@ -63,25 +52,13 @@ namespace SqlSiphon
         where DataAdapterT : DbDataAdapter, new()
         where DataReaderT : DbDataReader
     {
-        private ConnectionT connections;
         private bool isConnectionOwned;
-
-        private static Dictionary<Type, string> ConnectionStrings;
-        private static Dictionary<Type, int> ConnectionCount;
 
         static DataAccessLayer()
         {
-            ConnectionStrings = new Dictionary<Type, string>();
-            ConnectionCount = new Dictionary<Type, int>();
         }
 
-        public ConnectionT Connection
-        {
-            get
-            {
-                return connections;
-            }
-        }
+        public ConnectionT Connection { get; private set; }
 
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
@@ -90,18 +67,13 @@ namespace SqlSiphon
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
         private DataAccessLayer(ConnectionT connection, bool isConnectionOwned)
         {
-            this.connections = connection;
+            this.Connection = connection;
             this.isConnectionOwned = isConnectionOwned;
         }
 
         protected DataAccessLayer(string connectionString)
             : this(new ConnectionT { ConnectionString = connectionString }, true)
         {
-            var t = this.GetType();
-            if (ConnectionStrings.ContainsKey(t))
-                ConnectionStrings[t] = connectionString;
-            else
-                ConnectionStrings.Add(t, connectionString);
         }
 
         /// <summary>
@@ -114,17 +86,24 @@ namespace SqlSiphon
         {
         }
 
+        protected DataAccessLayer(DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
+        {
+            this.isConnectionOwned = false;
+            if (dal != null)
+                this.Connection = dal.Connection;
+        }
+
         /// <summary>
         /// Cleans up the connection with the database.
         /// </summary>
         public virtual void Dispose()
         {
-            if (this.isConnectionOwned && this.connections != null)
+            if (this.isConnectionOwned && this.Connection != null)
             {
-                if (connections.State == ConnectionState.Open)
-                    connections.Close();
-                connections.Dispose();
-                this.connections = null;
+                if (this.Connection.State == ConnectionState.Open)
+                    this.Connection.Close();
+                this.Connection.Dispose();
+                this.Connection = null;
             }
         }
 
@@ -165,7 +144,7 @@ namespace SqlSiphon
             // To support calling stored procedures from non-default schemas:
             var procName = meta.Name ?? method.Name;
             if (meta.Schema != null)
-                procName = meta.Schema + "." + procName;
+                procName = MakeIdentifier(meta.Schema, procName);
 
             var command = ConstructCommand(
                 meta.CommandType == CommandType.Text ? meta.Query : procName,
@@ -178,7 +157,19 @@ namespace SqlSiphon
             return command;
         }
 
-        public MappedMethodAttribute GetCommandDescription(MethodBase method)
+        protected virtual string IdentifierPartBegin { get { return ""; } }
+        protected virtual string IdentifierPartEnd { get { return ""; } }
+        protected virtual string IdentifierPartSeperator { get { return "."; } }
+
+        protected virtual string MakeIdentifier(params string[] parts)
+        {
+            return string.Join(IdentifierPartSeperator, parts
+                .Where(p => p != null)
+                .Select(p => string.Format("{0}{1}{2}", IdentifierPartBegin, p, IdentifierPartEnd))
+                .ToArray());
+        }
+
+        private MappedMethodAttribute GetCommandDescription(MethodBase method)
         {
             var meta = (MappedMethodAttribute)method.GetCustomAttributes(typeof(MappedMethodAttribute), true).FirstOrDefault();
             if (meta != null && meta.CommandType == CommandType.TableDirect)
@@ -200,7 +191,7 @@ namespace SqlSiphon
             return command;
         }
 
-        public ParameterT[] MakeProcedureParameters(ParameterInfo[] methParams, object[] parametersValues)
+        private ParameterT[] MakeProcedureParameters(ParameterInfo[] methParams, object[] parametersValues)
         {
             List<ParameterT> procedureParams = new List<ParameterT>();
             for (int i = 0; methParams != null && i < methParams.Length; ++i)
@@ -235,7 +226,7 @@ namespace SqlSiphon
             return GetEnumerator<EntityT>(parameters).ToList().FirstOrDefault();
         }
 
-        public EntityT GetQuery<EntityT>(string query)
+        protected EntityT GetQuery<EntityT>(string query)
         {
             return this.GetListQuery<EntityT>(query).FirstOrDefault();
         }
@@ -282,7 +273,7 @@ namespace SqlSiphon
             CopyOutputParameters(parameters, command.Parameters);
         }
 
-        public void ExecuteQuery(string query)
+        protected virtual void ExecuteQuery(string query)
         {
             if (query != null)
             {
@@ -360,9 +351,13 @@ namespace SqlSiphon
 
         private DataReaderT GetReader(CommandT command, params object[] parameters)
         {
-            Open();
-            var reader = command.ExecuteReader();
-            CopyOutputParameters(parameters, command.Parameters);
+            DbDataReader reader = null;
+            if (Connection != null)
+            {
+                Open();
+                reader = command.ExecuteReader();
+                CopyOutputParameters(parameters, command.Parameters);
+            }
             return (DataReaderT)reader;
         }
 
@@ -372,7 +367,7 @@ namespace SqlSiphon
                 return GetReader(command, parameters);
         }
 
-        public DataReaderT GetReaderQuery(string query)
+        protected DataReaderT GetReaderQuery(string query)
         {
             using (var command = ConstructCommand(query, CommandType.Text, null, null))
                 return GetReader(command);
@@ -473,7 +468,7 @@ namespace SqlSiphon
         /// executed. If the Type parameter EntityT is a primitive type, then the first parameter is treated
         /// as the column name or column index in the table from which to retrieve the desired value</param>
         /// <returns>the populated list of objects that represent the rows in the database</returns>
-        public IEnumerable<EntityT> GetEnumerator<EntityT>(params object[] parameters)
+        protected IEnumerable<EntityT> GetEnumerator<EntityT>(params object[] parameters)
         {
             var type = typeof(EntityT);
 
@@ -482,10 +477,12 @@ namespace SqlSiphon
             // not a parameter to the stored procedure
             bool isPrimitive = type.IsPrimitive
                 || type == typeof(decimal)
+                || type == typeof(decimal?)
                 || type == typeof(string)
                 || type == typeof(DateTime)
                 || type == typeof(DateTime?)
                 || type == typeof(Guid)
+                || type == typeof(Guid?)
                 || type == typeof(byte[]);
 
             object key = type;

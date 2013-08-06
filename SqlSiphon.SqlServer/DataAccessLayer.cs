@@ -43,7 +43,7 @@ namespace SqlSiphon.SqlServer
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
+    public abstract class DataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
         public static bool AutoTransactionEnabled = true;
         /// <summary>
@@ -51,13 +51,18 @@ namespace SqlSiphon.SqlServer
         /// opens the connection. 
         /// </summary>
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
-        public SqlServerDataAccessLayer(string connectionString)
+        public DataAccessLayer(string connectionString)
             : base(connectionString)
         {
         }
 
-        public SqlServerDataAccessLayer(SqlConnection connection)
+        public DataAccessLayer(SqlConnection connection)
             : base(connection)
+        {
+        }
+
+        public DataAccessLayer(DataAccessLayer dal)
+            : base(dal)
         {
         }
 

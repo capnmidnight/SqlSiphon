@@ -33,7 +33,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace SqlSiphon
 {
     public delegate void DataProgressEventHandler(object sender, DataProgressEventArgs e);
-    public class DataProgressEventArgs
+    public struct DataProgressEventArgs
     {
         public int RowCount;
         public int CurrentRow;

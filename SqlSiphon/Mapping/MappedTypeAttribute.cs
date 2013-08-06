@@ -30,28 +30,39 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Data;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace SqlSiphon
+namespace SqlSiphon.Mapping
 {
-    [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
-    public class MappedParameterAttribute : MappedTypeAttribute
+    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    public class MappedTypeAttribute : MappedObjectAttribute
     {
-        public string Direction;
-        public MappedParameterAttribute() { }
+        protected Type systemType;
 
-        public override string ToSqlString(System.Reflection.ParameterInfo methodParam, System.Data.Common.DbParameter procedureParam)
+        public string SqlType;
+        public int Size;
+        public int Precision;
+        public object DefaultValue;
+        public bool IncludeInSynchronization = true;
+
+        protected bool optionalNotSet = true;
+        private bool isOptionalField = false;
+        public bool IsOptional
         {
-            var output = base.ToSqlString(methodParam, procedureParam);
-            
-            if (Direction == null && 
-                (procedureParam.Direction == ParameterDirection.InputOutput
-                        || procedureParam.Direction == ParameterDirection.Output))
+            get { return isOptionalField; }
+            set
             {
-                Direction = "OUTPUT";
+                optionalNotSet = false;
+                isOptionalField = value;
             }
-            
-            return string.Format("@{0} {1}", output, Direction ?? "").Trim();
+        }
+
+        public MappedTypeAttribute() { }
+
+        public void SetSystemType(Type t)
+        {
+            this.systemType = t;
         }
     }
 }

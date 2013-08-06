@@ -35,10 +35,16 @@ using System.Linq;
 
 namespace SqlSiphon
 {
+    /// <summary>
+    /// An abstract class that is fairly easy to subclass and use to create objects 
+    /// that notify listeners of changes to their member values.
+    /// </summary>
     public abstract class BoundObject : INotifyPropertyChanged, INotifyPropertyChanging
     {
+        #region statics
         private static Dictionary<string, PropertyChangedEventArgs> propertyChangedCache;
         private static Dictionary<string, PropertyChangingEventArgs> propertyChangingCache;
+
         static BoundObject()
         {
             propertyChangedCache = new Dictionary<string, PropertyChangedEventArgs>();
@@ -53,6 +59,7 @@ namespace SqlSiphon
             name = name.Substring(4); // trim off "_set";
             return name;
         }
+        #endregion
 
         private Dictionary<string, object> values;
 
@@ -61,7 +68,13 @@ namespace SqlSiphon
             values = new Dictionary<string, object>();
         }
 
-        protected T Get<T>(string propertyName = null)
+        protected T Get<T>()
+        {
+            string propertyName = GetMethodName();
+            return Get<T>(propertyName);
+        }
+
+        protected T Get<T>(string propertyName)
         {
             if (propertyName == null)
                 propertyName = GetMethodName();
@@ -72,7 +85,13 @@ namespace SqlSiphon
                 return default(T);
         }
 
-        protected void Set<T>(T value, string propertyName = null)
+        protected void Set<T>(T value)
+        {
+            string propertyName = GetMethodName();
+            Set(value, propertyName);
+        }
+
+        protected void Set<T>(T value, string propertyName)
         {
             if (propertyName == null)
                 propertyName = GetMethodName();
@@ -131,24 +150,20 @@ namespace SqlSiphon
             {
                 PropertyAccessed(this, propertyName);
             }
-        }       
+        }
 
         private bool CompareFields(object obj)
         {
             var b = obj as BoundObject;
-            if (b != null && this.values.Count == b.values.Count)
-            {
-                if (this.values.Count == 0)
-                    return true;
-                else
-                    return this.values
-                        .Select(kv => b.values.ContainsKey(kv.Key)
-                            && (b.values[kv.Key] == null
-                                && kv.Value == null
-                                || b.values[kv.Key] == kv.Value))
-                        .Aggregate((x, y) => x & y);
-            }
-            return false;
+            if (b == null || this.values.Count != b.values.Count)
+                return false;
+
+            foreach (var key in this.values.Keys)
+                if (!b.values.ContainsKey(key)
+                    || (this.values[key] != null && !this.values[key].Equals(b.values[key]))
+                    || (b.values[key] != null && !b.values[key].Equals(this.values[key])))
+                    return false;
+            return true;
         }
     }
 }

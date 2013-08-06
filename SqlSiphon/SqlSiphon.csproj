@@ -85,20 +85,24 @@
   <ItemGroup>
     <Compile Include="BoundObject.cs" />
     <Compile Include="ColumnInfo.cs" />
-    <Compile Include="MappedSchemaObjectAttribute.cs" />
-    <Compile Include="MappedParameterAttribute.cs" />
-    <Compile Include="MappedPropertyAttribute.cs" />
-    <Compile Include="MappedClassAttribute.cs" />
+    <Compile Include="Generating\DDLGenerator.cs" />
+    <Compile Include="Generating\ProcedureGenerator.cs" />
+    <Compile Include="Generating\TableGenerator.cs" />
+    <Compile Include="Generating\TypeGenerator.cs" />
+    <Compile Include="Mapping\MappedSchemaObjectAttribute.cs" />
+    <Compile Include="Mapping\MappedParameterAttribute.cs" />
+    <Compile Include="Mapping\MappedPropertyAttribute.cs" />
+    <Compile Include="Mapping\MappedClassAttribute.cs" />
     <Compile Include="DataAccessLayer.cs" />
     <Compile Include="DataProgressEventArgs.cs" />
     <Compile Include="Generator.cs" />
-    <Compile Include="MappedMethodAttribute.cs" />
-    <Compile Include="MappedObjectAttribute.cs" />
-    <Compile Include="MappedTypeAttribute.cs" />
-    <Compile Include="OleDbDataAccessLayer.cs" />
+    <Compile Include="Mapping\MappedMethodAttribute.cs" />
+    <Compile Include="Mapping\MappedObjectAttribute.cs" />
+    <Compile Include="Mapping\MappedTypeAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnifiedSetter.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

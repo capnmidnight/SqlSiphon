@@ -7,3 +7,4 @@ D:\Sean\Projects\SqlSiphon\SqlSiphon\bin\Debug\SqlSiphon.dll
 D:\Sean\Projects\SqlSiphon\SqlSiphon\bin\Debug\SqlSiphon.pdb
 D:\Sean\Projects\SqlSiphon\SqlSiphon\obj\Debug\SqlSiphon.dll
 D:\Sean\Projects\SqlSiphon\SqlSiphon\obj\Debug\SqlSiphon.pdb
+D:\Sean\Projects\SqlSiphon\SqlSiphon\obj\Debug\SqlSiphon.csprojResolveAssemblyReference.cache

@@ -31,6 +31,15 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SqlSiphon
 {
+    /// <summary>
+    /// This is an entity object for the SQL standard 
+    /// INFORMATION_SCHEMA.COLUMNS view.
+    /// </summary>
+    [Mapping.MappedClass(
+        IncludeInSynch=false,
+        IsHistoryTracked=false,
+        Schema="information_schema",
+        Name="columns")]
     public class ColumnInfo
     {
         public string table_schema { get; set; }
@@ -41,6 +50,6 @@ namespace SqlSiphon
         public ulong? character_maximum_length { get; set; }
         public ulong? numeric_precision { get; set; }
         public ulong? numeric_scale { get; set; }
-        public string column_default { get; set; }
+        public string column_default { get; set; }       
     }
 }

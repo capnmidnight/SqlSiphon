@@ -34,24 +34,37 @@ using System.Reflection;
 
 namespace SqlSiphon
 {
+    /// <summary>
+    /// This class encapsulates and combines the ability to set values on Fields 
+    /// and Properties. Fields and Properties have mostly the same interface for 
+    /// setting their values, but do not share a common, actual Interface for
+    /// doing such. The only way they differ is in the support for Indexed
+    /// Properties, a feature of VB.NET that is not available to C#, and thus is
+    /// not frequently used. 
+    /// </summary>
     public class UnifiedSetter
     {
         private MemberInfo member;
+        private readonly Type typeToSet;
+
+        public string Name { get { return member.Name; } }
+
         public UnifiedSetter(MemberInfo member)
         {
-            this.member = member;
-        }
-
-        private Type TypeToSet
-        {
-            get
+            var type = member.GetType();
+            if (!type.IsSubclassOf(typeof(FieldInfo))
+                && !type.IsSubclassOf(typeof(PropertyInfo)))
             {
-                return member.MemberType == MemberTypes.Field
+                throw new ArgumentException(string.Format("UnifiedSetter cannot be "
+                + "used with type {0}. It may only be used with "
+                + "System.Runtime.Reflection.FieldInfo and "
+                + "System.Runtime.Reflection.ProprtyInfo", type.FullName));
+            }
+            this.member = member;
+            this.typeToSet = member.MemberType == MemberTypes.Field
                     ? ((FieldInfo)member).FieldType
                     : ((PropertyInfo)member).PropertyType;
-            }
         }
-
 
         public void SetValue(object obj, object value)
         {
@@ -59,13 +72,8 @@ namespace SqlSiphon
             {
                 if (value != DBNull.Value)
                 {
-                    if (TypeToSet.IsEnum)
-                    {
-                        if (value is string)
-                            value = Enum.Parse(TypeToSet, (string)value);
-                        else if (!TypeToSet.IsEnumDefined(value))
-                            throw new ArgumentException(string.Format("\"{0}\" is not a valid value for the enumeration", value));
-                    }
+                    if (typeToSet.IsEnum)
+                        value = MaybeParse(value);
 
                     if (member.MemberType == MemberTypes.Field)
                         ((FieldInfo)member).SetValue(obj, value);
@@ -78,16 +86,36 @@ namespace SqlSiphon
                 string message = string.Format("Could not set member {0}:{1}({2}) with value {3}({4}). Reason: {5}",
                     member.DeclaringType.FullName,
                     member.Name,
-                    TypeToSet.Name,
+                    typeToSet.Name,
                     value,
                     value != null ? value.GetType().Name : "N/A",
                     exp.Message);
                 throw new Exception(message, exp);
             }
         }
-        public string Name
+
+        private object MaybeParse(object value)
         {
-            get { return member.Name; }
+            bool isBad = true;
+            try
+            {
+                if (value is string)
+                {
+                    value = Enum.Parse(typeToSet, (string)value);
+                }
+                isBad = !typeToSet.IsEnumDefined(value);
+            }
+            catch { }
+            finally
+            {
+                if (isBad)
+                    throw new ArgumentException(
+                        string.Format(
+                            "\"{0}\" is not a valid value for the enumeration {1}.",
+                            value,
+                            typeToSet.FullName));
+            }
+            return value;
         }
     }
 }

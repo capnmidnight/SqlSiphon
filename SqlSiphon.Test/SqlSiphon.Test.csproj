@@ -71,7 +71,11 @@
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Npgsql">
+      <HintPath>..\SqlSiphon.Postgres\Npgsql.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -86,15 +90,25 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Postgres Tests\BasicTests.cs" />
     <Compile Include="UnifiedSetter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj">
+      <Project>{175a4d4a-2c9d-4edd-b9cc-7adc3322cc1c}</Project>
+      <Name>SqlSiphon.Postgres</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj">
+      <Project>{1c09319b-01e7-4f56-b29b-61fd4e546f54}</Project>
+      <Name>SqlSiphon.SqlServer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj">
       <Project>{0a6acd12-c7c9-436e-937b-ade6cc090fe6}</Project>
       <Name>SqlSiphon</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

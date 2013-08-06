@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
 All rights reserved.
@@ -29,22 +29,29 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
+using System.Data;
+using Npgsql;
 
-namespace SqlSiphon
+namespace SqlSiphon.Postgres
 {
     /// <summary>
-    /// An attribute to use for tagging methods as being mapped to a stored procedure call.
+    /// A base class for building Data Access Layers that connect to MySQL
+    /// databases and execute store procedures stored within.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = true, AllowMultiple = false)]
-    public class MappedClassAttribute : MappedSchemaObjectAttribute
+    public abstract class DataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
-        public bool IsHistoryTracked = false;
-        public string PreAddConstraintScript;
-        public string PostAddConstraintScript;
-        public bool IncludeInSynch = true;
-        
-        public MappedClassAttribute()
+        /// <summary>
+        /// creates a new connection to a Postgress database and automatically
+        /// opens the connection. 
+        /// </summary>
+        /// <param name="connectionString"></param>
+        public DataAccessLayer(string connectionString)
+            : base(connectionString)
+        {
+        }
+
+        public DataAccessLayer(NpgsqlConnection connection)
+            : base(connection)
         {
         }
     }

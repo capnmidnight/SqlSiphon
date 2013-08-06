@@ -30,20 +30,44 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Data;
+using System.Reflection;
+using System.Linq;
 
-namespace SqlSiphon
+namespace SqlSiphon.Mapping
 {
-    /// <summary>
-    /// An attribute to use for tagging methods as being mapped to a stored procedure call.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public sealed class MappedMethodAttribute : MappedSchemaObjectAttribute
+    [AttributeUsage(
+        AttributeTargets.Class 
+        | AttributeTargets.Method 
+        | AttributeTargets.Parameter 
+        | AttributeTargets.Property, 
+        Inherited = false, 
+        AllowMultiple = false)]
+    public abstract class MappedObjectAttribute: Attribute
     {
-        public int Timeout = -1;
-        public CommandType CommandType = CommandType.StoredProcedure;
-        public string Query;
+        public string Name;
 
-        public MappedMethodAttribute() { }
+        public static T GetAttribute<T>(MemberInfo obj) where T : MappedObjectAttribute
+        {
+            var attr = obj
+                .GetCustomAttributes(typeof(T), true)
+                .Cast<T>()
+                .FirstOrDefault();
+            return attr;
+        }
+
+        public static T GetAttribute<T>(ParameterInfo obj) where T : MappedObjectAttribute
+        {
+            var attr = obj
+                .GetCustomAttributes(typeof(T), true)
+                .Cast<T>()
+                .FirstOrDefault();
+            return attr;
+        }
+
+        protected virtual void SetInfo(MemberInfo obj)
+        {
+            if (this.Name == null)
+                this.Name = obj.Name;
+        }
     }
 }
