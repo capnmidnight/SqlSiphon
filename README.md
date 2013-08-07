@@ -27,3 +27,7 @@ Currently, it has been tested and used regularly with:
     * Generic ODBC drivers (code exists, but is untested)
 * Stored procedure synchronization system (SPs are largely application-specific, so they should live with the application in source control)
 * Schema and data migration tools
+* Expand database feature support
+    * SQL Server table-value parameters
+    * PostgreSQL array parameters
+    * Bulk Insert
