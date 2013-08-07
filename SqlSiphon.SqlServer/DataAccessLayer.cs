@@ -65,6 +65,8 @@ namespace SqlSiphon.SqlServer
             : base(dal)
         {
         }
+        protected override string IdentifierPartBegin { get { return "["; } }
+        protected override string IdentifierPartEnd { get { return "]"; } }
 
         protected override SqlCommand ConstructCommand(string procName, CommandType commandType, ParameterInfo[] methParams, object[] parameterValues)
         {
