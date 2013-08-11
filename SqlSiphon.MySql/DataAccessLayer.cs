@@ -30,7 +30,9 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System.Data;
+using System.Runtime.CompilerServices;
 using MySql.Data.MySqlClient;
+using SqlSiphon.Mapping;
 
 namespace SqlSiphon.MySql
 {
@@ -57,5 +59,48 @@ namespace SqlSiphon.MySql
 
         protected override string IdentifierPartBegin { get { return "`"; } }
         protected override string IdentifierPartEnd { get { return "`"; } }
+
+		protected override string DropProcedureScript (string identifier)
+		{
+			return string.Format("drop procedure {0}", identifier);
+		}
+
+		protected override string CreateProcedureScript (string identifier, string parameterSection, string body)
+		{
+			return string.Format(
+@"create procedure {0}
+    ({1})
+begin
+    {2}
+end//",
+                identifier,
+                parameterSection,
+                body);
+		}
+
+		protected override void ExecuteCreateProcedure (string script)
+		{
+			var withDelim = new MySqlScript(this.Connection, script);
+			withDelim.Delimiter = "//";
+			withDelim.Execute();
+		}
+
+		
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType=CommandType.Text,
+            Query = 
+@"select routine_name 
+from information_schema.routines 
+where routine_schema = @schemaName 
+    and routine_name = @routineName")]
+		protected override bool ProcedureExists (SqlSiphon.Mapping.MappedMethodAttribute method)
+		{
+			throw new System.NotImplementedException ();
+		}
+
+		protected override string MakeParameterString (SqlSiphon.Mapping.MappedParameterAttribute p)
+		{
+			throw new System.NotImplementedException ();
+		}
     }
 }

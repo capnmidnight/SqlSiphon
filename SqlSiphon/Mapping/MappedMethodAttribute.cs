@@ -48,14 +48,14 @@ namespace SqlSiphon.Mapping
         public string Query;
         public bool EnableTransaction = false;
 
-        private List<MappedParameterAttribute> parameters;
+		public List<MappedParameterAttribute> Parameters{get; private set;}
 
         public MappedMethodAttribute() { }
 
-        public void SetInfo(MethodInfo method)
+        public void SetInfo(MethodInfo method, string defaultSchemaName)
         {
-            if (this.Name == null)
-                this.Name = method.Name;
+			this.Schema = this.Schema ?? defaultSchemaName;
+			this.Name = this.Name ?? method.Name;
 
             foreach (var parameter in method.GetParameters())
             {
@@ -71,7 +71,7 @@ namespace SqlSiphon.Mapping
                 attr = new MappedParameterAttribute();
             }
             attr.SetInfo(parameter);
-            this.parameters.Add(attr);
+            this.Parameters.Add(attr);
         }
     }
 }

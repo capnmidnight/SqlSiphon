@@ -55,21 +55,12 @@
   </Target>
   -->
   <ItemGroup>
-    <Content Include="app.desktop">
-      <DeployService-TargetDirectoryId>Linux.DesktopApplications</DeployService-TargetDirectoryId>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="BoundObject.cs" />
     <Compile Include="ColumnInfo.cs" />
     <Compile Include="DataAccessLayer.cs" />
     <Compile Include="DataProgressEventArgs.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="UnifiedSetter.cs" />
-    <Compile Include="Generating\DDLGenerator.cs" />
-    <Compile Include="Generating\ProcedureGenerator.cs" />
-    <Compile Include="Generating\TableGenerator.cs" />
-    <Compile Include="Generating\TypeGenerator.cs" />
     <Compile Include="Mapping\MappedClassAttribute.cs" />
     <Compile Include="Mapping\MappedMethodAttribute.cs" />
     <Compile Include="Mapping\MappedObjectAttribute.cs" />

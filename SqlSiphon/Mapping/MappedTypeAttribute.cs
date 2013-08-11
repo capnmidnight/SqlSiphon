@@ -30,15 +30,13 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SqlSiphon.Mapping
 {
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public class MappedTypeAttribute : MappedObjectAttribute
     {
-        protected Type systemType;
+		public Type SystemType{ get; private set; }
 
         public string SqlType;
         public int Size;
@@ -62,7 +60,7 @@ namespace SqlSiphon.Mapping
 
         public void SetSystemType(Type t)
         {
-            this.systemType = t;
+            this.SystemType = t;
         }
     }
 }

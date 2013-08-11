@@ -55,13 +55,13 @@ namespace SqlSiphon.Mapping
             this.properties = new List<MappedPropertyAttribute>();
         }
 
-        public void SetInfo(Type type)
+        public void SetInfo(Type type, string defaultSchemaName)
         {
             base.SetInfo(type);
 
             foreach (var method in type.GetMethods())
             {
-                MaybeAddMethod(method);
+                MaybeAddMethod(method, defaultSchemaName);
             }
 
             foreach (var property in type.GetProperties())
@@ -70,12 +70,12 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        private void MaybeAddMethod(System.Reflection.MethodInfo method)
+        private void MaybeAddMethod(System.Reflection.MethodInfo method, string defaultSchemaName)
         {
             var attr = GetAttribute<MappedMethodAttribute>(method);
             if (attr != null)
             {
-                attr.SetInfo(method);
+                attr.SetInfo(method, defaultSchemaName);
                 this.methods.Add(attr);
             }
         }

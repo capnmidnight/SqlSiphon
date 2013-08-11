@@ -30,7 +30,9 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System.Data;
+using System.Runtime.CompilerServices;
 using Npgsql;
+using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Postgres
 {
@@ -57,5 +59,33 @@ namespace SqlSiphon.Postgres
 
         protected override string IdentifierPartBegin { get { return "\""; } }
         protected override string IdentifierPartEnd { get { return "\""; } }
+		protected override string DefaultSchemaName {get { return "public"; } }
+		
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType=CommandType.Text,
+            Query = 
+@"select routine_name 
+from information_schema.routines 
+where routine_schema = :schemaName 
+    and routine_name = :routineName")]
+		protected override bool ProcedureExists (SqlSiphon.Mapping.MappedMethodAttribute method)
+		{
+			throw new System.NotImplementedException ();
+		}
+
+		protected override string DropProcedureScript (string identifier)
+		{
+			throw new System.NotImplementedException ();
+		}
+
+		protected override string CreateProcedureScript (string identifier, string parameterSection, string body)
+		{
+			throw new System.NotImplementedException ();
+		}
+
+		protected override string MakeParameterString (MappedParameterAttribute p)
+		{
+			throw new System.NotImplementedException ();
+		}
     }
 }

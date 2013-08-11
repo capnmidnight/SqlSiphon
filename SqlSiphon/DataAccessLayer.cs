@@ -54,6 +54,11 @@ namespace SqlSiphon
     {
         private bool isConnectionOwned;
 
+        protected virtual string IdentifierPartBegin { get { return ""; } }
+        protected virtual string IdentifierPartEnd { get { return ""; } }
+        protected virtual string IdentifierPartSeperator { get { return "."; } }
+		protected virtual string DefaultSchemaName { get { return null; } }
+
         static DataAccessLayer()
         {
         }
@@ -87,10 +92,8 @@ namespace SqlSiphon
         }
 
         protected DataAccessLayer(DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
+			: this(dal != null ? dal.Connection : null, false)
         {
-            this.isConnectionOwned = false;
-            if (dal != null)
-                this.Connection = dal.Connection;
         }
 
         /// <summary>
@@ -155,11 +158,7 @@ namespace SqlSiphon
             return command;
         }
 
-        protected virtual string IdentifierPartBegin { get { return ""; } }
-        protected virtual string IdentifierPartEnd { get { return ""; } }
-        protected virtual string IdentifierPartSeperator { get { return "."; } }
-
-        protected virtual string MakeIdentifier(params string[] parts)
+        protected string MakeIdentifier(params string[] parts)
         {
             return string.Join(IdentifierPartSeperator, parts
                 .Where(p => p != null)
@@ -496,5 +495,64 @@ namespace SqlSiphon
                 return Iterate<EntityT>(reader, key);
             }
         }
+
+        public void SynchronizeProcedures()
+        {
+            var t = this.GetType();
+            var procSignatures = t.GetMethods();
+            foreach (var procSignature in procSignatures)
+            {
+                SynchronizeProcedure(procSignature);
+            }
+        }
+
+        private void SynchronizeProcedure(MethodInfo method)
+        {
+            var info = (MappedMethodAttribute)method
+				.GetCustomAttributes(typeof(MappedMethodAttribute), true)
+				.FirstOrDefault();
+            if (info != null
+                && info.CommandType == CommandType.StoredProcedure
+                && !string.IsNullOrEmpty(info.Query))
+            {
+				info.SetInfo(method, DefaultSchemaName);
+                var scripts = this.CreateOrAlterProcedureScript(info);
+				if(scripts.Count == 2)
+					this.ExecuteQuery(scripts[1]);
+				this.ExecuteCreateProcedure(scripts[0]);
+            }
+        }
+
+		protected virtual void ExecuteCreateProcedure (string script)
+		{
+			this.ExecuteQuery(script);
+		}
+
+		protected virtual void ModifyQuery(MappedMethodAttribute info)
+        {
+        }
+
+		private List<string> CreateOrAlterProcedureScript(MappedMethodAttribute info)
+        {
+			var scripts = new List<string>();
+            var identifier = this.MakeIdentifier(info.Schema, info.Name);
+            this.ModifyQuery(info);
+			var parameterSection = string.Join(
+				"," + Environment.NewLine + "    ", 
+				info.Parameters
+					.Select(p => this.MakeParameterString(p))
+					.ToArray());
+            scripts.Add(CreateProcedureScript(identifier, parameterSection, info.Query));
+            if(this.ProcedureExists(info))
+			{
+				scripts.Add(DropProcedureScript(identifier));
+			}
+			return scripts;
+        }
+
+		protected abstract string DropProcedureScript (string identifier);
+		protected abstract string CreateProcedureScript (string identifier, string parameterSection, string body);
+		protected abstract bool ProcedureExists(MappedMethodAttribute method);
+		protected abstract string MakeParameterString(MappedParameterAttribute p);
     }
 }

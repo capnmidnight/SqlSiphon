@@ -36,6 +36,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using SqlSiphon.Mapping;
 
 namespace SqlSiphon.SqlServer
 {
@@ -67,8 +68,9 @@ namespace SqlSiphon.SqlServer
         }
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
-
-        protected override SqlCommand ConstructCommand(string procName, CommandType commandType, ParameterInfo[] methParams, object[] parameterValues)
+		protected override string DefaultSchemaName { get { return "dbo"; } }
+			
+		protected override SqlCommand ConstructCommand(string procName, CommandType commandType, ParameterInfo[] methParams, object[] parameterValues)
         {
             var command = base.ConstructCommand(procName, commandType, methParams, parameterValues);
             if (commandType == CommandType.Text && AutoTransactionEnabled)
@@ -99,6 +101,150 @@ SELECT @ErrorMessage = ERROR_MESSAGE(),
 end catch", command.CommandText);
             }
             return command;
+        }
+
+				private static Dictionary<string, Type> typeMapping;
+        private static Dictionary<Type, string> reverseTypeMapping;
+        static DataAccessLayer()
+        {
+            typeMapping = new Dictionary<string, Type>();
+            typeMapping.Add("bigint", typeof(long));
+            typeMapping.Add("int", typeof(int));
+            typeMapping.Add("smallint", typeof(short));
+            typeMapping.Add("tinyint", typeof(byte));
+            typeMapping.Add("decimal", typeof(decimal));
+            typeMapping.Add("numeric", typeof(decimal));
+            typeMapping.Add("money", typeof(decimal));
+            typeMapping.Add("smallmoney", typeof(decimal));
+            typeMapping.Add("bit", typeof(bool));
+            typeMapping.Add("float", typeof(float));
+            typeMapping.Add("real", typeof(double));
+            typeMapping.Add("datetime2", typeof(DateTime));
+            typeMapping.Add("datetime", typeof(DateTime));
+            typeMapping.Add("smalldatetime", typeof(DateTime));
+            typeMapping.Add("date", typeof(DateTime));
+            typeMapping.Add("datetimeoffset", typeof(DateTime));
+            typeMapping.Add("time", typeof(DateTime));
+            typeMapping.Add("timestamp", typeof(DateTime));
+            typeMapping.Add("nvarchar", typeof(string));
+            typeMapping.Add("char", typeof(string));
+            typeMapping.Add("varchar", typeof(string));
+            typeMapping.Add("text", typeof(string));
+            typeMapping.Add("nchar", typeof(string));
+            typeMapping.Add("ntext", typeof(string));
+            typeMapping.Add("varbinary", typeof(byte[]));
+            typeMapping.Add("binary", typeof(byte[]));
+            typeMapping.Add("image", typeof(byte[]));
+            typeMapping.Add("uniqueidentifier", typeof(Guid));
+
+            reverseTypeMapping = typeMapping
+                .GroupBy(kv => kv.Value, kv => kv.Key)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            reverseTypeMapping.Add(typeof(char[]), "nchar");
+
+            reverseTypeMapping.Add(typeof(int?), "int");
+            reverseTypeMapping.Add(typeof(uint), "int");
+            reverseTypeMapping.Add(typeof(uint?), "int");
+
+            reverseTypeMapping.Add(typeof(long?), "bigint");
+            reverseTypeMapping.Add(typeof(ulong), "bigint");
+            reverseTypeMapping.Add(typeof(ulong?), "bigint");
+
+            reverseTypeMapping.Add(typeof(short?), "smallint");
+            reverseTypeMapping.Add(typeof(ushort), "smallint");
+            reverseTypeMapping.Add(typeof(ushort?), "smallint");
+
+            reverseTypeMapping.Add(typeof(byte?), "tinyint");
+            reverseTypeMapping.Add(typeof(sbyte), "tinyint");
+            reverseTypeMapping.Add(typeof(sbyte?), "tinyint");
+            reverseTypeMapping.Add(typeof(char), "tinyint");
+            reverseTypeMapping.Add(typeof(char?), "tinyint");
+
+            reverseTypeMapping.Add(typeof(decimal?), "decimal");
+            reverseTypeMapping.Add(typeof(bool?), "bit");
+            reverseTypeMapping.Add(typeof(float?), "float");
+            reverseTypeMapping.Add(typeof(double?), "real");
+            reverseTypeMapping.Add(typeof(DateTime?), "datetime2");
+            reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
+        }
+        
+		public static object Convert(string sqlType, object value)
+        {
+            return System.Convert.ChangeType(value, typeMapping[sqlType]);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType=CommandType.Text,
+            Query = 
+@"select routine_name 
+from information_schema.routines 
+where routine_schema = @schemaName 
+    and routine_name = @routineName")]
+        protected override bool ProcedureExists(MappedMethodAttribute attr)
+        {
+            return this.GetList<string>("routine_name", attr.Schema, attr.Name).Count() > 0;
+        }
+
+		protected override void ModifyQuery (MappedMethodAttribute info)
+		{
+            if (info.EnableTransaction)
+            {
+                string transactionName = string.Format("TRANS{0}", Guid.NewGuid().ToString().Replace("-", ""));
+                string transactionBegin = string.Format("begin try\r\nbegin transaction {0}", transactionName);
+                string transactionEnd = string.Format(
+@"commit {0}
+end try
+begin catch
+    declare @msg nvarchar(4000), @lvl int, @stt int;
+    select @msg = error_message(), @lvl = error_severity(), @stt = error_state();
+    rollback {0};
+    raiserror(@msg, @lvl, @stt);
+end catch;", transactionName);
+                info.Query = string.Format("{0}\r\n{1}\r\n{2}", transactionBegin, info.Query, transactionEnd);
+            }
+        }
+
+		protected override string DropProcedureScript (string identifier)
+		{
+			return string.Format("drop procedure {0}", identifier);
+		}
+
+		protected override string CreateProcedureScript (string identifier, string parameterSection, string body)
+		{
+			return string.Format(
+@"create procedure {0}
+    {1}
+as begin
+    set nocount on;
+    {2}
+end",
+                identifier,
+                parameterSection,
+                body);
+		}
+
+        protected override string MakeParameterString (MappedParameterAttribute p)
+		{
+			if (p.SqlType == null) {
+				p.SqlType = reverseTypeMapping [p.SystemType];
+			}
+            var typeStr = new StringBuilder(p.SqlType);
+            if (p.Size > -1)
+            {
+                typeStr.AppendFormat("({0}", p.Size);
+                if (p.Precision > -1)
+                {
+                    typeStr.AppendFormat(", {0}", p.Precision);
+                }
+                typeStr.Append(")");
+            }
+
+            if (p.SqlType.Contains("var") && !p.SqlType.EndsWith(")"))
+            {
+                typeStr.Append("(MAX)");
+            }
+            return string.Format("{0} {1} {2}", p.Name, typeStr, p.DefaultValue ?? "").Trim();
         }
     }
 }
