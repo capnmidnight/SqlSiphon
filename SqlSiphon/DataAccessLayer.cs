@@ -236,7 +236,6 @@ namespace SqlSiphon
                 using (var reader = GetReader(command))
                 {
                     var type = typeof(EntityT);
-                    var countExpected = command.CommandType == CommandType.Text;
                     // The most basic case is returning values from one column in the table.
                     // The first parameter is skipped because it's the column name to retrieve,
                     // not a parameter to the stored procedure

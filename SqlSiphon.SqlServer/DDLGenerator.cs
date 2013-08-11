@@ -37,7 +37,9 @@ namespace SqlSiphon.SqlServer
 
         private void SynchronizeProcedure(MethodInfo method)
         {
-            var info = (MappedMethodAttribute)method.GetCustomAttribute(typeof(MappedMethodAttribute));
+            var info = (MappedMethodAttribute)method
+				.GetCustomAttributes(typeof(MappedMethodAttribute), true)
+				.FirstOrDefault();
             if (info != null
                 && info.CommandType == CommandType.StoredProcedure
                 && !string.IsNullOrEmpty(info.Query))
@@ -117,7 +119,9 @@ end catch;", transactionName);
 
         private static ParameterMapper AnaylzeParameter(ParameterInfo parameterSignature)
         {
-            var parameterInfo = (MappedParameterAttribute)parameterSignature.GetCustomAttribute(typeof(MappedParameterAttribute));
+            var parameterInfo = (MappedParameterAttribute)parameterSignature
+				.GetCustomAttributes(typeof(MappedParameterAttribute), false)
+				.FirstOrDefault();
             var p = new ParameterMapper(parameterInfo, parameterSignature);
             return p;
         }

@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SqlSiphon.Postgres</RootNamespace>
     <AssemblyName>SqlSiphon.Postgres</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,13 +32,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Security">
-      <HintPath>.\Mono.Security.dll</HintPath>
+      <HintPath>Mono.Security.dll</HintPath>
     </Reference>
     <Reference Include="Npgsql">
-      <HintPath>.\Npgsql.dll</HintPath>
+      <HintPath>Npgsql.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
@@ -46,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj">
-      <Project>{0a6acd12-c7c9-436e-937b-ade6cc090fe6}</Project>
+      <Project>{136933A4-27E3-4CBF-84F8-8898447A3D8C}</Project>
       <Name>SqlSiphon</Name>
     </ProjectReference>
   </ItemGroup>
