@@ -50,5 +50,25 @@ namespace SqlSiphon.ODBC
             : base(connection)
         {
         }
+
+        protected override bool ProcedureExists(Mapping.MappedMethodAttribute method)
+        {
+            throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
+        }
+
+        protected override string CreateProcedureScript(string identifier, string parameterSection, string body)
+        {
+            throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
+        }
+
+        protected override string DropProcedureScript(string identifier)
+        {
+            throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
+        }
+
+        protected override string MakeParameterString(Mapping.MappedParameterAttribute p)
+        {
+            throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
+        }
     }
 }

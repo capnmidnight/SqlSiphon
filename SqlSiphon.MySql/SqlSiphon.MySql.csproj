@@ -76,6 +76,7 @@
     <Reference Include="MySql.Data">
       <HintPath>MySql.Data.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>

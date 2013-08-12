@@ -37,6 +37,7 @@
     <Reference Include="Npgsql">
       <HintPath>Npgsql.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
