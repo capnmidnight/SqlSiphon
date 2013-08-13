@@ -36,6 +36,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon
@@ -57,7 +58,7 @@ namespace SqlSiphon
         protected virtual string IdentifierPartBegin { get { return ""; } }
         protected virtual string IdentifierPartEnd { get { return ""; } }
         protected virtual string IdentifierPartSeperator { get { return "."; } }
-		protected virtual string DefaultSchemaName { get { return null; } }
+        protected virtual string DefaultSchemaName { get { return null; } }
 
         static DataAccessLayer()
         {
@@ -92,7 +93,7 @@ namespace SqlSiphon
         }
 
         protected DataAccessLayer(DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
-			: this(dal != null ? dal.Connection : null, false)
+            : this(dal != null ? dal.Connection : null, false)
         {
         }
 
@@ -126,8 +127,9 @@ namespace SqlSiphon
             // try to get to the one we're interested in--this one and the caller of this one.
             var method = (from frame in new StackTrace(2, false).GetFrames()
                           let meth = frame.GetMethod()
-                          where meth.GetCustomAttributes(typeof(MappedMethodAttribute), true).Length > 0
-                          select meth).FirstOrDefault();
+                          where meth is MethodInfo
+                            && meth.GetCustomAttributes(typeof(MappedMethodAttribute), true).Length > 0
+                          select (MethodInfo)meth).FirstOrDefault();
 
             // We absolutely need to find a method with this attribute, because we won't know where in
             // the stack trace to stop, so that we can inspect the method for parameter name info.
@@ -139,18 +141,16 @@ namespace SqlSiphon
             // since the parameters array was passed to this method by the mapped method, the mapped
             // method has the responsibility to pass the parameters in the same order they are
             // specified in the method signature
-            var methParams = method.GetParameters();
-
-            if (methParams.Length != parameterValues.Length)
+            if (meta.Parameters.Count != parameterValues.Length)
                 throw new Exception("The mapped method's parameter list is a different length than what was passed to the processing method.");
 
             // To support calling stored procedures from non-default schemas:
-            var procName = MakeIdentifier(meta.Schema, meta.Name ?? method.Name);
+            var procName = MakeIdentifier(meta.Schema, meta.Name);
 
-            var command = ConstructCommand(
+            var command = BuildCommand(
                 meta.CommandType == CommandType.Text ? meta.Query : procName,
                 meta.CommandType,
-                methParams,
+                meta.Parameters.ToArray(),
                 parameterValues);
 
             if (meta.Timeout > -1)
@@ -166,15 +166,20 @@ namespace SqlSiphon
                 .ToArray());
         }
 
-        private MappedMethodAttribute GetCommandDescription(MethodBase method)
+        private MappedMethodAttribute GetCommandDescription(MethodInfo method)
         {
             var meta = (MappedMethodAttribute)method.GetCustomAttributes(typeof(MappedMethodAttribute), true).FirstOrDefault();
-            if (meta != null && meta.CommandType == CommandType.TableDirect)
-                throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
+            if (meta != null)
+            {
+                if (meta.CommandType == CommandType.TableDirect)
+                    throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
+                meta.SetInfo(method, DefaultSchemaName, this.MakeSqlTypeString);
+                this.ModifyQuery(meta);
+            }
             return meta;
         }
 
-        protected virtual CommandT ConstructCommand(string procName, CommandType commandType, ParameterInfo[] methParams, object[] parameterValues)
+        protected virtual CommandT BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams, object[] parameterValues)
         {
             // the mapped method must match the name of a stored procedure in the database, or the
             // query or procedure name must be provided explicitly in the MappedMethodAttribute's
@@ -188,7 +193,7 @@ namespace SqlSiphon
             return command;
         }
 
-        private ParameterT[] MakeProcedureParameters(ParameterInfo[] methParams, object[] parametersValues)
+        private ParameterT[] MakeProcedureParameters(MappedParameterAttribute[] methParams, object[] parametersValues)
         {
             List<ParameterT> procedureParams = new List<ParameterT>();
             for (int i = 0; methParams != null && i < methParams.Length; ++i)
@@ -197,12 +202,7 @@ namespace SqlSiphon
                 p.ParameterName = methParams[i].Name;
                 if (parametersValues != null)
                     p.Value = parametersValues[i] ?? DBNull.Value;
-                if (methParams[i].IsOut)
-                    p.Direction = ParameterDirection.Output;
-                else if (methParams[i].ParameterType.IsByRef)
-                    p.Direction = ParameterDirection.InputOutput;
-                else
-                    p.Direction = ParameterDirection.Input;
+                p.Direction = methParams[i].Direction;
                 procedureParams.Add(p);
             }
             return procedureParams.ToArray();
@@ -230,7 +230,7 @@ namespace SqlSiphon
 
         protected List<EntityT> GetListQuery<EntityT>(string query)
         {
-            using (var command = ConstructCommand(query, CommandType.Text, null, null))
+            using (var command = BuildCommand(query, CommandType.Text, null, null))
             {
                 using (var reader = GetReader(command))
                 {
@@ -275,7 +275,7 @@ namespace SqlSiphon
             {
                 if (query.Trim().Length > 0)
                 {
-                    using (var command = ConstructCommand(query, CommandType.Text, null, null))
+                    using (var command = BuildCommand(query, CommandType.Text, null, null))
                     {
                         if (command.Connection.State == ConnectionState.Closed)
                             command.Connection.Open();
@@ -335,7 +335,7 @@ namespace SqlSiphon
 
         protected DataSet GetDataSetQuery(string query)
         {
-            using (var command = ConstructCommand(query, CommandType.Text, null, null))
+            using (var command = BuildCommand(query, CommandType.Text, null, null))
                 return GetDataSet(command);
         }
 
@@ -365,7 +365,7 @@ namespace SqlSiphon
 
         protected DataReaderT GetReaderQuery(string query)
         {
-            using (var command = ConstructCommand(query, CommandType.Text, null, null))
+            using (var command = BuildCommand(query, CommandType.Text, null, null))
                 return GetReader(command);
         }
 
@@ -506,53 +506,73 @@ namespace SqlSiphon
             }
         }
 
+        public List<string> GetAllStoredProcedureScripts()
+        {
+            var scripts = new List<string>();
+            var t = this.GetType();
+            var procSignatures = t.GetMethods();
+            foreach (var procSignature in procSignatures)
+            {
+                scripts.AddRange(this.GetStoredProcedureScripts(procSignature));
+            }
+            return scripts;
+        }
+
         private void SynchronizeProcedure(MethodInfo method)
         {
-            var info = (MappedMethodAttribute)method
-				.GetCustomAttributes(typeof(MappedMethodAttribute), true)
-				.FirstOrDefault();
+            var scripts = GetStoredProcedureScripts(method);
+            if (scripts.Count == 2)
+                this.ExecuteQuery(scripts[1]);
+            this.ExecuteCreateProcedure(scripts[0]);
+        }
+
+        private List<string> GetStoredProcedureScripts(MethodInfo method)
+        {
+            var info = GetCommandDescription(method);
             if (info != null
                 && info.CommandType == CommandType.StoredProcedure
                 && !string.IsNullOrEmpty(info.Query))
-            {
-				info.SetInfo(method, DefaultSchemaName);
-                var scripts = this.CreateOrAlterProcedureScript(info);
-				if(scripts.Count == 2)
-					this.ExecuteQuery(scripts[1]);
-				this.ExecuteCreateProcedure(scripts[0]);
-            }
+                return this.CreateOrAlterProcedureScript(info);
+            else
+                return new List<string>();
         }
 
-		protected virtual void ExecuteCreateProcedure (string script)
-		{
-			this.ExecuteQuery(script);
-		}
-
-		protected virtual void ModifyQuery(MappedMethodAttribute info)
+        protected virtual void ExecuteCreateProcedure(string script)
         {
+            this.ExecuteQuery(script);
         }
 
-		private List<string> CreateOrAlterProcedureScript(MappedMethodAttribute info)
+        protected virtual void ModifyQuery(MappedMethodAttribute info)
         {
-			var scripts = new List<string>();
+            //do nothing in the base case
+        }
+
+        private List<string> CreateOrAlterProcedureScript(MappedMethodAttribute info)
+        {
+            var scripts = new List<string>();
             var identifier = this.MakeIdentifier(info.Schema, info.Name);
-            this.ModifyQuery(info);
-			var parameterSection = string.Join(
-				"," + Environment.NewLine + "    ", 
-				info.Parameters
-					.Select(p => this.MakeParameterString(p))
-					.ToArray());
-            scripts.Add(CreateProcedureScript(identifier, parameterSection, info.Query));
-            if(this.ProcedureExists(info))
-			{
-				scripts.Add(DropProcedureScript(identifier));
-			}
-			return scripts;
+            scripts.Add(CreateProcedureScript(info));
+            if (this.ProcedureExists(info.Schema, info.Name))
+            {
+                scripts.Insert(0, DropProcedureScript(identifier));
+            }
+            return scripts;
         }
 
-		protected abstract string DropProcedureScript (string identifier);
-		protected abstract string CreateProcedureScript (string identifier, string parameterSection, string body);
-		protected abstract bool ProcedureExists(MappedMethodAttribute method);
-		protected abstract string MakeParameterString(MappedParameterAttribute p);
+        protected string MakeParameterSection(MappedMethodAttribute info)
+        {
+            var parameterSection = string.Join(
+                         "," + Environment.NewLine + "    ",
+                         info.Parameters
+                             .Select(p => this.MakeParameterString(p))
+                             .ToArray());
+            return parameterSection;
+        }
+
+        protected abstract bool ProcedureExists(string schemaName, string routineName);
+        protected abstract string MakeSqlTypeString(MappedTypeAttribute type);
+        protected abstract string DropProcedureScript(string identifier);
+        protected abstract string CreateProcedureScript(MappedMethodAttribute info);
+        protected abstract string MakeParameterString(MappedParameterAttribute p);
     }
 }

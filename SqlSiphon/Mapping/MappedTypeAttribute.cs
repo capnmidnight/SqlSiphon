@@ -33,16 +33,41 @@ using System;
 
 namespace SqlSiphon.Mapping
 {
-    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(
+        AttributeTargets.Parameter 
+        | AttributeTargets.Property 
+        | AttributeTargets.Method
+        | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class MappedTypeAttribute : MappedObjectAttribute
     {
 		public Type SystemType{ get; private set; }
-
         public string SqlType;
-        public int Size;
-        public int Precision;
+        
+        public bool IsSizeSet {get; private set;}
+        private int typeSize;
+        public int Size
+        {
+            get { return this.typeSize; }
+            set
+            {
+                this.IsSizeSet = true;
+                this.typeSize = value;
+            }
+        }
+
+        public bool IsPrecisionSet { get; private set; }
+        private int typePrecision;
+        public int Precision
+        {
+            get { return this.typePrecision; }
+            set
+            {
+                this.IsPrecisionSet = true;
+                this.typePrecision = value;
+            }
+        }
+
         public object DefaultValue;
-        public bool IncludeInSynchronization = true;
 
         protected bool optionalNotSet = true;
         private bool isOptionalField = false;
@@ -58,9 +83,45 @@ namespace SqlSiphon.Mapping
 
         public MappedTypeAttribute() { }
 
-        public void SetSystemType(Type t)
+        public void SetSystemType(Type t, Func<MappedTypeAttribute, string> toReturnSqlType)
         {
             this.SystemType = t;
+            this.SqlType = this.SqlType ?? toReturnSqlType(this) ?? "void";
+        }
+
+        public string ToString(string openSize = "(", string closeSize = ")", string before = "", string after = "")
+        {
+            string output = "";
+            if (this.IsSizeSet)
+            {
+                if (this.IsPrecisionSet)
+                    output = string.Format(
+                        "{0} {1} {2}{3}, {4}{5} {6}",
+                        before,
+                        this.SqlType,
+                        openSize,
+                        this.Size,
+                        this.Precision,
+                        closeSize,
+                        after);
+                else
+                    output = string.Format(
+                        "{0} {1} {2}{3}{4} {5}",
+                        before,
+                        this.SqlType,
+                        openSize,
+                        this.Size,
+                        closeSize,
+                        after);
+            }
+            else
+                output = string.Format(
+                    "{0} {1} {2}",
+                    before,
+                    this.SqlType,
+                    after);
+
+            return output.Trim();
         }
     }
 }

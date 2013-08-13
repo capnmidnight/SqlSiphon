@@ -47,30 +47,53 @@ namespace SqlSiphon.Mapping
         public CommandType CommandType = CommandType.StoredProcedure;
         public string Query;
         public bool EnableTransaction = false;
+        public bool ReturnsMany = false;
 
-		public List<MappedParameterAttribute> Parameters{get; private set;}
+        /// <summary>
+        /// ReturnType is only supported by Postgres at this time
+        /// </summary>
+        public MappedTypeAttribute ReturnType;
 
-        public MappedMethodAttribute() { }
-
-        public void SetInfo(MethodInfo method, string defaultSchemaName)
+        public List<MappedParameterAttribute> Parameters { get; private set; }
+        public MappedMethodAttribute()
         {
-			this.Schema = this.Schema ?? defaultSchemaName;
-			this.Name = this.Name ?? method.Name;
+            this.Parameters = new List<MappedParameterAttribute>();
+        }
+
+        public void SetInfo(MethodInfo method, string defaultSchemaName, Func<MappedTypeAttribute, string> toReturnSqlType)
+        {
+            this.Schema = this.Schema ?? defaultSchemaName;
+            this.Name = this.Name ?? method.Name;
+
+            if (this.ReturnType == null || this.ReturnType.SqlType == null)
+            {
+                this.ReturnType = this.ReturnType
+                    ?? method
+                    .GetCustomAttributes(typeof(MappedTypeAttribute), false)
+                    .Cast<MappedTypeAttribute>()
+                    .FirstOrDefault();
+
+                if (this.ReturnType == null)
+                    this.ReturnType = new MappedTypeAttribute();
+
+                if (this.ReturnType.SystemType == null)
+                    this.ReturnType.SetSystemType(method.ReturnType, toReturnSqlType);
+            }
 
             foreach (var parameter in method.GetParameters())
             {
-                AddParameter(parameter);
+                AddParameter(parameter, toReturnSqlType);
             }
         }
 
-        private void AddParameter(ParameterInfo parameter)
+        private void AddParameter(ParameterInfo parameter, Func<MappedTypeAttribute, string> toSqlStringType)
         {
             var attr = GetAttribute<MappedParameterAttribute>(parameter);
             if (attr == null)
             {
                 attr = new MappedParameterAttribute();
             }
-            attr.SetInfo(parameter);
+            attr.SetInfo(parameter, toSqlStringType);
             this.Parameters.Add(attr);
         }
     }

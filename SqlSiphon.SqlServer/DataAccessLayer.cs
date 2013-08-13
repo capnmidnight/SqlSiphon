@@ -68,11 +68,11 @@ namespace SqlSiphon.SqlServer
         }
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
-		protected override string DefaultSchemaName { get { return "dbo"; } }
-			
-		protected override SqlCommand ConstructCommand(string procName, CommandType commandType, ParameterInfo[] methParams, object[] parameterValues)
+        protected override string DefaultSchemaName { get { return "dbo"; } }
+
+        protected override SqlCommand BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams, object[] parameterValues)
         {
-            var command = base.ConstructCommand(procName, commandType, methParams, parameterValues);
+            var command = base.BuildCommand(procName, commandType, methParams, parameterValues);
             if (commandType == CommandType.Text && AutoTransactionEnabled)
             {
                 command.CommandText = string.Format(
@@ -103,7 +103,7 @@ end catch", command.CommandText);
             return command;
         }
 
-				private static Dictionary<string, Type> typeMapping;
+        private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
         static DataAccessLayer()
         {
@@ -168,26 +168,14 @@ end catch", command.CommandText);
             reverseTypeMapping.Add(typeof(DateTime?), "datetime2");
             reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
         }
-        
-		public static object Convert(string sqlType, object value)
+
+        public static object Convert(string sqlType, object value)
         {
             return System.Convert.ChangeType(value, typeMapping[sqlType]);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType=CommandType.Text,
-            Query = 
-@"select routine_name 
-from information_schema.routines 
-where routine_schema = @schemaName 
-    and routine_name = @routineName")]
-        protected override bool ProcedureExists(MappedMethodAttribute attr)
+        protected override void ModifyQuery(MappedMethodAttribute info)
         {
-            return this.GetList<string>("routine_name", attr.Schema, attr.Name).Count() > 0;
-        }
-
-		protected override void ModifyQuery (MappedMethodAttribute info)
-		{
             if (info.EnableTransaction)
             {
                 string transactionName = string.Format("TRANS{0}", Guid.NewGuid().ToString().Replace("-", ""));
@@ -205,14 +193,28 @@ end catch;", transactionName);
             }
         }
 
-		protected override string DropProcedureScript (string identifier)
-		{
-			return string.Format("drop procedure {0}", identifier);
-		}
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text,
+            Query =
+@"select routine_name 
+from information_schema.routines 
+where routine_schema = @schemaName 
+    and routine_name = @routineName")]
+        protected override bool ProcedureExists(string schemaName, string routineName)
+        {
+            return this.GetList<string>("routine_name", schemaName, routineName).Count >= 1;
+        }
 
-		protected override string CreateProcedureScript (string identifier, string parameterSection, string body)
-		{
-			return string.Format(
+        protected override string DropProcedureScript(string identifier)
+        {
+            return string.Format("drop procedure {0}", identifier);
+        }
+
+        protected override string CreateProcedureScript(MappedMethodAttribute info)
+        {
+            var identifier = this.MakeIdentifier(info.Schema, info.Name);
+            var parameterSection = this.MakeParameterSection(info);
+            return string.Format(
 @"create procedure {0}
     {1}
 as begin
@@ -221,19 +223,20 @@ as begin
 end",
                 identifier,
                 parameterSection,
-                body);
-		}
+                info.Query);
+        }
 
-        protected override string MakeParameterString (MappedParameterAttribute p)
-		{
-			if (p.SqlType == null) {
-				p.SqlType = reverseTypeMapping [p.SystemType];
-			}
+        protected override string MakeParameterString(MappedParameterAttribute p)
+        {
+            if (p.SqlType == null)
+            {
+                p.SqlType = reverseTypeMapping[p.SystemType];
+            }
             var typeStr = new StringBuilder(p.SqlType);
-            if (p.Size > -1)
+            if (p.IsSizeSet)
             {
                 typeStr.AppendFormat("({0}", p.Size);
-                if (p.Precision > -1)
+                if (p.IsPrecisionSet)
                 {
                     typeStr.AppendFormat(", {0}", p.Precision);
                 }

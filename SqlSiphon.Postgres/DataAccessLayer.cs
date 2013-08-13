@@ -28,8 +28,10 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
+using System;
 using System.Data;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Npgsql;
 using SqlSiphon.Mapping;
@@ -42,6 +44,96 @@ namespace SqlSiphon.Postgres
     /// </summary>
     public abstract class DataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
+        private static Dictionary<string, Type> typeMapping;
+        private static Dictionary<Type, string> reverseTypeMapping;
+        static DataAccessLayer()
+        {
+            typeMapping = new Dictionary<string, Type>();
+            typeMapping.Add("bigint", typeof(long));
+            typeMapping.Add("int8", typeof(long));
+            typeMapping.Add("bigserial", typeof(long));
+            typeMapping.Add("serial8", typeof(long));
+            typeMapping.Add("bit", typeof(bool[]));
+            typeMapping.Add("bit varying", typeof(List<bool>));
+            typeMapping.Add("varbit", typeof(bool[]));
+            typeMapping.Add("bool", typeof(bool));
+            typeMapping.Add("boolean", typeof(bool));
+            //typeMapping.Add("box", typeof());
+            typeMapping.Add("bytea", typeof(byte[]));
+            typeMapping.Add("varchar", typeof(string));
+            typeMapping.Add("character varying", typeof(string));
+            typeMapping.Add("char", typeof(char[]));
+            typeMapping.Add("character", typeof(char[]));
+            typeMapping.Add("cidr", typeof(System.Net.IPAddress));
+            //typeMapping.Add("circle", typeof());
+            typeMapping.Add("date", typeof(DateTime));
+            typeMapping.Add("double precision", typeof(double));
+            typeMapping.Add("float8", typeof(double));
+            typeMapping.Add("inet", typeof(System.Net.IPAddress));
+            typeMapping.Add("int", typeof(int));
+            typeMapping.Add("integer", typeof(int));
+            typeMapping.Add("int4", typeof(int));
+            typeMapping.Add("interval", typeof(TimeSpan));
+            //typeMapping.Add("line", typeof());
+            //typeMapping.Add("lseg", typeof());
+            //typeMapping.Add("macaddr", typeof());
+            typeMapping.Add("money", typeof(decimal));
+            typeMapping.Add("numeric", typeof(decimal));
+            //typeMapping.Add("path", typeof(decimal));
+            //typeMapping.Add("point", typeof(decimal));
+            //typeMapping.Add("polygon", typeof(decimal));
+            typeMapping.Add("real", typeof(float));
+            typeMapping.Add("float4", typeof(float));
+            typeMapping.Add("smallint", typeof(short));
+            typeMapping.Add("int2", typeof(short));
+            typeMapping.Add("smallserial", typeof(short));
+            typeMapping.Add("serial2", typeof(short));
+            typeMapping.Add("serial", typeof(int));
+            typeMapping.Add("serial4", typeof(int));
+            typeMapping.Add("text", typeof(string));
+            typeMapping.Add("time", typeof(DateTime));
+            typeMapping.Add("time with time zone", typeof(DateTime));
+            typeMapping.Add("timestamp", typeof(DateTime));
+            typeMapping.Add("timestamp with time zone", typeof(DateTime));
+            typeMapping.Add("tsquery", typeof(string));
+            //typeMapping.Add("tsvector", typeof());
+            //typeMapping.Add("txid_snapshot", typeof());
+            typeMapping.Add("uuid", typeof(Guid));
+            typeMapping.Add("xml", typeof(string));
+            typeMapping.Add("json", typeof(string));
+
+
+
+            reverseTypeMapping = typeMapping
+                .GroupBy(kv => kv.Value, kv => kv.Key)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            reverseTypeMapping.Add(typeof(int?), "int");
+            reverseTypeMapping.Add(typeof(uint), "int");
+            reverseTypeMapping.Add(typeof(uint?), "int");
+
+            reverseTypeMapping.Add(typeof(long?), "bigint");
+            reverseTypeMapping.Add(typeof(ulong), "bigint");
+            reverseTypeMapping.Add(typeof(ulong?), "bigint");
+
+            reverseTypeMapping.Add(typeof(short?), "smallint");
+            reverseTypeMapping.Add(typeof(ushort), "smallint");
+            reverseTypeMapping.Add(typeof(ushort?), "smallint");
+
+            reverseTypeMapping.Add(typeof(byte?), "character[1]");
+            reverseTypeMapping.Add(typeof(sbyte), "character[1]");
+            reverseTypeMapping.Add(typeof(sbyte?), "character[1]");
+            reverseTypeMapping.Add(typeof(char), "character[1]");
+            reverseTypeMapping.Add(typeof(char?), "character[1]");
+
+            reverseTypeMapping.Add(typeof(decimal?), "decimal");
+            reverseTypeMapping.Add(typeof(bool?), "boolean");
+            reverseTypeMapping.Add(typeof(float?), "real");
+            reverseTypeMapping.Add(typeof(double?), "double precision");
+            reverseTypeMapping.Add(typeof(DateTime?), "time with time zone");
+            reverseTypeMapping.Add(typeof(Guid?), "uuid");
+        }
+
         /// <summary>
         /// creates a new connection to a Postgress database and automatically
         /// opens the connection. 
@@ -59,33 +151,111 @@ namespace SqlSiphon.Postgres
 
         protected override string IdentifierPartBegin { get { return "\""; } }
         protected override string IdentifierPartEnd { get { return "\""; } }
-		protected override string DefaultSchemaName {get { return "public"; } }
-		
+        protected override string DefaultSchemaName { get { return "public"; } }
+
+        protected override string DropProcedureScript(string identifier)
+        {
+            return string.Format("drop function {0};", identifier);
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType=CommandType.Text,
-            Query = 
-@"select routine_name 
-from information_schema.routines 
-where routine_schema = :schemaName 
-    and routine_name = :routineName")]
-		protected override bool ProcedureExists (SqlSiphon.Mapping.MappedMethodAttribute method)
-		{
-			throw new System.NotImplementedException ();
-		}
+        [MappedMethod(CommandType = CommandType.Text,
+            Query =
+@"select routine_name from information_schema.routines where routine_schema = :schemaName and routine_name = :routineName;")]
+        protected override bool ProcedureExists(string schemaName, string routineName)
+        {
+            return this.GetList<string>("routine_name", schemaName, routineName).Count >= 1;
+        }
 
-		protected override string DropProcedureScript (string identifier)
-		{
-			throw new System.NotImplementedException ();
-		}
+        protected override void ModifyQuery(MappedMethodAttribute info)
+        {
+            base.ModifyQuery(info);
+            //convert a parameterized query likely written for SQL Server 
+            // or MySQL to a format useable on Postgres
+            var parameters = info.Parameters
+                .OrderBy(p => p.Name.Length)
+                .Reverse();
+            foreach (var param in parameters)
+                info.Query = info.Query.Replace("@" + param.Name, ":" + param.Name);
+        }
 
-		protected override string CreateProcedureScript (string identifier, string parameterSection, string body)
-		{
-			throw new System.NotImplementedException ();
-		}
+        protected override string CreateProcedureScript(MappedMethodAttribute info)
+        {
+            var identifier = this.MakeIdentifier(info.Schema, info.Name);
+            var parameterSection = this.MakeParameterSection(info);
+            return string.Format(
+@"create or replace function {0}({1})
+    returns {2}{3} as $$
+{4}
+$$ language 'sql'",
+                   identifier,
+                   parameterSection,
+                   info.ReturnsMany ? "setof " : "",
+                   info.ReturnType.SqlType,
+                   info.Query);
+        }
 
-		protected override string MakeParameterString (MappedParameterAttribute p)
-		{
-			throw new System.NotImplementedException ();
-		}
+        protected override string MakeSqlTypeString(MappedTypeAttribute type)
+        {
+            string typeName = null;
+            if (type == null)
+                throw new Exception("Couldn't find type description! You gave me nothing to go on.");
+
+            if (type.SqlType != null)
+                typeName = type.SqlType;
+            else if (type.SystemType != null)
+            {
+                var t = type.SystemType;
+                if (t.IsGenericType)
+                {
+                    var subTypes = type.SystemType.GetGenericArguments();
+                    if (subTypes.Length > 1)
+                        throw new Exception("Type is too complex!");
+                    t = subTypes.First();
+                }
+
+                var temp = t
+                    .GetCustomAttributes(typeof(MappedTypeAttribute), true)
+                    .Cast<MappedTypeAttribute>()
+                    .FirstOrDefault();
+                if (temp != null)
+                    typeName = MakeSqlTypeString(temp);
+                else if (reverseTypeMapping.ContainsKey(t))
+                    typeName = reverseTypeMapping[t];
+                else if (type.SystemType.Name != "Void")
+                    throw new Exception("Couldn't find type description!");
+            }
+
+            if (type.IsSizeSet)
+            {
+                if (type.IsPrecisionSet)
+                    typeName = string.Format("{0}[{1},{2}]", typeName, type.Size, type.Precision);
+                else
+                    typeName = string.Format("{0}[{1}]", typeName, type.Size);
+            }
+            return typeName;
+        }
+
+        protected override string MakeParameterString(MappedParameterAttribute p)
+        {
+            var dirString = "";
+            switch (p.Direction)
+            {
+                case ParameterDirection.Input:
+                    dirString = "IN";
+                    break;
+                case ParameterDirection.InputOutput:
+                    dirString = "INOUT";
+                    break;
+                case ParameterDirection.Output:
+                    dirString = "OUT";
+                    break;
+            }
+            var defaultString = "";
+            if (p.DefaultValue != null)
+                defaultString = " DEFAULT = " + p.DefaultValue.ToString();
+
+            return string.Format("{0} {1} {2}{3}", dirString, p.Name, p.SqlType, defaultString);
+        }
     }
 }

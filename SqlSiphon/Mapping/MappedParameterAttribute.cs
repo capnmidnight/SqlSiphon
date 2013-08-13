@@ -55,7 +55,7 @@ namespace SqlSiphon.Mapping
 
         public MappedParameterAttribute() {}
 
-        public void SetInfo(ParameterInfo parameter)
+        public void SetInfo(ParameterInfo parameter, Func<MappedTypeAttribute, string> toSqlStringType)
         {
             if (this.Name == null)
                 this.Name = parameter.Name;
@@ -65,13 +65,10 @@ namespace SqlSiphon.Mapping
 
             if (this.directionNotSet)
             {
+                Direction = ParameterDirection.Input;
                 if (parameter.IsIn && parameter.IsOut)
                 {
                     Direction = ParameterDirection.InputOutput;
-                }
-                else if (parameter.IsIn)
-                {
-                    Direction = ParameterDirection.Input;
                 }
                 else if (parameter.IsOut)
                 {
@@ -88,7 +85,7 @@ namespace SqlSiphon.Mapping
                 this.IsOptional = parameter.IsOptional;
             }
 
-            this.SetSystemType(parameter.ParameterType);
+            this.SetSystemType(parameter.ParameterType, toSqlStringType);
         }
     }
 }
