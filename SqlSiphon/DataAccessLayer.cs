@@ -521,9 +521,12 @@ namespace SqlSiphon
         private void SynchronizeProcedure(MethodInfo method)
         {
             var scripts = GetStoredProcedureScripts(method);
-            if (scripts.Count == 2)
-                this.ExecuteQuery(scripts[1]);
-            this.ExecuteCreateProcedure(scripts[0]);
+            if (scripts.Count > 0)
+            {
+                if (scripts.Count == 2)
+                    this.ExecuteQuery(scripts[1]);
+                this.ExecuteCreateProcedure(scripts[0]);
+            }
         }
 
         private List<string> GetStoredProcedureScripts(MethodInfo method)
@@ -554,7 +557,9 @@ namespace SqlSiphon
             scripts.Add(CreateProcedureScript(info));
             if (this.ProcedureExists(info.Schema, info.Name))
             {
-                scripts.Insert(0, DropProcedureScript(identifier));
+                var s = DropProcedureScript(identifier);
+                if (s != null)
+                    scripts.Insert(0, s);
             }
             return scripts;
         }

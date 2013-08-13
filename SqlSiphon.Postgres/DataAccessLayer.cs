@@ -155,16 +155,12 @@ namespace SqlSiphon.Postgres
 
         protected override string DropProcedureScript(string identifier)
         {
-            return string.Format("drop function {0};", identifier);
+            return null;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text,
-            Query =
-@"select routine_name from information_schema.routines where routine_schema = :schemaName and routine_name = :routineName;")]
         protected override bool ProcedureExists(string schemaName, string routineName)
         {
-            return this.GetList<string>("routine_name", schemaName, routineName).Count >= 1;
+            return true;
         }
 
         protected override void ModifyQuery(MappedMethodAttribute info)

@@ -9,7 +9,7 @@ using SqlSiphon.Postgres;
 
 namespace SqlSiphon.Test.Postgres_Tests
 {
-    [MappedType(SqlType="table test_table")]
+    [MappedType(SqlType="setof test_table")]
     class Name
     {
         public int id { get; set; }

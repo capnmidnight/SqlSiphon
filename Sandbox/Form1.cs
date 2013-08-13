@@ -21,14 +21,14 @@ namespace Sandbox
             InitializeComponent();
             using (var dal = new Dal())
             {
-                textBox1.Text = string.Join(
-                    Environment.NewLine + "==============================" + Environment.NewLine,
-                    dal.GetAllStoredProcedureScripts().ToArray());
+                dal.SynchronizeProcedures();
+                var names = dal.GetAllNames();
+                textBox1.Text = string.Join(Environment.NewLine, names.Select(n=>n.name).ToArray());
             }
         }
     }
 
-    [MappedType(SqlType = "table test_table")]
+    [MappedType(SqlType = "setof test_table")]
     class Name
     {
         public int id { get; set; }
@@ -47,7 +47,7 @@ namespace Sandbox
 
         [MappedMethod(
             CommandType = CommandType.StoredProcedure,
-            Query = "select * from test_table order by id")]
+            Query = "select * from test_table order by id desc")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public List<Name> GetAllNames()
         {
