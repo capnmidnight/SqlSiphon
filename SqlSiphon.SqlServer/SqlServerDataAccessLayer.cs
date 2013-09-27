@@ -284,13 +284,13 @@ end",
             {
                 var temp = method
                     .GetParameters()
-                    .Select(p=>p.ParameterType)
+                    .Select(p => p.ParameterType)
+                    .Select(t => t.IsArray ? t.GetElementType() : t)
                     .ToList();
-                temp.Add(method.ReturnType);
                 toSync.AddRange(temp.Where(IsUDTT));
             }
-
-            foreach (var c in toSync.Distinct())
+            toSync = toSync.Distinct().ToList();
+            foreach (var c in toSync)
             {
                 MaybeSynchronizeUDTT(c);
             }
