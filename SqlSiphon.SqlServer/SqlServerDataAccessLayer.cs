@@ -47,7 +47,7 @@ namespace SqlSiphon.SqlServer
     /// </summary>
     public abstract class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
-        private static bool FirstTime = true;
+        private static List<Type> Synced = new List<Type>();
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
         /// opens the connection. 
@@ -56,12 +56,13 @@ namespace SqlSiphon.SqlServer
         public SqlServerDataAccessLayer(string connectionString)
             : base(connectionString)
         {
-            if (FirstTime)
+            var t = this.GetType();
+            if (!Synced.Contains(t))
             {
-                FirstTime = false;
                 this.DropProcedures();
                 this.SynchronizeUserDefinedTableTypes();
                 this.CreateProcedures();
+                Synced.Add(t);
             }
         }
 
@@ -259,6 +260,13 @@ end",
             }
         }
 
+        static bool IsUDTT(Type t)
+        {
+            return t.GetCustomAttributes(typeof(SqlServerMappedClassAttribute), true)
+                .Cast<SqlServerMappedClassAttribute>()
+                .Where(attr => attr.IsUploadable)
+                .Count() > 0;
+        }
 
         public void SynchronizeUserDefinedTableTypes()
         {
@@ -270,9 +278,19 @@ end",
 
             //complex types
             var type = this.GetType();
-            var assembly = type.Assembly;
-            var classes = assembly.GetTypes();
-            foreach (var c in classes)
+            var methods = type.GetMethods();
+            var toSync = new List<Type>();
+            foreach (var method in methods)
+            {
+                var temp = method
+                    .GetParameters()
+                    .Select(p=>p.ParameterType)
+                    .ToList();
+                temp.Add(method.ReturnType);
+                toSync.AddRange(temp.Where(IsUDTT));
+            }
+
+            foreach (var c in toSync.Distinct())
             {
                 MaybeSynchronizeUDTT(c);
             }
