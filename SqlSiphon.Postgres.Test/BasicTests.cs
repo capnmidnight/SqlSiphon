@@ -20,7 +20,7 @@ namespace SqlSiphon.Test.Postgres_Tests
         }
     }
 
-    class Dal : DataAccessLayer
+    class Dal : NpgsqlDataAccessLayer
     {
         public Dal()
             : base("Server=127.0.0.1;Port=5432;Database=sqlsiphontest;User Id=sqlsiphontest;Password=sqlsiphontest;") { }

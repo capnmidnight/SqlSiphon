@@ -44,8 +44,13 @@ namespace SqlSiphon.Mapping
         AllowMultiple = false)]
     public abstract class MappedObjectAttribute: Attribute
     {
-        public string Name;
-        public bool Include = true;
+        public string Name { get; set; }
+        public bool Include { get; set; }
+
+        public MappedObjectAttribute()
+        {
+            this.Include = true;
+        }
 
         public static T GetAttribute<T>(MemberInfo obj) where T : MappedObjectAttribute
         {

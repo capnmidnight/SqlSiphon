@@ -21,7 +21,8 @@ namespace Sandbox
             InitializeComponent();
             using (var dal = new Dal())
             {
-                dal.SynchronizeProcedures();
+                dal.DropProcedures();
+                dal.CreateProcedures();
                 var names = dal.GetAllNames();
                 textBox1.Text = string.Join(Environment.NewLine, names.Select(n=>n.name).ToArray());
             }
@@ -39,7 +40,7 @@ namespace Sandbox
         }
     }
 
-    class Dal : DataAccessLayer
+    class Dal : NpgsqlDataAccessLayer
     {
         public Dal()
             : base("Server=127.0.0.1;Port=5432;Database=sqlsiphontest;User Id=sqlsiphontest;Password=sqlsiphontest;") { }

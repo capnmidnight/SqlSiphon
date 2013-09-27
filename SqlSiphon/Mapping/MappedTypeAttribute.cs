@@ -34,16 +34,16 @@ using System;
 namespace SqlSiphon.Mapping
 {
     [AttributeUsage(
-        AttributeTargets.Parameter 
-        | AttributeTargets.Property 
+        AttributeTargets.Parameter
+        | AttributeTargets.Property
         | AttributeTargets.Method
         | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class MappedTypeAttribute : MappedObjectAttribute
     {
-		public Type SystemType{ get; private set; }
-        public string SqlType;
-        
-        public bool IsSizeSet {get; private set;}
+        public Type SystemType { get; private set; }
+        public string SqlType { get; set; }
+
+        public bool IsSizeSet { get; private set; }
         private int typeSize;
         public int Size
         {
@@ -67,7 +67,7 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public object DefaultValue;
+        public object DefaultValue { get; set; }
 
         protected bool optionalNotSet = true;
         private bool isOptionalField = false;
@@ -83,10 +83,9 @@ namespace SqlSiphon.Mapping
 
         public MappedTypeAttribute() { }
 
-        public void SetSystemType(Type t, Func<MappedTypeAttribute, string> toReturnSqlType)
+        public void SetSystemType(Type t)
         {
             this.SystemType = t;
-            this.SqlType = this.SqlType ?? toReturnSqlType(this) ?? "void";
         }
 
         public string ToString(string openSize = "(", string closeSize = ")", string before = "", string after = "")

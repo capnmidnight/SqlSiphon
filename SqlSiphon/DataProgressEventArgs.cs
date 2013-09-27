@@ -33,10 +33,20 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace SqlSiphon
 {
     public delegate void DataProgressEventHandler(object sender, DataProgressEventArgs e);
-    public struct DataProgressEventArgs
+
+    public class DataProgressEventArgs
     {
-        public int RowCount;
-        public int CurrentRow;
+        public int RowCount { get; private set; }
+        public int CurrentRow { get; private set; }
+        public string Message { get; private set; }
+
+        public DataProgressEventArgs(int rowCount, int currentRow, string message)
+        {
+            this.RowCount = rowCount;
+            this.CurrentRow = currentRow;
+            this.Message = message;
+        }
+
         public int GetProgressScale(int scale)
         {
             return CurrentRow * scale / RowCount;

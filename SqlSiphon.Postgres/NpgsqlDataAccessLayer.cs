@@ -42,11 +42,11 @@ namespace SqlSiphon.Postgres
     /// A base class for building Data Access Layers that connect to MySQL
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract class DataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
+    public abstract class NpgsqlDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
-        static DataAccessLayer()
+        static NpgsqlDataAccessLayer()
         {
             typeMapping = new Dictionary<string, Type>();
             typeMapping.Add("bigint", typeof(long));
@@ -139,12 +139,12 @@ namespace SqlSiphon.Postgres
         /// opens the connection. 
         /// </summary>
         /// <param name="connectionString"></param>
-        public DataAccessLayer(string connectionString)
+        public NpgsqlDataAccessLayer(string connectionString)
             : base(connectionString)
         {
         }
 
-        public DataAccessLayer(NpgsqlConnection connection)
+        public NpgsqlDataAccessLayer(NpgsqlConnection connection)
             : base(connection)
         {
         }
@@ -152,16 +152,6 @@ namespace SqlSiphon.Postgres
         protected override string IdentifierPartBegin { get { return "\""; } }
         protected override string IdentifierPartEnd { get { return "\""; } }
         protected override string DefaultSchemaName { get { return "public"; } }
-
-        protected override string DropProcedureScript(string identifier)
-        {
-            return null;
-        }
-
-        protected override bool ProcedureExists(string schemaName, string routineName)
-        {
-            return true;
-        }
 
         protected override void ModifyQuery(MappedMethodAttribute info)
         {
@@ -173,22 +163,6 @@ namespace SqlSiphon.Postgres
                 .Reverse();
             foreach (var param in parameters)
                 info.Query = info.Query.Replace("@" + param.Name, ":" + param.Name);
-        }
-
-        protected override string CreateProcedureScript(MappedMethodAttribute info)
-        {
-            var identifier = this.MakeIdentifier(info.Schema, info.Name);
-            var parameterSection = this.MakeParameterSection(info);
-            return string.Format(
-@"create or replace function {0}({1})
-    returns {2}{3} as $$
-{4}
-$$ language 'sql'",
-                   identifier,
-                   parameterSection,
-                   info.ReturnsMany ? "setof " : "",
-                   info.ReturnType.SqlType,
-                   info.Query);
         }
 
         protected override string MakeSqlTypeString(MappedTypeAttribute type)
@@ -252,6 +226,36 @@ $$ language 'sql'",
                 defaultString = " DEFAULT = " + p.DefaultValue.ToString();
 
             return string.Format("{0} {1} {2}{3}", dirString, p.Name, p.SqlType, defaultString);
+        }
+
+        protected override string BuildDropProcedureScript(string identifier)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
+        {
+            string returnType = "void";
+            if (info is NpgsqlMappedMethodAttribute)
+                returnType = ((NpgsqlMappedMethodAttribute)info).ReturnType;
+
+            var identifier = this.MakeIdentifier(info.Schema, info.Name);
+            var parameterSection = this.MakeParameterSection(info);
+            return string.Format(
+@"create or replace function {0}({1})
+    returns {2}{3} as $$
+{4}
+$$ language 'sql'",
+                   identifier,
+                   parameterSection,
+                   info.ReturnsMany ? "setof " : "",
+                   returnType,
+                   info.Query);
+        }
+
+        protected override bool ProcedureExists(string schemaName, string routineName)
+        {
+            return true;
         }
     }
 }

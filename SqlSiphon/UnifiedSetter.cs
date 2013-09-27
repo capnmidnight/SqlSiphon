@@ -45,7 +45,7 @@ namespace SqlSiphon
     public class UnifiedSetter
     {
         private MemberInfo member;
-        private readonly Type typeToSet;
+        public Type TypeToSet { get; private set; }
 
         public string Name { get { return member.Name; } }
 
@@ -61,7 +61,7 @@ namespace SqlSiphon
                 + "System.Runtime.Reflection.ProprtyInfo", type.FullName));
             }
             this.member = member;
-            this.typeToSet = member.MemberType == MemberTypes.Field
+            this.TypeToSet = member.MemberType == MemberTypes.Field
                     ? ((FieldInfo)member).FieldType
                     : ((PropertyInfo)member).PropertyType;
         }
@@ -72,7 +72,7 @@ namespace SqlSiphon
             {
                 if (value != DBNull.Value)
                 {
-                    if (typeToSet.IsEnum)
+                    if (TypeToSet.IsEnum)
                         value = MaybeParse(value);
 
                     if (member.MemberType == MemberTypes.Field)
@@ -86,12 +86,22 @@ namespace SqlSiphon
                 string message = string.Format("Could not set member {0}:{1}({2}) with value {3}({4}). Reason: {5}",
                     member.DeclaringType.FullName,
                     member.Name,
-                    typeToSet.Name,
+                    TypeToSet.Name,
                     value,
                     value != null ? value.GetType().Name : "N/A",
                     exp.Message);
                 throw new Exception(message, exp);
             }
+        }
+
+        public object GetValue(object obj)
+        {
+            object value = null;
+            if (member.MemberType == MemberTypes.Field)
+                value = ((FieldInfo)member).GetValue(obj);
+            else
+                value = ((PropertyInfo)member).GetValue(obj, null);
+            return value;
         }
 
         private object MaybeParse(object value)
@@ -101,9 +111,9 @@ namespace SqlSiphon
             {
                 if (value is string)
                 {
-                    value = Enum.Parse(typeToSet, (string)value);
+                    value = Enum.Parse(TypeToSet, (string)value);
                 }
-                isBad = !typeToSet.IsEnumDefined(value);
+                isBad = !TypeToSet.IsEnumDefined(value);
             }
             catch { }
             finally
@@ -113,7 +123,7 @@ namespace SqlSiphon
                         string.Format(
                             "\"{0}\" is not a valid value for the enumeration {1}.",
                             value,
-                            typeToSet.FullName));
+                            TypeToSet.FullName));
             }
             return value;
         }

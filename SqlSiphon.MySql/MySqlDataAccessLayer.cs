@@ -40,19 +40,19 @@ namespace SqlSiphon.MySql
     /// A base class for building Data Access Layers that connect to MySQL
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract class DataAccessLayer : DataAccessLayer<MySqlConnection, MySqlCommand, MySqlParameter, MySqlDataAdapter, MySqlDataReader>
+    public abstract class MySqlDataAccessLayer : DataAccessLayer<MySqlConnection, MySqlCommand, MySqlParameter, MySqlDataAdapter, MySqlDataReader>
     {
         /// <summary>
         /// creates a new connection to a MySQL database and automatically
         /// opens the connection. 
         /// </summary>
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
-        public DataAccessLayer(string connectionString)
+        public MySqlDataAccessLayer(string connectionString)
             : base(connectionString)
         {
         }
 
-        public DataAccessLayer(MySqlConnection connection)
+        public MySqlDataAccessLayer(MySqlConnection connection)
             : base(connection)
         {
         }
@@ -60,12 +60,12 @@ namespace SqlSiphon.MySql
         protected override string IdentifierPartBegin { get { return "`"; } }
         protected override string IdentifierPartEnd { get { return "`"; } }
 
-        protected override string DropProcedureScript(string identifier)
+        protected override string BuildDropProcedureScript(string identifier)
         {
             return string.Format("drop procedure {0}", identifier);
         }
 
-        protected override string CreateProcedureScript(MappedMethodAttribute info)
+        protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema, info.Name);
             var parameterSection = this.MakeParameterSection(info);
@@ -80,7 +80,7 @@ end//",
                 info.Query);
         }
 
-        protected override void ExecuteCreateProcedure(string script)
+        protected override void ExcecuteCreateProcedureScript(string script)
         {
             var withDelim = new MySqlScript(this.Connection, script);
             withDelim.Delimiter = "//";

@@ -34,12 +34,12 @@ using System;
 namespace SqlSiphon.Mapping
 {
     [AttributeUsage(
-        AttributeTargets.Class 
+        AttributeTargets.Class
         | AttributeTargets.Method,
-        Inherited = false, 
+        Inherited = false,
         AllowMultiple = false)]
-    public abstract class MappedSchemaObjectAttribute: MappedObjectAttribute
+    public abstract class MappedSchemaObjectAttribute : MappedObjectAttribute
     {
-        public string Schema;
+        public string Schema { get; set; }
     }
 }

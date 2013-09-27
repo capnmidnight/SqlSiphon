@@ -41,10 +41,10 @@ namespace SqlSiphon.Mapping
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = true, AllowMultiple = false)]
     public class MappedClassAttribute : MappedSchemaObjectAttribute
     {
-        public bool IsHistoryTracked = false;
-        public string PreAddConstraintScript;
-        public string PostAddConstraintScript;
-        public bool IncludeInSynch = true;
+        public bool IsHistoryTracked { get; set; }
+        public string PreAddConstraintScript { get; set; }
+        public string PostAddConstraintScript { get; set; }
+        public bool IncludeInSynch { get; set; }
 
         private List<MappedMethodAttribute> methods;
         private List<MappedPropertyAttribute> properties;
@@ -53,26 +53,8 @@ namespace SqlSiphon.Mapping
         {
             this.methods = new List<MappedMethodAttribute>();
             this.properties = new List<MappedPropertyAttribute>();
-        }
-
-        private void MaybeAddMethod(System.Reflection.MethodInfo method, string defaultSchemaName, Func<MappedTypeAttribute, string> toReturnSqlType)
-        {
-            var attr = GetAttribute<MappedMethodAttribute>(method);
-            if (attr != null)
-            {
-                attr.SetInfo(method, defaultSchemaName, toReturnSqlType);
-                this.methods.Add(attr);
-            }
-        }
-
-        private void MaybeAddProperty(System.Reflection.PropertyInfo property)
-        {
-            var attr = GetAttribute<MappedPropertyAttribute>(property);
-            if (attr != null)
-            {
-                attr.SetInfo(property);
-                this.properties.Add(attr);
-            }
+            this.IsHistoryTracked = false;
+            this.IncludeInSynch = true;
         }
     }
 }

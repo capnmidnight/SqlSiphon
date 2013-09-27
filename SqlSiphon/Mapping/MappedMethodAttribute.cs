@@ -41,60 +41,33 @@ namespace SqlSiphon.Mapping
     /// An attribute to use for tagging methods as being mapped to a stored procedure call.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public sealed class MappedMethodAttribute : MappedSchemaObjectAttribute
+    public class MappedMethodAttribute : MappedSchemaObjectAttribute
     {
-        public int Timeout = -1;
-        public CommandType CommandType = CommandType.StoredProcedure;
-        public string Query;
-        public bool EnableTransaction = false;
-        public bool ReturnsMany = false;
-
-        /// <summary>
-        /// ReturnType is only supported by Postgres at this time
-        /// </summary>
-        public MappedTypeAttribute ReturnType;
+        public int Timeout { get; set; }
+        public CommandType CommandType { get; set; }
+        public string Query { get; set; }
+        public bool EnableTransaction { get; set; }
+        public bool ReturnsMany { get; set; }
 
         public List<MappedParameterAttribute> Parameters { get; private set; }
         public MappedMethodAttribute()
         {
             this.Parameters = new List<MappedParameterAttribute>();
+            this.Timeout = -1;
+            this.CommandType = CommandType.StoredProcedure;
+            this.EnableTransaction = false;
+            this.ReturnsMany = false;
         }
 
-        public void SetInfo(MethodInfo method, string defaultSchemaName, Func<MappedTypeAttribute, string> toReturnSqlType)
-        {
-            this.Schema = this.Schema ?? defaultSchemaName;
-            this.Name = this.Name ?? method.Name;
-
-            if (this.ReturnType == null || this.ReturnType.SqlType == null)
-            {
-                this.ReturnType = this.ReturnType
-                    ?? method
-                    .GetCustomAttributes(typeof(MappedTypeAttribute), false)
-                    .Cast<MappedTypeAttribute>()
-                    .FirstOrDefault();
-
-                if (this.ReturnType == null)
-                    this.ReturnType = new MappedTypeAttribute();
-
-                if (this.ReturnType.SystemType == null)
-                    this.ReturnType.SetSystemType(method.ReturnType, toReturnSqlType);
-            }
-
-            foreach (var parameter in method.GetParameters())
-            {
-                AddParameter(parameter, toReturnSqlType);
-            }
-        }
-
-        private void AddParameter(ParameterInfo parameter, Func<MappedTypeAttribute, string> toSqlStringType)
+        public MappedParameterAttribute AddParameter(ParameterInfo parameter)
         {
             var attr = GetAttribute<MappedParameterAttribute>(parameter);
             if (attr == null)
             {
                 attr = new MappedParameterAttribute();
             }
-            attr.SetInfo(parameter, toSqlStringType);
             this.Parameters.Add(attr);
+            return attr;
         }
     }
 }

@@ -173,7 +173,16 @@ namespace SqlSiphon
             {
                 if (meta.CommandType == CommandType.TableDirect)
                     throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
-                meta.SetInfo(method, DefaultSchemaName, this.MakeSqlTypeString);
+                meta.Name = meta.Name ?? method.Name;
+                meta.Schema = meta.Schema ?? DefaultSchemaName;
+                foreach (var parameter in method.GetParameters())
+                {
+                    var paramMeta = meta.AddParameter(parameter);
+                    paramMeta.SetInfo(parameter);
+                    paramMeta.SetSystemType(parameter.ParameterType);
+                    if (paramMeta.SqlType == null)
+                        paramMeta.SqlType = this.MakeSqlTypeString(paramMeta);
+                }
                 this.ModifyQuery(meta);
             }
             return meta;
@@ -200,8 +209,7 @@ namespace SqlSiphon
             {
                 var p = new ParameterT();
                 p.ParameterName = methParams[i].Name;
-                if (parametersValues != null)
-                    p.Value = parametersValues[i] ?? DBNull.Value;
+                p.Value = PrepareParameter(parametersValues[i]) ?? DBNull.Value;
                 p.Direction = methParams[i].Direction;
                 procedureParams.Add(p);
             }
@@ -265,24 +273,22 @@ namespace SqlSiphon
         private void Execute(CommandT command, params object[] parameters)
         {
             Open();
-            command.ExecuteNonQuery();
-            CopyOutputParameters(parameters, command.Parameters);
+            try
+            {
+                command.ExecuteNonQuery();
+                CopyOutputParameters(parameters, command.Parameters);
+            }
+            catch (Exception exp)
+            {
+                throw new Exception(string.Format("Could not execute command: {0}. Reason: {1}.", command.CommandText, exp.Message), exp);
+            }
         }
 
         protected virtual void ExecuteQuery(string query)
         {
-            if (query != null)
-            {
-                if (query.Trim().Length > 0)
-                {
-                    using (var command = BuildCommand(query, CommandType.Text, null, null))
-                    {
-                        if (command.Connection.State == ConnectionState.Closed)
-                            command.Connection.Open();
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
+            if (!string.IsNullOrWhiteSpace(query))
+                using (var command = BuildCommand(query, CommandType.Text, null, null))
+                    Execute(command);
         }
 
         protected void Execute(params object[] parameters)
@@ -351,8 +357,15 @@ namespace SqlSiphon
             if (Connection != null)
             {
                 Open();
-                reader = command.ExecuteReader();
-                CopyOutputParameters(parameters, command.Parameters);
+                try
+                {
+                    reader = command.ExecuteReader();
+                    CopyOutputParameters(parameters, command.Parameters);
+                }
+                catch (Exception exp)
+                {
+                    throw new Exception(string.Format("Could not execute: {0}. Reason: {1}.", command.CommandText, exp.Message), exp);
+                }
             }
             return (DataReaderT)reader;
         }
@@ -431,8 +444,8 @@ namespace SqlSiphon
             return columnNames;
         }
 
-        private static BindingFlags PATTERN = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-        internal static UnifiedSetter[] GetSettableMembers(Type type)
+        private static BindingFlags PATTERN = BindingFlags.Public | BindingFlags.Instance;
+        protected static UnifiedSetter[] GetSettableMembers(Type type)
         {
             return (from f in type.GetFields(PATTERN) select new UnifiedSetter(f))
                 .Union(from p in type.GetProperties(PATTERN) select new UnifiedSetter(p))
@@ -496,72 +509,75 @@ namespace SqlSiphon
             }
         }
 
-        public void SynchronizeProcedures()
+        /// <summary>
+        /// Scans the Data Access Layer for public methods that have stored procedure
+        /// definitions, and creates/alters procedures as necessary to bring them all
+        /// up to date.
+        /// </summary>
+        public void DropProcedures()
         {
             var t = this.GetType();
             var procSignatures = t.GetMethods();
             foreach (var procSignature in procSignatures)
             {
-                SynchronizeProcedure(procSignature);
+                DropProcedure(procSignature);
             }
         }
 
-        public List<string> GetAllStoredProcedureScripts()
+        public void CreateProcedures()
         {
-            var scripts = new List<string>();
             var t = this.GetType();
             var procSignatures = t.GetMethods();
             foreach (var procSignature in procSignatures)
             {
-                scripts.AddRange(this.GetStoredProcedureScripts(procSignature));
-            }
-            return scripts;
-        }
-
-        private void SynchronizeProcedure(MethodInfo method)
-        {
-            var scripts = GetStoredProcedureScripts(method);
-            if (scripts.Count > 0)
-            {
-                if (scripts.Count == 2)
-                    this.ExecuteQuery(scripts[1]);
-                this.ExecuteCreateProcedure(scripts[0]);
+                CreateProcedure(procSignature);
             }
         }
 
-        private List<string> GetStoredProcedureScripts(MethodInfo method)
+
+        private void DropProcedure(MethodInfo method)
         {
             var info = GetCommandDescription(method);
             if (info != null
                 && info.CommandType == CommandType.StoredProcedure
                 && !string.IsNullOrEmpty(info.Query))
-                return this.CreateOrAlterProcedureScript(info);
-            else
-                return new List<string>();
-        }
-
-        protected virtual void ExecuteCreateProcedure(string script)
-        {
-            this.ExecuteQuery(script);
-        }
-
-        protected virtual void ModifyQuery(MappedMethodAttribute info)
-        {
-            //do nothing in the base case
-        }
-
-        private List<string> CreateOrAlterProcedureScript(MappedMethodAttribute info)
-        {
-            var scripts = new List<string>();
-            var identifier = this.MakeIdentifier(info.Schema, info.Name);
-            scripts.Add(CreateProcedureScript(info));
-            if (this.ProcedureExists(info.Schema, info.Name))
             {
-                var s = DropProcedureScript(identifier);
-                if (s != null)
-                    scripts.Insert(0, s);
+                var schema = info.Schema ?? DefaultSchemaName;
+                var identifier = this.MakeIdentifier(schema, info.Name);
+                if (this.ProcedureExists(schema, info.Name))
+                {
+                    var script = BuildDropProcedureScript(identifier);
+                    try
+                    {
+                        this.ExecuteQuery(script);
+                    }
+                    catch (Exception exp)
+                    {
+                        throw new Exception(string.Format("Could not drop procedure: {0}. Reason: {1}", identifier, exp.Message), exp);
+                    }
+                }
             }
-            return scripts;
+        }
+
+        private void CreateProcedure(MethodInfo method)
+        {
+            var info = GetCommandDescription(method);
+            if (info != null
+                && info.CommandType == CommandType.StoredProcedure
+                && !string.IsNullOrEmpty(info.Query))
+            {
+                var schema = info.Schema ?? DefaultSchemaName;
+                var identifier = this.MakeIdentifier(schema, info.Name);
+                var script = BuildCreateProcedureScript(info);
+                try
+                {
+                    this.ExecuteQuery(script);
+                }
+                catch (Exception exp)
+                {
+                    throw new Exception(string.Format("Could not create procedure: {0}. Reason: {1}", identifier, exp.Message), exp);
+                }
+            }
         }
 
         protected string MakeParameterSection(MappedMethodAttribute info)
@@ -574,10 +590,27 @@ namespace SqlSiphon
             return parameterSection;
         }
 
+
+        protected virtual void ModifyQuery(MappedMethodAttribute info)
+        {
+            //do nothing in the base case
+        }
+
+        protected virtual object PrepareParameter(object val)
+        {
+            //do nothing in the base case
+            return val;
+        }
+
+        protected virtual void ExcecuteCreateProcedureScript(string script)
+        {
+            this.ExecuteQuery(script);
+        }
+
         protected abstract bool ProcedureExists(string schemaName, string routineName);
         protected abstract string MakeSqlTypeString(MappedTypeAttribute type);
-        protected abstract string DropProcedureScript(string identifier);
-        protected abstract string CreateProcedureScript(MappedMethodAttribute info);
+        protected abstract string BuildDropProcedureScript(string identifier);
+        protected abstract string BuildCreateProcedureScript(MappedMethodAttribute info);
         protected abstract string MakeParameterString(MappedParameterAttribute p);
     }
 }

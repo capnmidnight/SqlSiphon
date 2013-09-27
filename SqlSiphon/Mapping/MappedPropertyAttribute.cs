@@ -36,14 +36,24 @@ namespace SqlSiphon.Mapping
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public class MappedPropertyAttribute : MappedTypeAttribute
     {
-        public bool IsIdentity = false;
-        public int IdentityStartValue = 1;
-        public bool IncludeInPrimaryKey = false;
-        public bool Ignore = false;
-        public bool PrefixColumnNames = true;
-        public bool Cascade = true;
-        public bool IncludeInInsert = true;
-        public MappedPropertyAttribute() { }
+        public bool IsIdentity { get; set; }
+        public int IdentityStartValue { get; set; }
+        public bool IncludeInPrimaryKey { get; set; }
+        public bool Ignore { get; set; }
+        public bool PrefixColumnNames { get; set; }
+        public bool Cascade { get; set; }
+        public bool IncludeInInsert { get; set; }
+
+        public MappedPropertyAttribute()
+        {
+            this.IsIdentity = false;
+            this.IdentityStartValue = 1;
+            this.IncludeInPrimaryKey = false;
+            this.Ignore = false;
+            this.PrefixColumnNames = true;
+            this.Cascade = true;
+            this.IncludeInInsert = true;
+        }
 
         internal void SetInfo(System.Reflection.PropertyInfo property)
         {

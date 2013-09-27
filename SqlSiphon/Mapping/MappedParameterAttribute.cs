@@ -55,7 +55,7 @@ namespace SqlSiphon.Mapping
 
         public MappedParameterAttribute() {}
 
-        public void SetInfo(ParameterInfo parameter, Func<MappedTypeAttribute, string> toSqlStringType)
+        public void SetInfo(ParameterInfo parameter)
         {
             if (this.Name == null)
                 this.Name = parameter.Name;
@@ -84,8 +84,6 @@ namespace SqlSiphon.Mapping
             {
                 this.IsOptional = parameter.IsOptional;
             }
-
-            this.SetSystemType(parameter.ParameterType, toSqlStringType);
         }
     }
 }
