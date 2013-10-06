@@ -268,27 +268,35 @@ end",
 
         public void SynchronizeUserDefinedTableTypes()
         {
-            //primatives
-            foreach (var t in reverseTypeMapping.Keys)
+            var type = this.GetType();
+            var methods = type.GetMethods();
+            var complexToSync = new List<Type>();
+            var simpleToSync = new List<Type>();
+            foreach (var method in methods)
+            {
+                foreach (var parameter in method.GetParameters())
+                {
+                    if (!parameter.ParameterType.IsArray && IsUDTT(parameter.ParameterType))
+                    {
+                        complexToSync.Add(parameter.ParameterType);
+                    }
+                    else if (parameter.ParameterType.IsArray)
+            {
+                        var t = parameter.ParameterType.GetElementType();
+                        if (reverseTypeMapping.ContainsKey(type))
+                            simpleToSync.Add(t);
+                        else if (IsUDTT(t))
+                            complexToSync.Add(t);
+                    }
+                }
+            }
+
+            foreach (var t in simpleToSync.Distinct())
             {
                 SynchronizeSimpleUDTT(t);
             }
 
-            //complex types
-            var type = this.GetType();
-            var methods = type.GetMethods();
-            var toSync = new List<Type>();
-            foreach (var method in methods)
-            {
-                var temp = method
-                    .GetParameters()
-                    .Select(p => p.ParameterType)
-                    .Select(t => t.IsArray ? t.GetElementType() : t)
-                    .ToList();
-                toSync.AddRange(temp.Where(IsUDTT));
-            }
-            toSync = toSync.Distinct().ToList();
-            foreach (var c in toSync)
+            foreach (var c in complexToSync.Distinct())
             {
                 MaybeSynchronizeUDTT(c);
             }
