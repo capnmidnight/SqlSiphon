@@ -227,7 +227,11 @@ namespace SqlSiphon.Postgres
 
         protected override string BuildDropProcedureScript(MappedMethodAttribute info)
         {
-            throw new NotImplementedException();
+            var identifier = this.MakeIdentifier(info.Schema, info.Name);
+            var parameterSection = string.Join(", ", info.Parameters.Select(p => p.SqlType));
+            return string.Format(@"drop function if exists {0}({1}) cascade;",
+                identifier,
+                parameterSection);
         }
 
         protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
@@ -239,11 +243,11 @@ namespace SqlSiphon.Postgres
     returns {2}{3} as $$
 {4}
 $$ language 'sql'",
-                   identifier,
-                   parameterSection,
-                   info.ReturnsMany ? "setof " : "",
-                   info.SqlType,
-                   info.Query);
+                identifier,
+                parameterSection,
+                info.ReturnsMany ? "setof " : "",
+                info.SqlType,
+                info.Query);
         }
 
         protected override bool ProcedureExists(MappedMethodAttribute info)
