@@ -66,7 +66,7 @@ namespace SqlSiphon.ODBC
             throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
         }
 
-        protected override string BuildDropProcedureScript(string identifier)
+        protected override string BuildDropProcedureScript(Mapping.MappedMethodAttribute info)
         {
             throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
         }

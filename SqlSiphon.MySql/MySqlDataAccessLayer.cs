@@ -60,9 +60,9 @@ namespace SqlSiphon.MySql
         protected override string IdentifierPartBegin { get { return "`"; } }
         protected override string IdentifierPartEnd { get { return "`"; } }
 
-        protected override string BuildDropProcedureScript(string identifier)
+        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
         {
-            return string.Format("drop procedure {0}", identifier);
+            return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
         protected override string BuildCreateProcedureScript(MappedMethodAttribute info)

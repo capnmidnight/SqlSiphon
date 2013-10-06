@@ -187,9 +187,9 @@ where routine_schema = @schemaName
             return this.GetList<string>("routine_name", schemaName, routineName).Count >= 1;
         }
 
-        protected override string BuildDropProcedureScript(string identifier)
+        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
         {
-            return string.Format("drop procedure {0}", identifier);
+            return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
         protected override string BuildCreateProcedureScript(MappedMethodAttribute info)

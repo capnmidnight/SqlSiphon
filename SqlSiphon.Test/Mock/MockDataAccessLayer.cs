@@ -33,7 +33,7 @@ namespace SqlSiphon.Test.Mock
             throw new NotImplementedException();
         }
 
-        protected override string BuildDropProcedureScript(string identifier)
+        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
         {
             throw new NotImplementedException();
         }

@@ -225,7 +225,7 @@ namespace SqlSiphon.Postgres
             return string.Format("{0} {1} {2}{3}", dirString, p.Name, p.SqlType, defaultString);
         }
 
-        protected override string BuildDropProcedureScript(string identifier)
+        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
         {
             throw new NotImplementedException();
         }
