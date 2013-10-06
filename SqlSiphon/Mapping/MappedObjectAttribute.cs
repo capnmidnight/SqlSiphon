@@ -52,28 +52,19 @@ namespace SqlSiphon.Mapping
             this.Include = true;
         }
 
-        public static T GetAttribute<T>(MemberInfo obj) where T : MappedObjectAttribute
+        public static T GetAttribute<T>(ICustomAttributeProvider obj) where T : MappedObjectAttribute
         {
             var attr = obj
-                .GetCustomAttributes(typeof(T), true)
+                .GetCustomAttributes(typeof(T), false)
                 .Cast<T>()
                 .FirstOrDefault();
             return attr;
         }
 
-        public static T GetAttribute<T>(ParameterInfo obj) where T : MappedObjectAttribute
-        {
-            var attr = obj
-                .GetCustomAttributes(typeof(T), true)
-                .Cast<T>()
-                .FirstOrDefault();
-            return attr;
-        }
-
-        protected virtual void SetInfo(MemberInfo obj)
+        internal virtual void Study(ParameterInfo parameter)
         {
             if (this.Name == null)
-                this.Name = obj.Name;
+                this.Name = parameter.Name;
         }
     }
 }

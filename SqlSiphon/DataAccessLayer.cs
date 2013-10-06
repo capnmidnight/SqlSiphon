@@ -59,11 +59,7 @@ namespace SqlSiphon
         protected virtual string IdentifierPartEnd { get { return ""; } }
         protected virtual string IdentifierPartSeperator { get { return "."; } }
         protected virtual string DefaultSchemaName { get { return null; } }
-
-        static DataAccessLayer()
-        {
-        }
-
+        
         public ConnectionT Connection { get; private set; }
 
         /// <summary>
@@ -128,7 +124,7 @@ namespace SqlSiphon
             var method = (from frame in new StackTrace(2, false).GetFrames()
                           let meth = frame.GetMethod()
                           where meth is MethodInfo
-                            && meth.GetCustomAttributes(typeof(MappedMethodAttribute), true).Length > 0
+                            && MappedObjectAttribute.GetAttribute<MappedMethodAttribute>(meth) != null
                           select (MethodInfo)meth).FirstOrDefault();
 
             // We absolutely need to find a method with this attribute, because we won't know where in
@@ -164,28 +160,6 @@ namespace SqlSiphon
                 .Where(p => p != null)
                 .Select(p => string.Format("{0}{1}{2}", IdentifierPartBegin, p, IdentifierPartEnd))
                 .ToArray());
-        }
-
-        private MappedMethodAttribute GetCommandDescription(MethodInfo method)
-        {
-            var meta = (MappedMethodAttribute)method.GetCustomAttributes(typeof(MappedMethodAttribute), true).FirstOrDefault();
-            if (meta != null)
-            {
-                if (meta.CommandType == CommandType.TableDirect)
-                    throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
-                meta.Name = meta.Name ?? method.Name;
-                meta.Schema = meta.Schema ?? DefaultSchemaName;
-                foreach (var parameter in method.GetParameters())
-                {
-                    var paramMeta = meta.AddParameter(parameter);
-                    paramMeta.SetInfo(parameter);
-                    paramMeta.SetSystemType(parameter.ParameterType);
-                    if (paramMeta.SqlType == null)
-                        paramMeta.SqlType = this.MakeSqlTypeString(paramMeta);
-                }
-                this.ModifyQuery(meta);
-            }
-            return meta;
         }
 
         protected virtual CommandT BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams, object[] parameterValues)
@@ -509,6 +483,41 @@ namespace SqlSiphon
             }
         }
 
+        protected List<MappedMethodAttribute> FindProcedureDefinitions()
+        {
+            var t = this.GetType();
+            var methods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
+            var results = new List<MappedMethodAttribute>();
+            foreach(var method in methods)
+            {
+                var info = this.GetCommandDescription(method);
+                if(info != null)
+                    results.Add(info);
+            }
+            return results;
+        }
+
+        private MappedMethodAttribute GetCommandDescription(MethodInfo method)
+        {
+            var meta = MappedObjectAttribute.GetAttribute<MappedMethodAttribute>(method);
+            if (meta != null)
+            {
+                if (meta.CommandType == CommandType.TableDirect)
+                    throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
+                meta.Study(method);
+                if (meta.SqlType == null)
+                    meta.SqlType = this.MakeSqlTypeString(meta);
+
+                if(meta.Schema == null)
+                    meta.Schema = this.DefaultSchemaName;
+                foreach (var parameter in meta.Parameters)
+                    if (parameter.SqlType == null)
+                        parameter.SqlType = this.MakeSqlTypeString(parameter);
+                this.ModifyQuery(meta);
+            }
+            return meta;
+        }
+
         /// <summary>
         /// Scans the Data Access Layer for public methods that have stored procedure
         /// definitions, and creates/alters procedures as necessary to bring them all
@@ -533,7 +542,6 @@ namespace SqlSiphon
                 CreateProcedure(procSignature);
             }
         }
-
 
         private void DropProcedure(MethodInfo method)
         {

@@ -153,9 +153,9 @@ namespace SqlSiphon.Test.Postgres_Tests
         }
 
         [TestMethod]
-        public void GetList()
+        public void GetListFromFunction()
         {
-            var names = d.GetNames();
+            var names = d.GetAllNames();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
             Assert.AreEqual(names.Count, expected.Length);
             for (int i = 0; i < expected.Length; ++i)
@@ -167,9 +167,9 @@ namespace SqlSiphon.Test.Postgres_Tests
         }
 
         [TestMethod]
-        public void GetListFromFunction()
+        public void GetList()
         {
-            var names = d.GetAllNames();
+            var names = d.GetNames();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
             Assert.AreEqual(names.Count, expected.Length);
             for (int i = 0; i < expected.Length; ++i)

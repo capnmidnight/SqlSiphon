@@ -38,9 +38,9 @@ namespace SqlSiphon.Mapping
         | AttributeTargets.Property
         | AttributeTargets.Method
         | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public class MappedTypeAttribute : MappedObjectAttribute
+    public class MappedTypeAttribute : MappedSchemaObjectAttribute
     {
-        public Type SystemType { get; private set; }
+        public Type SystemType { get; protected set; }
         public string SqlType { get; set; }
 
         public bool IsSizeSet { get; private set; }
@@ -83,42 +83,31 @@ namespace SqlSiphon.Mapping
 
         public MappedTypeAttribute() { }
 
-        public void SetSystemType(Type t)
+        internal override void Study(System.Reflection.ParameterInfo parameter)
         {
-            this.SystemType = t;
+            base.Study(parameter);
+            if (this.SystemType == null)
+                this.SystemType = parameter.ParameterType;
         }
 
         public string ToString(string openSize = "(", string closeSize = ")", string before = "", string after = "")
         {
             string output = "";
-            if (this.IsSizeSet)
-            {
-                if (this.IsPrecisionSet)
-                    output = string.Format(
-                        "{0} {1} {2}{3}, {4}{5} {6}",
-                        before,
-                        this.SqlType,
-                        openSize,
-                        this.Size,
-                        this.Precision,
-                        closeSize,
-                        after);
-                else
-                    output = string.Format(
-                        "{0} {1} {2}{3}{4} {5}",
-                        before,
-                        this.SqlType,
-                        openSize,
-                        this.Size,
-                        closeSize,
-                        after);
-            }
-            else
-                output = string.Format(
-                    "{0} {1} {2}",
-                    before,
-                    this.SqlType,
-                    after);
+            var format = this.IsSizeSet
+                ? this.IsPrecisionSet
+                    ? "{0} {1} {2}{3}, {4}{5} {6}"
+                    : "{0} {1} {2}{3}{5} {6}"
+                : "{0} {1} {6}";
+
+            output = string.Format(
+                "{0} {1} {2}{3}, {4}{5} {6}",
+                before,
+                this.SqlType,
+                openSize,
+                this.Size,
+                this.Precision,
+                closeSize,
+                after);
 
             return output.Trim();
         }

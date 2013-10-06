@@ -55,8 +55,10 @@ namespace SqlSiphon.Mapping
 
         public MappedParameterAttribute() {}
 
-        public void SetInfo(ParameterInfo parameter)
+        internal override void Study(ParameterInfo parameter)
         {
+            base.Study(parameter);
+
             if (this.Name == null)
                 this.Name = parameter.Name;
 

@@ -262,10 +262,8 @@ end",
 
         static bool IsUDTT(Type t)
         {
-            return t.GetCustomAttributes(typeof(SqlServerMappedClassAttribute), true)
-                .Cast<SqlServerMappedClassAttribute>()
-                .Where(attr => attr.IsUploadable)
-                .Count() > 0;
+            var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
+            return attr != null && attr.IsUploadable;
         }
 
         public void SynchronizeUserDefinedTableTypes()
@@ -296,34 +294,26 @@ end",
             }
         }
 
-        private void MaybeSynchronizeUDTT(Type c)
+        private void MaybeSynchronizeUDTT(Type t)
         {
-            var attr = c.GetCustomAttributes(typeof(SqlServerMappedClassAttribute), true)
-                .Cast<SqlServerMappedClassAttribute>()
-                .FirstOrDefault();
+            var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
             if (attr != null && attr.IsUploadable)
-            {
-                SynchronizeComplexUDTT(c, attr);
-            }
+                SynchronizeComplexUDTT(t, attr);
         }
 
-        public static string MakeUDTTName(Type c)
+        public static string MakeUDTTName(Type t)
         {
-            var name = c.GetCustomAttributes(typeof(SqlServerMappedClassAttribute), true)
-                .Cast<SqlServerMappedClassAttribute>()
-                .Select(attr => attr.Name)
-                .FirstOrDefault();
+            var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
+            string name = null;
+            
+            if (attr != null)
+                name = attr.Name;
+
             if (name == null)
-            {
-                if (c.IsArray)
-                {
-                    name = c.GetElementType().Name;
-                }
-                else
-                {
-                    name = c.Name;
-                }
-            }
+                name = t.IsArray
+                    ? t.GetElementType().Name
+                    : t.Name;
+
             return name + "UDTT";
         }
 
@@ -428,10 +418,7 @@ where is_user_defined = 1
         {
             if (reverseTypeMapping.ContainsKey(c.TypeToSet))
             {
-                var attr = c.TypeToSet
-                    .GetCustomAttributes(typeof(MappedPropertyAttribute), true)
-                    .Cast<MappedPropertyAttribute>()
-                    .FirstOrDefault();
+                var attr = MappedObjectAttribute.GetAttribute<MappedPropertyAttribute>(c.TypeToSet);
                 if (attr == null)
                 {
                     attr = new MappedPropertyAttribute();

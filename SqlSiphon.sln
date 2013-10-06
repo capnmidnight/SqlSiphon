@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
+# Visual Studio Express 2013 for Web
+VisualStudioVersion = 12.0.20617.1 PREVIEW
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon", "SqlSiphon\SqlSiphon.csproj", "{136933A4-27E3-4CBF-84F8-8898447A3D8C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Postgres", "SqlSiphon.Postgres\SqlSiphon.Postgres.csproj", "{175A4D4A-2C9D-4EDD-B9CC-7ADC3322CC1C}"
@@ -10,8 +12,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.SqlServer", "SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj", "{1C09319B-01E7-4F56-B29B-61FD4E546F54}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.ODBC", "SqlSiphon.ODBC\SqlSiphon.ODBC.csproj", "{E493A431-5F12-4D34-8CC4-6DF0D97ED388}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.csproj", "{BC4916B5-563F-4346-A957-0A0E97E9EBEF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Test", "SqlSiphon.Test\SqlSiphon.Test.csproj", "{F2C115BC-9933-4BE6-AA12-F1CA23AE4953}"
 EndProject
@@ -101,22 +101,6 @@ Global
 		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|x64.Build.0 = Release|x64
 		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|x86.ActiveCfg = Release|x86
 		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|x86.Build.0 = Release|x86
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Debug|x64.ActiveCfg = Debug|x64
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Debug|x64.Build.0 = Debug|x64
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Debug|x86.ActiveCfg = Debug|x86
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Debug|x86.Build.0 = Debug|x86
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Release|x64.ActiveCfg = Release|x64
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Release|x64.Build.0 = Release|x64
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Release|x86.ActiveCfg = Release|x86
-		{BC4916B5-563F-4346-A957-0A0E97E9EBEF}.Release|x86.Build.0 = Release|x86
 		{F2C115BC-9933-4BE6-AA12-F1CA23AE4953}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F2C115BC-9933-4BE6-AA12-F1CA23AE4953}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2C115BC-9933-4BE6-AA12-F1CA23AE4953}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

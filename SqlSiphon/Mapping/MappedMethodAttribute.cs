@@ -41,13 +41,25 @@ namespace SqlSiphon.Mapping
     /// An attribute to use for tagging methods as being mapped to a stored procedure call.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public class MappedMethodAttribute : MappedSchemaObjectAttribute
+    public class MappedMethodAttribute : MappedTypeAttribute
     {
         public int Timeout { get; set; }
         public CommandType CommandType { get; set; }
         public string Query { get; set; }
         public bool EnableTransaction { get; set; }
-        public bool ReturnsMany { get; set; }
+
+        public bool ReturnsMany
+        {
+            get
+            {
+                var test = typeof(List<>);
+                test = test.MakeGenericType(SystemType);
+                return SystemType.IsArray
+                    || test.IsAssignableFrom(SystemType);
+            }
+        }
+
+        private MethodInfo originalMethod;
 
         public List<MappedParameterAttribute> Parameters { get; private set; }
         public MappedMethodAttribute()
@@ -56,7 +68,6 @@ namespace SqlSiphon.Mapping
             this.Timeout = -1;
             this.CommandType = CommandType.StoredProcedure;
             this.EnableTransaction = false;
-            this.ReturnsMany = false;
         }
 
         public MappedParameterAttribute AddParameter(ParameterInfo parameter)
@@ -65,9 +76,23 @@ namespace SqlSiphon.Mapping
             if (attr == null)
             {
                 attr = new MappedParameterAttribute();
+                attr.Study(parameter);
             }
             this.Parameters.Add(attr);
             return attr;
+        }
+
+        internal void Study(MethodInfo method)
+        {
+            this.originalMethod = method;
+            if (this.Name == null)
+                this.Name = method.Name;
+            var parameters = method.GetParameters();
+            foreach (var parameter in parameters)
+                AddParameter(parameter);
+
+            if (this.SystemType == null)
+                this.SystemType = method.ReturnType;
         }
     }
 }

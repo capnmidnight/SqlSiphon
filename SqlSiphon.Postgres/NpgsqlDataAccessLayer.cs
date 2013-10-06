@@ -184,10 +184,7 @@ namespace SqlSiphon.Postgres
                     t = subTypes.First();
                 }
 
-                var temp = t
-                    .GetCustomAttributes(typeof(MappedTypeAttribute), true)
-                    .Cast<MappedTypeAttribute>()
-                    .FirstOrDefault();
+                var temp = MappedObjectAttribute.GetAttribute<MappedTypeAttribute>(t);
                 if (temp != null)
                     typeName = MakeSqlTypeString(temp);
                 else if (reverseTypeMapping.ContainsKey(t))
@@ -198,10 +195,10 @@ namespace SqlSiphon.Postgres
 
             if (type.IsSizeSet)
             {
-                if (type.IsPrecisionSet)
-                    typeName = string.Format("{0}[{1},{2}]", typeName, type.Size, type.Precision);
-                else
-                    typeName = string.Format("{0}[{1}]", typeName, type.Size);
+                var format = type.IsPrecisionSet
+                    ? "{0}[{1},{2}]"
+                    : "{0}[{1}]";
+                typeName = string.Format(format, typeName, type.Size, type.Precision);
             }
             return typeName;
         }
@@ -235,10 +232,6 @@ namespace SqlSiphon.Postgres
 
         protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
         {
-            string returnType = "void";
-            if (info is NpgsqlMappedMethodAttribute)
-                returnType = ((NpgsqlMappedMethodAttribute)info).ReturnType;
-
             var identifier = this.MakeIdentifier(info.Schema, info.Name);
             var parameterSection = this.MakeParameterSection(info);
             return string.Format(
@@ -249,7 +242,7 @@ $$ language 'sql'",
                    identifier,
                    parameterSection,
                    info.ReturnsMany ? "setof " : "",
-                   returnType,
+                   info.SqlType,
                    info.Query);
         }
 
