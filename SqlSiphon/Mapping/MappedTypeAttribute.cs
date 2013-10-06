@@ -30,6 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
+using System.Reflection;
 
 namespace SqlSiphon.Mapping
 {
@@ -41,6 +42,18 @@ namespace SqlSiphon.Mapping
     public class MappedTypeAttribute : MappedSchemaObjectAttribute
     {
         public Type SystemType { get; protected set; }
+
+        public bool IsCollection
+        {
+            get
+            {
+                return this.SystemType
+                    .FindInterfaces(new TypeFilter((t, o) =>
+                        t == typeof(System.Collections.IEnumerable)), null)
+                    .Length > 0;
+            }
+        }
+
         public string SqlType { get; set; }
 
         public bool IsSizeSet { get; private set; }

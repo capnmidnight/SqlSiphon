@@ -165,6 +165,25 @@ namespace SqlSiphon.Postgres
                 info.Query = info.Query.Replace("@" + param.Name, ":" + param.Name);
         }
 
+        private string MakeBasicSqlTypeString(Type t)
+        {
+            if (t.IsGenericType)
+            {
+                var subTypes = t.GetGenericArguments();
+                if (subTypes.Length > 1)
+                    throw new Exception("Type is too complex!");
+                t = subTypes.First();
+            }
+
+            var temp = MappedObjectAttribute.GetAttribute<MappedTypeAttribute>(t);
+            if (temp != null)
+                return MakeSqlTypeString(temp);
+            else if (reverseTypeMapping.ContainsKey(t))
+                return reverseTypeMapping[t];
+            else
+                return null;
+        }
+
         protected override string MakeSqlTypeString(MappedTypeAttribute type)
         {
             string typeName = null;
@@ -175,21 +194,10 @@ namespace SqlSiphon.Postgres
                 typeName = type.SqlType;
             else if (type.SystemType != null)
             {
-                var t = type.SystemType;
-                if (t.IsGenericType)
-                {
-                    var subTypes = type.SystemType.GetGenericArguments();
-                    if (subTypes.Length > 1)
-                        throw new Exception("Type is too complex!");
-                    t = subTypes.First();
-                }
-
-                var temp = MappedObjectAttribute.GetAttribute<MappedTypeAttribute>(t);
-                if (temp != null)
-                    typeName = MakeSqlTypeString(temp);
-                else if (reverseTypeMapping.ContainsKey(t))
-                    typeName = reverseTypeMapping[t];
-                else if (type.SystemType.Name != "Void")
+                typeName = MakeBasicSqlTypeString(type.SystemType);
+                if (typeName == null && type.IsCollection)
+                    typeName = MakeBasicSqlTypeString(type.SystemType.GetElementType()) + "[]";
+                if (typeName == null && type.SystemType.Name != "Void")
                     throw new Exception("Couldn't find type description!");
             }
 
@@ -218,6 +226,7 @@ namespace SqlSiphon.Postgres
                     dirString = "OUT";
                     break;
             }
+
             var defaultString = "";
             if (p.DefaultValue != null)
                 defaultString = " DEFAULT = " + p.DefaultValue.ToString();
@@ -245,7 +254,7 @@ namespace SqlSiphon.Postgres
 $$ language 'sql'",
                 identifier,
                 parameterSection,
-                info.ReturnsMany ? "setof " : "",
+                info.IsCollection ? "setof " : "",
                 info.SqlType,
                 info.Query);
         }

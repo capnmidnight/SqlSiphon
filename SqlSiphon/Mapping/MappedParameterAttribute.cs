@@ -62,30 +62,22 @@ namespace SqlSiphon.Mapping
             if (this.Name == null)
                 this.Name = parameter.Name;
 
-            if (this.DefaultValue == null)
+            if (this.DefaultValue == null && parameter.DefaultValue != DBNull.Value)
                 this.DefaultValue = parameter.DefaultValue;
 
             if (this.directionNotSet)
             {
                 Direction = ParameterDirection.Input;
                 if (parameter.IsIn && parameter.IsOut)
-                {
                     Direction = ParameterDirection.InputOutput;
-                }
                 else if (parameter.IsOut)
-                {
                     Direction = ParameterDirection.Output;
-                }
                 else if (parameter.IsRetval)
-                {
                     Direction = ParameterDirection.ReturnValue;
-                }
             }
 
             if (this.optionalNotSet)
-            {
                 this.IsOptional = parameter.IsOptional;
-            }
         }
     }
 }

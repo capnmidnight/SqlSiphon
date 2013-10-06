@@ -48,17 +48,6 @@ namespace SqlSiphon.Mapping
         public string Query { get; set; }
         public bool EnableTransaction { get; set; }
 
-        public bool ReturnsMany
-        {
-            get
-            {
-                var interfaces = SystemType
-                    .FindInterfaces(new TypeFilter((t, o) => 
-                        t == typeof(System.Collections.IEnumerable)), null);
-                return interfaces.Length > 0;
-            }
-        }
-
         private MethodInfo originalMethod;
 
         public List<MappedParameterAttribute> Parameters { get; private set; }

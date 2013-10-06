@@ -28,6 +28,14 @@ namespace SqlSiphon.Postgres.Test
         }
 
         [TestMethod]
+        public void TestFunctionWithArrayParameter()
+        {
+            d.SyncProcs();
+            var value = d.TestArray(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            Assert.AreEqual(55, value);
+        }
+
+        [TestMethod]
         public void SynchProcedures()
         {
             d.SyncProcs();

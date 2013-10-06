@@ -24,6 +24,18 @@ namespace SqlSiphon.Postgres.Test
             return this.GetList<TestEntity>();
         }
 
+        [MappedMethod(
+            CommandType = CommandType.StoredProcedure,
+            Query = 
+@"SELECT sum($1[i])::int FROM
+generate_series(array_lower($1,1),array_upper($1,1)
+) index(i)")]
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
+        public int TestArray(int[] arr)
+        {
+            return this.Get<int>(0, arr);
+        }
+
         public void TestDropFunction()
         {
             this.DropProcedures();
