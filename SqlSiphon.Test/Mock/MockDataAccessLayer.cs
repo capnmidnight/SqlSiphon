@@ -48,9 +48,9 @@ namespace SqlSiphon.Test.Mock
             return type.SystemType.Name.ToLower();
         }
 
-        protected override bool ProcedureExists(string schemaName, string routineName)
+        protected override bool ProcedureExists(MappedMethodAttribute info)
         {
-            return routineName.Contains("Exists");
+            return info.Name.Contains("Exists");
         }
     }
 }

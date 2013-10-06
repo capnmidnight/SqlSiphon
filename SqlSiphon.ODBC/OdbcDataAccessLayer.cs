@@ -31,6 +31,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.Data.Odbc;
 using System.IO;
+using SqlSiphon.Mapping;
 
 namespace SqlSiphon.ODBC
 {
@@ -51,27 +52,27 @@ namespace SqlSiphon.ODBC
         {
         }
 
-        protected override bool ProcedureExists(string schemaName, string routineName)
+        protected override bool ProcedureExists(MappedMethodAttribute info)
         {
             throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
         }
 
-        protected override string MakeParameterString(Mapping.MappedParameterAttribute p)
+        protected override string MakeParameterString(MappedParameterAttribute p)
         {
             throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
         }
 
-        protected override string BuildCreateProcedureScript(Mapping.MappedMethodAttribute info)
+        protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
         {
             throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
         }
 
-        protected override string BuildDropProcedureScript(Mapping.MappedMethodAttribute info)
+        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
         {
             throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
         }
 
-        protected override string MakeSqlTypeString(Mapping.MappedTypeAttribute type)
+        protected override string MakeSqlTypeString(MappedTypeAttribute type)
         {
             throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
         }

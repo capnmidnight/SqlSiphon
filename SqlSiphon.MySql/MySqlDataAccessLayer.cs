@@ -87,12 +87,13 @@ end//",
             withDelim.Execute();
         }
 
-        protected override bool ProcedureExists(string schemaName, string routineName)
+        protected override bool ProcedureExists(MappedMethodAttribute info)
         {
+            // MySQL integration is currently broken
             throw new System.NotImplementedException();
         }
 
-        protected override string MakeParameterString(SqlSiphon.Mapping.MappedParameterAttribute p)
+        protected override string MakeParameterString(MappedParameterAttribute p)
         {
             throw new System.NotImplementedException();
         }

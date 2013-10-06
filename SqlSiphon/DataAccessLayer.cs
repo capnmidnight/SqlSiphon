@@ -552,7 +552,7 @@ namespace SqlSiphon
             {
                 var schema = info.Schema ?? DefaultSchemaName;
                 var identifier = this.MakeIdentifier(schema, info.Name);
-                if (this.ProcedureExists(schema, info.Name))
+                if (this.ProcedureExists(info))
                 {
                     var script = BuildDropProcedureScript(info);
                     try
@@ -615,8 +615,8 @@ namespace SqlSiphon
             this.ExecuteQuery(script);
         }
 
-        protected abstract bool ProcedureExists(string schemaName, string routineName);
         protected abstract string MakeSqlTypeString(MappedTypeAttribute type);
+        protected abstract bool ProcedureExists(MappedMethodAttribute info);
         protected abstract string BuildDropProcedureScript(MappedMethodAttribute info);
         protected abstract string BuildCreateProcedureScript(MappedMethodAttribute info);
         protected abstract string MakeParameterString(MappedParameterAttribute p);

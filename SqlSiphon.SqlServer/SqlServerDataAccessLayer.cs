@@ -182,9 +182,14 @@ end catch;", transactionName);
 from information_schema.routines 
 where routine_schema = @schemaName 
     and routine_name = @routineName")]
-        protected override bool ProcedureExists(string schemaName, string routineName)
+        public bool ProcedureExistsQuery(string schemaName, string routineName)
         {
             return this.GetList<string>("routine_name", schemaName, routineName).Count >= 1;
+        }
+
+        protected override bool ProcedureExists(MappedMethodAttribute info)
+        {
+            return ProcedureExistsQuery(info.Schema, info.Name);
         }
 
         protected override string BuildDropProcedureScript(MappedMethodAttribute info)

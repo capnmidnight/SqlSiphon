@@ -246,8 +246,10 @@ $$ language 'sql'",
                    info.Query);
         }
 
-        protected override bool ProcedureExists(string schemaName, string routineName)
+        protected override bool ProcedureExists(MappedMethodAttribute info)
         {
+            // just assume the procedure exists, because the drop and create
+            // procedures will take care of it.
             return true;
         }
     }
