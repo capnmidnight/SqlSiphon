@@ -47,7 +47,6 @@ namespace SqlSiphon.SqlServer
     /// </summary>
     public abstract class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
-        private static List<Type> Synced = new List<Type>();
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
         /// opens the connection. 
@@ -56,14 +55,13 @@ namespace SqlSiphon.SqlServer
         public SqlServerDataAccessLayer(string connectionString)
             : base(connectionString)
         {
-            var t = this.GetType();
-            if (!Synced.Contains(t))
-            {
-                this.DropProcedures();
-                this.SynchronizeUserDefinedTableTypes();
-                this.CreateProcedures();
-                Synced.Add(t);
-            }
+            this.SynchronizeProcedures();
+        }
+
+        protected override void PreCreateProcedures()
+        {
+            base.PreCreateProcedures();
+            this.SynchronizeUserDefinedTableTypes();
         }
 
         public SqlServerDataAccessLayer(SqlConnection connection)

@@ -53,6 +53,7 @@ namespace SqlSiphon
         where DataAdapterT : DbDataAdapter, new()
         where DataReaderT : DbDataReader
     {
+        private static List<Type> Synced = new List<Type>();
         private bool isConnectionOwned;
 
         protected virtual string IdentifierPartBegin { get { return ""; } }
@@ -106,6 +107,20 @@ namespace SqlSiphon
                 this.Connection = null;
             }
         }
+
+        protected void SynchronizeProcedures()
+        {
+            var t = this.GetType();
+            if (!Synced.Contains(t))
+            {
+                this.DropProcedures();
+                this.PreCreateProcedures();
+                this.CreateProcedures();
+                Synced.Add(t);
+            }
+        }
+
+        protected virtual void PreCreateProcedures() { }
 
         /// <summary>
         /// Creates a stored procedure command call from a variable array of parameters. The stored
