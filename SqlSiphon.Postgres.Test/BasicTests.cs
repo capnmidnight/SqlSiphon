@@ -33,7 +33,7 @@ namespace SqlSiphon.Postgres.Test
             d.SyncProcs();
             var names = d.TestCreateFunction();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(names.Count, expected.Length);
+            Assert.AreEqual(expected.Length, names.Count);
             for (int i = 0; i < expected.Length; ++i)
             {
                 if (i < expected.Length - 1)
@@ -55,7 +55,7 @@ namespace SqlSiphon.Postgres.Test
         {
             var names = d.GetAllNames();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(names.Count, expected.Length);
+            Assert.AreEqual(expected.Length, names.Count);
             for (int i = 0; i < expected.Length; ++i)
             {
                 if (i < expected.Length - 1)
@@ -69,7 +69,7 @@ namespace SqlSiphon.Postgres.Test
         {
             var names = d.GetNames();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(names.Count, expected.Length);
+            Assert.AreEqual(expected.Length, names.Count);
             for (int i = 0; i < expected.Length; ++i)
             {
                 if (i < expected.Length - 1)
@@ -83,7 +83,7 @@ namespace SqlSiphon.Postgres.Test
         {
             var names = d.GetNamesPrimitiveByName();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(names.Count, expected.Length);
+            Assert.AreEqual(expected.Length, names.Count);
             for (int i = 0; i < expected.Length; ++i)
             {
                 Assert.AreEqual(expected[i], names[i]);
@@ -95,7 +95,7 @@ namespace SqlSiphon.Postgres.Test
         {
             var names = d.GetNamesPrimitiveByIndex();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(names.Count, expected.Length);
+            Assert.AreEqual(expected.Length, names.Count);
             for (int i = 0; i < expected.Length; ++i)
             {
                 Assert.AreEqual(expected[i], names[i]);
@@ -107,7 +107,7 @@ namespace SqlSiphon.Postgres.Test
         {
             var names = d.GetNamesFromTextQuery();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(names.Count, expected.Length);
+            Assert.AreEqual(expected.Length, names.Count);
             for (int i = 0; i < expected.Length; ++i)
             {
                 if (i < expected.Length - 1)

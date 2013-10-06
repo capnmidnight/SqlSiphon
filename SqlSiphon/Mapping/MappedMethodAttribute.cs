@@ -52,10 +52,10 @@ namespace SqlSiphon.Mapping
         {
             get
             {
-                var test = typeof(List<>);
-                test = test.MakeGenericType(SystemType);
-                return SystemType.IsArray
-                    || test.IsAssignableFrom(SystemType);
+                var interfaces = SystemType
+                    .FindInterfaces(new TypeFilter((t, o) => 
+                        t == typeof(System.Collections.IEnumerable)), null);
+                return interfaces.Length > 0;
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace SqlSiphon.Postgres.Test
 {
-    [MappedType(SqlType = "setof test_table")]
+    [MappedType(SqlType = "test_table")]
     class TestEntity
     {
         public int id { get; set; }
