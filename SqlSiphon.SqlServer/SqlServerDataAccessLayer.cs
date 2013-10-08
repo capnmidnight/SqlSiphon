@@ -213,16 +213,12 @@ end",
 
         protected override string MakeParameterString(MappedParameterAttribute p)
         {
-            if (p.SqlType == null)
-            {
-                p.SqlType = reverseTypeMapping[p.SystemType];
-            }
             var typeStr = MakeSqlTypeString(p);
             return string.Join(" ",
                 "@" + p.Name,
                 typeStr,
                 p.DefaultValue ?? "",
-                p.SystemType.IsArray ? "readonly" : "").Trim();
+                IsUDTT(p.SystemType) ? "readonly" : "").Trim();
         }
 
         protected override string MakeSqlTypeString(MappedTypeAttribute p)
@@ -231,11 +227,8 @@ end",
             {
                 if (reverseTypeMapping.ContainsKey(p.SystemType))
                     p.SqlType = reverseTypeMapping[p.SystemType];
-                else if (p.SystemType.IsArray)
-                {
-                    var elementT = p.SystemType.GetElementType();
-                    p.SqlType = MakeUDTTName(elementT);
-                }
+                else if (IsUDTT(p.SystemType))
+                    p.SqlType = MakeUDTTName(p.SystemType);
             }
 
             if (p.SqlType != null)
@@ -265,6 +258,8 @@ end",
 
         static bool IsUDTT(Type t)
         {
+            if (t.IsArray)
+                t = t.GetElementType();
             var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
             return attr != null && attr.IsUploadable;
         }
@@ -279,17 +274,15 @@ end",
             {
                 foreach (var parameter in method.GetParameters())
                 {
-                    if (!parameter.ParameterType.IsArray && IsUDTT(parameter.ParameterType))
+                    if (IsUDTT(parameter.ParameterType))
                     {
-                        complexToSync.Add(parameter.ParameterType);
-                    }
-                    else if (parameter.ParameterType.IsArray)
-            {
-                        var t = parameter.ParameterType.GetElementType();
-                        if (reverseTypeMapping.ContainsKey(type))
-                            simpleToSync.Add(t);
-                        else if (IsUDTT(t))
+                        var t = parameter.ParameterType;
+                        if (t.IsArray)
+                            t = t.GetElementType();
+                        if (IsUDTT(t))
                             complexToSync.Add(t);
+                        else
+                            simpleToSync.Add(t);
                     }
                 }
             }
@@ -314,16 +307,17 @@ end",
 
         public static string MakeUDTTName(Type t)
         {
+            if (t.IsArray)
+                t = t.GetElementType();
+
             var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
             string name = null;
-            
+
             if (attr != null)
                 name = attr.Name;
 
             if (name == null)
-                name = t.IsArray
-                    ? t.GetElementType().Name
-                    : t.Name;
+                name = t.Name;
 
             return name + "UDTT";
         }
@@ -457,14 +451,23 @@ where is_user_defined = 1
             if (parameterValue != null)
             {
                 var t = parameterValue.GetType();
-                if (t.IsArray)
+                if (IsUDTT(t))
                 {
-                    var elementT = t.GetElementType();
-                    var array = (System.Collections.IEnumerable)parameterValue;
-                    var table = new DataTable(MakeUDTTName(elementT));
-                    if (reverseTypeMapping.ContainsKey(elementT))
+                    System.Collections.IEnumerable array = null;
+                    if (t.IsArray)
                     {
-                        table.Columns.Add("Value", elementT);
+                        t = t.GetElementType();
+                        array = (System.Collections.IEnumerable)parameterValue;
+                    }
+                    else
+                    {
+                        array = new object[] { parameterValue };
+                    }
+
+                    var table = new DataTable(MakeUDTTName(t));
+                    if (reverseTypeMapping.ContainsKey(t))
+                    {
+                        table.Columns.Add("Value", t);
                         foreach (object obj in array)
                         {
                             table.Rows.Add(new object[] { obj });
@@ -472,7 +475,7 @@ where is_user_defined = 1
                     }
                     else
                     {
-                        var columns = GetSettableMembers(elementT);
+                        var columns = GetSettableMembers(t);
                         foreach (var column in columns)
                         {
                             table.Columns.Add(column.Name, column.TypeToSet);

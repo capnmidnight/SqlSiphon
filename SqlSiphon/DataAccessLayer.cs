@@ -60,7 +60,7 @@ namespace SqlSiphon
         protected virtual string IdentifierPartEnd { get { return ""; } }
         protected virtual string IdentifierPartSeperator { get { return "."; } }
         protected virtual string DefaultSchemaName { get { return null; } }
-        
+
         public ConnectionT Connection { get; private set; }
 
         /// <summary>
@@ -436,8 +436,14 @@ namespace SqlSiphon
         private static BindingFlags PATTERN = BindingFlags.Public | BindingFlags.Instance;
         protected static UnifiedSetter[] GetSettableMembers(Type type)
         {
-            return (from f in type.GetFields(PATTERN) select new UnifiedSetter(f))
-                .Union(from p in type.GetProperties(PATTERN) select new UnifiedSetter(p))
+            return type
+                .GetProperties(PATTERN)
+                .Where(p =>
+                {
+                    var attr = MappedObjectAttribute.GetAttribute<MappedPropertyAttribute>(p);
+                    return attr == null || !attr.Ignore;
+                })
+                .Select(p => new UnifiedSetter(p))
                 .ToArray();
         }
 
@@ -503,10 +509,10 @@ namespace SqlSiphon
             var t = this.GetType();
             var methods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
             var results = new List<MappedMethodAttribute>();
-            foreach(var method in methods)
+            foreach (var method in methods)
             {
                 var info = this.GetCommandDescription(method);
-                if(info != null)
+                if (info != null)
                     results.Add(info);
             }
             return results;
@@ -523,7 +529,7 @@ namespace SqlSiphon
                 if (meta.SqlType == null)
                     meta.SqlType = this.MakeSqlTypeString(meta);
 
-                if(meta.Schema == null)
+                if (meta.Schema == null)
                     meta.Schema = this.DefaultSchemaName;
                 foreach (var parameter in meta.Parameters)
                     if (parameter.SqlType == null)
