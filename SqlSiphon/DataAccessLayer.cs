@@ -110,6 +110,7 @@ namespace SqlSiphon
 
         protected void SynchronizeProcedures()
         {
+#if DEBUG
             var t = this.GetType();
             if (!Synced.Contains(t))
             {
@@ -118,6 +119,7 @@ namespace SqlSiphon
                 this.CreateProcedures();
                 Synced.Add(t);
             }
+#endif
         }
 
         protected virtual void PreCreateProcedures() { }
