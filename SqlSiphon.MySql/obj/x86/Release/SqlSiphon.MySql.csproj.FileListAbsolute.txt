@@ -1,7 +1,0 @@
-C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\obj\x86\Release\SqlSiphon.MySql.csprojResolveAssemblyReference.cache
-C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\x86\Release\SqlSiphon.MySql.dll
-C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\x86\Release\SqlSiphon.MySql.pdb
-C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\x86\Release\MySql.Data.dll
-C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\bin\x86\Release\SqlSiphon.dll
-C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\obj\x86\Release\SqlSiphon.MySql.dll
-C:\Users\Sean\Documents\GitHub\SqlSiphon\SqlSiphon.MySql\obj\x86\Release\SqlSiphon.MySql.pdb
