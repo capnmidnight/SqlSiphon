@@ -53,6 +53,7 @@ namespace SqlSiphon
         where DataAdapterT : DbDataAdapter, new()
         where DataReaderT : DbDataReader
     {
+        public static bool ShouldSync = true;
         private static List<Type> Synced = new List<Type>();
         private bool isConnectionOwned;
 
@@ -111,13 +112,16 @@ namespace SqlSiphon
         protected void SynchronizeProcedures()
         {
 #if DEBUG
-            var t = this.GetType();
-            if (!Synced.Contains(t))
+            if (ShouldSync)
             {
-                this.DropProcedures();
-                this.PreCreateProcedures();
-                this.CreateProcedures();
-                Synced.Add(t);
+                var t = this.GetType();
+                if (!Synced.Contains(t))
+                {
+                    this.DropProcedures();
+                    this.PreCreateProcedures();
+                    this.CreateProcedures();
+                    Synced.Add(t);
+                }
             }
 #endif
         }
