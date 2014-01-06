@@ -117,10 +117,10 @@ namespace SqlSiphon
                 var t = this.GetType();
                 if (!Synced.Contains(t))
                 {
+                    Synced.Add(t);
                     this.DropProcedures();
                     this.PreCreateProcedures();
                     this.CreateProcedures();
-                    Synced.Add(t);
                 }
             }
 #endif
