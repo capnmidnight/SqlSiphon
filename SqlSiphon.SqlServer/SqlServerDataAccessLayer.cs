@@ -462,7 +462,10 @@ where is_user_defined = 1
                     }
                     else
                     {
-                        var columns = GetProperties(t);
+                        // don't upload auto-incrementing identity columns
+                        var columns = GetProperties(t)
+                            .Where(p => !p.IsIdentity)
+                            .ToList();
                         foreach (var column in columns)
                         {
                             table.Columns.Add(column.Name, column.SystemType);
