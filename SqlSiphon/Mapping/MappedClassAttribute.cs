@@ -87,7 +87,8 @@ namespace SqlSiphon.Mapping
             attr.InferProperties(prop);
             return attr;
         }
-        
+
+        private static BindingFlags PATTERN = BindingFlags.Public | BindingFlags.Instance;
         /// <summary>
         /// A virtual method to analyze an object and figure out the
         /// default settings for it. The attribute can't find the thing
@@ -95,17 +96,18 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
+        /// 
         internal override void InferProperties(Type obj)
         {
             base.InferProperties(obj);
 
             this.Methods.AddRange(
-                obj.GetMethods()
+                obj.GetMethods(PATTERN)
                 .Select(this.GetMethodDescriptions)
                 .Where(m => m != null));
 
             this.Properties.AddRange(
-                obj.GetProperties()
+                obj.GetProperties(PATTERN)
                 .Select(this.GetPropertyDescriptions)
                 .Where(p => p.Include));
         }

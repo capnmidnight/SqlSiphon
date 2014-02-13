@@ -80,7 +80,7 @@ end//",
                 info.Query);
         }
 
-        protected override void ExcecuteCreateProcedureScript(string script)
+        protected override void ExecuteCreateProcedureScript(string script)
         {
             var withDelim = new MySqlScript(this.Connection, script);
             withDelim.Delimiter = "//";

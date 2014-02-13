@@ -214,6 +214,7 @@ namespace SqlSiphon.Postgres
         protected override string MakeParameterString(MappedParameterAttribute p)
         {
             var dirString = "";
+            var typeStr = MakeSqlTypeString(p);
             switch (p.Direction)
             {
                 case ParameterDirection.Input:
@@ -231,7 +232,23 @@ namespace SqlSiphon.Postgres
             if (p.DefaultValue != null)
                 defaultString = " DEFAULT = " + p.DefaultValue.ToString();
 
-            return string.Format("{0} {1} {2}{3}", dirString, p.Name, p.SqlType, defaultString);
+            return string.Format("{0} {1} {2}{3}", dirString, p.Name, typeStr, defaultString);
+        }
+
+        protected override string MakeColumnString(MappedPropertyAttribute p)
+        {
+            var typeStr = MakeSqlTypeString(p);
+            var defaultString = "";
+            if (p.DefaultValue != null)
+                defaultString = "DEFAULT " + p.DefaultValue.ToString();
+            else if (p.IsIdentity)
+                defaultString = "DEFAULT nextval('serial')";
+            
+            return string.Format("{0} {1} {2} {3}",
+                p.Name,
+                typeStr,
+                p.IsOptional ? "NULL": "NOT NULL",
+                defaultString);
         }
 
         protected override string BuildDropProcedureScript(MappedMethodAttribute info)
@@ -245,7 +262,7 @@ namespace SqlSiphon.Postgres
 
         protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
         {
-            var identifier = this.MakeIdentifier(info.Schema, info.Name);
+            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
             return string.Format(
 @"create or replace function {0}({1})
@@ -257,6 +274,16 @@ $$ language 'sql'",
                 info.IsCollection ? "setof " : "",
                 info.SqlType,
                 info.Query);
+        }
+
+        protected override string BuildCreateTableScript(MappedClassAttribute info)
+        {
+            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
+            var columnSection = this.MakeColumnSection(info);
+            return string.Format(@"create table if not exists {0} (
+    {1})",
+                identifier,
+                columnSection);
         }
 
         protected override bool ProcedureExists(MappedMethodAttribute info)

@@ -125,6 +125,7 @@ namespace SqlSiphon
                     Synced.Add(t);
                     this.DropProcedures();
                     this.PreCreateProcedures();
+                    this.CreateTables();
                     this.CreateProcedures();
                 }
             }
@@ -444,7 +445,6 @@ namespace SqlSiphon
             return columnNames;
         }
 
-        private static BindingFlags PATTERN = BindingFlags.Public | BindingFlags.Instance;
         protected static List<MappedPropertyAttribute> GetProperties(Type type)
         {
             var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type)
@@ -532,6 +532,10 @@ namespace SqlSiphon
                 if (meta.CommandType == CommandType.TableDirect)
                     throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
                 meta.InferProperties(method);
+
+                if (meta.Schema == null)
+                    meta.Schema = DefaultSchemaName;
+
                 if (meta.SqlType == null)
                     meta.SqlType = this.MakeSqlTypeString(meta);
 
@@ -552,33 +556,54 @@ namespace SqlSiphon
         /// </summary>
         public void DropProcedures()
         {
-            var t = this.GetType();
-            var procSignatures = t.GetMethods();
-            foreach (var procSignature in procSignatures)
-            {
-                DropProcedure(procSignature);
-            }
+            foreach (var method in meta.Methods)
+                DropProcedure(method);
         }
 
         public void CreateProcedures()
         {
-            var t = this.GetType();
-            var procSignatures = t.GetMethods();
-            foreach (var procSignature in procSignatures)
-            {
-                CreateProcedure(procSignature);
-            }
+            foreach (var method in meta.Methods)
+                CreateProcedure(method);
         }
 
-        private void DropProcedure(MethodInfo method)
+        /// <summary>
+        /// If any mapped classes do not have matching tables in the
+        /// database, this method creates them after a connection is
+        /// made to the server.
+        /// 
+        /// This will only create tables for classes that are in the
+        /// same namespace as this data access layer.
+        /// </summary>
+        public void CreateTables()
         {
-            var info = GetCommandDescription(method);
-            if (info != null
-                && info.CommandType == CommandType.StoredProcedure
+            var t = this.GetType();
+            var classes = t.Assembly.GetTypes()
+                .Where(x => x.Namespace == t.Namespace)
+                .Select(x =>
+                {
+                    var y = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(x);
+                    if (y != null)
+                    {
+                        y.InferProperties(x);
+                        if (y.Schema == null)
+                            y.Schema = DefaultSchemaName;
+                    }
+                    return y;
+                })
+                .Where(m => m != null && m.Include)
+                .ToList();
+
+            foreach (var type in classes)
+                CreateTable(type);
+        }
+
+        private void DropProcedure(MappedMethodAttribute info)
+        {
+            if (info.CommandType == CommandType.StoredProcedure
                 && !string.IsNullOrEmpty(info.Query))
             {
-                var schema = info.Schema ?? DefaultSchemaName;
-                var identifier = this.MakeIdentifier(schema, info.Name);
+                info.Schema = info.Schema ?? DefaultSchemaName;
+                var identifier = this.MakeIdentifier(info.Schema, info.Name);
                 if (this.ProcedureExists(info))
                 {
                     var script = BuildDropProcedureScript(info);
@@ -594,11 +619,24 @@ namespace SqlSiphon
             }
         }
 
-        private void CreateProcedure(MethodInfo method)
+        private void CreateTable(MappedClassAttribute type)
         {
-            var info = GetCommandDescription(method);
-            if (info != null
-                && info.CommandType == CommandType.StoredProcedure
+            var schema = type.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, type.Name);
+            var script = BuildCreateTableScript(type);
+            try
+            {
+                this.ExecuteQuery(script);
+            }
+            catch (Exception exp)
+            {
+                throw new Exception(string.Format("Could not create table: {0}. Reason: {1}", identifier, exp.Message), exp);
+            }
+        }
+
+        private void CreateProcedure(MappedMethodAttribute info)
+        {
+            if (info.CommandType == CommandType.StoredProcedure
                 && !string.IsNullOrEmpty(info.Query))
             {
                 var schema = info.Schema ?? DefaultSchemaName;
@@ -615,14 +653,21 @@ namespace SqlSiphon
             }
         }
 
+        private string PreferedListJoin<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
+        {
+            separator = separator ?? "," + Environment.NewLine + "    ";
+            var str = string.Join(separator, collect.Select(format));
+            return str;
+        }
+
         protected string MakeParameterSection(MappedMethodAttribute info)
         {
-            var parameterSection = string.Join(
-                         "," + Environment.NewLine + "    ",
-                         info.Parameters
-                             .Select(p => this.MakeParameterString(p))
-                             .ToArray());
-            return parameterSection;
+            return PreferedListJoin(info.Parameters, this.MakeParameterString);
+        }
+
+        protected string MakeColumnSection(MappedClassAttribute info)
+        {
+            return PreferedListJoin(info.Properties, this.MakeColumnString);
         }
 
 
@@ -637,7 +682,7 @@ namespace SqlSiphon
             return val;
         }
 
-        protected virtual void ExcecuteCreateProcedureScript(string script)
+        protected virtual void ExecuteCreateProcedureScript(string script)
         {
             this.ExecuteQuery(script);
         }
@@ -646,6 +691,8 @@ namespace SqlSiphon
         protected abstract bool ProcedureExists(MappedMethodAttribute info);
         protected abstract string BuildDropProcedureScript(MappedMethodAttribute info);
         protected abstract string BuildCreateProcedureScript(MappedMethodAttribute info);
+        protected abstract string BuildCreateTableScript(MappedClassAttribute info);
         protected abstract string MakeParameterString(MappedParameterAttribute p);
+        protected abstract string MakeColumnString(MappedPropertyAttribute p);
     }
 }

@@ -33,12 +33,22 @@ namespace SqlSiphon.Test.Mock
             throw new NotImplementedException();
         }
 
+        protected override string BuildCreateTableScript(MappedClassAttribute info)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override string BuildDropProcedureScript(MappedMethodAttribute info)
         {
             throw new NotImplementedException();
         }
 
         protected override string MakeParameterString(Mapping.MappedParameterAttribute p)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override string MakeColumnString(MappedPropertyAttribute p)
         {
             throw new NotImplementedException();
         }

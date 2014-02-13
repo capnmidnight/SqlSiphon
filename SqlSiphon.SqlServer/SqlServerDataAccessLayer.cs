@@ -211,6 +211,35 @@ end",
                 info.Query);
         }
 
+        protected override string BuildCreateTableScript(MappedClassAttribute info)
+        {
+            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
+            var columnSection = this.MakeColumnSection(info);
+            var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
+            var pkString = "";
+            if (pk.Length > 0)
+            {
+                pkString = string.Format("alter table {0} add constraint PK_{1}_{2} primary key({3});{4}",
+                    identifier,
+                    info.Schema ?? DefaultSchemaName,
+                    info.Name,
+                    string.Join(",", pk.Select(c => c.Name)),
+                    Environment.NewLine);
+            }
+            return string.Format(
+@"if not exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
+begin
+create table {2}(
+    {3}
+);
+{4}end",
+                info.Schema ?? DefaultSchemaName,
+                info.Name,
+                identifier,
+                columnSection,
+                pkString);
+        }
+
         protected override string MakeParameterString(MappedParameterAttribute p)
         {
             var typeStr = MakeSqlTypeString(p);
@@ -219,6 +248,22 @@ end",
                 typeStr,
                 p.DefaultValue ?? "",
                 IsUDTT(p.SystemType) ? "readonly" : "").Trim();
+        }
+
+        protected override string MakeColumnString(MappedPropertyAttribute p)
+        {
+            var typeStr = MakeSqlTypeString(p);
+            var defaultString = "";
+            if (p.DefaultValue != null)
+                defaultString = "DEFAULT (" + p.DefaultValue.ToString() + ")";
+            else if (p.IsIdentity)
+                defaultString = "IDENTITY(1, 1)";
+
+            return string.Format("{0} {1} {2} {3}",
+                p.Name,
+                typeStr,
+                p.IsOptional ? "NULL" : "NOT NULL",
+                defaultString);
         }
 
         protected override string MakeSqlTypeString(MappedTypeAttribute p)
@@ -427,7 +472,7 @@ where is_user_defined = 1
                 return string.Format("{0} {1} {2}NULL {3}",
                     attr.Name,
                     typeStr,
-                    attr.IsOptional ? "" : "NOT",
+                    attr.IsOptional ? "" : "NOT ",
                     attr.DefaultValue ?? "").Trim();
             }
             return null;
