@@ -30,6 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
+using System.Reflection;
 
 namespace SqlSiphon.Mapping
 {
@@ -44,6 +45,7 @@ namespace SqlSiphon.Mapping
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public class MappedPropertyAttribute : MappedTypeAttribute
     {
+        private PropertyInfo originalProperty;
         /// <summary>
         /// Gets or sets whether or not this column holds an
         /// auto-incrementing integer value. Defaults to false.
@@ -116,6 +118,22 @@ namespace SqlSiphon.Mapping
             this.IncludeInPrimaryKey = false;
             this.PrefixColumnNames = true;
             this.Cascade = true;
+        }
+
+        internal override void InferProperties(System.Reflection.PropertyInfo obj)
+        {
+            base.InferProperties(obj);
+            this.originalProperty = obj;
+        }
+
+        public void SetValue(object obj, object value)
+        {
+            this.originalProperty.SetValue(obj, value, null);
+        }
+
+        public T GetValue<T>(object obj)
+        {
+            return (T)this.originalProperty.GetValue(obj, null);
         }
     }
 }

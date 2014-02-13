@@ -57,7 +57,6 @@
     <Compile Include="ColumnInfo.cs" />
     <Compile Include="DataAccessLayer.cs" />
     <Compile Include="DataProgressEventArgs.cs" />
-    <Compile Include="UnifiedSetter.cs" />
     <Compile Include="Mapping\MappedClassAttribute.cs" />
     <Compile Include="Mapping\MappedMethodAttribute.cs" />
     <Compile Include="Mapping\MappedObjectAttribute.cs" />

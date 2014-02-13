@@ -46,13 +46,13 @@ namespace SqlSiphon.Mapping
         AllowMultiple = false)]
     public class MappedClassAttribute : MappedSchemaObjectAttribute
     {
-        private List<MappedMethodAttribute> methods;
-        private List<MappedPropertyAttribute> properties;
+        public List<MappedMethodAttribute> Methods { get; private set; }
+        public List<MappedPropertyAttribute> Properties { get; private set; }
 
         public MappedClassAttribute()
         {
-            this.methods = new List<MappedMethodAttribute>();
-            this.properties = new List<MappedPropertyAttribute>();
+            this.Methods = new List<MappedMethodAttribute>();
+            this.Properties = new List<MappedPropertyAttribute>();
         }
 
         /// <summary>
@@ -99,12 +99,12 @@ namespace SqlSiphon.Mapping
         {
             base.InferProperties(obj);
 
-            this.methods.AddRange(
+            this.Methods.AddRange(
                 obj.GetMethods()
                 .Select(this.GetMethodDescriptions)
                 .Where(m => m != null));
 
-            this.properties.AddRange(
+            this.Properties.AddRange(
                 obj.GetProperties()
                 .Select(this.GetPropertyDescriptions)
                 .Where(p => p.Include));

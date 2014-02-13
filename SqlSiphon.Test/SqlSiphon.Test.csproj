@@ -68,7 +68,6 @@
     <Compile Include="Mock\MockDataReader.cs" />
     <Compile Include="Mock\MockParameter.cs" />
     <Compile Include="Mock\MockTransaction.cs" />
-    <Compile Include="UnifiedSetter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProcedureInfoTests.cs" />
   </ItemGroup>

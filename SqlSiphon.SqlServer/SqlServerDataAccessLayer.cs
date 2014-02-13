@@ -377,7 +377,7 @@ where is_user_defined = 1
         private void CreateComplexUDTT(string fullName, Type mappedClass)
         {
             var sb = new StringBuilder();
-            var columns = GetSettableMembers(mappedClass);
+            var columns = GetProperties(mappedClass);
             var colStrings = columns
                 .Select(c => this.MaybeMakeColumnTypeString(c))
                 .Where(s => !string.IsNullOrEmpty(s))
@@ -419,23 +419,10 @@ where is_user_defined = 1
             }
         }
 
-        private string MaybeMakeColumnTypeString(UnifiedSetter c)
+        private string MaybeMakeColumnTypeString(MappedPropertyAttribute attr)
         {
-            if (reverseTypeMapping.ContainsKey(c.TypeToSet))
+            if (reverseTypeMapping.ContainsKey(attr.SystemType))
             {
-                var attr = MappedObjectAttribute.GetAttribute<MappedPropertyAttribute>(c.TypeToSet);
-                if (attr == null)
-                {
-                    attr = new MappedPropertyAttribute();
-                    attr.IsOptional = true;
-                }
-
-                if (attr.Name == null)
-                    attr.Name = c.Name;
-
-                if (attr.SqlType == null)
-                    attr.SqlType = reverseTypeMapping[c.TypeToSet];
-
                 var typeStr = MakeSqlTypeString(attr);
                 return string.Format("{0} {1} {2}NULL {3}",
                     attr.Name,
@@ -475,17 +462,17 @@ where is_user_defined = 1
                     }
                     else
                     {
-                        var columns = GetSettableMembers(t);
+                        var columns = GetProperties(t);
                         foreach (var column in columns)
                         {
-                            table.Columns.Add(column.Name, column.TypeToSet);
+                            table.Columns.Add(column.Name, column.SystemType);
                         }
                         foreach (object obj in array)
                         {
                             List<object> row = new List<object>();
                             foreach (var column in columns)
                             {
-                                var element = column.GetValue(obj);
+                                var element = column.GetValue<object>(obj);
                                 row.Add(element);
                             }
                             table.Rows.Add(row.ToArray());

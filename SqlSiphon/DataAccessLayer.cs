@@ -57,6 +57,8 @@ namespace SqlSiphon
         private static List<Type> Synced = new List<Type>();
         private bool isConnectionOwned;
 
+        private MappedClassAttribute meta;
+
         protected virtual string IdentifierPartBegin { get { return ""; } }
         protected virtual string IdentifierPartEnd { get { return ""; } }
         protected virtual string IdentifierPartSeperator { get { return "."; } }
@@ -73,6 +75,9 @@ namespace SqlSiphon
         {
             this.Connection = connection;
             this.isConnectionOwned = isConnectionOwned;
+            var type = this.GetType();
+            this.meta = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type) ?? new MappedClassAttribute();
+            this.meta.InferProperties(type);
         }
 
         protected DataAccessLayer(string connectionString)
@@ -402,7 +407,7 @@ namespace SqlSiphon
                 if (constructor == null)
                     throw new Exception("Entity classes need default constructors!");
                 var columnNames = GetColumnNames(reader);
-                var fields = GetSettableMembers(type);
+                var fields = GetProperties(type);
                 getter = delegate()
                 {
                     var inst = (EntityT)constructor.Invoke(null);
@@ -440,17 +445,12 @@ namespace SqlSiphon
         }
 
         private static BindingFlags PATTERN = BindingFlags.Public | BindingFlags.Instance;
-        protected static UnifiedSetter[] GetSettableMembers(Type type)
+        protected static List<MappedPropertyAttribute> GetProperties(Type type)
         {
-            return type
-                .GetProperties(PATTERN)
-                .Where(p =>
-                {
-                    var attr = MappedObjectAttribute.GetAttribute<MappedPropertyAttribute>(p);
-                    return attr == null || attr.Include;
-                })
-                .Select(p => new UnifiedSetter(p))
-                .ToArray();
+            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type)
+                ?? new MappedClassAttribute();
+            attr.InferProperties(type);
+            return attr.Properties;
         }
 
         /// <summary>
@@ -459,12 +459,12 @@ namespace SqlSiphon
         /// <param name="obj"></param>
         /// <param name="reader"></param>
         /// <param name="columnNames"></param>
-        /// <param name="fields"></param>
-        internal static void DoMapping(object obj, DataReaderT reader, string[] columnNames, UnifiedSetter[] fields)
+        /// <param name="props"></param>
+        internal static void DoMapping(object obj, DataReaderT reader, string[] columnNames, List<MappedPropertyAttribute> props)
         {
-            fields.Where(f => columnNames.Contains(f.Name))
+            props.Where(p => columnNames.Contains(p.Name))
                 .ToList()
-                .ForEach(f => f.SetValue(obj, reader[f.Name]));
+                .ForEach(p => p.SetValue(obj, reader[p.Name]));
         }
 
         /// <summary>
