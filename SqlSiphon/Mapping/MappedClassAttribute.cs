@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -32,29 +32,82 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace SqlSiphon.Mapping
 {
     /// <summary>
-    /// An attribute to use for tagging methods as being mapped to a stored procedure call.
+    /// An attribute to use for tagging classes as being mapped to tables.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(
+        AttributeTargets.Class
+        | AttributeTargets.Enum,
+        Inherited = true,
+        AllowMultiple = false)]
     public class MappedClassAttribute : MappedSchemaObjectAttribute
     {
-        public bool IsHistoryTracked { get; set; }
-        public string PreAddConstraintScript { get; set; }
-        public string PostAddConstraintScript { get; set; }
-        public bool IncludeInSynch { get; set; }
-
         private List<MappedMethodAttribute> methods;
         private List<MappedPropertyAttribute> properties;
-        
+
         public MappedClassAttribute()
         {
             this.methods = new List<MappedMethodAttribute>();
             this.properties = new List<MappedPropertyAttribute>();
-            this.IsHistoryTracked = false;
-            this.IncludeInSynch = true;
+        }
+
+        /// <summary>
+        /// For a reflected method, determine the mapping parameters.
+        /// Methods do not get mapped by default, so if the method
+        /// doesn't have a MappedMethodAttribute, then none will be
+        /// returned.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        private MappedMethodAttribute GetMethodDescriptions(MethodInfo method)
+        {
+            var attr = GetAttribute<MappedMethodAttribute>(method);
+            if (attr == null || !attr.Include)
+                return null;
+            attr.InferProperties(method);
+            return attr;
+        }
+
+        /// <summary>
+        /// For a reflected property, determine the mapping parameters.
+        /// Properties get mapped by default, so if the property does
+        /// not have a MappedPropertyAttribute, then one is generated
+        /// for it and some settings are inferred.
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <returns></returns>
+        private MappedPropertyAttribute GetPropertyDescriptions(PropertyInfo prop)
+        {
+            var attr = GetAttribute<MappedPropertyAttribute>(prop)
+                ?? new MappedPropertyAttribute();
+            attr.InferProperties(prop);
+            return attr;
+        }
+        
+        /// <summary>
+        /// A virtual method to analyze an object and figure out the
+        /// default settings for it. The attribute can't find the thing
+        /// its attached to on its own, so this can't be done in a
+        /// constructor, we have to do it for it.
+        /// </summary>
+        /// <param name="obj">The object to InferProperties</param>
+        internal override void InferProperties(Type obj)
+        {
+            base.InferProperties(obj);
+
+            this.methods.AddRange(
+                obj.GetMethods()
+                .Select(this.GetMethodDescriptions)
+                .Where(m => m != null));
+
+            this.properties.AddRange(
+                obj.GetProperties()
+                .Select(this.GetPropertyDescriptions)
+                .Where(p => p.Include));
         }
     }
 }

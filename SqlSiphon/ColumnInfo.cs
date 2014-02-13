@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -36,8 +36,7 @@ namespace SqlSiphon
     /// INFORMATION_SCHEMA.COLUMNS view.
     /// </summary>
     [Mapping.MappedClass(
-        IncludeInSynch=false,
-        IsHistoryTracked=false,
+        Include=false,
         Schema="information_schema",
         Name="columns")]
     public class ColumnInfo

@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -35,11 +35,23 @@ using System.Reflection;
 
 namespace SqlSiphon.Mapping
 {
+    /// <summary>
+    /// An attribute to tag to parameters of a method to provide optional information
+    /// about how the method parameter maps to a stored procedure parameter.
+    /// 
+    /// Only one attribute of a given type may be applied to
+    /// any type of thing.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
     public class MappedParameterAttribute : MappedTypeAttribute
     {
         private bool directionNotSet = true;
         private ParameterDirection paramDirection;
+
+        /// <summary>
+        /// Gets or sets the stored procedure parameter's "direction", i.e.
+        /// whether or not it's an input parameter, output parameter, or both.
+        /// </summary>
         public ParameterDirection Direction
         {
             get
@@ -54,17 +66,20 @@ namespace SqlSiphon.Mapping
         }
 
         public MappedParameterAttribute() {}
-
-        internal override void Study(ParameterInfo parameter)
+        
+        /// <summary>
+        /// A virtual method to analyze an object and figure out the
+        /// default settings for it. The attribute can't find the thing
+        /// its attached to on its own, so this can't be done in a
+        /// constructor, we have to do it for it.
+        /// </summary>
+        /// <param name="obj">The object to InferProperties</param>
+        internal override void InferProperties(ParameterInfo parameter)
         {
-            base.Study(parameter);
+            base.InferProperties(parameter);
 
-            if (this.Name == null)
-                this.Name = parameter.Name;
-
-            if (this.DefaultValue == null && parameter.DefaultValue != DBNull.Value)
-                this.DefaultValue = parameter.DefaultValue;
-
+            // If the parameter direction was not set explicitly,
+            // then infer it from the method parameter's direction.
             if (this.directionNotSet)
             {
                 Direction = ParameterDirection.Input;
@@ -76,8 +91,19 @@ namespace SqlSiphon.Mapping
                     Direction = ParameterDirection.ReturnValue;
             }
 
+            // Infer optionalness of the stored procedure's parameter
+            // from whether or not the method's parameter is optional, 
+            // but only if the IsOptional property of the attribute 
+            // was not set explicitly.
             if (this.optionalNotSet)
                 this.IsOptional = parameter.IsOptional;
+
+            // Infer the default value for the stored procedure's 
+            // parameter from the method parameter's default value,
+            // but only if the DefaultValue property of the attribute
+            // was not set to a specific value.
+            if (this.DefaultValue == null && parameter.DefaultValue != DBNull.Value)
+                this.DefaultValue = parameter.DefaultValue;
         }
     }
 }

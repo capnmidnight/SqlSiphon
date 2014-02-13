@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
