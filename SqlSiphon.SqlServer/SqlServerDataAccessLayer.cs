@@ -288,7 +288,8 @@ create table {2}(
                     typeStr.Append(")");
                 }
 
-                if (p.SqlType.Contains("var") && !p.SqlType.EndsWith(")"))
+                if (p.SqlType.Contains("var")
+                    && typeStr[typeStr.Length - 1] != ')')
                 {
                     typeStr.Append("(MAX)");
                 }
@@ -422,7 +423,10 @@ where is_user_defined = 1
         {
             var sb = new StringBuilder();
             var columns = GetProperties(mappedClass);
+            // don't upload auto-incrementing identity columns
+            // or columns that have a default value defined
             var colStrings = columns
+                .Where(c => !c.IsIdentity && c.DefaultValue == null)
                 .Select(c => this.MaybeMakeColumnTypeString(c))
                 .Where(s => !string.IsNullOrEmpty(s))
                 .ToArray();
@@ -507,8 +511,10 @@ where is_user_defined = 1
                     else
                     {
                         // don't upload auto-incrementing identity columns
+                        // or columns that have a default value defined
                         var columns = GetProperties(t)
-                            .Where(p => !p.IsIdentity)
+                            .Where(p => !p.IsIdentity
+                                && p.DefaultValue == null)
                             .ToList();
                         foreach (var column in columns)
                         {
