@@ -115,7 +115,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(ParameterInfo obj)
+        public virtual void InferProperties(ParameterInfo obj)
         {
             this.SetName(obj.Name);
         }
@@ -127,7 +127,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(MemberInfo obj)
+        public virtual void InferProperties(MemberInfo obj)
         {
             this.SetName(obj.Name);
         }
@@ -139,7 +139,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(Type obj)
+        public virtual void InferProperties(Type obj)
         {
             this.SetName(obj.Name);
         }

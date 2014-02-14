@@ -102,7 +102,7 @@ namespace SqlSiphon.Mapping
             this.Cascade = true;
         }
 
-        internal override void InferProperties(System.Reflection.PropertyInfo obj)
+        public override void InferProperties(System.Reflection.PropertyInfo obj)
         {
             base.InferProperties(obj);
             this.originalProperty = obj;

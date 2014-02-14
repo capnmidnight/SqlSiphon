@@ -356,15 +356,9 @@ create table {2}(
                 t = t.GetElementType();
 
             var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
-            string name = null;
+            attr.InferProperties(t);
 
-            if (attr != null)
-                name = attr.Name;
-
-            if (name == null)
-                name = t.Name;
-
-            return name + "UDTT";
+            return attr.Name + "UDTT";
         }
 
         private void SynchronizeSimpleUDTT(Type t)

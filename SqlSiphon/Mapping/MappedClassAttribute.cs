@@ -97,7 +97,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
         /// 
-        internal override void InferProperties(Type obj)
+        public override void InferProperties(Type obj)
         {
             base.InferProperties(obj);
 

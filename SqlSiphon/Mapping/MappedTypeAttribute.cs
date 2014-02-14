@@ -152,7 +152,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal override void InferProperties(ParameterInfo parameter)
+        public override void InferProperties(ParameterInfo parameter)
         {
             base.InferProperties(parameter);
             this.SetSystemType(parameter.ParameterType);
@@ -165,7 +165,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(MethodInfo obj)
+        public virtual void InferProperties(MethodInfo obj)
         {
             base.InferProperties(obj);
             this.SetSystemType(obj.ReturnType);
@@ -178,7 +178,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(PropertyInfo obj)
+        public virtual void InferProperties(PropertyInfo obj)
         {
             base.InferProperties(obj);
             this.SetSystemType(obj.PropertyType);

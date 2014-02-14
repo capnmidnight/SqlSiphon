@@ -110,7 +110,7 @@ namespace SqlSiphon.Mapping
         /// be done in a constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The method to InferProperties</param>
-        internal override void InferProperties(MethodInfo obj)
+        public override void InferProperties(MethodInfo obj)
         {
             base.InferProperties(obj);
             this.originalMethod = obj;
