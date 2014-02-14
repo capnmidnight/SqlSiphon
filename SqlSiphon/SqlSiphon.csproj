@@ -57,6 +57,7 @@
     <Compile Include="ColumnInfo.cs" />
     <Compile Include="DataAccessLayer.cs" />
     <Compile Include="DataProgressEventArgs.cs" />
+    <Compile Include="Mapping\AutoPKAttribute.cs" />
     <Compile Include="Mapping\MappedClassAttribute.cs" />
     <Compile Include="Mapping\MappedMethodAttribute.cs" />
     <Compile Include="Mapping\MappedObjectAttribute.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Mapping\MappedPropertyAttribute.cs" />
     <Compile Include="Mapping\MappedSchemaObjectAttribute.cs" />
     <Compile Include="Mapping\MappedTypeAttribute.cs" />
+    <Compile Include="Mapping\PKAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 </Project>
