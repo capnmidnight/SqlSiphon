@@ -42,7 +42,7 @@ namespace SqlSiphon.Mapping
     [AttributeUsage(
         AttributeTargets.Class
         | AttributeTargets.Enum,
-        Inherited = true,
+        Inherited = false,
         AllowMultiple = false)]
     public class MappedClassAttribute : MappedSchemaObjectAttribute
     {
