@@ -38,8 +38,9 @@ namespace SqlSiphon.ODBC
     public abstract class OdbcDataAccessLayer : DataAccessLayer<OdbcConnection, OdbcCommand, OdbcParameter, OdbcDataAdapter, OdbcDataReader>
     {
         /// <summary>
-        /// creates a new connection to a Odbc database and automatically
-        /// opens the connection. 
+        /// creates a new connection to an ODBC database and automatically
+        /// opens the connection. This is only for consuming database connections,
+        /// and cannot synchronize any schema objects.
         /// </summary>
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
         public OdbcDataAccessLayer(string connectionString)
@@ -73,6 +74,16 @@ namespace SqlSiphon.ODBC
         }
 
         protected override string MakeSqlTypeString(MappedTypeAttribute type)
+        {
+            throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
+        }
+
+        protected override string BuildCreateTableScript(MappedClassAttribute info)
+        {
+            throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
+        }
+
+        protected override string MakeColumnString(MappedPropertyAttribute p)
         {
             throw new System.InvalidOperationException("ODBC database connections do not support stored procedure/table generation");
         }

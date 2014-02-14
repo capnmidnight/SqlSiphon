@@ -213,27 +213,26 @@ end",
 
         protected override string BuildCreateTableScript(MappedClassAttribute info)
         {
-            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, info.Name);
             var columnSection = this.MakeColumnSection(info);
             var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
             var pkString = "";
             if (pk.Length > 0)
             {
-                pkString = string.Format("alter table {0} add constraint PK_{1}_{2} primary key({3});{4}",
+                pkString = string.Format(",{4}    constraint PK_{1}_{2} primary key({3}){4}",
                     identifier,
-                    info.Schema ?? DefaultSchemaName,
+                    schema,
                     info.Name,
                     string.Join(",", pk.Select(c => c.Name)),
                     Environment.NewLine);
             }
             return string.Format(
 @"if not exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
-begin
 create table {2}(
-    {3}
-);
-{4}end",
-                info.Schema ?? DefaultSchemaName,
+    {3}{4}
+)",
+                schema,
                 info.Name,
                 identifier,
                 columnSection,
@@ -262,7 +261,7 @@ create table {2}(
             return string.Format("{0} {1} {2} {3}",
                 p.Name,
                 typeStr,
-                p.IsOptional ? "NULL" : "NOT NULL",
+                p.IsOptional ? "" : "NOT NULL",
                 defaultString);
         }
 
