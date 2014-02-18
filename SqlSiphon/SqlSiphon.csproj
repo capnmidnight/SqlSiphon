@@ -65,6 +65,7 @@
     <Compile Include="Mapping\MappedPropertyAttribute.cs" />
     <Compile Include="Mapping\MappedSchemaObjectAttribute.cs" />
     <Compile Include="Mapping\MappedTypeAttribute.cs" />
+    <Compile Include="Mapping\ExcludeAttribute.cs" />
     <Compile Include="Mapping\PKAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
