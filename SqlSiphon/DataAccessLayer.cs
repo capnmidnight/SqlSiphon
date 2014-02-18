@@ -140,10 +140,13 @@ namespace SqlSiphon
         /// MappedMethodAttribute attribute applied to it. This method, once found, must have the same
         /// name as a stored procedure in the database.
         /// </summary>
+        /// <param name="isPrimitive">If the query routine returns a single value, the method will generate
+        /// a more specific error message if the parameter count is not correct.</param>
         /// <param name="parameterValues">a variable number of parameters to pass to the stored procedure.
         /// </param>
         /// <returns>a SqlCommand structure for encapsulating a stored procedure call</returns>
-        private CommandT ConstructCommand(params object[] parameterValues)
+        private CommandT ConstructCommand(params object[] parameterValues) { return ConstructCommand(false, parameterValues); }
+        private CommandT ConstructCommand(bool isPrimitive, params object[] parameterValues)
         {
             // because this method is private, it will never be called directly by a method tagged
             // with MappedMethodAttribute. Therefore, we can skip two methods in the stack trace to
@@ -165,7 +168,14 @@ namespace SqlSiphon
             // method has the responsibility to pass the parameters in the same order they are
             // specified in the method signature
             if (meta.Parameters.Count != parameterValues.Length)
-                throw new Exception("The mapped method's parameter list is a different length than what was passed to the processing method.");
+            {
+                if (isPrimitive && meta.Parameters.Count == parameterValues.Length + 1)
+                    throw new Exception("When querying for a single value, the first parameter passed to the processing method will be treated as a column name or column index to map out of the query result set.");
+                else if(meta.Parameters.Count < parameterValues.Length)
+                    throw new Exception("More parameters were passed to the processing method than were specified in the mapped method signature.");
+                else
+                    throw new Exception("Fewer parameters were passed to the processing method than were specified in the mapped method signature.");
+            }
 
             // To support calling stored procedures from non-default schemas:
             var procName = MakeIdentifier(meta.Schema, meta.Name);
