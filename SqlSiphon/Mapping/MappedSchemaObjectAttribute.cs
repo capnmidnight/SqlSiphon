@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -33,6 +33,15 @@ using System;
 
 namespace SqlSiphon.Mapping
 {
+    /// <summary>
+    /// A base class for types that are mapped to the database 
+    /// at the schema level. This attribute can be applied to 
+    /// classes, enumerations, and methods, to be mapped to 
+    /// tables and stored procedures. 
+    /// 
+    /// Only one attribute of a given type may be applied to
+    /// any type of thing.
+    /// </summary>
     [AttributeUsage(
         AttributeTargets.Class
         | AttributeTargets.Method,
@@ -40,6 +49,11 @@ namespace SqlSiphon.Mapping
         AllowMultiple = false)]
     public abstract class MappedSchemaObjectAttribute : MappedObjectAttribute
     {
+        /// <summary>
+        /// Get or set a schema name for objects in the database. Defaults to
+        /// null, which causes the data access system to use whatever is
+        /// defined as the default value for the database vendor.
+        /// </summary>
         public string Schema { get; set; }
     }
 }

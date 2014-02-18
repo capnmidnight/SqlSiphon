@@ -1,6 +1,6 @@
 /*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -457,7 +457,7 @@ namespace SqlSiphon
                 .Where(p =>
                 {
                     var attr = MappedObjectAttribute.GetAttribute<MappedPropertyAttribute>(p);
-                    return attr == null || !attr.Ignore;
+                    return attr == null || attr.Include;
                 })
                 .Select(p => new UnifiedSetter(p))
                 .ToArray();
@@ -541,7 +541,7 @@ namespace SqlSiphon
             {
                 if (meta.CommandType == CommandType.TableDirect)
                     throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
-                meta.Study(method);
+                meta.InferProperties(method);
                 if (meta.SqlType == null)
                     meta.SqlType = this.MakeSqlTypeString(meta);
 

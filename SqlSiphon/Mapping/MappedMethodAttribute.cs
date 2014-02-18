@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -43,14 +43,43 @@ namespace SqlSiphon.Mapping
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public class MappedMethodAttribute : MappedTypeAttribute
     {
+        /// <summary>
+        /// The number of milliseconds before ADO.NET gives up waiting on the command.
+        /// Defaults to -1, which specifies the default timeout for the database
+        /// driver used by ADO.NET for the connection.
+        /// </summary>
         public int Timeout { get; set; }
+
+        /// <summary>
+        /// The way that the command should be used. Either as a StoredProcedure
+        /// or as a Text query. Defaults to StoredProcedure.
+        /// </summary>
         public CommandType CommandType { get; set; }
+
+        /// <summary>
+        /// The script of the command. If this method should be mapped as a stored
+        /// procedure, then it is used as part of a CREATE PROCEDURE script that
+        /// is ran during a synchronization process. If the method is specified
+        /// as a text query, then the query is ran directly.
+        /// </summary>
         public string Query { get; set; }
+
+        /// <summary>
+        /// When set to true, instructs SqlSiphon to automatically wrap every
+        /// query with a transaction. Defaults to false.
+        /// </summary>
         public bool EnableTransaction { get; set; }
+
+        /// <summary>
+        /// A description of all the parameters that are part of the method.
+        /// </summary>
+        public List<MappedParameterAttribute> Parameters { get; private set; }
 
         private MethodInfo originalMethod;
 
-        public List<MappedParameterAttribute> Parameters { get; private set; }
+        /// <summary>
+        /// Default constructor to set default values;
+        /// </summary>
         public MappedMethodAttribute()
         {
             this.Parameters = new List<MappedParameterAttribute>();
@@ -59,29 +88,35 @@ namespace SqlSiphon.Mapping
             this.EnableTransaction = false;
         }
 
-        public MappedParameterAttribute AddParameter(ParameterInfo parameter)
+        /// <summary>
+        /// Finds the MappedParameterAttribute for the giving ParameterInfo,
+        /// or makes one up if it can't find one. All parameters in a mapped
+        /// method will eventually have a MappedParameterAttribute represent it.
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <returns></returns>
+        private MappedParameterAttribute ToMappedParameter(ParameterInfo parameter)
         {
-            var attr = GetAttribute<MappedParameterAttribute>(parameter);
-            if (attr == null)
-            {
-                attr = new MappedParameterAttribute();
-                attr.Study(parameter);
-            }
-            this.Parameters.Add(attr);
+            var attr = GetAttribute<MappedParameterAttribute>(parameter)
+                ?? new MappedParameterAttribute();
+            attr.InferProperties(parameter);
             return attr;
         }
 
-        internal void Study(MethodInfo method)
+        /// <summary>
+        /// A virtual method to analyze an method and figure out the
+        /// parameters and default settings for it. The attribute can't
+        /// find the thing its attached to on its own, so this can't 
+        /// be done in a constructor, we have to do it for it.
+        /// </summary>
+        /// <param name="obj">The method to InferProperties</param>
+        internal override void InferProperties(MethodInfo obj)
         {
-            this.originalMethod = method;
-            if (this.Name == null)
-                this.Name = method.Name;
-            var parameters = method.GetParameters();
-            foreach (var parameter in parameters)
-                AddParameter(parameter);
-
-            if (this.SystemType == null)
-                this.SystemType = method.ReturnType;
+            base.InferProperties(obj);
+            this.originalMethod = obj;
+            this.Parameters.AddRange(
+                obj.GetParameters()
+                .Select(this.ToMappedParameter));
         }
     }
 }

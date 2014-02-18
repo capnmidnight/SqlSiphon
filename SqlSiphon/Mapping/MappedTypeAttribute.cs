@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -41,8 +41,20 @@ namespace SqlSiphon.Mapping
         | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class MappedTypeAttribute : MappedSchemaObjectAttribute
     {
+        /// <summary>
+        /// The .NET type to which this database object is going to map
+        /// </summary>
         public Type SystemType { get; protected set; }
 
+        /// <summary>
+        /// The Database type to which this .NET type is going to map
+        /// </summary>
+        public string SqlType { get; set; }
+
+        /// <summary>
+        /// Returns true if the SystemType represents some kind of collection
+        /// of multiple values.
+        /// </summary>
         public bool IsCollection
         {
             get
@@ -54,10 +66,19 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public string SqlType { get; set; }
-
+        /// <summary>
+        /// Returns true if a size was specified for the database type. This
+        /// doesn't mean anything for .NET types.
+        /// </summary>
         public bool IsSizeSet { get; private set; }
+        
         private int typeSize;
+
+        /// <summary>
+        /// Get or set the size of the database type. If the size is not set,
+        /// (i.e. IsSizeSet returns false) then no size or precision will be
+        /// included in the type specification. Use -1 to mean "MAX".
+        /// </summary>
         public int Size
         {
             get { return this.typeSize; }
@@ -68,8 +89,19 @@ namespace SqlSiphon.Mapping
             }
         }
 
+        /// <summary>
+        /// Returns true if the precision was specified for the database type.
+        /// This doesn't mean anything for .NET types.
+        /// </summary>
         public bool IsPrecisionSet { get; private set; }
+
         private int typePrecision;
+
+        /// <summary>
+        /// Get or set the precision of the database type. If the precision
+        /// is not set (i.e. IsPrecisionSet returns false), then no precision
+        /// will be included in the type specification.
+        /// </summary>
         public int Precision
         {
             get { return this.typePrecision; }
@@ -80,10 +112,21 @@ namespace SqlSiphon.Mapping
             }
         }
 
+        /// <summary>
+        /// Get or set the default value to be inserted provided to the 
+        /// database if no value is provided by the caller. Defaults to
+        /// null.
+        /// </summary>
         public object DefaultValue { get; set; }
 
         protected bool optionalNotSet = true;
         private bool isOptionalField = false;
+
+        /// <summary>
+        /// Get or set whether or not the caller is required to provide
+        /// a value to the database. If set to true, includes the "NULLABLE"
+        /// annotation on database types. Defaults to false.
+        /// </summary>
         public bool IsOptional
         {
             get { return isOptionalField; }
@@ -96,28 +139,76 @@ namespace SqlSiphon.Mapping
 
         public MappedTypeAttribute() { }
 
-        internal override void Study(System.Reflection.ParameterInfo parameter)
+        private void SetSystemType(Type type)
         {
-            base.Study(parameter);
             if (this.SystemType == null)
-                this.SystemType = parameter.ParameterType;
+                this.SystemType = type;
         }
 
-        public string ToString(string openSize = "(", string closeSize = ")", string before = "", string after = "")
+        /// <summary>
+        /// A virtual method to analyze an object and figure out the
+        /// default settings for it. The attribute can't find the thing
+        /// its attached to on its own, so this can't be done in a
+        /// constructor, we have to do it for it.
+        /// </summary>
+        /// <param name="obj">The object to InferProperties</param>
+        internal override void InferProperties(ParameterInfo parameter)
+        {
+            base.InferProperties(parameter);
+            this.SetSystemType(parameter.ParameterType);
+        }
+
+        /// <summary>
+        /// A virtual method to analyze an object and figure out the
+        /// default settings for it. The attribute can't find the thing
+        /// its attached to on its own, so this can't be done in a
+        /// constructor, we have to do it for it.
+        /// </summary>
+        /// <param name="obj">The object to InferProperties</param>
+        internal virtual void InferProperties(MethodInfo obj)
+        {
+            base.InferProperties(obj);
+            this.SetSystemType(obj.ReturnType);
+        }
+
+        /// <summary>
+        /// A virtual method to analyze an object and figure out the
+        /// default settings for it. The attribute can't find the thing
+        /// its attached to on its own, so this can't be done in a
+        /// constructor, we have to do it for it.
+        /// </summary>
+        /// <param name="obj">The object to InferProperties</param>
+        internal virtual void InferProperties(PropertyInfo obj)
+        {
+            base.InferProperties(obj);
+            this.SetSystemType(obj.PropertyType);
+        }
+
+        /// <summary>
+        /// Creates the necessary SQL type string to represent this object.
+        /// </summary>
+        /// <param name="openSize">when SQL types define a size and/or precision, they are often included in parens. Defaults to '('.</param>
+        /// <param name="listSeparator">when SQL types define a size and precision, the to parts are often separated by a character. Defaults to ','.</param>
+        /// <param name="closeSize">when SQL types define a size and/or precision, they are often included in parens. Defaults to ')'.</param>
+        /// <param name="before">defaults to empty string</param>
+        /// <param name="after">defaults to empty string</param>
+        /// <returns></returns>
+        public string ToString(string openSize = "(", string listSeparator = ",", string closeSize = ")", string before = "", string after = "")
         {
             string output = "";
             var format = this.IsSizeSet
                 ? this.IsPrecisionSet
-                    ? "{0} {1} {2}{3}, {4}{5} {6}"
-                    : "{0} {1} {2}{3}{5} {6}"
-                : "{0} {1} {6}";
+                    ? "{0} {1} {2}{3}{4} {5}{6} {7}"
+                    : "{0} {1} {2}{3}{6} {7}"
+                : "{0} {1} {7}";
 
             output = string.Format(
-                "{0} {1} {2}{3}, {4}{5} {6}",
+                format,
                 before,
                 this.SqlType,
                 openSize,
-                this.Size,
+                this.Size == -1 ? "MAX" : this.Size.ToString(),
+                listSeparator,
                 this.Precision,
                 closeSize,
                 after);
