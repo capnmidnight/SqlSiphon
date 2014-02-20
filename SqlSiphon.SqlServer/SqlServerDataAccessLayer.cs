@@ -531,17 +531,17 @@ where is_user_defined = 1
             return parameterValue;
         }
 
-        protected string USERID<T>()
+        protected string FKToUsers<T>()
         {
-            return USERID<T>("UserID");
+            return FKToUsers<T>("UserID");
         }
 
-        protected string USERID<T>(string tableColumn)
+        protected string FKToUsers<T>(string tableColumn)
         {
             return FK<T>(tableColumn, "dbo", "aspnet_Users", "UserID");
         }
 
-        protected string ROLEID<T>()
+        protected string FKToRoles<T>()
         {
             return FK<T>("aspnet_Roles", "RoleID");
         }

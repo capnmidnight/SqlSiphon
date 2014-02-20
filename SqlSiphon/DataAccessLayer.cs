@@ -611,7 +611,7 @@ namespace SqlSiphon
                 CreateTable(type);
         }
 
-        private void CreateForeignKeys()
+        public void CreateForeignKeys()
         {
             if (this.FKScripts != null)
             {
