@@ -41,19 +41,35 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon
 {
+    public interface ISqlSiphon : IDisposable
+    {
+        void CreateTables();
+
+        void CreateForeignKeys();
+
+        void DropProcedures();
+
+        void SynchronizeUserDefinedTableTypes();
+
+        void CreateProcedures();
+    }
+    public abstract class DataAccessLayer {
+        public static bool ShouldSync = true;
+    }
+
     /// <summary>
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
     public abstract class DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> :
-        IDisposable
+        DataAccessLayer,
+        ISqlSiphon
         where ConnectionT : DbConnection, new()
         where CommandT : DbCommand, new()
         where ParameterT : DbParameter, new()
         where DataAdapterT : DbDataAdapter, new()
         where DataReaderT : DbDataReader
     {
-        public static bool ShouldSync = true;
         private static List<Type> Synced = new List<Type>();
         private bool isConnectionOwned;
 
@@ -777,5 +793,11 @@ namespace SqlSiphon
         protected abstract string BuildCreateTableScript(MappedClassAttribute info);
         protected abstract string MakeParameterString(MappedParameterAttribute p);
         protected abstract string MakeColumnString(MappedPropertyAttribute p);
+
+
+        public virtual void SynchronizeUserDefinedTableTypes()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

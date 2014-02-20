@@ -61,7 +61,7 @@ namespace SqlSiphon
         }
         #endregion
 
-        private Dictionary<string, object> values;
+        protected Dictionary<string, object> values;
 
         public BoundObject()
         {

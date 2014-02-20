@@ -309,7 +309,7 @@ create table {2}(
             return attr != null && attr.IsUploadable;
         }
 
-        public void SynchronizeUserDefinedTableTypes()
+        public override void SynchronizeUserDefinedTableTypes()
         {
             var type = this.GetType();
             var methods = type.GetMethods();
