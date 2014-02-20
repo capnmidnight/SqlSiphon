@@ -9,7 +9,10 @@ namespace SqlSiphon.Postgres.Test
     {
         public TestDatabase()
             : base("Server=127.0.0.1;Port=5432;Database=sqlsiphontest;User Id=sqlsiphontest;Password=sqlsiphontest;") { }
-
+        protected override string[] FKScripts
+        {
+            get { return null; }
+        }
         public void SyncProcs()
         {
             this.SynchronizeProcedures();

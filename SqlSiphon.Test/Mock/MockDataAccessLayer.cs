@@ -12,6 +12,10 @@ namespace SqlSiphon.Test.Mock
         : DataAccessLayer
         <MockConnection, MockCommand, MockParameter, MockDataAdapter, MockDataReader>
     {
+        protected override string[] FKScripts
+        {
+            get { return null; }
+        }
         public MockDataAccessLayer()
             : base(new MockConnection())
         {
@@ -61,6 +65,11 @@ namespace SqlSiphon.Test.Mock
         protected override bool ProcedureExists(MappedMethodAttribute info)
         {
             return info.Name.Contains("Exists");
+        }
+
+        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        {
+            throw new NotImplementedException();
         }
     }
 }

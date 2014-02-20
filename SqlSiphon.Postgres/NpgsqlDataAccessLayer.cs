@@ -286,6 +286,11 @@ $$ language 'sql'",
                 columnSection);
         }
 
+        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override bool ProcedureExists(MappedMethodAttribute info)
         {
             // just assume the procedure exists, because the drop and create
