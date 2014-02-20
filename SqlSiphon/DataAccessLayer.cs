@@ -126,13 +126,12 @@ namespace SqlSiphon
                     this.DropProcedures();
                     this.PreCreateProcedures();
                     this.CreateTables();
+                    this.CreateForeignKeys();
                     this.CreateProcedures();
                 }
             }
 #endif
         }
-
-        protected virtual void PreCreateProcedures() { }
 
         /// <summary>
         /// Creates a stored procedure command call from a variable array of parameters. The stored
@@ -171,7 +170,7 @@ namespace SqlSiphon
             {
                 if (isPrimitive && meta.Parameters.Count == parameterValues.Length + 1)
                     throw new Exception("When querying for a single value, the first parameter passed to the processing method will be treated as a column name or column index to map out of the query result set.");
-                else if(meta.Parameters.Count < parameterValues.Length)
+                else if (meta.Parameters.Count < parameterValues.Length)
                     throw new Exception("More parameters were passed to the processing method than were specified in the mapped method signature.");
                 else
                     throw new Exception("Fewer parameters were passed to the processing method than were specified in the mapped method signature.");
@@ -559,6 +558,11 @@ namespace SqlSiphon
             return meta;
         }
 
+        protected void DefineForeignKeys(params ForeignKeyConstraint[] fks)
+        {
+            new ForeignKeyConstraint("FK_Table1", "Users", new[] { "Column1" }, new[] { "Column1" }, AcceptRejectRule.Cascade, Rule.Cascade, Rule.Cascade);
+        }
+
         /// <summary>
         /// Scans the Data Access Layer for public methods that have stored procedure
         /// definitions, and creates/alters procedures as necessary to bring them all
@@ -605,6 +609,15 @@ namespace SqlSiphon
 
             foreach (var type in classes)
                 CreateTable(type);
+        }
+
+        private void CreateForeignKeys()
+        {
+            if (this.FKScripts != null)
+            {
+                foreach (var script in this.FKScripts)
+                    this.ExecuteQuery(script);
+            }
         }
 
         private void DropProcedure(MappedMethodAttribute info)
@@ -663,7 +676,61 @@ namespace SqlSiphon
             }
         }
 
-        private string PreferedListJoin<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
+        protected string FK<T, F>()
+        {
+            var f = typeof(F);
+            var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
+            foreign.InferProperties(f); 
+            var foreignColumns = this.b_d(
+                foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
+                prop => prop.Name);
+
+            return FK<T>(foreignColumns, foreign.Schema, foreign.Name, foreignColumns);
+        }
+
+        protected string FK<T, F>(string tableColumns)
+        {
+            var f = typeof(F);
+            var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
+            foreign.InferProperties(f);
+            var foreignColumns = this.b_d(
+                foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
+                prop => prop.Name);
+
+            return FK<T>(tableColumns, foreign.Schema, foreign.Name, foreignColumns);
+        }
+
+        protected string FK<T, F>(string tableColumns, string foreignColumns)
+        {
+            var f = typeof(F);
+            var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
+            foreign.InferProperties(f);
+
+            return FK<T>(tableColumns, foreign.Schema, foreign.Name, foreignColumns);
+        }
+
+        protected string FK<T>(string foreignName, string foreignColumns)
+        {
+            return FK<T>(foreignColumns, null, foreignName, foreignColumns);
+        }
+
+        protected string FK<T>(string foreignSchema, string foreignName, string foreignColumns)
+        {
+            return FK<T>(foreignColumns, foreignSchema, foreignName, foreignColumns);
+        }
+
+        protected string FK<T>(string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        {
+            var t = typeof(T);
+            var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);
+            table.InferProperties(t);
+
+            return MakeFKScript(table.Schema, table.Name, tableColumns, foreignSchema, foreignName, foreignColumns);
+        }
+
+        protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
+
+        private string b_d<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
         {
             separator = separator ?? "," + Environment.NewLine + "    ";
             var str = string.Join(separator, collect.Select(format));
@@ -672,12 +739,12 @@ namespace SqlSiphon
 
         protected string MakeParameterSection(MappedMethodAttribute info)
         {
-            return PreferedListJoin(info.Parameters, this.MakeParameterString);
+            return b_d(info.Parameters, this.MakeParameterString);
         }
 
         protected string MakeColumnSection(MappedClassAttribute info)
         {
-            return PreferedListJoin(info.Properties, this.MakeColumnString);
+            return b_d(info.Properties, this.MakeColumnString);
         }
 
 
@@ -697,6 +764,12 @@ namespace SqlSiphon
             this.ExecuteQuery(script);
         }
 
+        protected virtual void PreCreateProcedures()
+        {
+            //do nothing in the base case
+        }
+
+        protected abstract string[] FKScripts { get; }
         protected abstract string MakeSqlTypeString(MappedTypeAttribute type);
         protected abstract bool ProcedureExists(MappedMethodAttribute info);
         protected abstract string BuildDropProcedureScript(MappedMethodAttribute info);

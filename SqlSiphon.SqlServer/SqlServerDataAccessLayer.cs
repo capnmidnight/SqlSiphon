@@ -530,5 +530,52 @@ where is_user_defined = 1
             }
             return parameterValue;
         }
+
+        protected string USERID<T>()
+        {
+            return USERID<T>("UserID");
+        }
+
+        protected string USERID<T>(string tableColumn)
+        {
+            return FK<T>(tableColumn, "dbo", "aspnet_Users", "UserID");
+        }
+
+        protected string ROLEID<T>()
+        {
+            return FK<T>("aspnet_Roles", "RoleID");
+        }
+
+        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        {
+            var constraintName = string.Join("_",
+                "FK",
+                tableSchema ?? DefaultSchemaName,
+                tableName,
+                tableColumns.Replace(',', '_'),
+                "to",
+                foreignSchema ?? DefaultSchemaName,
+                foreignName);
+
+            var tableFullName = MakeIdentifier(
+                tableSchema ?? DefaultSchemaName,
+                tableName);
+
+            var foreignFullName = MakeIdentifier(
+                foreignSchema ?? DefaultSchemaName,
+                foreignName);
+
+            return string.Format(
+@"if not exists(SELECT *  FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME ='{0}')
+    alter table {1} add constraint {2}
+    foreign key({3})
+    references {4}({5});",
+                    constraintName,
+                    tableFullName,
+                    MakeIdentifier(constraintName),
+                    tableColumns,
+                    foreignFullName,
+                    foreignColumns);
+        }
     }
 }
