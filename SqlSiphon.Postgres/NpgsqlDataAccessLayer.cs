@@ -297,5 +297,25 @@ $$ language 'sql'",
             // procedures will take care of it.
             return true;
         }
+
+        protected override string[] FKScripts
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        protected override string[] IndexScripts
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        protected override string[] InitialScripts
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        protected override string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

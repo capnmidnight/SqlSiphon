@@ -13,9 +13,12 @@ namespace SqlSiphon.Postgres.Test
         {
             get { return null; }
         }
+
         public void SyncProcs()
         {
-            this.SynchronizeProcedures();
+            this.DropProcedures();
+            this.SynchronizeUserDefinedTableTypes();
+            this.CreateProcedures();
         }
 
         [MappedMethod(

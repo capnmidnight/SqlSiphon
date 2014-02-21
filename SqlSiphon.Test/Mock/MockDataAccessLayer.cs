@@ -71,5 +71,20 @@ namespace SqlSiphon.Test.Mock
         {
             throw new NotImplementedException();
         }
+
+        protected override string[] IndexScripts
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        protected override string[] InitialScripts
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        protected override string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
