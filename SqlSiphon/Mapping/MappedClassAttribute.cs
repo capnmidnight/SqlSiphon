@@ -108,8 +108,7 @@ namespace SqlSiphon.Mapping
 
             this.Properties.AddRange(
                 obj.GetProperties(PATTERN)
-                .Select(this.GetPropertyDescriptions)
-                .Where(p => p.Include));
+                .Select(this.GetPropertyDescriptions));
         }
     }
 }

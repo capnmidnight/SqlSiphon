@@ -739,8 +739,9 @@ namespace SqlSiphon
             var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);
             table.InferProperties(t);
             var columns = table.Properties
-                .Where(c => c.SystemType != typeof(string)
-                    || c.Size > 0)
+                .Where(c => c.Include
+                    && (c.SystemType != typeof(string)
+                        || c.Size > 0))
                 .Select(c => c.Name)
                 .ToArray();
             return MakeIndexScript(table.Schema, table.Name, columns);
@@ -776,7 +777,7 @@ namespace SqlSiphon
 
         protected string MakeColumnSection(MappedClassAttribute info)
         {
-            return b_d(info.Properties, this.MakeColumnString);
+            return b_d(info.Properties.Where(p => p.Include), this.MakeColumnString);
         }
 
 
