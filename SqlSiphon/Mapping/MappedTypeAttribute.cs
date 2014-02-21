@@ -77,7 +77,7 @@ namespace SqlSiphon.Mapping
         /// <summary>
         /// Get or set the size of the database type. If the size is not set,
         /// (i.e. IsSizeSet returns false) then no size or precision will be
-        /// included in the type specification. Use -1 to mean "MAX".
+        /// included in the type specification. Use 0 to mean "MAX".
         /// </summary>
         public int Size
         {
@@ -207,7 +207,7 @@ namespace SqlSiphon.Mapping
                 before,
                 this.SqlType,
                 openSize,
-                this.Size == -1 ? "MAX" : this.Size.ToString(),
+                this.Size == 0 ? "MAX" : this.Size.ToString(),
                 listSeparator,
                 this.Precision,
                 closeSize,

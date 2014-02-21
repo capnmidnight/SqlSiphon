@@ -23,7 +23,6 @@ namespace InitDB
         private BindingList<string> names;
         public Form1()
         {
-            DataAccessLayer.ShouldSync = false;
             InitializeComponent();
             this.browseAssemblyBtn.Tag = this.assemblyTB;
             this.browseSqlCmdButton.Tag = this.sqlcmdTB;
@@ -173,14 +172,11 @@ namespace InitDB
                 if (succeeded && chkRegSql.Checked)
                     succeeded &= RunASPNET_REGSQL();
 
-                if (succeeded && (chkCreateTables.Checked || chkSyncProcedures.Checked))
+                if (succeeded 
+                    && (chkCreateTables.Checked 
+                        || chkSyncProcedures.Checked 
+                        || chkInitializeData.Checked))
                     succeeded &= SyncSqlSiphon();
-
-                if (succeeded && chkCreateTables.Checked)
-                    succeeded &= RunQueryWithSQLCMD("Create Indexes.sql", databaseTB.Text, true);
-
-                if (succeeded && chkInitializeData.Checked)
-                    succeeded &= RunQueryWithSQLCMD("Initialize Data.sql", databaseTB.Text, true);
 
                 if (succeeded)
                     this.ToOutput("All done");
@@ -215,6 +211,9 @@ namespace InitDB
 
                         if (succeeded && chkSyncProcedures.Checked)
                             succeeded &= SyncProcedures(db);
+
+                        if (succeeded && chkInitializeData.Checked)
+                            succeeded &= InitData(db);
                     }
                     catch
                     {
@@ -258,6 +257,7 @@ namespace InitDB
             {
                 this.ToOutput("Synchronizing tables");
                 db.CreateTables();
+                db.CreateIndices();
                 db.CreateForeignKeys();
                 this.ToOutput("Tables synched");
                 return true;
@@ -286,6 +286,23 @@ namespace InitDB
                 return false;
             }
         }
+
+        private bool InitData(SqlSiphon.ISqlSiphon db)
+        {
+            try
+            {
+                this.ToOutput("Initializing data");
+                db.InitializeData();
+                this.ToOutput("Data initialized");
+                return true;
+            }
+            catch (Exception exp)
+            {
+                this.ToError(exp.Message);
+                return false;
+            }
+        }
+
 
         private string MakeConnection()
         {

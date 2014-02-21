@@ -44,17 +44,12 @@ namespace SqlSiphon
     public interface ISqlSiphon : IDisposable
     {
         void CreateTables();
-
         void CreateForeignKeys();
-
         void DropProcedures();
-
         void SynchronizeUserDefinedTableTypes();
-
         void CreateProcedures();
-    }
-    public abstract class DataAccessLayer {
-        public static bool ShouldSync = true;
+        void CreateIndices();
+        void InitializeData();
     }
 
     /// <summary>
@@ -62,7 +57,6 @@ namespace SqlSiphon
     /// databases and execute store procedures stored within.
     /// </summary>
     public abstract class DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> :
-        DataAccessLayer,
         ISqlSiphon
         where ConnectionT : DbConnection, new()
         where CommandT : DbCommand, new()
@@ -70,7 +64,6 @@ namespace SqlSiphon
         where DataAdapterT : DbDataAdapter, new()
         where DataReaderT : DbDataReader
     {
-        private static List<Type> Synced = new List<Type>();
         private bool isConnectionOwned;
 
         private MappedClassAttribute meta;
@@ -128,25 +121,6 @@ namespace SqlSiphon
                 this.Connection.Dispose();
                 this.Connection = null;
             }
-        }
-
-        protected void SynchronizeProcedures()
-        {
-#if DEBUG
-            if (ShouldSync)
-            {
-                var t = this.GetType();
-                if (!Synced.Contains(t))
-                {
-                    Synced.Add(t);
-                    this.DropProcedures();
-                    this.PreCreateProcedures();
-                    this.CreateTables();
-                    this.CreateForeignKeys();
-                    this.CreateProcedures();
-                }
-            }
-#endif
         }
 
         /// <summary>
@@ -627,13 +601,28 @@ namespace SqlSiphon
                 CreateTable(type);
         }
 
-        public void CreateForeignKeys()
+        private void ExecuteScripts(string[] scripts)
         {
-            if (this.FKScripts != null)
+            if (scripts != null)
             {
-                foreach (var script in this.FKScripts)
+                foreach (var script in scripts)
                     this.ExecuteQuery(script);
             }
+        }
+
+        public void CreateForeignKeys()
+        {
+            this.ExecuteScripts(this.FKScripts);
+        }
+
+        public void CreateIndices()
+        {
+            this.ExecuteScripts(this.IndexScripts);
+        }
+
+        public void InitializeData()
+        {
+            this.ExecuteScripts(this.InitialScripts);
         }
 
         private void DropProcedure(MappedMethodAttribute info)
@@ -696,7 +685,7 @@ namespace SqlSiphon
         {
             var f = typeof(F);
             var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
-            foreign.InferProperties(f); 
+            foreign.InferProperties(f);
             var foreignColumns = this.b_d(
                 foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
                 prop => prop.Name);
@@ -744,8 +733,35 @@ namespace SqlSiphon
             return MakeFKScript(table.Schema, table.Name, tableColumns, foreignSchema, foreignName, foreignColumns);
         }
 
-        protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
+        protected string IDX<T>()
+        {
+            var t = typeof(T);
+            var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);
+            table.InferProperties(t);
+            var columns = table.Properties
+                .Where(c => c.SystemType != typeof(string)
+                    || c.Size > 0)
+                .Select(c => c.Name)
+                .ToArray();
+            return MakeIndexScript(table.Schema, table.Name, columns);
+        }
 
+        protected string IDX<T>(params string[] columns)
+        {
+            var t = typeof(T);
+            var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);
+            table.InferProperties(t);
+            return MakeIndexScript(table.Schema, table.Name, columns);
+        }
+
+        /// <summary>
+        /// I am a dork
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collect"></param>
+        /// <param name="format"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
         private string b_d<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
         {
             separator = separator ?? "," + Environment.NewLine + "    ";
@@ -777,6 +793,8 @@ namespace SqlSiphon
 
         protected virtual void ExecuteCreateProcedureScript(string script)
         {
+            //this allows us to hook in and perhaps modify
+            // the script before executing it.
             this.ExecuteQuery(script);
         }
 
@@ -786,6 +804,8 @@ namespace SqlSiphon
         }
 
         protected abstract string[] FKScripts { get; }
+        protected abstract string[] IndexScripts { get; }
+        protected abstract string[] InitialScripts { get; }
         protected abstract string MakeSqlTypeString(MappedTypeAttribute type);
         protected abstract bool ProcedureExists(MappedMethodAttribute info);
         protected abstract string BuildDropProcedureScript(MappedMethodAttribute info);
@@ -793,7 +813,8 @@ namespace SqlSiphon
         protected abstract string BuildCreateTableScript(MappedClassAttribute info);
         protected abstract string MakeParameterString(MappedParameterAttribute p);
         protected abstract string MakeColumnString(MappedPropertyAttribute p);
-
+        protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
+        protected abstract string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns);
 
         public virtual void SynchronizeUserDefinedTableTypes()
         {

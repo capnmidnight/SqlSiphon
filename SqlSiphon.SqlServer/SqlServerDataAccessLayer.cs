@@ -55,7 +55,6 @@ namespace SqlSiphon.SqlServer
         public SqlServerDataAccessLayer(string connectionString)
             : base(connectionString)
         {
-            this.SynchronizeProcedures();
         }
 
         protected override void PreCreateProcedures()
@@ -576,6 +575,22 @@ where is_user_defined = 1
                     tableColumns,
                     foreignFullName,
                     foreignColumns);
+        }
+
+        protected override string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns)
+        {
+            var columnSection = string.Join(",", tableColumns.Select(c => c + " ASC"));
+            var indexName = string.Format("IDX_{0}_{1}_{2}",
+                tableSchema ?? DefaultSchemaName,
+                tableName,
+                columnSection.GetHashCode().ToString().Replace('-', 'S'));
+            var identifier = MakeIdentifier(tableSchema ?? DefaultSchemaName, tableName);
+            return string.Format(
+@"if not exists(select * from sys.indexes where name = '{0}')
+CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
+                indexName,
+                identifier,
+                columnSection);
         }
     }
 }
