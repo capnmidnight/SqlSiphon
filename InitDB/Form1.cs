@@ -18,7 +18,7 @@ namespace InitDB
     public partial class Form1 : Form
     {
         private static string SETTINGS_FILENAME = "session.dat";
-        private static string DEFAULT_SESSION_NAME = "<none>";
+        public static string DEFAULT_SESSION_NAME = "<none>";
         private Dictionary<string, Session> sessions;
         private BindingList<string> names;
         public Form1()
@@ -29,18 +29,35 @@ namespace InitDB
             this.browseRegSqlButton.Tag = this.regsqlTB;
             this.txtStdOut.Text = string.Empty;
             this.txtStdErr.Text = string.Empty;
+            LoadSessions();
+        }
+
+        private void LoadSessions()
+        {
             if (File.Exists(SETTINGS_FILENAME))
                 this.sessions = File.ReadAllLines(SETTINGS_FILENAME)
                     .Select(l => l.Trim())
                     .Where(l => l.Length > 0)
-                    .Select(l => new Session(l))
+                    .Select(l =>
+                    {
+                        try
+                        {
+                            return new Session(l);
+                        }
+                        catch
+                        {
+                            return null;
+                        }
+                    })
+                    .Where(l => l != null)
                     .ToDictionary(s => s.Name);
             else
             {
                 this.sessions = new Dictionary<string, Session>();
-                this.sessions.Add(DEFAULT_SESSION_NAME, new Session());
             }
-            this.names = new BindingList<string>(this.sessions.Keys.ToList());
+            if (!this.sessions.ContainsKey(DEFAULT_SESSION_NAME))
+                this.sessions.Add(DEFAULT_SESSION_NAME, new Session());
+            this.names = new BindingList<string>(this.sessions.Keys.OrderBy(k => k).ToList());
             this.savedSessionList.DataSource = this.names;
         }
 
@@ -172,9 +189,9 @@ namespace InitDB
                 if (succeeded && chkRegSql.Checked)
                     succeeded &= RunASPNET_REGSQL();
 
-                if (succeeded 
-                    && (chkCreateTables.Checked 
-                        || chkSyncProcedures.Checked 
+                if (succeeded
+                    && (chkCreateTables.Checked
+                        || chkSyncProcedures.Checked
                         || chkInitializeData.Checked))
                     succeeded &= SyncSqlSiphon();
 
@@ -409,8 +426,8 @@ namespace InitDB
                     this.chkSyncProcedures.Checked = session.SyncStoredProcedures;
                 }
 
-                saveSessionButton.Enabled 
-                    = deleteSessionButton.Enabled 
+                saveSessionButton.Enabled
+                    = deleteSessionButton.Enabled
                     = (sessionName != DEFAULT_SESSION_NAME);
             }
         }

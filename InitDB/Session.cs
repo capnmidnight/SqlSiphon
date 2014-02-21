@@ -20,9 +20,9 @@ namespace InitDB
         public static char PAIR_SEPARATOR = ';';
         public static char KEY_VALUE_SEPARATOR = ':';
 
-        public Session()
+
+        public Session() : this(InitDB.Form1.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", false, false, false, false, false, true)
         {
-            this.SyncStoredProcedures = true;
         }
 
         public Session(string name, string server, string dbname, string loginName, string loginPassword, string assemblyFile,
