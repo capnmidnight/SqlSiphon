@@ -17,9 +17,16 @@ namespace InitDB
 {
     public partial class Form1 : Form
     {
-        private static string SETTINGS_FILENAME = "session.dat";
+        private static string SESSIONS_FILENAME = "sessions.dat";
+        private static string OPTIONS_FILENAME = "options.dat";
+        private static string SQLCMD_PATH_KEY = "SQLCMDPATH";
+        private static string REG_ASPNET_PATH_KEY = "REGASPNETPATH";
+        private static string HORIZONTAL_LINE = "================================================================================";
         public static string DEFAULT_SESSION_NAME = "<none>";
+        private static string DEFAULT_REG_ASPNET_PATH = @"C:\Windows\Microsoft.NET\Framework\v4.0.30319\aspnet_regsql.exe";
+        private static string DEFAULT_SQLCMD_PATH = @"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\sqlcmd.exe";
         private Dictionary<string, Session> sessions;
+        private Dictionary<string, string> options;
         private BindingList<string> names;
         public Form1()
         {
@@ -30,12 +37,40 @@ namespace InitDB
             this.txtStdOut.Text = string.Empty;
             this.txtStdErr.Text = string.Empty;
             LoadSessions();
+            LoadOptions();
+        }
+
+        private void LoadOptions()
+        {
+            if (File.Exists(OPTIONS_FILENAME))
+                this.options = File.ReadAllLines(OPTIONS_FILENAME)
+                    .Select(l => l.Trim())
+                    .Where(l => l.Length > 0)
+                    .Select(l => l.Split('='))
+                    .Where(p => p.Length == 2)
+                    .ToDictionary(p => p[0], p => p[1]);
+            else
+                this.options = new Dictionary<string, string>();
+
+            if (!this.options.ContainsKey(SQLCMD_PATH_KEY))
+                this.options.Add(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH);
+
+            if (!this.options.ContainsKey(REG_ASPNET_PATH_KEY))
+                this.options.Add(REG_ASPNET_PATH_KEY, DEFAULT_REG_ASPNET_PATH);
+
+            DisplayOptions();
+        }
+
+        private void DisplayOptions()
+        {
+            this.sqlcmdTB.Text = this.options[SQLCMD_PATH_KEY];
+            this.regsqlTB.Text = this.options[REG_ASPNET_PATH_KEY];
         }
 
         private void LoadSessions()
         {
-            if (File.Exists(SETTINGS_FILENAME))
-                this.sessions = File.ReadAllLines(SETTINGS_FILENAME)
+            if (File.Exists(SESSIONS_FILENAME))
+                this.sessions = File.ReadAllLines(SESSIONS_FILENAME)
                     .Select(l => l.Trim())
                     .Where(l => l.Length > 0)
                     .Select(l =>
@@ -78,15 +113,19 @@ namespace InitDB
         private bool RunProcess(string name, params string[] args)
         {
             var shortName = new FileInfo(name).Name;
-            this.ToOutput("================================================================================");
+            this.ToOutput(HORIZONTAL_LINE);
             this.ToOutput(string.Format(":> {0} {1}\r\n", shortName, string.Join(" ", args)));
-            var procInfo = new ProcessStartInfo(name, string.Join(" ", args.Where(s => s != null)));
-            procInfo.CreateNoWindow = true;
-            procInfo.ErrorDialog = true;
-            procInfo.RedirectStandardError = true;
-            procInfo.RedirectStandardInput = true;
-            procInfo.RedirectStandardOutput = true;
-            procInfo.UseShellExecute = false;
+            var procInfo = new ProcessStartInfo
+            {
+                FileName = name,
+                Arguments = string.Join(" ", args.Where(s => s != null)),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                ErrorDialog = true,
+            };
             using (var proc = new Process())
             {
                 proc.StartInfo = procInfo;
@@ -100,7 +139,7 @@ namespace InitDB
                 proc.ErrorDataReceived -= proc_ErrorDataReceived;
             }
             this.ToOutput(string.Format("finished {0}", shortName));
-            this.ToOutput("================================================================================");
+            this.ToOutput(HORIZONTAL_LINE);
             // TODO : need to figure out a way to tell when an error occurs
             // in an external process
             return true;
@@ -151,6 +190,8 @@ namespace InitDB
                 success = RunProcess(
                     sqlcmdTB.Text,
                     "-S " + serverTB.Text,
+                    adminUserTB.Text != string.Empty ? "-U " + adminUserTB.Text : null,
+                    adminPassTB.Text != string.Empty ? "-P " + adminPassTB.Text : null,
                     (database != null) ? "-d " + database : null,
                     string.Format(" -{0} \"{1}\"", isFile ? "i" : "Q", qry));
             return success;
@@ -219,6 +260,7 @@ namespace InitDB
             {
                 foreach (var db in dbs)
                 {
+                    db.Progress += db_Progress;
                     var t = db.GetType();
                     this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
                     try
@@ -248,6 +290,11 @@ namespace InitDB
                 }
             }
             return succeeded;
+        }
+
+        void db_Progress(object sender, DataProgressEventArgs e)
+        {
+            this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow, e.RowCount, e.Message));
         }
 
         private IEnumerable<ISqlSiphon> MakeDatabaseConnection(string connectionString)
@@ -323,12 +370,14 @@ namespace InitDB
 
         private string MakeConnection()
         {
-            var conn = new System.Data.SqlClient.SqlConnectionStringBuilder();
-            conn.DataSource = this.serverTB.Text;
-            conn.UserID = this.sqlUserTB.Text;
-            conn.Password = this.sqlPassTB.Text;
-            conn.IntegratedSecurity = false;
-            conn.InitialCatalog = this.databaseTB.Text;
+            var conn = new System.Data.SqlClient.SqlConnectionStringBuilder
+            {
+                DataSource = this.serverTB.Text,
+                UserID = this.adminUserTB.Text,
+                Password = this.adminPassTB.Text,
+                IntegratedSecurity = false,
+                InitialCatalog = this.databaseTB.Text
+            };
             return conn.ConnectionString;
         }
 
@@ -364,6 +413,8 @@ namespace InitDB
                 this.savedSessionList.Text,
                 this.serverTB.Text,
                 this.databaseTB.Text,
+                this.adminUserTB.Text,
+                this.adminPassTB.Text,
                 this.sqlUserTB.Text,
                 this.sqlPassTB.Text,
                 this.assemblyTB.Text,
@@ -383,12 +434,12 @@ namespace InitDB
                 this.savedSessionList.SelectedItem = sesh.Name;
             }
 
-            this.SaveSettings();
+            this.SaveSessions();
         }
 
-        private void SaveSettings()
+        private void SaveSessions()
         {
-            File.WriteAllLines(SETTINGS_FILENAME, this.sessions.Values.Select(v => v.ToString()).ToArray());
+            File.WriteAllLines(SESSIONS_FILENAME, this.sessions.Values.Select(v => v.ToString()).ToArray());
         }
 
         private void deleteSessionButton_Click(object sender, EventArgs e)
@@ -400,7 +451,7 @@ namespace InitDB
                 {
                     this.sessions.Remove(sessionName);
                     this.names.Remove(sessionName);
-                    this.SaveSettings();
+                    this.SaveSessions();
                 }
             }
         }
@@ -415,6 +466,8 @@ namespace InitDB
                     var session = this.sessions[sessionName];
                     this.serverTB.Text = session.Server;
                     this.databaseTB.Text = session.DBName;
+                    this.adminUserTB.Text = session.AdminName;
+                    this.adminPassTB.Text = session.AdminPassword;
                     this.sqlUserTB.Text = session.LoginName;
                     this.sqlPassTB.Text = session.LoginPassword;
                     this.assemblyTB.Text = session.AssemblyFile;
@@ -443,6 +496,36 @@ namespace InitDB
 
             if (sessionName == DEFAULT_SESSION_NAME)
                 savedSessionList.SelectedItem = DEFAULT_SESSION_NAME;
+        }
+
+        private void enableSaveCancelButtons(object sender, EventArgs e)
+        {
+            EnableSaveCancelOptions();
+        }
+
+        private void EnableSaveCancelOptions()
+        {
+            cancelOptionsButton.Enabled =
+                this.options[REG_ASPNET_PATH_KEY] != this.regsqlTB.Text
+                || this.options[SQLCMD_PATH_KEY] != this.sqlcmdTB.Text;
+            saveOptionsButton.Enabled
+                = File.Exists(sqlcmdTB.Text)
+                    && File.Exists(regsqlTB.Text)
+                    && cancelOptionsButton.Enabled;
+        }
+
+        private void saveOptionsButton_Click(object sender, EventArgs e)
+        {
+            this.options[SQLCMD_PATH_KEY] = this.sqlcmdTB.Text;
+            this.options[REG_ASPNET_PATH_KEY] = this.regsqlTB.Text;
+            File.WriteAllLines(OPTIONS_FILENAME,
+                this.options.Select(kv => string.Join("=", kv.Key, kv.Value)).ToArray());
+            EnableSaveCancelOptions();
+        }
+
+        private void cancelOptionsButton_Click(object sender, EventArgs e)
+        {
+            this.DisplayOptions();
         }
     }
 }

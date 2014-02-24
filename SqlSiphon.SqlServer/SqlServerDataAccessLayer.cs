@@ -331,14 +331,20 @@ create table {2}(
                 }
             }
 
+            int total = simpleToSync.Count + complexToSync.Count;
+            int current = 0;
             foreach (var t in simpleToSync.Distinct())
             {
                 SynchronizeSimpleUDTT(t);
+                this.MakeProgress(current, total, string.Format("Syncing simple array type {0}", t.Name));
+                current++;
             }
 
             foreach (var c in complexToSync.Distinct())
             {
                 MaybeSynchronizeUDTT(c);
+                this.MakeProgress(current, total, string.Format("Syncing complex array type {0}", c.Name));
+                current++;
             }
         }
 

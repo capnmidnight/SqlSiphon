@@ -50,6 +50,8 @@ namespace SqlSiphon
         void CreateProcedures();
         void CreateIndices();
         void InitializeData();
+
+        event DataProgressEventHandler Progress;
     }
 
     /// <summary>
@@ -74,6 +76,13 @@ namespace SqlSiphon
         protected virtual string DefaultSchemaName { get { return null; } }
 
         public ConnectionT Connection { get; private set; }
+
+        public event DataProgressEventHandler Progress;
+        protected void MakeProgress(int currentRow, int rowCount, string message)
+        {
+            if (this.Progress != null)
+                this.Progress(this, new DataProgressEventArgs(currentRow, rowCount, message));
+        }
 
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
@@ -435,7 +444,6 @@ namespace SqlSiphon
                 throw new ArgumentException("When retrieving a primitive data type, the first parameter to the procedure must be a string Column Name or an integer Column Index. Given: " + key.GetType().Name);
         }
 
-
         internal static string[] GetColumnNames(DbDataReader reader)
         {
             var columnNames = new string[reader.FieldCount];
@@ -538,8 +546,6 @@ namespace SqlSiphon
                 if (meta.SqlType == null)
                     meta.SqlType = this.MakeSqlTypeString(meta);
 
-                if (meta.Schema == null)
-                    meta.Schema = this.DefaultSchemaName;
                 foreach (var parameter in meta.Parameters)
                     if (parameter.SqlType == null)
                         parameter.SqlType = this.MakeSqlTypeString(parameter);
@@ -548,9 +554,14 @@ namespace SqlSiphon
             return meta;
         }
 
-        protected void DefineForeignKeys(params ForeignKeyConstraint[] fks)
+        private void Process<T>(List<T> collection, Func<T, string> makeMessage, Action<T> action)
         {
-            new ForeignKeyConstraint("FK_Table1", "Users", new[] { "Column1" }, new[] { "Column1" }, AcceptRejectRule.Cascade, Rule.Cascade, Rule.Cascade);
+            for (int i = 0; i < collection.Count; ++i)
+            {
+                var message = makeMessage(collection[i]);
+                action(collection[i]);
+                this.MakeProgress(i, collection.Count, message);
+            }
         }
 
         /// <summary>
@@ -560,14 +571,12 @@ namespace SqlSiphon
         /// </summary>
         public void DropProcedures()
         {
-            foreach (var method in meta.Methods)
-                DropProcedure(method);
+            this.Process(meta.Methods, m => string.Format("drop procedure {0}", m.Name), this.DropProcedure);
         }
 
         public void CreateProcedures()
         {
-            foreach (var method in meta.Methods)
-                CreateProcedure(method);
+            this.Process(meta.Methods, m => string.Format("create procedure {0}", m.Name), this.CreateProcedure);
         }
 
         /// <summary>
@@ -597,32 +606,31 @@ namespace SqlSiphon
                 .Where(m => m != null && m.Include)
                 .ToList();
 
-            foreach (var type in classes)
-                CreateTable(type);
+
+            this.Process(classes, c => string.Format("create table {0}", c.Name), this.CreateTable);
         }
 
-        private void ExecuteScripts(string[] scripts)
+        private void ExecuteScripts(string message, List<string> scripts)
         {
             if (scripts != null)
             {
-                foreach (var script in scripts)
-                    this.ExecuteQuery(script);
+                this.Process(scripts, s => message, this.ExecuteQuery);
             }
         }
 
         public void CreateForeignKeys()
         {
-            this.ExecuteScripts(this.FKScripts);
+            this.ExecuteScripts("Foreign keys", this.FKScripts.ToList());
         }
 
         public void CreateIndices()
         {
-            this.ExecuteScripts(this.IndexScripts);
+            this.ExecuteScripts("Indices", this.IndexScripts.ToList());
         }
 
         public void InitializeData()
         {
-            this.ExecuteScripts(this.InitialScripts);
+            this.ExecuteScripts("Initial data", this.InitialScripts.ToList());
         }
 
         private void DropProcedure(MappedMethodAttribute info)

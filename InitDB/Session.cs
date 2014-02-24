@@ -7,6 +7,8 @@ namespace InitDB
         public string Name { get { return Get<string>(); } set { Set(value); } }
         public string Server { get { return Get<string>(); } set { Set(value); } }
         public string DBName { get { return Get<string>(); } set { Set(value); } }
+        public string AdminName { get { return Get<string>(); } set { Set(value); } }
+        public string AdminPassword { get { return Get<string>(); } set { Set(value); } }
         public string LoginName { get { return Get<string>(); } set { Set(value); } }
         public string LoginPassword { get { return Get<string>(); } set { Set(value); } }
         public string AssemblyFile { get { return Get<string>(); } set { Set(value); } }
@@ -21,16 +23,19 @@ namespace InitDB
         public static char KEY_VALUE_SEPARATOR = ':';
 
 
-        public Session() : this(InitDB.Form1.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", false, false, false, false, false, true)
+        public Session() : this(InitDB.Form1.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", "", "", false, false, false, false, false, true)
         {
         }
 
-        public Session(string name, string server, string dbname, string loginName, string loginPassword, string assemblyFile,
+        public Session(string name, string server, string dbname, string adminName, string adminPassword, 
+            string loginName, string loginPassword, string assemblyFile,
             bool createDatabase, bool createLogin, bool registerASPNET, bool createSchemaObj, bool initData, bool syncProcs)
         {
             this.Name = name;
             this.Server = server;
             this.DBName = dbname;
+            this.AdminName = adminName;
+            this.AdminPassword = adminPassword;
             this.LoginName = loginName;
             this.LoginPassword = loginPassword;
             this.AssemblyFile = assemblyFile;
