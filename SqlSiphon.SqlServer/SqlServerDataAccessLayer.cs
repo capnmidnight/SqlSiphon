@@ -425,7 +425,7 @@ where is_user_defined = 1
             // don't upload auto-incrementing identity columns
             // or columns that have a default value defined
             var colStrings = columns
-                .Where(c => !c.IsIdentity && c.DefaultValue == null)
+                .Where(c => c.Include && !c.IsIdentity && c.DefaultValue == null)
                 .Select(c => this.MaybeMakeColumnTypeString(c))
                 .Where(s => !string.IsNullOrEmpty(s))
                 .ToArray();
@@ -512,8 +512,7 @@ where is_user_defined = 1
                         // don't upload auto-incrementing identity columns
                         // or columns that have a default value defined
                         var columns = GetProperties(t)
-                            .Where(p => !p.IsIdentity
-                                && p.DefaultValue == null)
+                            .Where(p => p.Include && !p.IsIdentity && p.DefaultValue == null)
                             .ToList();
                         foreach (var column in columns)
                         {
