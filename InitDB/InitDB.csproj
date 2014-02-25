@@ -74,6 +74,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\consulting\Rieker\DOT Total Solutions\Rieker Portal-beta\Rieker.Util\Rieker.Util.csproj">
+      <Project>{cd218f3d-2fb9-4eea-8846-e681c9a878d3}</Project>
+      <Name>Rieker.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\consulting\Rieker\DOT Total Solutions\Rieker Portal-beta\RiekerPortal.Data\RiekerPortal.Data.csproj">
+      <Project>{16f1fdd8-b7bf-4512-b429-1fc951c3f40c}</Project>
+      <Name>RiekerPortal.Data</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj">
       <Project>{1c09319b-01e7-4f56-b29b-61fd4e546f54}</Project>
       <Name>SqlSiphon.SqlServer</Name>

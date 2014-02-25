@@ -112,7 +112,28 @@ namespace SqlSiphon.Mapping
         {
             if (value == DBNull.Value)
                 value = null;
-            this.originalProperty.SetValue(obj, value, null);
+            try
+            {
+                var targetType = this.originalProperty.PropertyType;
+                if (targetType.IsGenericType
+                    && targetType.Name.StartsWith("Nullable"))
+                {
+                    targetType = targetType.GetGenericArguments()[0];
+                    if (value != null)
+                        value = Convert.ChangeType(value, targetType);
+                }
+
+                this.originalProperty.SetValue(obj, value, null);
+            }
+            catch (Exception exp)
+            {
+                double? x = 1f;
+                throw new Exception(string.Format(
+                    "Cannot set property value for property {0}.{1}. Reason: {2}.",
+                    this.originalProperty.DeclaringType.Name,
+                    this.originalProperty.Name,
+                    exp.Message), exp);
+            }
         }
 
         public T GetValue<T>(object obj)

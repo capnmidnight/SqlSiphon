@@ -321,8 +321,17 @@ namespace InitDB
             {
                 this.ToOutput("Synchronizing tables");
                 db.CreateTables();
-                db.CreateIndices();
                 db.CreateForeignKeys();
+                this.SyncUI(() =>
+                {
+                    this.altersGV.Rows.Clear();
+                    foreach (var entry in db.AlterScripts)
+                        this.altersGV.Rows.Add(entry.Key, entry.Value);
+
+                    this.dropsGV.Rows.Clear();
+                    foreach (var entry in db.DropScripts)
+                        this.dropsGV.Rows.Add(entry.Key, entry.Value);
+                });
                 this.ToOutput("Tables synched");
                 return true;
             }
@@ -526,6 +535,24 @@ namespace InitDB
         private void cancelOptionsButton_Click(object sender, EventArgs e)
         {
             this.DisplayOptions();
+        }
+
+        private void scriptGV_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            var gv = sender as DataGridView;
+            if (gv != null && e.ColumnIndex == 2)
+            {
+                var script = (string)gv.Rows[e.RowIndex].Cells[1].Value;
+                gv.Enabled = false;
+                Task.Run(() =>
+                {
+                    this.RunQueryWithSQLCMD(script, this.databaseTB.Text);
+                    this.SyncUI(() =>{
+                        gv.Rows.RemoveAt(e.RowIndex);
+                        gv.Enabled = true;
+                    });
+                });
+            }
         }
     }
 }

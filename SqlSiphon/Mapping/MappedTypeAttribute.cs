@@ -142,7 +142,15 @@ namespace SqlSiphon.Mapping
         private void SetSystemType(Type type)
         {
             if (this.SystemType == null)
+            {
                 this.SystemType = type;
+                if (type.IsGenericType)
+                {
+                    this.SystemType = type.GetGenericArguments()[0];
+                    if (type.Name.StartsWith("Nullable") && this.optionalNotSet)
+                        this.IsOptional = true;
+                }
+            }
         }
 
         /// <summary>

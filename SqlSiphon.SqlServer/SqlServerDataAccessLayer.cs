@@ -264,35 +264,60 @@ create table {2}(
                 defaultString);
         }
 
-        protected override string MakeSqlTypeString(MappedTypeAttribute p)
+        protected override string MakeAddColumnScript(string tableID, MappedPropertyAttribute prop)
         {
-            if (p.SqlType == null)
+            return string.Format("alter table {0} add {1};", tableID, prop.SqlType);
+        }
+
+        protected override string MakeDropColumnScript(ColumnInfo c)
+        {
+            return string.Format("alter table {0} drop column {1};",
+                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+                MakeIdentifier(c.column_name));
+        }
+
+        protected override string MakeAlterColumnScript(ColumnInfo c, MappedPropertyAttribute prop)
+        {
+            return string.Format("alter table {0} alter column {1};",
+                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+                MakeColumnString(prop));
+        }
+
+
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isSizeSet, int size, bool isPrecisionSet, int precision)
+        {
+            if (sqlType == null)
             {
-                if (reverseTypeMapping.ContainsKey(p.SystemType))
-                    p.SqlType = reverseTypeMapping[p.SystemType];
-                else if (IsUDTT(p.SystemType))
-                    p.SqlType = MakeUDTTName(p.SystemType);
+                if (reverseTypeMapping.ContainsKey(systemType))
+                    sqlType = reverseTypeMapping[systemType];
+                else if (IsUDTT(systemType))
+                    sqlType = MakeUDTTName(systemType);
             }
 
-            if (p.SqlType != null)
+            if (sqlType != null)
             {
-                var typeStr = new StringBuilder(p.SqlType);
-                if (p.IsSizeSet)
+                if (sqlType[sqlType.Length - 1] == ')') // someone already setup the type name, so skip it
+                    return sqlType;
+                else
                 {
-                    typeStr.AppendFormat("({0}", p.Size);
-                    if (p.IsPrecisionSet)
+                    var typeStr = new StringBuilder(sqlType);
+                    if (isSizeSet)
                     {
-                        typeStr.AppendFormat(", {0}", p.Precision);
+                        typeStr.AppendFormat("({0}", size);
+                        if (isPrecisionSet)
+                        {
+                            typeStr.AppendFormat(", {0}", precision);
+                        }
+                        typeStr.Append(")");
                     }
-                    typeStr.Append(")");
-                }
 
-                if (p.SqlType.Contains("var")
-                    && typeStr[typeStr.Length - 1] != ')')
-                {
-                    typeStr.Append("(MAX)");
+                    if (sqlType.Contains("var")
+                        && typeStr[typeStr.Length - 1] != ')')
+                    {
+                        typeStr.Append("(MAX)");
+                    }
+                    return typeStr.ToString();
                 }
-                return typeStr.ToString();
             }
             else
             {

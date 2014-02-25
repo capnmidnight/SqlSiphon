@@ -52,6 +52,14 @@ namespace SqlSiphon
         void InitializeData();
 
         event DataProgressEventHandler Progress;
+
+        KeyValuePair<string, string>[] AddColumnScripts { get; }
+        KeyValuePair<string, string>[] DropColumnScripts { get; }
+        KeyValuePair<string, string>[] DropTableScripts { get; }
+        KeyValuePair<string, string>[] AlterColumnScripts { get; }
+        KeyValuePair<string, string>[] DropScripts { get; }
+        KeyValuePair<string, string>[] AlterScripts { get; }
+
     }
 
     /// <summary>
@@ -415,7 +423,7 @@ namespace SqlSiphon
                 var constructor = type.GetConstructor(Type.EmptyTypes);
                 if (constructor == null)
                     throw new Exception("Entity classes need default constructors!");
-                var columnNames = GetColumnNames(reader);
+                var columnNames = GetColumnNames(reader).Select(c => c.ToUpper()).ToArray();
                 var fields = GetProperties(type);
                 getter = delegate()
                 {
@@ -469,9 +477,9 @@ namespace SqlSiphon
         /// <param name="props"></param>
         internal static void DoMapping(object obj, DataReaderT reader, string[] columnNames, List<MappedPropertyAttribute> props)
         {
-            props.Where(p => columnNames.Contains(p.Name))
+            props.Where(p => columnNames.Contains(p.Name.ToUpper()))
                 .ToList()
-                .ForEach(p => p.SetValue(obj, reader[p.Name]));
+                .ForEach(p => p.SetValue(obj, reader[p.Name.ToUpper()]));
         }
 
         /// <summary>
@@ -589,8 +597,13 @@ namespace SqlSiphon
         /// </summary>
         public void CreateTables()
         {
+            var columns = this.GetListQuery<ColumnInfo>("SELECT * FROM INFORMATION_SCHEMA.COLUMNS");
+            var existingSchema = columns
+                .GroupBy(column => MakeIdentifier(column.table_schema ?? DefaultSchemaName, column.table_name))
+                .ToDictionary(g => g.Key, g => g.ToDictionary(v => v.column_name));
+
             var t = this.GetType();
-            var classes = t.Assembly.GetTypes()
+            var allMappedTypes = t.Assembly.GetTypes()
                 .Where(x => x.Namespace == t.Namespace)
                 .Select(x =>
                 {
@@ -600,14 +613,125 @@ namespace SqlSiphon
                         y.InferProperties(x);
                         if (y.Schema == null)
                             y.Schema = DefaultSchemaName;
+                        y.Properties.ForEach(p => p.SqlType = p.SqlType ?? MakeSqlTypeString(p));
                     }
                     return y;
                 })
                 .Where(m => m != null && m.Include)
+                .ToDictionary(table => MakeIdentifier(table.Schema, table.Name));
+
+            var newTables = allMappedTypes
+                .Where(table => !existingSchema.ContainsKey(table.Key)).Select(table => table.Value)
                 .ToList();
+            var changedTables = allMappedTypes
+                .Where(table => existingSchema.ContainsKey(table.Key))
+                .ToDictionary(table => table.Key);
+            this.tablesToDrop = existingSchema
+                .Where(table => !allMappedTypes.ContainsKey(table.Key)
+                    && !table.Key.Contains("aspnet"))
+                .Select(table => table.Key).ToList();
 
+            var newColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
+            this.nonNullableColumnsToAdd = new List<KeyValuePair<string, MappedPropertyAttribute>>();
+            this.columnsToAlter = new List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>>();
+            this.columnsToDrop = new List<ColumnInfo>();
 
-            this.Process(classes, c => string.Format("create table {0}", c.Name), this.CreateTable);
+            // for tables that already exist, figure out if they have any overlapping columns
+            foreach (var tableName in changedTables.Keys)
+            {
+                var type = allMappedTypes[tableName];
+                var table = existingSchema[tableName];
+                var props = type.Properties.Where(p => p.Include).ToDictionary(p => p.Name);
+                var cols = props
+                    .Where(p => !table.ContainsKey(p.Key))
+                    .Select(p => p.Value);
+                newColumns.AddRange(cols.Where(c => c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
+                this.nonNullableColumnsToAdd.AddRange(cols.Where(c => !c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
+                this.columnsToAlter.AddRange(props
+                    .Where(p => table.ContainsKey(p.Key) && IsTypeChanged(table[p.Key], p.Value))
+                    .Select(p => new KeyValuePair<ColumnInfo, MappedPropertyAttribute>(table[p.Key], p.Value)));
+                this.columnsToDrop.AddRange(table.Values
+                    .Where(c => !props.ContainsKey(c.column_name)));
+            }
+
+            // tables that don't already exist can be created without fear.
+            this.Process(newTables, c => string.Format("create table {0}", c.Name), this.CreateTable);
+            this.Process(newColumns, c => string.Format("add column {0} to {1}", c.Value.Name, c.Key), this.AddColumn);
+        }
+
+        private List<KeyValuePair<string, MappedPropertyAttribute>> nonNullableColumnsToAdd;
+        private List<ColumnInfo> columnsToDrop;
+        private List<string> tablesToDrop;
+        private List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>> columnsToAlter;
+
+        public KeyValuePair<string, string>[] AddColumnScripts
+        {
+            get
+            {
+                return nonNullableColumnsToAdd.Select(x =>
+                    new KeyValuePair<string, string>(x.Key + this.IdentifierPartSeperator + MakeIdentifier(x.Value.Name),
+                    this.MakeAddColumnScript(x.Key, x.Value))).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] DropColumnScripts
+        {
+            get
+            {
+                return columnsToDrop.Select(x =>
+                    new KeyValuePair<string, string>(MakeIdentifier(x.table_schema ?? DefaultSchemaName, x.table_name, x.column_name),
+                    this.MakeDropColumnScript(x))).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] DropTableScripts
+        {
+            get
+            {
+                return tablesToDrop.Select(t => new KeyValuePair<string, string>(t, "drop table " + t)).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] AlterColumnScripts
+        {
+            get
+            {
+                return columnsToAlter.Select(x =>
+                    new KeyValuePair<string, string>(MakeIdentifier(x.Key.table_schema ?? DefaultSchemaName, x.Key.table_name, x.Key.column_name),
+                    this.MakeAlterColumnScript(x.Key, x.Value))).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] AlterScripts
+        {
+            get
+            {
+                return AddColumnScripts.Union(AlterColumnScripts).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] DropScripts
+        {
+            get
+            {
+                return DropTableScripts.Union(DropColumnScripts).ToArray();
+            }
+        }
+
+        private bool IsTypeChanged(ColumnInfo column, MappedPropertyAttribute property)
+        {
+            property.SqlType = this.MakeSqlTypeString(property);
+            var columnType = this.MakeSqlTypeString(column.data_type, null, column.character_maximum_length > 0, column.character_maximum_length, column.numeric_precision > 0, column.numeric_precision);
+            var changed = property.SqlType != columnType
+                || property.IsOptional != column.is_nullable.Equals("YES");
+            return changed;
+        }
+
+        private enum Change
+        {
+            Old,
+            New,
+            Change
         }
 
         private void ExecuteScripts(string message, List<string> scripts)
@@ -667,6 +791,20 @@ namespace SqlSiphon
             catch (Exception exp)
             {
                 throw new Exception(string.Format("Could not create table: {0}. Reason: {1}", identifier, exp.Message), exp);
+            }
+        }
+
+        private void AddColumn(KeyValuePair<string, MappedPropertyAttribute> column)
+        {
+            var tableID = column.Key;
+            var script = this.MakeAddColumnScript(tableID, column.Value);
+            try
+            {
+                this.ExecuteQuery(script);
+            }
+            catch (Exception exp)
+            {
+                throw new Exception(string.Format("Could not add column: {0} to table: {1}. Reason: {2}", column.Value.Name, tableID, exp.Message), exp);
             }
         }
 
@@ -788,7 +926,6 @@ namespace SqlSiphon
             return b_d(info.Properties.Where(p => p.Include), this.MakeColumnString);
         }
 
-
         protected virtual void ModifyQuery(MappedMethodAttribute info)
         {
             //do nothing in the base case
@@ -812,16 +949,24 @@ namespace SqlSiphon
             //do nothing in the base case
         }
 
+        protected string MakeSqlTypeString(MappedTypeAttribute p)
+        {
+            return MakeSqlTypeString(p.SqlType, p.SystemType, p.IsSizeSet, p.Size, p.IsPrecisionSet, p.Precision);
+        }
+
         protected abstract string[] FKScripts { get; }
         protected abstract string[] IndexScripts { get; }
         protected abstract string[] InitialScripts { get; }
-        protected abstract string MakeSqlTypeString(MappedTypeAttribute type);
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, bool isSizeSet, int size, bool isPrecisionSet, int precision);
         protected abstract bool ProcedureExists(MappedMethodAttribute info);
         protected abstract string BuildDropProcedureScript(MappedMethodAttribute info);
         protected abstract string BuildCreateProcedureScript(MappedMethodAttribute info);
         protected abstract string BuildCreateTableScript(MappedClassAttribute info);
         protected abstract string MakeParameterString(MappedParameterAttribute p);
         protected abstract string MakeColumnString(MappedPropertyAttribute p);
+        protected abstract string MakeDropColumnScript(ColumnInfo c);
+        protected abstract string MakeAddColumnScript(string tableID, MappedPropertyAttribute prop);
+        protected abstract string MakeAlterColumnScript(ColumnInfo columnInfo, MappedPropertyAttribute prop);
         protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
         protected abstract string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns);
 
