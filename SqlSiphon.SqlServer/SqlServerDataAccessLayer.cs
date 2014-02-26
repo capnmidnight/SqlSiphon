@@ -266,7 +266,7 @@ create table {2}(
 
         protected override string MakeAddColumnScript(string tableID, MappedPropertyAttribute prop)
         {
-            return string.Format("alter table {0} add {1};", tableID, prop.SqlType);
+            return string.Format("alter table {0} add {1} {2};", tableID, prop.Name, prop.SqlType);
         }
 
         protected override string MakeDropColumnScript(ColumnInfo c)
