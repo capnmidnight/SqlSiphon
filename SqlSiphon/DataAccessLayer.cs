@@ -57,7 +57,7 @@ namespace SqlSiphon
         KeyValuePair<string, string>[] CreateScripts { get; }
         KeyValuePair<string, string>[] DropScripts { get; }
         KeyValuePair<string, string>[] AlterScripts { get; }
-
+        KeyValuePair<string, string>[] OtherScripts { get; }
     }
 
     /// <summary>
@@ -747,6 +747,15 @@ namespace SqlSiphon
             get
             {
                 return DropTableScripts.Union(DropColumnScripts).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] OtherScripts
+        {
+            get
+            {
+                return InitialScripts.Select((s, i) => new KeyValuePair<string, string>(
+                    string.Format("script {0}", i), s)).ToArray();
             }
         }
 

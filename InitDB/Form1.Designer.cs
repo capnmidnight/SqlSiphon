@@ -31,9 +31,24 @@
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabStdOut = new System.Windows.Forms.TabPage();
+            this.txtStdOut = new System.Windows.Forms.TextBox();
             this.tabStdErr = new System.Windows.Forms.TabPage();
             this.txtStdErr = new System.Windows.Forms.TextBox();
+            this.tabCreates = new System.Windows.Forms.TabPage();
+            this.createsGV = new System.Windows.Forms.DataGridView();
+            this.createsGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.createsGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.createsGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabDrops = new System.Windows.Forms.TabPage();
+            this.dropsGV = new System.Windows.Forms.DataGridView();
+            this.dropsGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dropsGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dropsGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabAlters = new System.Windows.Forms.TabPage();
+            this.altersGV = new System.Windows.Forms.DataGridView();
+            this.altersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.altersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.altersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabOptions = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.browseRegSqlButton = new System.Windows.Forms.Button();
@@ -67,40 +82,32 @@
             this.chkCreateTables = new System.Windows.Forms.CheckBox();
             this.chkCreateLogin = new System.Windows.Forms.CheckBox();
             this.chkRegSql = new System.Windows.Forms.CheckBox();
-            this.chkInitializeData = new System.Windows.Forms.CheckBox();
-            this.chkSyncProcedures = new System.Windows.Forms.CheckBox();
             this.runButton = new System.Windows.Forms.Button();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.chkSyncProcedures = new System.Windows.Forms.CheckBox();
+            this.chkInitializeData = new System.Windows.Forms.CheckBox();
             this.chkCreateFKs = new System.Windows.Forms.CheckBox();
             this.chkCreateIndices = new System.Windows.Forms.CheckBox();
             this.analyzeButton = new System.Windows.Forms.Button();
-            this.tabCreates = new System.Windows.Forms.TabPage();
-            this.dropsGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.dropsGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dropsGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dropsGV = new System.Windows.Forms.DataGridView();
-            this.txtStdOut = new System.Windows.Forms.TextBox();
-            this.tabAlters = new System.Windows.Forms.TabPage();
-            this.altersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.altersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.altersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.altersGV = new System.Windows.Forms.DataGridView();
-            this.createsGV = new System.Windows.Forms.DataGridView();
-            this.createsGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.createsGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.createsGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.tabOther = new System.Windows.Forms.TabPage();
+            this.othersGV = new System.Windows.Forms.DataGridView();
+            this.othersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.othersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.othersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabStdOut.SuspendLayout();
             this.tabStdErr.SuspendLayout();
-            this.tabDrops.SuspendLayout();
-            this.tabOptions.SuspendLayout();
-            this.tableLayoutPanel4.SuspendLayout();
             this.tabCreates.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.createsGV)).BeginInit();
+            this.tabDrops.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dropsGV)).BeginInit();
             this.tabAlters.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.altersGV)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.createsGV)).BeginInit();
+            this.tabOptions.SuspendLayout();
+            this.tableLayoutPanel4.SuspendLayout();
+            this.tabOther.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.othersGV)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -168,6 +175,7 @@
             this.tabControl1.Controls.Add(this.tabCreates);
             this.tabControl1.Controls.Add(this.tabDrops);
             this.tabControl1.Controls.Add(this.tabAlters);
+            this.tabControl1.Controls.Add(this.tabOther);
             this.tabControl1.Controls.Add(this.tabOptions);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(3, 261);
@@ -186,6 +194,22 @@
             this.tabStdOut.TabIndex = 0;
             this.tabStdOut.Text = "Standard output";
             this.tabStdOut.UseVisualStyleBackColor = true;
+            // 
+            // txtStdOut
+            // 
+            this.txtStdOut.BackColor = System.Drawing.Color.Black;
+            this.txtStdOut.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtStdOut.Font = new System.Drawing.Font("Consolas", 9.980198F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtStdOut.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.txtStdOut.Location = new System.Drawing.Point(3, 3);
+            this.txtStdOut.Multiline = true;
+            this.txtStdOut.Name = "txtStdOut";
+            this.txtStdOut.ReadOnly = true;
+            this.txtStdOut.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtStdOut.Size = new System.Drawing.Size(898, 375);
+            this.txtStdOut.TabIndex = 1;
+            this.txtStdOut.TabStop = false;
+            this.txtStdOut.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
             // 
             // tabStdErr
             // 
@@ -214,6 +238,51 @@
             this.txtStdErr.TabStop = false;
             this.txtStdErr.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
             // 
+            // tabCreates
+            // 
+            this.tabCreates.Controls.Add(this.createsGV);
+            this.tabCreates.Location = new System.Drawing.Point(4, 22);
+            this.tabCreates.Name = "tabCreates";
+            this.tabCreates.Size = new System.Drawing.Size(904, 381);
+            this.tabCreates.TabIndex = 5;
+            this.tabCreates.Text = "Objects to add";
+            this.tabCreates.UseVisualStyleBackColor = true;
+            // 
+            // createsGV
+            // 
+            this.createsGV.AllowUserToAddRows = false;
+            this.createsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.createsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.createsGVName,
+            this.createsGVScript,
+            this.createsGVRunButton});
+            this.createsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.createsGV.Location = new System.Drawing.Point(0, 0);
+            this.createsGV.Name = "createsGV";
+            this.createsGV.Size = new System.Drawing.Size(904, 381);
+            this.createsGV.TabIndex = 3;
+            this.createsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
+            // 
+            // createsGVName
+            // 
+            this.createsGVName.DataPropertyName = "Key";
+            this.createsGVName.HeaderText = "name";
+            this.createsGVName.Name = "createsGVName";
+            // 
+            // createsGVScript
+            // 
+            this.createsGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.createsGVScript.DataPropertyName = "Value";
+            this.createsGVScript.HeaderText = "script";
+            this.createsGVScript.Name = "createsGVScript";
+            // 
+            // createsGVRunButton
+            // 
+            this.createsGVRunButton.HeaderText = "";
+            this.createsGVRunButton.Name = "createsGVRunButton";
+            this.createsGVRunButton.Text = "run";
+            this.createsGVRunButton.UseColumnTextForButtonValue = true;
+            // 
             // tabDrops
             // 
             this.tabDrops.Controls.Add(this.dropsGV);
@@ -223,6 +292,86 @@
             this.tabDrops.TabIndex = 2;
             this.tabDrops.Text = "Objects to drop";
             this.tabDrops.UseVisualStyleBackColor = true;
+            // 
+            // dropsGV
+            // 
+            this.dropsGV.AllowUserToAddRows = false;
+            this.dropsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dropsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dropsGVName,
+            this.dropsGVScript,
+            this.dropsGVRunButton});
+            this.dropsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dropsGV.Location = new System.Drawing.Point(0, 0);
+            this.dropsGV.Name = "dropsGV";
+            this.dropsGV.Size = new System.Drawing.Size(904, 381);
+            this.dropsGV.TabIndex = 2;
+            this.dropsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
+            // 
+            // dropsGVName
+            // 
+            this.dropsGVName.DataPropertyName = "Key";
+            this.dropsGVName.HeaderText = "name";
+            this.dropsGVName.Name = "dropsGVName";
+            // 
+            // dropsGVScript
+            // 
+            this.dropsGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dropsGVScript.DataPropertyName = "Value";
+            this.dropsGVScript.HeaderText = "script";
+            this.dropsGVScript.Name = "dropsGVScript";
+            // 
+            // dropsGVRunButton
+            // 
+            this.dropsGVRunButton.HeaderText = "";
+            this.dropsGVRunButton.Name = "dropsGVRunButton";
+            this.dropsGVRunButton.Text = "run";
+            this.dropsGVRunButton.UseColumnTextForButtonValue = true;
+            // 
+            // tabAlters
+            // 
+            this.tabAlters.Controls.Add(this.altersGV);
+            this.tabAlters.Location = new System.Drawing.Point(4, 22);
+            this.tabAlters.Name = "tabAlters";
+            this.tabAlters.Size = new System.Drawing.Size(904, 381);
+            this.tabAlters.TabIndex = 3;
+            this.tabAlters.Text = "Objects to alter";
+            this.tabAlters.UseVisualStyleBackColor = true;
+            // 
+            // altersGV
+            // 
+            this.altersGV.AllowUserToAddRows = false;
+            this.altersGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.altersGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.altersGVName,
+            this.altersGVScript,
+            this.altersGVRunButton});
+            this.altersGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.altersGV.Location = new System.Drawing.Point(0, 0);
+            this.altersGV.Name = "altersGV";
+            this.altersGV.Size = new System.Drawing.Size(904, 381);
+            this.altersGV.TabIndex = 5;
+            this.altersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
+            // 
+            // altersGVName
+            // 
+            this.altersGVName.DataPropertyName = "Key";
+            this.altersGVName.HeaderText = "name";
+            this.altersGVName.Name = "altersGVName";
+            // 
+            // altersGVScript
+            // 
+            this.altersGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.altersGVScript.DataPropertyName = "Value";
+            this.altersGVScript.HeaderText = "script";
+            this.altersGVScript.Name = "altersGVScript";
+            // 
+            // altersGVRunButton
+            // 
+            this.altersGVRunButton.HeaderText = "";
+            this.altersGVRunButton.Name = "altersGVRunButton";
+            this.altersGVRunButton.Text = "run";
+            this.altersGVRunButton.UseColumnTextForButtonValue = true;
             // 
             // tabOptions
             // 
@@ -581,16 +730,16 @@
             this.chkRegSql.Text = "Register ASP.NET Memberships";
             this.chkRegSql.UseVisualStyleBackColor = true;
             // 
-            // chkInitializeData
+            // runButton
             // 
-            this.chkInitializeData.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.chkInitializeData.AutoSize = true;
-            this.chkInitializeData.Location = new System.Drawing.Point(189, 237);
-            this.chkInitializeData.Name = "chkInitializeData";
-            this.chkInitializeData.Size = new System.Drawing.Size(87, 17);
-            this.chkInitializeData.TabIndex = 19;
-            this.chkInitializeData.Text = "Initialize data";
-            this.chkInitializeData.UseVisualStyleBackColor = true;
+            this.runButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.runButton.Location = new System.Drawing.Point(833, 41);
+            this.runButton.Name = "runButton";
+            this.runButton.Size = new System.Drawing.Size(82, 24);
+            this.runButton.TabIndex = 22;
+            this.runButton.Text = "Run";
+            this.runButton.UseVisualStyleBackColor = true;
+            this.runButton.Click += new System.EventHandler(this.runButton_Click);
             // 
             // chkSyncProcedures
             // 
@@ -606,21 +755,16 @@
             this.chkSyncProcedures.Text = "Sync stored procedures";
             this.chkSyncProcedures.UseVisualStyleBackColor = true;
             // 
-            // runButton
+            // chkInitializeData
             // 
-            this.runButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.runButton.Location = new System.Drawing.Point(833, 41);
-            this.runButton.Name = "runButton";
-            this.runButton.Size = new System.Drawing.Size(82, 24);
-            this.runButton.TabIndex = 22;
-            this.runButton.Text = "Run";
-            this.runButton.UseVisualStyleBackColor = true;
-            this.runButton.Click += new System.EventHandler(this.runButton_Click);
-            // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
+            this.chkInitializeData.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.chkInitializeData.AutoSize = true;
+            this.chkInitializeData.Location = new System.Drawing.Point(189, 237);
+            this.chkInitializeData.Name = "chkInitializeData";
+            this.chkInitializeData.Size = new System.Drawing.Size(87, 17);
+            this.chkInitializeData.TabIndex = 19;
+            this.chkInitializeData.Text = "Initialize data";
+            this.chkInitializeData.UseVisualStyleBackColor = true;
             // 
             // chkCreateFKs
             // 
@@ -657,146 +801,55 @@
             this.analyzeButton.UseVisualStyleBackColor = true;
             this.analyzeButton.Click += new System.EventHandler(this.analyzeButton_Click);
             // 
-            // tabCreates
+            // openFileDialog1
             // 
-            this.tabCreates.Controls.Add(this.createsGV);
-            this.tabCreates.Location = new System.Drawing.Point(4, 22);
-            this.tabCreates.Name = "tabCreates";
-            this.tabCreates.Size = new System.Drawing.Size(904, 381);
-            this.tabCreates.TabIndex = 5;
-            this.tabCreates.Text = "Objects to add";
-            this.tabCreates.UseVisualStyleBackColor = true;
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
             // 
-            // dropsGVRunButton
+            // tabOther
             // 
-            this.dropsGVRunButton.HeaderText = "";
-            this.dropsGVRunButton.Name = "dropsGVRunButton";
-            this.dropsGVRunButton.Text = "run";
-            this.dropsGVRunButton.UseColumnTextForButtonValue = true;
+            this.tabOther.Controls.Add(this.othersGV);
+            this.tabOther.Location = new System.Drawing.Point(4, 22);
+            this.tabOther.Name = "tabOther";
+            this.tabOther.Size = new System.Drawing.Size(904, 381);
+            this.tabOther.TabIndex = 6;
+            this.tabOther.Text = "Other scripts";
+            this.tabOther.UseVisualStyleBackColor = true;
             // 
-            // dropsGVScript
+            // othersGV
             // 
-            this.dropsGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dropsGVScript.DataPropertyName = "Value";
-            this.dropsGVScript.HeaderText = "script";
-            this.dropsGVScript.Name = "dropsGVScript";
+            this.othersGV.AllowUserToAddRows = false;
+            this.othersGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.othersGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.othersGVName,
+            this.othersGVScript,
+            this.othersGVRunButton});
+            this.othersGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.othersGV.Location = new System.Drawing.Point(0, 0);
+            this.othersGV.Name = "othersGV";
+            this.othersGV.Size = new System.Drawing.Size(904, 381);
+            this.othersGV.TabIndex = 6;
+            this.othersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
-            // dropsGVName
+            // othersGVName
             // 
-            this.dropsGVName.DataPropertyName = "Key";
-            this.dropsGVName.HeaderText = "name";
-            this.dropsGVName.Name = "dropsGVName";
+            this.othersGVName.DataPropertyName = "Key";
+            this.othersGVName.HeaderText = "name";
+            this.othersGVName.Name = "othersGVName";
             // 
-            // dropsGV
+            // othersGVScript
             // 
-            this.dropsGV.AllowUserToAddRows = false;
-            this.dropsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dropsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dropsGVName,
-            this.dropsGVScript,
-            this.dropsGVRunButton});
-            this.dropsGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dropsGV.Location = new System.Drawing.Point(0, 0);
-            this.dropsGV.Name = "dropsGV";
-            this.dropsGV.Size = new System.Drawing.Size(904, 381);
-            this.dropsGV.TabIndex = 2;
-            this.dropsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
+            this.othersGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.othersGVScript.DataPropertyName = "Value";
+            this.othersGVScript.HeaderText = "script";
+            this.othersGVScript.Name = "othersGVScript";
             // 
-            // txtStdOut
+            // othersGVRunButton
             // 
-            this.txtStdOut.BackColor = System.Drawing.Color.Black;
-            this.txtStdOut.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtStdOut.Font = new System.Drawing.Font("Consolas", 9.980198F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtStdOut.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.txtStdOut.Location = new System.Drawing.Point(3, 3);
-            this.txtStdOut.Multiline = true;
-            this.txtStdOut.Name = "txtStdOut";
-            this.txtStdOut.ReadOnly = true;
-            this.txtStdOut.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdOut.Size = new System.Drawing.Size(898, 375);
-            this.txtStdOut.TabIndex = 1;
-            this.txtStdOut.TabStop = false;
-            this.txtStdOut.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
-            // 
-            // tabAlters
-            // 
-            this.tabAlters.Controls.Add(this.altersGV);
-            this.tabAlters.Location = new System.Drawing.Point(4, 22);
-            this.tabAlters.Name = "tabAlters";
-            this.tabAlters.Size = new System.Drawing.Size(904, 381);
-            this.tabAlters.TabIndex = 3;
-            this.tabAlters.Text = "Objects to alter";
-            this.tabAlters.UseVisualStyleBackColor = true;
-            // 
-            // altersGVRunButton
-            // 
-            this.altersGVRunButton.HeaderText = "";
-            this.altersGVRunButton.Name = "altersGVRunButton";
-            this.altersGVRunButton.Text = "run";
-            this.altersGVRunButton.UseColumnTextForButtonValue = true;
-            // 
-            // altersGVScript
-            // 
-            this.altersGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.altersGVScript.DataPropertyName = "Value";
-            this.altersGVScript.HeaderText = "script";
-            this.altersGVScript.Name = "altersGVScript";
-            // 
-            // altersGVName
-            // 
-            this.altersGVName.DataPropertyName = "Key";
-            this.altersGVName.HeaderText = "name";
-            this.altersGVName.Name = "altersGVName";
-            // 
-            // altersGV
-            // 
-            this.altersGV.AllowUserToAddRows = false;
-            this.altersGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.altersGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.altersGVName,
-            this.altersGVScript,
-            this.altersGVRunButton});
-            this.altersGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.altersGV.Location = new System.Drawing.Point(0, 0);
-            this.altersGV.Name = "altersGV";
-            this.altersGV.Size = new System.Drawing.Size(904, 381);
-            this.altersGV.TabIndex = 5;
-            this.altersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
-            // 
-            // createsGV
-            // 
-            this.createsGV.AllowUserToAddRows = false;
-            this.createsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.createsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.createsGVName,
-            this.createsGVScript,
-            this.createsGVRunButton});
-            this.createsGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.createsGV.Location = new System.Drawing.Point(0, 0);
-            this.createsGV.Name = "createsGV";
-            this.createsGV.Size = new System.Drawing.Size(904, 381);
-            this.createsGV.TabIndex = 3;
-            this.createsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
-            // 
-            // createsGVName
-            // 
-            this.createsGVName.DataPropertyName = "Key";
-            this.createsGVName.HeaderText = "name";
-            this.createsGVName.Name = "createsGVName";
-            // 
-            // createsGVScript
-            // 
-            this.createsGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.createsGVScript.DataPropertyName = "Value";
-            this.createsGVScript.HeaderText = "script";
-            this.createsGVScript.Name = "createsGVScript";
-            // 
-            // createsGVRunButton
-            // 
-            this.createsGVRunButton.HeaderText = "";
-            this.createsGVRunButton.Name = "createsGVRunButton";
-            this.createsGVRunButton.Text = "run";
-            this.createsGVRunButton.UseColumnTextForButtonValue = true;
+            this.othersGVRunButton.HeaderText = "";
+            this.othersGVRunButton.Name = "othersGVRunButton";
+            this.othersGVRunButton.Text = "run";
+            this.othersGVRunButton.UseColumnTextForButtonValue = true;
             // 
             // Form1
             // 
@@ -813,15 +866,17 @@
             this.tabStdOut.PerformLayout();
             this.tabStdErr.ResumeLayout(false);
             this.tabStdErr.PerformLayout();
-            this.tabDrops.ResumeLayout(false);
-            this.tabOptions.ResumeLayout(false);
-            this.tableLayoutPanel4.ResumeLayout(false);
-            this.tableLayoutPanel4.PerformLayout();
             this.tabCreates.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.createsGV)).EndInit();
+            this.tabDrops.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dropsGV)).EndInit();
             this.tabAlters.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.altersGV)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.createsGV)).EndInit();
+            this.tabOptions.ResumeLayout(false);
+            this.tableLayoutPanel4.ResumeLayout(false);
+            this.tableLayoutPanel4.PerformLayout();
+            this.tabOther.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.othersGV)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -889,6 +944,11 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn altersGVName;
         private System.Windows.Forms.DataGridViewTextBoxColumn altersGVScript;
         private System.Windows.Forms.DataGridViewButtonColumn altersGVRunButton;
+        private System.Windows.Forms.TabPage tabOther;
+        private System.Windows.Forms.DataGridView othersGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn othersGVName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn othersGVScript;
+        private System.Windows.Forms.DataGridViewButtonColumn othersGVRunButton;
     }
 }
 

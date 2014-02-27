@@ -317,10 +317,8 @@ namespace InitDB
                     WithDropReport("schema analysis", db, db.Analyze);
                     this.SyncUI(() =>
                     {
-                        this.createsGV.Rows.Clear();
-                        foreach (var entry in db.CreateScripts)
-                            this.createsGV.Rows.Add(entry.Key, entry.Value);
-                        analyzeButton.Enabled = true;
+                        FillGV(this.createsGV, db.CreateScripts);
+                        this.analyzeButton.Enabled = true;
                     });
                 }
             });
@@ -331,6 +329,13 @@ namespace InitDB
             return WithDropReport("tables", db, db.CreateTables);
         }
 
+        private static void FillGV(DataGridView gv, IEnumerable<KeyValuePair<string, string>> collect)
+        {
+            gv.Rows.Clear();
+            foreach (var entry in collect)
+                gv.Rows.Add(entry.Key, entry.Value);
+        }
+
         private bool WithDropReport(string name, ISqlSiphon db, Action act)
         {
             return this.SyncX(name, () =>
@@ -338,13 +343,9 @@ namespace InitDB
                 act();
                 this.SyncUI(() =>
                 {
-                    this.altersGV.Rows.Clear();
-                    foreach (var entry in db.AlterScripts)
-                        this.altersGV.Rows.Add(entry.Key, entry.Value);
-
-                    this.dropsGV.Rows.Clear();
-                    foreach (var entry in db.DropScripts)
-                        this.dropsGV.Rows.Add(entry.Key, entry.Value);
+                    FillGV(this.altersGV, db.AlterScripts);
+                    FillGV(this.dropsGV, db.DropScripts);
+                    FillGV(this.othersGV, db.OtherScripts);
                 });
             });
         }
