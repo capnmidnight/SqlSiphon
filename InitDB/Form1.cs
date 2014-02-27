@@ -1,17 +1,13 @@
-﻿using System;
+﻿using SqlSiphon;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Diagnostics;
-using System.Web.Security;
-using System.Reflection;
-using SqlSiphon;
 
 namespace InitDB
 {
@@ -230,11 +226,31 @@ namespace InitDB
                 if (succeeded && chkRegSql.Checked)
                     succeeded &= RunASPNET_REGSQL();
 
-                if (succeeded
-                    && (chkCreateTables.Checked
-                        || chkSyncProcedures.Checked
-                        || chkInitializeData.Checked))
-                    succeeded &= SyncSqlSiphon();
+                if (succeeded)
+                {
+                    var conn = MakeConnection();
+                    using (var db = MakeDatabaseConnection(conn))
+                    {
+                        db.Progress += db_Progress;
+                        var t = db.GetType();
+                        this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
+                        if (succeeded && chkCreateTables.Checked)
+                            succeeded &= SyncTables(db);
+
+                        if (succeeded && chkCreateFKs.Checked)
+                            succeeded &= SyncFKs(db);
+
+                        if (succeeded && chkCreateIndices.Checked)
+                            succeeded &= SyncIndices(db);
+
+                        if (succeeded && chkSyncProcedures.Checked)
+                            succeeded &= SyncProcedures(db);
+
+                        if (succeeded && chkInitializeData.Checked)
+                            succeeded &= InitData(db);
+                        db.Progress -= db_Progress;
+                    }
+                }
 
                 if (succeeded)
                     this.ToOutput("All done");
@@ -251,53 +267,12 @@ namespace InitDB
             }
         }
 
-        private bool SyncSqlSiphon()
-        {
-            var conn = MakeConnection();
-            var dbs = MakeDatabaseConnection(conn);
-            var succeeded = dbs != null;
-            if (succeeded)
-            {
-                foreach (var db in dbs)
-                {
-                    db.Progress += db_Progress;
-                    var t = db.GetType();
-                    this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
-                    try
-                    {
-                        if (succeeded && chkCreateTables.Checked)
-                            succeeded &= SyncTables(db);
-
-                        if (succeeded && chkSyncProcedures.Checked)
-                            succeeded &= SyncProcedures(db);
-
-                        if (succeeded && chkInitializeData.Checked)
-                            succeeded &= InitData(db);
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                    finally
-                    {
-                        db.Dispose();
-                        if (succeeded)
-                            this.ToOutput(string.Format("Sync success {0}.{1}", t.Namespace, t.Name));
-                        else
-
-                            this.ToError(string.Format("Failed to sync {0}.{1}", t.Namespace, t.Name));
-                    }
-                }
-            }
-            return succeeded;
-        }
-
         void db_Progress(object sender, DataProgressEventArgs e)
         {
             this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow, e.RowCount, e.Message));
         }
 
-        private IEnumerable<ISqlSiphon> MakeDatabaseConnection(string connectionString)
+        private ISqlSiphon MakeDatabaseConnection(string connectionString)
         {
             if (File.Exists(assemblyTB.Text))
             {
@@ -310,18 +285,57 @@ namespace InitDB
                                 && !t.IsAbstract
                                 && !t.IsInterface)
                     .Select(t => (ISqlSiphon)(t.GetConstructor(constructorParams)
-                                .Invoke(constructorArgs)));
+                                .Invoke(constructorArgs)))
+                    .FirstOrDefault();
             }
             return null;
         }
 
-        private bool SyncTables(SqlSiphon.ISqlSiphon db)
+        private bool SyncX(string name, Action act)
         {
             try
             {
-                this.ToOutput("Synchronizing tables");
-                db.CreateTables();
-                db.CreateForeignKeys();
+                this.ToOutput("Synchronizing " + name);
+                act();
+                this.ToOutput(name + " synched");
+                return true;
+            }
+            catch (Exception exp)
+            {
+                this.ToError(exp.Message);
+                return false;
+            }
+        }
+
+        private void analyzeButton_Click(object sender, EventArgs e)
+        {
+            analyzeButton.Enabled = false;
+            Task.Run(() =>
+            {
+                using (var db = MakeDatabaseConnection(MakeConnection()))
+                {
+                    WithDropReport("schema analysis", db, db.Analyze);
+                    this.SyncUI(() =>
+                    {
+                        this.createsGV.Rows.Clear();
+                        foreach (var entry in db.CreateScripts)
+                            this.createsGV.Rows.Add(entry.Key, entry.Value);
+                        analyzeButton.Enabled = true;
+                    });
+                }
+            });
+        }
+
+        private bool SyncTables(SqlSiphon.ISqlSiphon db)
+        {
+            return WithDropReport("tables", db, db.CreateTables);
+        }
+
+        private bool WithDropReport(string name, ISqlSiphon db, Action act)
+        {
+            return this.SyncX(name, () =>
+            {
+                act();
                 this.SyncUI(() =>
                 {
                     this.altersGV.Rows.Clear();
@@ -332,48 +346,32 @@ namespace InitDB
                     foreach (var entry in db.DropScripts)
                         this.dropsGV.Rows.Add(entry.Key, entry.Value);
                 });
-                this.ToOutput("Tables synched");
-                return true;
-            }
-            catch (Exception exp)
-            {
-                this.ToError(exp.Message);
-                return false;
-            }
+            });
+        }
+
+        private bool SyncFKs(ISqlSiphon db)
+        {
+            return this.SyncX("foreign keys", () => db.CreateForeignKeys());
+        }
+
+        private bool SyncIndices(ISqlSiphon db)
+        {
+            return this.SyncX("indices", () => db.CreateIndices());
         }
 
         private bool SyncProcedures(SqlSiphon.ISqlSiphon db)
         {
-            try
+            return this.SyncX("procedures", () =>
             {
-                this.ToOutput("Synchronizing procedures");
                 db.DropProcedures();
                 db.SynchronizeUserDefinedTableTypes();
                 db.CreateProcedures();
-                this.ToOutput("Procedures synched");
-                return true;
-            }
-            catch (Exception exp)
-            {
-                this.ToError(exp.Message);
-                return false;
-            }
+            });
         }
 
         private bool InitData(SqlSiphon.ISqlSiphon db)
         {
-            try
-            {
-                this.ToOutput("Initializing data");
-                db.InitializeData();
-                this.ToOutput("Data initialized");
-                return true;
-            }
-            catch (Exception exp)
-            {
-                this.ToError(exp.Message);
-                return false;
-            }
+            return this.SyncX("Initial data", () => db.InitializeData());
         }
 
 
@@ -382,11 +380,16 @@ namespace InitDB
             var conn = new System.Data.SqlClient.SqlConnectionStringBuilder
             {
                 DataSource = this.serverTB.Text,
-                UserID = this.adminUserTB.Text,
-                Password = this.adminPassTB.Text,
-                IntegratedSecurity = false,
                 InitialCatalog = this.databaseTB.Text
             };
+            var user = adminUserTB.Text != string.Empty ? adminUserTB.Text : sqlUserTB.Text != string.Empty ? sqlUserTB.Text : null;
+            var pass = adminPassTB.Text != string.Empty ? adminPassTB.Text : sqlPassTB.Text != string.Empty ? sqlPassTB.Text : null;
+            conn.IntegratedSecurity = user == null;
+            if (user != null)
+            {
+                conn.UserID = user;
+                conn.Password = pass;
+            }
             return conn.ConnectionString;
         }
 
@@ -547,7 +550,8 @@ namespace InitDB
                 Task.Run(() =>
                 {
                     this.RunQueryWithSQLCMD(script, this.databaseTB.Text);
-                    this.SyncUI(() =>{
+                    this.SyncUI(() =>
+                    {
                         gv.Rows.RemoveAt(e.RowIndex);
                         gv.Enabled = true;
                     });

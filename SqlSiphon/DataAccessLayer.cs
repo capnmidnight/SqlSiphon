@@ -50,13 +50,11 @@ namespace SqlSiphon
         void CreateProcedures();
         void CreateIndices();
         void InitializeData();
+        void Analyze();
 
         event DataProgressEventHandler Progress;
 
-        KeyValuePair<string, string>[] AddColumnScripts { get; }
-        KeyValuePair<string, string>[] DropColumnScripts { get; }
-        KeyValuePair<string, string>[] DropTableScripts { get; }
-        KeyValuePair<string, string>[] AlterColumnScripts { get; }
+        KeyValuePair<string, string>[] CreateScripts { get; }
         KeyValuePair<string, string>[] DropScripts { get; }
         KeyValuePair<string, string>[] AlterScripts { get; }
 
@@ -597,6 +595,14 @@ namespace SqlSiphon
         /// </summary>
         public void CreateTables()
         {
+            this.Analyze();
+            // tables that don't already exist can be created without fear.
+            this.Process(this.newTables, c => string.Format("create table {0}", c.Name), this.CreateTable);
+            this.Process(this.newNullableColumns, c => string.Format("add column {0} to {1}", c.Value.Name, c.Key), this.AddColumn);
+        }
+
+        public void Analyze()
+        {
             var columns = this.GetListQuery<ColumnInfo>("SELECT * FROM INFORMATION_SCHEMA.COLUMNS");
             var existingSchema = columns
                 .GroupBy(column => MakeIdentifier(column.table_schema ?? DefaultSchemaName, column.table_name))
@@ -620,7 +626,7 @@ namespace SqlSiphon
                 .Where(m => m != null && m.Include)
                 .ToDictionary(table => MakeIdentifier(table.Schema, table.Name));
 
-            var newTables = allMappedTypes
+            this.newTables = allMappedTypes
                 .Where(table => !existingSchema.ContainsKey(table.Key)).Select(table => table.Value)
                 .ToList();
             var changedTables = allMappedTypes
@@ -631,8 +637,8 @@ namespace SqlSiphon
                     && !table.Key.Contains("aspnet"))
                 .Select(table => table.Key).ToList();
 
-            var newColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
-            this.nonNullableColumnsToAdd = new List<KeyValuePair<string, MappedPropertyAttribute>>();
+            this.newNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
+            this.newNonNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
             this.columnsToAlter = new List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>>();
             this.columnsToDrop = new List<ColumnInfo>();
 
@@ -645,30 +651,38 @@ namespace SqlSiphon
                 var cols = props
                     .Where(p => !table.ContainsKey(p.Key))
                     .Select(p => p.Value);
-                newColumns.AddRange(cols.Where(c => c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
-                this.nonNullableColumnsToAdd.AddRange(cols.Where(c => !c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
+                newNullableColumns.AddRange(cols.Where(c => c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
+                this.newNonNullableColumns.AddRange(cols.Where(c => !c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
                 this.columnsToAlter.AddRange(props
                     .Where(p => table.ContainsKey(p.Key) && IsTypeChanged(table[p.Key], p.Value))
                     .Select(p => new KeyValuePair<ColumnInfo, MappedPropertyAttribute>(table[p.Key], p.Value)));
                 this.columnsToDrop.AddRange(table.Values
                     .Where(c => !props.ContainsKey(c.column_name)));
             }
-
-            // tables that don't already exist can be created without fear.
-            this.Process(newTables, c => string.Format("create table {0}", c.Name), this.CreateTable);
-            this.Process(newColumns, c => string.Format("add column {0} to {1}", c.Value.Name, c.Key), this.AddColumn);
         }
-
-        private List<KeyValuePair<string, MappedPropertyAttribute>> nonNullableColumnsToAdd;
-        private List<ColumnInfo> columnsToDrop;
+        private List<MappedClassAttribute> newTables;
         private List<string> tablesToDrop;
+
+        private List<KeyValuePair<string, MappedPropertyAttribute>> newNullableColumns;
+        private List<KeyValuePair<string, MappedPropertyAttribute>> newNonNullableColumns;
+        private List<ColumnInfo> columnsToDrop;
         private List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>> columnsToAlter;
 
-        public KeyValuePair<string, string>[] AddColumnScripts
+        public KeyValuePair<string, string>[] AddNullableColumnScripts
         {
             get
             {
-                return nonNullableColumnsToAdd.Select(x =>
+                return newNullableColumns.Select(x =>
+                    new KeyValuePair<string, string>(x.Key + this.IdentifierPartSeperator + MakeIdentifier(x.Value.Name),
+                    this.MakeAddColumnScript(x.Key, x.Value))).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] AddNonNullableColumnScripts
+        {
+            get
+            {
+                return newNonNullableColumns.Select(x =>
                     new KeyValuePair<string, string>(x.Key + this.IdentifierPartSeperator + MakeIdentifier(x.Value.Name),
                     this.MakeAddColumnScript(x.Key, x.Value))).ToArray();
             }
@@ -702,11 +716,29 @@ namespace SqlSiphon
             }
         }
 
+
+        public KeyValuePair<string, string>[] AddTableScripts
+        {
+            get
+            {
+                return newTables.Select(t => new KeyValuePair<string, string>(MakeIdentifier(t.Schema ?? DefaultSchemaName, t.Name),
+                    this.BuildCreateTableScript(t))).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] CreateScripts
+        {
+            get
+            {
+                return AddTableScripts.Union(AddNullableColumnScripts).ToArray();
+            }
+        }
+
         public KeyValuePair<string, string>[] AlterScripts
         {
             get
             {
-                return AddColumnScripts.Union(AlterColumnScripts).ToArray();
+                return AddNonNullableColumnScripts.Union(AlterColumnScripts).ToArray();
             }
         }
 
