@@ -17,19 +17,24 @@ Currently, it has been tested and used regularly with:
 * MS Access 2010
 * Some CSV and Excel documents (via the JET OleDB driver)
 * PostgreSQL 9.2 (only basic functionality tested so far, but is probably good)
-* Stored procedure synchronization system (SPs are largely application-specific, so they should live with the application in source control)
-* Schema migration tool
-* SQL Server table-value parameters
-* PostgreSQL array parameters
-* Bulk Insert
+
+## Features
+* Maintains naming and parameter typing between stored procedures in the database and application level calls of SPs.
+* Maps query results to class objects for meaningful consumption.
+* Synchronizes stored procedures between environments.
+* Keeps query code managed with application code, in source control
+* Assists in schema migration
+* Bulk insert with:
+  * SQL Server table-value parameters
+  * PostgreSQL array parameters
 
 ## Future Work
 * Expand database support
-    * SQL Server Compact Edition
-    * Oracle
-    * SQLite
-    * SqlAnywhere
-    * Generic ODBC drivers (code exists, but is untested)
+  * SQL Server Compact Edition
+  * Oracle
+  * SQLite
+  * SqlAnywhere
+  * Generic ODBC drivers (code exists, but is untested)
 * Automatic generation of Foreign Key relationships
 * Postgres and MySQL schema management and migration
 * Data migration tool
