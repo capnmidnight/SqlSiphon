@@ -8,15 +8,20 @@ SqlSiphon is not an Object-Relational Mapping (ORM) system. It is a system for s
 ## Database support
 Currently, it has been tested and used regularly with:
 * MS SQL Server:
-    * 2005,
-    * 2008,
-    * 2012
+  * 2005,
+  * 2008,
+  * 2012
 * MySQL: 
   * 5.1,
   * 5.5
 * MS Access 2010
 * Some CSV and Excel documents (via the JET OleDB driver)
 * PostgreSQL 9.2 (only basic functionality tested so far, but is probably good)
+* Stored procedure synchronization system (SPs are largely application-specific, so they should live with the application in source control)
+* Schema migration tool
+* SQL Server table-value parameters
+* PostgreSQL array parameters
+* Bulk Insert
 
 ## Future Work
 * Expand database support
@@ -25,9 +30,7 @@ Currently, it has been tested and used regularly with:
     * SQLite
     * SqlAnywhere
     * Generic ODBC drivers (code exists, but is untested)
-* Stored procedure synchronization system (SPs are largely application-specific, so they should live with the application in source control)
-* Schema and data migration tools
-* Expand database feature support
-    * SQL Server table-value parameters
-    * PostgreSQL array parameters
-    * Bulk Insert
+* Automatic generation of Foreign Key relationships
+* Postgres and MySQL schema management and migration
+* Data migration tool
+* Query structure analyzer
