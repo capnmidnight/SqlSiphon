@@ -48,11 +48,13 @@ namespace SqlSiphon.Mapping
     {
         public List<MappedMethodAttribute> Methods { get; private set; }
         public List<MappedPropertyAttribute> Properties { get; private set; }
+        public Dictionary<int, string> EnumValues { get; private set; }
 
         public MappedClassAttribute()
         {
             this.Methods = new List<MappedMethodAttribute>();
             this.Properties = new List<MappedPropertyAttribute>();
+            this.EnumValues = new Dictionary<int, string>();
         }
 
         /// <summary>
@@ -100,15 +102,36 @@ namespace SqlSiphon.Mapping
         public override void InferProperties(Type obj)
         {
             base.InferProperties(obj);
+            if (obj.IsEnum)
+            {
+                this.Properties.Add(new MappedPropertyAttribute
+                    {
+                        IncludeInPrimaryKey = true,
+                        Name = "Value",
+                        SqlType = "int"
+                    });
 
-            this.Methods.AddRange(
-                obj.GetMethods(PATTERN)
-                .Select(this.GetMethodDescriptions)
-                .Where(m => m != null));
+                this.Properties.Add(new MappedPropertyAttribute
+                    {
+                        Name = "Description",
+                        SqlType = "nvarchar(max)"
+                    });
 
-            this.Properties.AddRange(
-                obj.GetProperties(PATTERN)
-                .Select(this.GetPropertyDescriptions));
+                var names = obj.GetEnumNames();
+                foreach (var name in names)
+                    EnumValues.Add((int)Enum.Parse(obj, name), name);
+            }
+            else
+            {
+                this.Methods.AddRange(
+                    obj.GetMethods(PATTERN)
+                    .Select(this.GetMethodDescriptions)
+                    .Where(m => m != null));
+
+                this.Properties.AddRange(
+                    obj.GetProperties(PATTERN)
+                    .Select(this.GetPropertyDescriptions));
+            }
         }
     }
 }

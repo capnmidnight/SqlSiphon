@@ -37,6 +37,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon
@@ -45,6 +46,7 @@ namespace SqlSiphon
     {
         void CreateTables();
         void CreateForeignKeys();
+        void RunAllManualScripts();
         void DropProcedures();
         void SynchronizeUserDefinedTableTypes();
         void CreateProcedures();
@@ -75,6 +77,7 @@ namespace SqlSiphon
         private bool isConnectionOwned;
 
         private MappedClassAttribute meta;
+        private Regex FKNameRegex;
 
         protected virtual string IdentifierPartBegin { get { return ""; } }
         protected virtual string IdentifierPartEnd { get { return ""; } }
@@ -97,6 +100,9 @@ namespace SqlSiphon
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
         private DataAccessLayer(ConnectionT connection, bool isConnectionOwned)
         {
+            this.FKNameRegex = new Regex(
+                string.Format("add constraint \\{0}([\\w_]+)\\{1}", IdentifierPartBegin, IdentifierPartEnd),
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
             this.Connection = connection;
             this.isConnectionOwned = isConnectionOwned;
             var type = this.GetType();
@@ -641,6 +647,13 @@ namespace SqlSiphon
             this.newNonNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
             this.columnsToAlter = new List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>>();
             this.columnsToDrop = new List<ColumnInfo>();
+            this.PopulateEnumTableScripts = allMappedTypes.SelectMany(kv=>
+                kv.Value.EnumValues.Select(v=>
+                    new KeyValuePair<string, string>(kv.Key + "_" + v.Value,
+                        string.Format("if not exists(select * from {0} where Value = {1}) insert into {0}(Value, Description) values({1}, '{2}')", 
+                            kv.Key, 
+                            v.Key, 
+                            v.Value.Replace("'", "''"))))).ToArray();
 
             // for tables that already exist, figure out if they have any overlapping columns
             foreach (var tableName in changedTables.Keys)
@@ -706,6 +719,33 @@ namespace SqlSiphon
             }
         }
 
+        public KeyValuePair<string, string>[] DropForeignKeyScripts
+        {
+            get
+            {
+                return FKScripts.Select(s =>
+                {
+                    var m = FKNameRegex.Match(s);
+                    var script = s.Substring(0, m.Captures[0].Index + m.Captures[0].Length)
+                        .Replace("add constraint", "drop constraint")
+                        .Replace("not exists", "exists");
+                    return new KeyValuePair<string, string>(m.Groups[1].Value, script);
+                }).ToArray();
+            }
+        }
+
+        public KeyValuePair<string, string>[] AddForeignKeyScripts
+        {
+            get
+            {
+                return FKScripts.Select(s =>
+                {
+                    var m = FKNameRegex.Match(s);
+                    return new KeyValuePair<string, string>(m.Groups[1].Value, s);
+                }).ToArray();
+            }
+        }
+
         public KeyValuePair<string, string>[] AlterColumnScripts
         {
             get
@@ -722,7 +762,7 @@ namespace SqlSiphon
             get
             {
                 return newTables.Select(t => new KeyValuePair<string, string>(MakeIdentifier(t.Schema ?? DefaultSchemaName, t.Name),
-                    this.BuildCreateTableScript(t))).ToArray();
+                    this.MakeCreateTableScript(t))).ToArray();
             }
         }
 
@@ -730,7 +770,8 @@ namespace SqlSiphon
         {
             get
             {
-                return AddTableScripts.Union(AddNullableColumnScripts).ToArray();
+                return AddTableScripts
+                    .Union(AddNullableColumnScripts).ToArray();
             }
         }
 
@@ -746,23 +787,31 @@ namespace SqlSiphon
         {
             get
             {
-                return DropTableScripts.Union(DropColumnScripts).ToArray();
+                return DropTableScripts
+                    .Union(DropColumnScripts).ToArray();
             }
         }
+
+        public KeyValuePair<string, string>[] PopulateEnumTableScripts { get; private set; }
 
         public KeyValuePair<string, string>[] OtherScripts
         {
             get
             {
-                return InitialScripts.Select((s, i) => new KeyValuePair<string, string>(
-                    string.Format("script {0}", i), s)).ToArray();
+                return PopulateEnumTableScripts
+                    .Union(InitialScripts.Select((s, i) => new KeyValuePair<string, string>(
+                    string.Format("manual script {0}", i), s))).ToArray();
             }
         }
 
         private bool IsTypeChanged(ColumnInfo column, MappedPropertyAttribute property)
         {
             property.SqlType = this.MakeSqlTypeString(property);
-            var columnType = this.MakeSqlTypeString(column.data_type, null, column.character_maximum_length > 0, column.character_maximum_length, column.numeric_precision > 0, column.numeric_precision);
+            var columnType = this.MakeSqlTypeString(
+                column.data_type,
+                null,
+                false, // a column in a table is never an array. No, Postgres, it's not a good thing.
+                column.character_maximum_length > 0, column.character_maximum_length, column.numeric_precision > 0, column.numeric_precision);
             var changed = property.SqlType != columnType
                 || property.IsOptional != column.is_nullable.Equals("YES");
             return changed;
@@ -788,6 +837,11 @@ namespace SqlSiphon
             this.ExecuteScripts("Foreign keys", this.FKScripts.ToList());
         }
 
+        public void RunAllManualScripts()
+        {
+            this.ExecuteScripts("Manual scripts", this.OtherScripts.Select(kv=>kv.Value).ToList());
+        }
+
         public void CreateIndices()
         {
             this.ExecuteScripts("Indices", this.IndexScripts.ToList());
@@ -807,7 +861,7 @@ namespace SqlSiphon
                 var identifier = this.MakeIdentifier(info.Schema, info.Name);
                 if (this.ProcedureExists(info))
                 {
-                    var script = BuildDropProcedureScript(info);
+                    var script = MakeDropProcedureScript(info);
                     try
                     {
                         this.ExecuteQuery(script);
@@ -824,7 +878,7 @@ namespace SqlSiphon
         {
             var schema = type.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, type.Name);
-            var script = BuildCreateTableScript(type);
+            var script = MakeCreateTableScript(type);
             try
             {
                 this.ExecuteQuery(script);
@@ -856,7 +910,7 @@ namespace SqlSiphon
             {
                 var schema = info.Schema ?? DefaultSchemaName;
                 var identifier = this.MakeIdentifier(schema, info.Name);
-                var script = BuildCreateProcedureScript(info);
+                var script = MakeCreateProcedureScript(info);
                 try
                 {
                     this.ExecuteQuery(script);
@@ -992,28 +1046,64 @@ namespace SqlSiphon
 
         protected string MakeSqlTypeString(MappedTypeAttribute p)
         {
-            return MakeSqlTypeString(p.SqlType, p.SystemType, p.IsSizeSet, p.Size, p.IsPrecisionSet, p.Precision);
+            var systemType = p.SystemType;
+            if (systemType != null && systemType.IsEnum)
+                systemType = typeof(int);
+            return MakeSqlTypeString(p.SqlType, systemType, p.IsCollection, p.IsSizeSet, p.Size, p.IsPrecisionSet, p.Precision);
         }
 
-        protected abstract string[] FKScripts { get; }
-        protected abstract string[] IndexScripts { get; }
-        protected abstract string[] InitialScripts { get; }
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, bool isSizeSet, int size, bool isPrecisionSet, int precision);
-        protected abstract bool ProcedureExists(MappedMethodAttribute info);
-        protected abstract string BuildDropProcedureScript(MappedMethodAttribute info);
-        protected abstract string BuildCreateProcedureScript(MappedMethodAttribute info);
-        protected abstract string BuildCreateTableScript(MappedClassAttribute info);
-        protected abstract string MakeParameterString(MappedParameterAttribute p);
-        protected abstract string MakeColumnString(MappedPropertyAttribute p);
-        protected abstract string MakeDropColumnScript(ColumnInfo c);
-        protected abstract string MakeAddColumnScript(string tableID, MappedPropertyAttribute prop);
-        protected abstract string MakeAlterColumnScript(ColumnInfo columnInfo, MappedPropertyAttribute prop);
-        protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
-        protected abstract string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns);
-
+        protected virtual string[] FKScripts { get { return null; } }
+        protected virtual string[] IndexScripts { get { return null; } }
+        protected virtual string[] InitialScripts { get { return null; } }
+        protected virtual bool ProcedureExists(MappedMethodAttribute info)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeDropProcedureScript(MappedMethodAttribute info)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeCreateProcedureScript(MappedMethodAttribute info)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeCreateTableScript(MappedClassAttribute info)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeColumnString(MappedPropertyAttribute p)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeDropColumnScript(ColumnInfo c)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeAddColumnScript(string tableID, MappedPropertyAttribute prop)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeAlterColumnScript(ColumnInfo columnInfo, MappedPropertyAttribute prop)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeParameterString(MappedParameterAttribute p)
+        {
+            throw new NotImplementedException();
+        }
         public virtual void SynchronizeUserDefinedTableTypes()
         {
             throw new NotImplementedException();
         }
+
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision);
     }
 }

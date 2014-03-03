@@ -122,12 +122,16 @@ namespace SqlSiphon.Mapping
                     if (value != null)
                         value = Convert.ChangeType(value, targetType);
                 }
+                else if (targetType.IsEnum
+                    && value is string)
+                {
+                    value = Enum.Parse(targetType, (string)value);
+                }
 
                 this.originalProperty.SetValue(obj, value, null);
             }
             catch (Exception exp)
             {
-                double? x = 1f;
                 throw new Exception(string.Format(
                     "Cannot set property value for property {0}.{1}. Reason: {2}.",
                     this.originalProperty.DeclaringType.Name,

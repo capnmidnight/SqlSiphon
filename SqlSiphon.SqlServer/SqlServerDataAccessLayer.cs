@@ -72,15 +72,10 @@ namespace SqlSiphon.SqlServer
             : base(dal)
         {
         }
+
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
         protected override string DefaultSchemaName { get { return "dbo"; } }
-
-        protected override SqlCommand BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams, object[] parameterValues)
-        {
-            var command = base.BuildCommand(procName, commandType, methParams, parameterValues);
-            return command;
-        }
 
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
@@ -148,11 +143,6 @@ namespace SqlSiphon.SqlServer
             reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
         }
 
-        public static object Convert(string sqlType, object value)
-        {
-            return System.Convert.ChangeType(value, typeMapping[sqlType]);
-        }
-
         protected override void ModifyQuery(MappedMethodAttribute info)
         {
             if (info.EnableTransaction)
@@ -189,12 +179,12 @@ where routine_schema = @schemaName
             return ProcedureExistsQuery(info.Schema, info.Name);
         }
 
-        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
+        protected override string MakeDropProcedureScript(MappedMethodAttribute info)
         {
             return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
-        protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
+        protected override string MakeCreateProcedureScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
@@ -210,7 +200,7 @@ end",
                 info.Query);
         }
 
-        protected override string BuildCreateTableScript(MappedClassAttribute info)
+        protected override string MakeCreateTableScript(MappedClassAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
@@ -284,13 +274,13 @@ create table {2}(
         }
 
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isSizeSet, int size, bool isPrecisionSet, int precision)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision)
         {
             if (sqlType == null)
             {
                 if (reverseTypeMapping.ContainsKey(systemType))
                     sqlType = reverseTypeMapping[systemType];
-                else if (IsUDTT(systemType))
+                else if (isCollection || IsUDTT(systemType))
                     sqlType = MakeUDTTName(systemType);
             }
 

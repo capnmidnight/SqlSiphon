@@ -8,7 +8,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Test.Mock
 {
-    class MockDataAccessLayer 
+    class MockDataAccessLayer
         : DataAccessLayer
         <MockConnection, MockCommand, MockParameter, MockDataAdapter, MockDataReader>
     {
@@ -32,59 +32,14 @@ namespace SqlSiphon.Test.Mock
 
         public List<MappedMethodAttribute> Procs { get { return this.FindProcedureDefinitions(); } }
 
-        protected override string BuildCreateProcedureScript(Mapping.MappedMethodAttribute info)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override string BuildCreateTableScript(MappedClassAttribute info)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override string MakeParameterString(Mapping.MappedParameterAttribute p)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override string MakeColumnString(MappedPropertyAttribute p)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override string MakeSqlTypeString(MappedTypeAttribute type)
-        {
-            return type.SystemType.Name.ToLower();
+            return systemType.Name.ToLower();
         }
 
         protected override bool ProcedureExists(MappedMethodAttribute info)
         {
             return info.Name.Contains("Exists");
-        }
-
-        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override string[] IndexScripts
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        protected override string[] InitialScripts
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        protected override string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns)
-        {
-            throw new NotImplementedException();
         }
     }
 }

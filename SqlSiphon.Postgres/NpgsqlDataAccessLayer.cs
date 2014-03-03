@@ -184,29 +184,27 @@ namespace SqlSiphon.Postgres
                 return null;
         }
 
-        protected override string MakeSqlTypeString(MappedTypeAttribute type)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision)
         {
             string typeName = null;
-            if (type == null)
-                throw new Exception("Couldn't find type description! You gave me nothing to go on.");
-
-            if (type.SqlType != null)
-                typeName = type.SqlType;
-            else if (type.SystemType != null)
+            
+            if (sqlType != null)
+                typeName = sqlType;
+            else if (systemType != null)
             {
-                typeName = MakeBasicSqlTypeString(type.SystemType);
-                if (typeName == null && type.IsCollection)
-                    typeName = MakeBasicSqlTypeString(type.SystemType.GetElementType()) + "[]";
-                if (typeName == null && type.SystemType.Name != "Void")
+                typeName = MakeBasicSqlTypeString(systemType);
+                if (typeName == null && isCollection)
+                    typeName = MakeBasicSqlTypeString(systemType.GetElementType()) + "[]";
+                if (typeName == null && systemType.Name != "Void")
                     throw new Exception("Couldn't find type description!");
             }
 
-            if (type.IsSizeSet)
+            if (isSizeSet)
             {
-                var format = type.IsPrecisionSet
+                var format = isPrecisionSet
                     ? "{0}[{1},{2}]"
                     : "{0}[{1}]";
-                typeName = string.Format(format, typeName, type.Size, type.Precision);
+                typeName = string.Format(format, typeName, size, precision);
             }
             return typeName;
         }
@@ -251,7 +249,7 @@ namespace SqlSiphon.Postgres
                 defaultString);
         }
 
-        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
+        protected override string MakeDropProcedureScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema, info.Name);
             var parameterSection = string.Join(", ", info.Parameters.Select(p => p.SqlType));
@@ -260,7 +258,7 @@ namespace SqlSiphon.Postgres
                 parameterSection);
         }
 
-        protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
+        protected override string MakeCreateProcedureScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
@@ -276,7 +274,7 @@ $$ language 'sql'",
                 info.Query);
         }
 
-        protected override string BuildCreateTableScript(MappedClassAttribute info)
+        protected override string MakeCreateTableScript(MappedClassAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var columnSection = this.MakeColumnSection(info);
@@ -286,36 +284,11 @@ $$ language 'sql'",
                 columnSection);
         }
 
-        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override bool ProcedureExists(MappedMethodAttribute info)
         {
             // just assume the procedure exists, because the drop and create
             // procedures will take care of it.
             return true;
-        }
-
-        protected override string[] FKScripts
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        protected override string[] IndexScripts
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        protected override string[] InitialScripts
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        protected override string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns)
-        {
-            throw new NotImplementedException();
         }
     }
 }

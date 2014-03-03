@@ -69,7 +69,8 @@
     <Compile Include="Mock\MockParameter.cs" />
     <Compile Include="Mock\MockTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProcedureInfoTests.cs" />
+    <Compile Include="MappedMethodTests.cs" />
+    <Compile Include="MappedPropertyTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj">

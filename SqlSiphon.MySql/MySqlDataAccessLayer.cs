@@ -60,12 +60,12 @@ namespace SqlSiphon.MySql
         protected override string IdentifierPartBegin { get { return "`"; } }
         protected override string IdentifierPartEnd { get { return "`"; } }
 
-        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
+        protected override string MakeDropProcedureScript(MappedMethodAttribute info)
         {
             return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
-        protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
+        protected override string MakeCreateProcedureScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema, info.Name);
             var parameterSection = this.MakeParameterSection(info);
@@ -85,17 +85,6 @@ end//",
             var withDelim = new MySqlScript(this.Connection, script);
             withDelim.Delimiter = "//";
             withDelim.Execute();
-        }
-
-        protected override bool ProcedureExists(MappedMethodAttribute info)
-        {
-            // MySQL integration is currently broken
-            throw new System.NotImplementedException();
-        }
-
-        protected override string MakeParameterString(MappedParameterAttribute p)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

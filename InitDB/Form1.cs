@@ -269,7 +269,7 @@ namespace InitDB
 
         void db_Progress(object sender, DataProgressEventArgs e)
         {
-            this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow, e.RowCount, e.Message));
+            this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow + 1, e.RowCount, e.Message));
         }
 
         private ISqlSiphon MakeDatabaseConnection(string connectionString)
@@ -352,12 +352,12 @@ namespace InitDB
 
         private bool SyncFKs(ISqlSiphon db)
         {
-            return this.SyncX("foreign keys", () => db.CreateForeignKeys());
+            return this.SyncX("foreign keys", db.CreateForeignKeys);
         }
 
         private bool SyncIndices(ISqlSiphon db)
         {
-            return this.SyncX("indices", () => db.CreateIndices());
+            return this.SyncX("indices", db.CreateIndices);
         }
 
         private bool SyncProcedures(SqlSiphon.ISqlSiphon db)
@@ -372,7 +372,7 @@ namespace InitDB
 
         private bool InitData(SqlSiphon.ISqlSiphon db)
         {
-            return this.SyncX("Initial data", () => db.InitializeData());
+            return this.SyncX("Initial data", db.RunAllManualScripts);
         }
 
 

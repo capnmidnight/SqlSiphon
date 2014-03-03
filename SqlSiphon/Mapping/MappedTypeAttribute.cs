@@ -59,7 +59,8 @@ namespace SqlSiphon.Mapping
         {
             get
             {
-                return this.SystemType
+                return this.SystemType != null 
+                    && this.SystemType
                     .FindInterfaces(new TypeFilter((t, o) =>
                         t == typeof(System.Collections.IEnumerable)), null)
                     .Length > 0;
