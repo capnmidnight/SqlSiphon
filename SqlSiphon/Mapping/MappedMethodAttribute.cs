@@ -118,5 +118,7 @@ namespace SqlSiphon.Mapping
                 obj.GetParameters()
                 .Select(this.ToMappedParameter));
         }
+
+        
     }
 }

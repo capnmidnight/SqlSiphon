@@ -177,7 +177,10 @@ namespace SqlSiphon.Mapping
         public virtual void InferProperties(MethodInfo obj)
         {
             base.InferProperties(obj);
-            this.SetSystemType(obj.ReturnType);
+            var type = obj.ReturnType;
+            if (type.IsArray)
+                type = type.GetElementType();
+            this.SetSystemType(type);
         }
 
         /// <summary>
