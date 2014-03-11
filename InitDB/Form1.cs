@@ -141,23 +141,28 @@ namespace InitDB
             return true;
         }
 
-        private void Dump(TextBox box, string txt)
+        private void Dump(TextBox box, string txt, bool modal)
         {
-            this.SyncUI(() => box.AppendText(txt + Environment.NewLine));
+            this.SyncUI(() =>
+            {
+                box.AppendText(txt + Environment.NewLine);
+                if (modal)
+                    MessageBox.Show(txt);
+            });
         }
 
-        private void ToError(string txt)
+        private void ToError(string txt, bool modal = false)
         {
             if (txt != null)
             {
-                this.Dump(this.txtStdErr, txt);
+                this.Dump(this.txtStdErr, txt, modal);
                 this.SyncUI(() => this.tabControl1.SelectedTab = this.tabStdErr);
             }
         }
 
-        private void ToOutput(string txt)
+        private void ToOutput(string txt, bool modal = false)
         {
-            this.Dump(this.txtStdOut, txt);
+            this.Dump(this.txtStdOut, txt, modal);
         }
 
         void proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -253,13 +258,13 @@ namespace InitDB
                 }
 
                 if (succeeded)
-                    this.ToOutput("All done");
+                    this.ToOutput("All done", true);
                 else
-                    this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.");
+                    this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
             }
             catch (Exception exp)
             {
-                this.ToError(exp.Message);
+                this.ToError(exp.Message, true);
             }
             finally
             {
@@ -495,6 +500,11 @@ namespace InitDB
                 saveSessionButton.Enabled
                     = deleteSessionButton.Enabled
                     = (sessionName != DEFAULT_SESSION_NAME);
+
+                createsGV.Rows.Clear();
+                dropsGV.Rows.Clear();
+                altersGV.Rows.Clear();
+                othersGV.Rows.Clear();
             }
         }
 
@@ -548,11 +558,15 @@ namespace InitDB
             {
                 var script = (string)gv.Rows[e.RowIndex].Cells[1].Value;
                 gv.Enabled = false;
+                gv.Rows[e.RowIndex].Frozen = true;
+                Application.DoEvents();
                 Task.Run(() =>
                 {
+                    this.SyncUI(() => this.tabControl1.SelectedTab = this.tabStdOut);
                     this.RunQueryWithSQLCMD(script, this.databaseTB.Text);
                     this.SyncUI(() =>
                     {
+                        gv.Rows[e.RowIndex].Frozen = false;
                         gv.Rows.RemoveAt(e.RowIndex);
                         gv.Enabled = true;
                     });
