@@ -647,12 +647,12 @@ namespace SqlSiphon
             this.newNonNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
             this.columnsToAlter = new List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>>();
             this.columnsToDrop = new List<ColumnInfo>();
-            this.PopulateEnumTableScripts = allMappedTypes.SelectMany(kv=>
-                kv.Value.EnumValues.Select(v=>
+            this.PopulateEnumTableScripts = allMappedTypes.SelectMany(kv =>
+                kv.Value.EnumValues.Select(v =>
                     new KeyValuePair<string, string>(kv.Key + "_" + v.Value,
-                        string.Format("if not exists(select * from {0} where Value = {1}) insert into {0}(Value, Description) values({1}, '{2}')", 
-                            kv.Key, 
-                            v.Key, 
+                        string.Format("if not exists(select * from {0} where Value = {1}) insert into {0}(Value, Description) values({1}, '{2}')",
+                            kv.Key,
+                            v.Key,
                             v.Value.Replace("'", "''"))))).ToArray();
 
             // for tables that already exist, figure out if they have any overlapping columns
@@ -839,7 +839,7 @@ namespace SqlSiphon
 
         public void RunAllManualScripts()
         {
-            this.ExecuteScripts("Manual scripts", this.OtherScripts.Select(kv=>kv.Value).ToList());
+            this.ExecuteScripts("Manual scripts", this.OtherScripts.Select(kv => kv.Value).ToList());
         }
 
         public void CreateIndices()
@@ -927,7 +927,7 @@ namespace SqlSiphon
             var f = typeof(F);
             var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
             foreign.InferProperties(f);
-            var foreignColumns = this.b_d(
+            var foreignColumns = this.ArgumentList(
                 foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
                 prop => prop.Name);
 
@@ -939,7 +939,7 @@ namespace SqlSiphon
             var f = typeof(F);
             var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
             foreign.InferProperties(f);
-            var foreignColumns = this.b_d(
+            var foreignColumns = this.ArgumentList(
                 foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
                 prop => prop.Name);
 
@@ -974,37 +974,61 @@ namespace SqlSiphon
             return MakeFKScript(table.Schema, table.Name, tableColumns, foreignSchema, foreignName, foreignColumns);
         }
 
-        protected string IDX<T>()
+        private string BuildIndex<T>(Func<MappedClassAttribute, string[]> getColumns, Func<MappedClassAttribute, string[], string> getIndexName)
         {
             var t = typeof(T);
             var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);
             table.InferProperties(t);
-            var columns = table.Properties
-                .Where(c => c.Include
-                    && (c.SystemType != typeof(string)
-                        || c.Size > 0))
-                .Select(c => c.Name)
-                .ToArray();
-            return MakeIndexScript(table.Schema, table.Name, columns);
+            var columns = getColumns(table);
+            var indexName = getIndexName(table, columns);
+            return this.MakeIndexScript(indexName, table.Schema ?? DefaultSchemaName, table.Name, columns);
         }
 
-        protected string IDX<T>(params string[] columns)
+        protected string NamedIndex<T>(string indexName)
         {
-            var t = typeof(T);
-            var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);
-            table.InferProperties(t);
-            return MakeIndexScript(table.Schema, table.Name, columns);
+            return BuildIndex<T>(
+                table => table.Properties
+                    .Where(c => c.Include
+                        && (c.SystemType != typeof(string)
+                            || c.Size > 0))
+                    .Select(c => c.Name)
+                    .ToArray(),
+                (table, columns) => indexName);
         }
 
-        /// <summary>
-        /// I am a dork
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="collect"></param>
-        /// <param name="format"></param>
-        /// <param name="separator"></param>
-        /// <returns></returns>
-        private string b_d<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
+        protected string NamedIndex<T>(string indexName, params string[] columns)
+        {
+            return BuildIndex<T>(
+                table => columns,
+                (table, cols) => indexName);
+        }
+
+        protected string Index<T>()
+        {
+            return BuildIndex<T>(
+                table => table.Properties
+                    .Where(c => c.Include
+                        && (c.SystemType != typeof(string)
+                            || c.Size > 0))
+                    .Select(c => c.Name)
+                    .ToArray(),
+                (table, columns) => string.Format("IDX_{0}_{1}_{2}",
+                    table.Schema ?? DefaultSchemaName,
+                    table.Name,
+                    string.Join(",", columns).GetHashCode().ToString().Replace('-', 'S')));
+        }
+
+        protected string Index<T>(params string[] columns)
+        {
+            return BuildIndex<T>(
+                table => columns,
+                (table, cols) => string.Format("IDX_{0}_{1}_{2}",
+                    table.Schema ?? DefaultSchemaName,
+                    table.Name,
+                    string.Join(",", columns).GetHashCode().ToString().Replace('-', 'S')));
+        }
+
+        private string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
         {
             separator = separator ?? "," + Environment.NewLine + "    ";
             var str = string.Join(separator, collect.Select(format));
@@ -1013,12 +1037,12 @@ namespace SqlSiphon
 
         protected string MakeParameterSection(MappedMethodAttribute info)
         {
-            return b_d(info.Parameters, this.MakeParameterString);
+            return ArgumentList(info.Parameters, this.MakeParameterString);
         }
 
         protected string MakeColumnSection(MappedClassAttribute info)
         {
-            return b_d(info.Properties.Where(p => p.Include), this.MakeColumnString);
+            return ArgumentList(info.Properties.Where(p => p.Include), this.MakeColumnString);
         }
 
         protected virtual void ModifyQuery(MappedMethodAttribute info)
@@ -1091,7 +1115,7 @@ namespace SqlSiphon
         {
             throw new NotImplementedException();
         }
-        protected virtual string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns)
+        protected virtual string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
         {
             throw new NotImplementedException();
         }

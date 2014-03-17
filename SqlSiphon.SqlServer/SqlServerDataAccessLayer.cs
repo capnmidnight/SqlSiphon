@@ -597,13 +597,9 @@ where is_user_defined = 1
                     foreignColumns);
         }
 
-        protected override string MakeIndexScript(string tableSchema, string tableName, string[] tableColumns)
+        protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
         {
             var columnSection = string.Join(",", tableColumns.Select(c => c + " ASC"));
-            var indexName = string.Format("IDX_{0}_{1}_{2}",
-                tableSchema ?? DefaultSchemaName,
-                tableName,
-                columnSection.GetHashCode().ToString().Replace('-', 'S'));
             var identifier = MakeIdentifier(tableSchema ?? DefaultSchemaName, tableName);
             return string.Format(
 @"if not exists(select * from sys.indexes where name = '{0}')
