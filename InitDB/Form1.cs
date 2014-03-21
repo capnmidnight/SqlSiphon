@@ -441,7 +441,9 @@ namespace InitDB
                 this.chkRegSql.Checked,
                 this.chkCreateTables.Checked,
                 this.chkInitializeData.Checked,
-                this.chkSyncProcedures.Checked);
+                this.chkSyncProcedures.Checked,
+                this.chkCreateFKs.Checked,
+                this.chkCreateIndices.Checked);
 
             if (this.sessions.ContainsKey(sesh.Name))
                 this.sessions[sesh.Name] = sesh;
@@ -495,6 +497,8 @@ namespace InitDB
                     this.chkCreateTables.Checked = session.CreateSchemaObjects;
                     this.chkInitializeData.Checked = session.InitializeData;
                     this.chkSyncProcedures.Checked = session.SyncStoredProcedures;
+                    this.chkCreateFKs.Checked = session.CreateFKs;
+                    this.chkCreateIndices.Checked = session.CreateIndices;
                 }
 
                 saveSessionButton.Enabled
