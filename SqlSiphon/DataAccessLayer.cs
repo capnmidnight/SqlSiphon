@@ -612,7 +612,7 @@ namespace SqlSiphon
             var columns = this.GetListQuery<ColumnInfo>("SELECT * FROM INFORMATION_SCHEMA.COLUMNS");
             var existingSchema = columns
                 .GroupBy(column => MakeIdentifier(column.table_schema ?? DefaultSchemaName, column.table_name))
-                .ToDictionary(g => g.Key, g => g.ToDictionary(v => v.column_name));
+                .ToDictionary(g => g.Key, g => g.ToDictionary(v => v.column_name.ToLower()));
 
             var t = this.GetType();
             var allMappedTypes = t.Assembly.GetTypes()
@@ -660,17 +660,17 @@ namespace SqlSiphon
             {
                 var type = allMappedTypes[tableName];
                 var table = existingSchema[tableName];
-                var props = type.Properties.Where(p => p.Include).ToDictionary(p => p.Name);
+                var props = type.Properties.Where(p => p.Include).ToDictionary(p => p.Name.ToLower());
                 var cols = props
-                    .Where(p => !table.ContainsKey(p.Key))
+                    .Where(p => !table.ContainsKey(p.Key.ToLower()))
                     .Select(p => p.Value);
                 newNullableColumns.AddRange(cols.Where(c => c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
                 this.newNonNullableColumns.AddRange(cols.Where(c => !c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
                 this.columnsToAlter.AddRange(props
-                    .Where(p => table.ContainsKey(p.Key) && IsTypeChanged(table[p.Key], p.Value))
-                    .Select(p => new KeyValuePair<ColumnInfo, MappedPropertyAttribute>(table[p.Key], p.Value)));
+                    .Where(p => table.ContainsKey(p.Key.ToLower()) && IsTypeChanged(table[p.Key.ToLower()], p.Value))
+                    .Select(p => new KeyValuePair<ColumnInfo, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
                 this.columnsToDrop.AddRange(table.Values
-                    .Where(c => !props.ContainsKey(c.column_name)));
+                    .Where(c => !props.ContainsKey(c.column_name.ToLower())));
             }
         }
         private List<MappedClassAttribute> newTables;
