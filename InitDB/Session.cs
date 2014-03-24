@@ -1,5 +1,7 @@
 ﻿using System.Linq;
-
+using System.IO;
+using SqlSiphon;
+using System.Linq;
 namespace InitDB
 {
     class Session : SqlSiphon.BoundObject
@@ -73,6 +75,52 @@ namespace InitDB
                 string.Join(PAIR_SEPARATOR.ToString(),
                     this.values.Select(pair =>
                         string.Join(KEY_VALUE_SEPARATOR.ToString(), pair.Key, pair.Value)));
+        }
+
+        public string GetMOTD()
+        {
+            using (var db = this.MakeDatabaseConnection())
+                return db.MOTD;
+        }
+
+        public ISqlSiphon MakeDatabaseConnection()
+        {
+            if (File.Exists(this.AssemblyFile))
+            {
+                var ss = typeof(ISqlSiphon);
+                var constructorParams = new[] { typeof(string) };
+                var constructorArgs = new object[] { this.MakeConnectionString() };
+                var assembly = System.Reflection.Assembly.LoadFrom(this.AssemblyFile);
+                return assembly.GetTypes()
+                    .Where(t => t.GetInterfaces().Contains(ss)
+                                && !t.IsAbstract
+                                && !t.IsInterface)
+                    .Select(t => (ISqlSiphon)(t.GetConstructor(constructorParams)
+                                .Invoke(constructorArgs)))
+                    .FirstOrDefault();
+            }
+            return null;
+        }
+
+        private string MakeConnectionString()
+        {
+            var conn = new System.Data.SqlClient.SqlConnectionStringBuilder
+            {
+                DataSource = this.Server,
+                InitialCatalog = this.DBName
+            };
+            var cred = new [] { 
+                new[]{this.AdminName, this.AdminPassword}, 
+                new[]{this.LoginName, this.LoginPassword}}
+                .Where(s => !string.IsNullOrEmpty(s[0]) && !string.IsNullOrEmpty(s[1]))
+                .FirstOrDefault();
+            conn.IntegratedSecurity = cred == null;
+            if (cred != null)
+            {
+                conn.UserID = cred[0];
+                conn.Password = cred[1];
+            }
+            return conn.ConnectionString;
         }
     }
 }

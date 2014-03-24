@@ -233,8 +233,7 @@ namespace InitDB
 
                 if (succeeded)
                 {
-                    var conn = MakeConnection();
-                    using (var db = MakeDatabaseConnection(conn))
+                    using (var db = this.CurrentSession.MakeDatabaseConnection())
                     {
                         db.Progress += db_Progress;
                         var t = db.GetType();
@@ -277,25 +276,6 @@ namespace InitDB
             this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow + 1, e.RowCount, e.Message));
         }
 
-        private ISqlSiphon MakeDatabaseConnection(string connectionString)
-        {
-            if (File.Exists(assemblyTB.Text))
-            {
-                var ss = typeof(ISqlSiphon);
-                var constructorParams = new[] { typeof(string) };
-                var constructorArgs = new object[] { connectionString };
-                var assembly = Assembly.LoadFrom(assemblyTB.Text);
-                return assembly.GetTypes()
-                    .Where(t => t.GetInterfaces().Contains(ss)
-                                && !t.IsAbstract
-                                && !t.IsInterface)
-                    .Select(t => (ISqlSiphon)(t.GetConstructor(constructorParams)
-                                .Invoke(constructorArgs)))
-                    .FirstOrDefault();
-            }
-            return null;
-        }
-
         private bool SyncX(string name, Action act)
         {
             try
@@ -317,7 +297,7 @@ namespace InitDB
             analyzeButton.Enabled = false;
             Task.Run(() =>
             {
-                using (var db = MakeDatabaseConnection(MakeConnection()))
+                using (var db = this.CurrentSession.MakeDatabaseConnection())
                 {
                     WithDropReport("schema analysis", db, db.Analyze);
                     this.SyncUI(() =>
@@ -380,25 +360,6 @@ namespace InitDB
             return this.SyncX("Initial data", db.RunAllManualScripts);
         }
 
-
-        private string MakeConnection()
-        {
-            var conn = new System.Data.SqlClient.SqlConnectionStringBuilder
-            {
-                DataSource = this.serverTB.Text,
-                InitialCatalog = this.databaseTB.Text
-            };
-            var user = adminUserTB.Text != string.Empty ? adminUserTB.Text : sqlUserTB.Text != string.Empty ? sqlUserTB.Text : null;
-            var pass = adminPassTB.Text != string.Empty ? adminPassTB.Text : sqlPassTB.Text != string.Empty ? sqlPassTB.Text : null;
-            conn.IntegratedSecurity = user == null;
-            if (user != null)
-            {
-                conn.UserID = user;
-                conn.Password = pass;
-            }
-            return conn.ConnectionString;
-        }
-
         private void BrowseFile(TextBox path)
         {
             try
@@ -457,6 +418,16 @@ namespace InitDB
             this.SaveSessions();
         }
 
+        private Session CurrentSession
+        {
+            get
+            {
+                if (this.sessions.ContainsKey(this.savedSessionList.Text))
+                    return this.sessions[this.savedSessionList.Text];
+                return null;
+            }
+        }
+
         private void SaveSessions()
         {
             File.WriteAllLines(SESSIONS_FILENAME, this.sessions.Values.Select(v => v.ToString()).ToArray());
@@ -481,24 +452,30 @@ namespace InitDB
             var sessionName = savedSessionList.SelectedItem as string;
             if (sessionName != null)
             {
-                if (this.sessions.ContainsKey(sessionName))
+                if (this.CurrentSession != null)
                 {
-                    var session = this.sessions[sessionName];
-                    this.serverTB.Text = session.Server;
-                    this.databaseTB.Text = session.DBName;
-                    this.adminUserTB.Text = session.AdminName;
-                    this.adminPassTB.Text = session.AdminPassword;
-                    this.sqlUserTB.Text = session.LoginName;
-                    this.sqlPassTB.Text = session.LoginPassword;
-                    this.assemblyTB.Text = session.AssemblyFile;
-                    this.chkCreateDatabase.Checked = session.CreateDatabase;
-                    this.chkCreateLogin.Checked = session.CreateLogin;
-                    this.chkRegSql.Checked = session.RegisterASPNETMembership;
-                    this.chkCreateTables.Checked = session.CreateSchemaObjects;
-                    this.chkInitializeData.Checked = session.InitializeData;
-                    this.chkSyncProcedures.Checked = session.SyncStoredProcedures;
-                    this.chkCreateFKs.Checked = session.CreateFKs;
-                    this.chkCreateIndices.Checked = session.CreateIndices;
+                    this.serverTB.Text = this.CurrentSession.Server;
+                    this.databaseTB.Text = this.CurrentSession.DBName;
+                    this.adminUserTB.Text = this.CurrentSession.AdminName;
+                    this.adminPassTB.Text = this.CurrentSession.AdminPassword;
+                    this.sqlUserTB.Text = this.CurrentSession.LoginName;
+                    this.sqlPassTB.Text = this.CurrentSession.LoginPassword;
+                    this.assemblyTB.Text = this.CurrentSession.AssemblyFile;
+                    this.chkCreateDatabase.Checked = this.CurrentSession.CreateDatabase;
+                    this.chkCreateLogin.Checked = this.CurrentSession.CreateLogin;
+                    this.chkRegSql.Checked = this.CurrentSession.RegisterASPNETMembership;
+                    this.chkCreateTables.Checked = this.CurrentSession.CreateSchemaObjects;
+                    this.chkInitializeData.Checked = this.CurrentSession.InitializeData;
+                    this.chkSyncProcedures.Checked = this.CurrentSession.SyncStoredProcedures;
+                    this.chkCreateFKs.Checked = this.CurrentSession.CreateFKs;
+                    this.chkCreateIndices.Checked = this.CurrentSession.CreateIndices;
+                    try
+                    {
+                        this.txtStdOut.Text = "";
+                        this.txtStdErr.Text = "";
+                        this.ToOutput(this.CurrentSession.GetMOTD());
+                    }
+                    catch { }
                 }
 
                 saveSessionButton.Enabled

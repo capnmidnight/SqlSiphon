@@ -56,6 +56,8 @@ namespace SqlSiphon
 
         event DataProgressEventHandler Progress;
 
+        string MOTD { get; }
+
         KeyValuePair<string, string>[] CreateScripts { get; }
         KeyValuePair<string, string>[] DropScripts { get; }
         KeyValuePair<string, string>[] AlterScripts { get; }
@@ -1079,6 +1081,9 @@ namespace SqlSiphon
         protected virtual string[] FKScripts { get { return null; } }
         protected virtual string[] IndexScripts { get { return null; } }
         protected virtual string[] InitialScripts { get { return null; } }
+
+        public virtual string MOTD { get { return ""; } }
+
         protected virtual bool ProcedureExists(MappedMethodAttribute info)
         {
             throw new NotImplementedException();
