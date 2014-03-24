@@ -317,10 +317,14 @@ create table {2}(
 
         static bool IsUDTT(Type t)
         {
+            var isUDTT = false;
             if (t.IsArray)
+            {
                 t = t.GetElementType();
+                isUDTT = t != typeof(byte) && IsTypePrimitive(t);
+            }
             var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
-            return attr != null && attr.IsUploadable;
+            return (attr != null && attr.IsUploadable) || isUDTT;
         }
 
         public override void SynchronizeUserDefinedTableTypes()

@@ -488,6 +488,20 @@ namespace SqlSiphon
                 .ForEach(p => p.SetValue(obj, reader[p.Name.ToUpper()]));
         }
 
+        static protected bool IsTypePrimitive(Type type)
+        {
+            return type.IsPrimitive
+                || type == typeof(decimal)
+                || type == typeof(decimal?)
+                || type == typeof(string)
+                || type == typeof(DateTime)
+                || type == typeof(DateTime?)
+                || type == typeof(Guid)
+                || type == typeof(Guid?)
+                || type == typeof(byte[]);
+        }
+
+
         /// <summary>
         /// Constructs a representation of table data returned from a stored procedure as an enumerable
         /// iterator via the "yield return" construct, generating objects that represent individual
@@ -506,15 +520,7 @@ namespace SqlSiphon
             // The most basic case is returning values from one column in the table.
             // The first parameter is skipped because it's the column name to retrieve,
             // not a parameter to the stored procedure
-            bool isPrimitive = type.IsPrimitive
-                || type == typeof(decimal)
-                || type == typeof(decimal?)
-                || type == typeof(string)
-                || type == typeof(DateTime)
-                || type == typeof(DateTime?)
-                || type == typeof(Guid)
-                || type == typeof(Guid?)
-                || type == typeof(byte[]);
+            bool isPrimitive = IsTypePrimitive(type);
 
             object key = type;
 
