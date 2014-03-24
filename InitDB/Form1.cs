@@ -233,6 +233,7 @@ namespace InitDB
 
                 if (succeeded)
                 {
+
                     using (var db = this.CurrentSession.MakeDatabaseConnection())
                     {
                         db.Progress += db_Progress;
@@ -422,9 +423,13 @@ namespace InitDB
         {
             get
             {
-                if (this.sessions.ContainsKey(this.savedSessionList.Text))
-                    return this.sessions[this.savedSessionList.Text];
-                return null;
+                Session value = null;
+                this.SyncUI(() =>
+                {
+                    if (this.sessions.ContainsKey(this.savedSessionList.Text))
+                        value = this.sessions[this.savedSessionList.Text];
+                });
+                return value;
             }
         }
 

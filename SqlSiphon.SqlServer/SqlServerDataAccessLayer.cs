@@ -376,6 +376,12 @@ create table {2}(
                 t = t.GetElementType();
 
             var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
+            if (attr == null)
+            {
+                attr = new SqlServerMappedClassAttribute();
+                attr.Name = t.Name;
+            }
+
             attr.InferProperties(t);
 
             return attr.Name + "UDTT";
