@@ -203,7 +203,9 @@ namespace InitDB
             return RunProcess(
                 regsqlTB.Text,
                 "-S " + serverTB.Text,
-                "-E",
+                adminUserTB.Text != string.Empty ? "-U " + adminUserTB.Text : null,
+                adminPassTB.Text != string.Empty ? "-P " + adminPassTB.Text : null,
+                adminUserTB.Text == string.Empty ? "-E " : null,
                 "-A mr",
                 "-d " + databaseTB.Text);
         }
