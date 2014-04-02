@@ -118,7 +118,7 @@ namespace SqlSiphon.Mapping
         /// database if no value is provided by the caller. Defaults to
         /// null.
         /// </summary>
-        public object DefaultValue { get; set; }
+        public string DefaultValue { get; set; }
 
         protected bool optionalNotSet = true;
         private bool isOptionalField = false;

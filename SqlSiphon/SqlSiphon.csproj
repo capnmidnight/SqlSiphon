@@ -68,5 +68,6 @@
     <Compile Include="Mapping\ExcludeAttribute.cs" />
     <Compile Include="Mapping\PKAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScriptStatus.cs" />
   </ItemGroup>
 </Project>

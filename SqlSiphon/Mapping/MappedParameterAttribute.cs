@@ -102,8 +102,10 @@ namespace SqlSiphon.Mapping
             // parameter from the method parameter's default value,
             // but only if the DefaultValue property of the attribute
             // was not set to a specific value.
-            if (this.DefaultValue == null && parameter.DefaultValue != DBNull.Value)
-                this.DefaultValue = parameter.DefaultValue;
+            if (this.DefaultValue == null 
+                && parameter.DefaultValue != null
+                && parameter.DefaultValue != DBNull.Value)
+                this.DefaultValue = parameter.DefaultValue.ToString();
         }
     }
 }

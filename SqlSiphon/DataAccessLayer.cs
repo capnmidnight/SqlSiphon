@@ -146,6 +146,31 @@ namespace SqlSiphon
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text,
+            Query = "select * from ScriptStatus")]
+        public List<ScriptStatus> GetScriptStatus()
+        {
+            return this.GetList<ScriptStatus>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text,
+            Query = "select count(*) from ScriptStatus")]
+        public int GetDatabaseVersion()
+        {
+            return this.Get<int>(0);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text,
+            Query = "insert into ScriptStatus(Script) values(@script);")]
+        public void AlterDatabase(string script)
+        {
+            this.ExecuteQuery(script);
+            this.Execute(script);
+        }
+
         /// <summary>
         /// Creates a stored procedure command call from a variable array of parameters. The stored
         /// procedure to call is determined by walking the Stack Trace to find a method with the
@@ -625,6 +650,7 @@ namespace SqlSiphon
             var t = this.GetType();
             var allMappedTypes = t.Assembly.GetTypes()
                 .Where(x => x.Namespace == t.Namespace)
+                .Union(new Type[] { typeof(ScriptStatus) })
                 .Select(x =>
                 {
                     var y = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(x);
@@ -654,6 +680,7 @@ namespace SqlSiphon
             this.newNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
             this.newNonNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
             this.columnsToAlter = new List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>>();
+            this.defaultsToAdd = new List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>>();
             this.columnsToDrop = new List<ColumnInfo>();
             this.PopulateEnumTableScripts = allMappedTypes.SelectMany(kv =>
                 kv.Value.EnumValues.Select(v =>
@@ -675,12 +702,20 @@ namespace SqlSiphon
                 newNullableColumns.AddRange(cols.Where(c => c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
                 this.newNonNullableColumns.AddRange(cols.Where(c => !c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
                 this.columnsToAlter.AddRange(props
-                    .Where(p => table.ContainsKey(p.Key.ToLower()) && IsTypeChanged(table[p.Key.ToLower()], p.Value))
+                    .Where(p => table.ContainsKey(p.Key.ToLower())
+                        && IsTypeChanged(table[p.Key.ToLower()], p.Value))
+                    .Select(p => new KeyValuePair<ColumnInfo, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
+                this.defaultsToAdd.AddRange(props
+                    .Where(p => table.ContainsKey(p.Key.ToLower())
+                        && IsDefaultChanged(table[p.Key.ToLower()], p.Value))
                     .Select(p => new KeyValuePair<ColumnInfo, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
                 this.columnsToDrop.AddRange(table.Values
                     .Where(c => !props.ContainsKey(c.column_name.ToLower())));
             }
         }
+
+
+
         private List<MappedClassAttribute> newTables;
         private List<string> tablesToDrop;
 
@@ -688,6 +723,7 @@ namespace SqlSiphon
         private List<KeyValuePair<string, MappedPropertyAttribute>> newNonNullableColumns;
         private List<ColumnInfo> columnsToDrop;
         private List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>> columnsToAlter;
+        private List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>> defaultsToAdd;
 
         public KeyValuePair<string, string>[] AddNullableColumnScripts
         {
@@ -760,7 +796,10 @@ namespace SqlSiphon
             {
                 return columnsToAlter.Select(x =>
                     new KeyValuePair<string, string>(MakeIdentifier(x.Key.table_schema ?? DefaultSchemaName, x.Key.table_name, x.Key.column_name),
-                    this.MakeAlterColumnScript(x.Key, x.Value))).ToArray();
+                    this.MakeAlterColumnScript(x.Key, x.Value)))
+                    .Union(this.defaultsToAdd.Select(x =>
+                    new KeyValuePair<string, string>(MakeIdentifier(x.Key.table_schema ?? DefaultSchemaName, x.Key.table_name, x.Key.column_name),
+                    this.MakeDefaultConstraintScript(x.Key, x.Value)))).ToArray();
             }
         }
 
@@ -806,22 +845,46 @@ namespace SqlSiphon
         {
             get
             {
-                return PopulateEnumTableScripts
-                    .Union(InitialScripts.Select((s, i) => new KeyValuePair<string, string>(
-                    string.Format("manual script {0}", i), s))).ToArray();
+                var toRun = this.PopulateEnumTableScripts
+                    .Select(kv=>kv.Value)
+                    .Union(this.InitialScripts)
+                    .ToList();
+                var alreadyRan = this.GetScriptStatus().Select(g=>g.Script);
+                foreach (var script in alreadyRan)
+                    if (toRun.Contains(script))
+                        toRun.Remove(script);
+                return toRun.Select((s, i) => new KeyValuePair<string, string>(
+                    string.Format("manual script {0}", i), s))
+                    .ToArray();
             }
+        }
+
+        private static Regex UnwrappingPattern = new Regex("^\\((.+)\\)$", RegexOptions.Compiled);
+        private bool IsDefaultChanged(ColumnInfo column, MappedPropertyAttribute property)
+        {
+            var unwrapped = column.column_default;
+            while (unwrapped != null
+                && UnwrappingPattern.IsMatch(unwrapped))
+                unwrapped = UnwrappingPattern.Match(unwrapped).Groups[1].Value;
+            var changed = unwrapped != property.DefaultValue;
+            if (changed)
+                changed = true;
+            return changed;
         }
 
         private bool IsTypeChanged(ColumnInfo column, MappedPropertyAttribute property)
         {
-            property.SqlType = this.MakeSqlTypeString(property);
-            var columnType = this.MakeSqlTypeString(
-                column.data_type,
-                null,
-                false, // a column in a table is never an array. No, Postgres, it's not a good thing.
-                column.character_maximum_length > 0, column.character_maximum_length, column.numeric_precision > 0, column.numeric_precision);
-            var changed = property.SqlType != columnType
-                || property.IsOptional != column.is_nullable.Equals("YES");
+            var temp = new MappedPropertyAttribute(column);
+            var origType = this.MakeSqlTypeString(temp);
+            var newType = this.MakeSqlTypeString(property);
+
+            var changed = temp.IsOptional != property.IsOptional
+                || origType != newType
+                || temp.IsSizeSet != property.IsSizeSet
+                || temp.Size != property.Size
+                || temp.IsPrecisionSet != property.IsPrecisionSet
+                || temp.Precision != property.Precision;
+
             return changed;
         }
 
@@ -1119,6 +1182,10 @@ namespace SqlSiphon
             throw new NotImplementedException();
         }
         protected virtual string MakeAlterColumnScript(ColumnInfo columnInfo, MappedPropertyAttribute prop)
+        {
+            throw new NotImplementedException();
+        }
+        protected virtual string MakeDefaultConstraintScript(ColumnInfo columnInfo, MappedPropertyAttribute prop)
         {
             throw new NotImplementedException();
         }

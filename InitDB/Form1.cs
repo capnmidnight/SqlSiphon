@@ -552,6 +552,8 @@ namespace InitDB
                 {
                     this.SyncUI(() => this.tabControl1.SelectedTab = this.tabStdOut);
                     this.RunQueryWithSQLCMD(script, this.databaseTB.Text);
+                    script = string.Format("insert into ScriptStatus(Script) values('{0}')", script.Replace("'", "''"));
+                    this.RunQueryWithSQLCMD(script, this.databaseTB.Text);
                     this.SyncUI(() =>
                     {
                         gv.Rows[e.RowIndex].Frozen = false;

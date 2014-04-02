@@ -243,7 +243,7 @@ create table {2}(
             var typeStr = MakeSqlTypeString(p);
             var defaultString = "";
             if (p.DefaultValue != null)
-                defaultString = "DEFAULT (" + p.DefaultValue.ToString() + ")";
+                defaultString = string.Format("DEFAULT ({0})", p.DefaultValue);
             else if (p.IsIdentity)
                 defaultString = "IDENTITY(1, 1)";
 
@@ -268,9 +268,21 @@ create table {2}(
 
         protected override string MakeAlterColumnScript(ColumnInfo c, MappedPropertyAttribute prop)
         {
-            return string.Format("alter table {0} alter column {1};",
+            var temp = prop.DefaultValue;
+            prop.DefaultValue = null;
+            var col = string.Format("alter table {0} alter column {1};",
                 MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
                 MakeColumnString(prop));
+            prop.DefaultValue = temp;
+            return col;
+        }
+
+        protected override string MakeDefaultConstraintScript(ColumnInfo c, MappedPropertyAttribute prop)
+        {
+            return string.Format("alter table {0} add constraint DEF_{1} default {2} for {1}",
+                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+                c.column_name,
+                prop.DefaultValue);
         }
 
 
