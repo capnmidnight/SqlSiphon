@@ -53,6 +53,7 @@ namespace SqlSiphon
         void CreateIndices();
         void InitializeData();
         void Analyze();
+        void AlterDatabase(string script);
 
         event DataProgressEventHandler Progress;
 
