@@ -95,15 +95,23 @@ namespace InitDB
         private void runButton_Click(object sender, EventArgs e)
         {
             this.runButton.Enabled = false;
-            Application.DoEvents();
+            Application.DoEvents();            
+            if (isPathsCorrect())
+                Task.Run(new Action(SetupDB));
+        }
+
+        private bool isPathsCorrect()
+        {
             var sqlcmdGood = File.Exists(sqlcmdTB.Text);
             var regsqlGood = File.Exists(regsqlTB.Text);
+            var assemblyGood = File.Exists(assemblyTB.Text);
             if (!sqlcmdGood)
                 this.ToError("Can't find SQLCMD");
             if (!regsqlGood)
                 this.ToError("Can't find ASPNET_REGSQL");
-            if (sqlcmdGood && regsqlGood)
-                Task.Run(new Action(SetupDB));
+            if (!assemblyGood)
+                this.ToError("Can't find Assembly");
+            return sqlcmdGood && regsqlGood && assemblyGood;
         }
 
         private bool RunProcess(string name, params string[] args)
@@ -298,18 +306,21 @@ namespace InitDB
         private void analyzeButton_Click(object sender, EventArgs e)
         {
             analyzeButton.Enabled = false;
-            Task.Run(() =>
+            if (isPathsCorrect())
             {
-                using (var db = this.CurrentSession.MakeDatabaseConnection())
+                Task.Run(() =>
                 {
-                    WithDropReport("schema analysis", db, db.Analyze);
-                    this.SyncUI(() =>
+                    using (var db = this.CurrentSession.MakeDatabaseConnection())
                     {
-                        FillGV(this.createsGV, db.CreateScripts);
-                        this.analyzeButton.Enabled = true;
-                    });
-                }
-            });
+                        WithDropReport("schema analysis", db, db.Analyze);
+                        this.SyncUI(() =>
+                        {
+                            FillGV(this.createsGV, db.CreateScripts);
+                            this.analyzeButton.Enabled = true;
+                        });
+                    }
+                });
+            }
         }
 
         private bool SyncTables(SqlSiphon.ISqlSiphon db)

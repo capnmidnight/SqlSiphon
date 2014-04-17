@@ -479,9 +479,9 @@
             // 
             this.label5.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(74, 7);
+            this.label5.Location = new System.Drawing.Point(87, 8);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(112, 15);
+            this.label5.Size = new System.Drawing.Size(99, 13);
             this.label5.TabIndex = 4;
             this.label5.Text = "SQLCMD tool path:";
             // 
@@ -489,9 +489,9 @@
             // 
             this.label6.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(22, 37);
+            this.label6.Location = new System.Drawing.Point(39, 38);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(164, 15);
+            this.label6.Size = new System.Drawing.Size(147, 13);
             this.label6.TabIndex = 5;
             this.label6.Text = "ASPNET_REGSQL tool path:";
             // 
@@ -541,9 +541,9 @@
             // 
             this.label7.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(86, 7);
+            this.label7.Location = new System.Drawing.Point(97, 8);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(97, 15);
+            this.label7.Size = new System.Drawing.Size(86, 13);
             this.label7.TabIndex = 19;
             this.label7.Text = "Saved Sessions:";
             // 
@@ -597,9 +597,9 @@
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(49, 105);
+            this.label3.Location = new System.Drawing.Point(67, 106);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(134, 15);
+            this.label3.Size = new System.Drawing.Size(116, 13);
             this.label3.TabIndex = 2;
             this.label3.Text = "SQL Login User Name:";
             // 
@@ -616,9 +616,9 @@
             // 
             this.label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(450, 105);
+            this.label4.Location = new System.Drawing.Point(466, 106);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(125, 15);
+            this.label4.Size = new System.Drawing.Size(109, 13);
             this.label4.TabIndex = 3;
             this.label4.Text = "SQL Login Password:";
             // 
@@ -645,10 +645,10 @@
             // 
             this.label10.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(474, 75);
+            this.label10.Location = new System.Drawing.Point(488, 76);
             this.label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(102, 15);
+            this.label10.Size = new System.Drawing.Size(88, 13);
             this.label10.TabIndex = 27;
             this.label10.Text = "Admin Password:";
             // 
@@ -665,10 +665,10 @@
             // 
             this.label9.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(73, 75);
+            this.label9.Location = new System.Drawing.Point(89, 76);
             this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(111, 15);
+            this.label9.Size = new System.Drawing.Size(95, 13);
             this.label9.TabIndex = 26;
             this.label9.Text = "Admin User Name:";
             // 
@@ -676,9 +676,9 @@
             // 
             this.label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(138, 45);
+            this.label1.Location = new System.Drawing.Point(142, 46);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(45, 15);
+            this.label1.Size = new System.Drawing.Size(41, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "Server:";
             // 
@@ -695,9 +695,9 @@
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(475, 45);
+            this.label2.Location = new System.Drawing.Point(488, 46);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(100, 15);
+            this.label2.Size = new System.Drawing.Size(87, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Database Name:";
             // 
@@ -724,9 +724,9 @@
             // 
             this.label8.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(92, 135);
+            this.label8.Location = new System.Drawing.Point(103, 136);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(91, 15);
+            this.label8.Size = new System.Drawing.Size(80, 13);
             this.label8.TabIndex = 23;
             this.label8.Text = "Data Assembly:";
             // 
@@ -734,9 +734,9 @@
             // 
             this.chkCreateDatabase.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateDatabase.AutoSize = true;
-            this.chkCreateDatabase.Location = new System.Drawing.Point(189, 161);
+            this.chkCreateDatabase.Location = new System.Drawing.Point(189, 162);
             this.chkCreateDatabase.Name = "chkCreateDatabase";
-            this.chkCreateDatabase.Size = new System.Drawing.Size(116, 19);
+            this.chkCreateDatabase.Size = new System.Drawing.Size(104, 17);
             this.chkCreateDatabase.TabIndex = 15;
             this.chkCreateDatabase.Text = "Create database";
             this.chkCreateDatabase.UseVisualStyleBackColor = true;
@@ -746,9 +746,9 @@
             this.chkCreateTables.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateTables.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.chkCreateTables, 2);
-            this.chkCreateTables.Location = new System.Drawing.Point(434, 161);
+            this.chkCreateTables.Location = new System.Drawing.Point(434, 162);
             this.chkCreateTables.Name = "chkCreateTables";
-            this.chkCreateTables.Size = new System.Drawing.Size(98, 19);
+            this.chkCreateTables.Size = new System.Drawing.Size(88, 17);
             this.chkCreateTables.TabIndex = 18;
             this.chkCreateTables.Text = "Create tables";
             this.chkCreateTables.UseVisualStyleBackColor = true;
@@ -757,9 +757,9 @@
             // 
             this.chkCreateLogin.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateLogin.AutoSize = true;
-            this.chkCreateLogin.Location = new System.Drawing.Point(189, 186);
+            this.chkCreateLogin.Location = new System.Drawing.Point(189, 187);
             this.chkCreateLogin.Name = "chkCreateLogin";
-            this.chkCreateLogin.Size = new System.Drawing.Size(146, 19);
+            this.chkCreateLogin.Size = new System.Drawing.Size(129, 17);
             this.chkCreateLogin.TabIndex = 16;
             this.chkCreateLogin.Text = "Create database login";
             this.chkCreateLogin.UseVisualStyleBackColor = true;
@@ -768,9 +768,9 @@
             // 
             this.chkRegSql.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkRegSql.AutoSize = true;
-            this.chkRegSql.Location = new System.Drawing.Point(189, 211);
+            this.chkRegSql.Location = new System.Drawing.Point(189, 212);
             this.chkRegSql.Name = "chkRegSql";
-            this.chkRegSql.Size = new System.Drawing.Size(204, 19);
+            this.chkRegSql.Size = new System.Drawing.Size(179, 17);
             this.chkRegSql.TabIndex = 17;
             this.chkRegSql.Text = "Register ASP.NET Memberships";
             this.chkRegSql.UseVisualStyleBackColor = true;
@@ -793,9 +793,9 @@
             this.chkSyncProcedures.Checked = true;
             this.chkSyncProcedures.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tableLayoutPanel1.SetColumnSpan(this.chkSyncProcedures, 2);
-            this.chkSyncProcedures.Location = new System.Drawing.Point(434, 236);
+            this.chkSyncProcedures.Location = new System.Drawing.Point(434, 237);
             this.chkSyncProcedures.Name = "chkSyncProcedures";
-            this.chkSyncProcedures.Size = new System.Drawing.Size(154, 19);
+            this.chkSyncProcedures.Size = new System.Drawing.Size(138, 17);
             this.chkSyncProcedures.TabIndex = 20;
             this.chkSyncProcedures.Text = "Sync stored procedures";
             this.chkSyncProcedures.UseVisualStyleBackColor = true;
@@ -804,9 +804,9 @@
             // 
             this.chkInitializeData.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkInitializeData.AutoSize = true;
-            this.chkInitializeData.Location = new System.Drawing.Point(189, 236);
+            this.chkInitializeData.Location = new System.Drawing.Point(189, 237);
             this.chkInitializeData.Name = "chkInitializeData";
-            this.chkInitializeData.Size = new System.Drawing.Size(98, 19);
+            this.chkInitializeData.Size = new System.Drawing.Size(87, 17);
             this.chkInitializeData.TabIndex = 19;
             this.chkInitializeData.Text = "Initialize data";
             this.chkInitializeData.UseVisualStyleBackColor = true;
@@ -816,9 +816,9 @@
             this.chkCreateFKs.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateFKs.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.chkCreateFKs, 2);
-            this.chkCreateFKs.Location = new System.Drawing.Point(434, 186);
+            this.chkCreateFKs.Location = new System.Drawing.Point(434, 187);
             this.chkCreateFKs.Name = "chkCreateFKs";
-            this.chkCreateFKs.Size = new System.Drawing.Size(130, 19);
+            this.chkCreateFKs.Size = new System.Drawing.Size(117, 17);
             this.chkCreateFKs.TabIndex = 28;
             this.chkCreateFKs.Text = "Create foreign keys";
             this.chkCreateFKs.UseVisualStyleBackColor = true;
@@ -828,9 +828,9 @@
             this.chkCreateIndices.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateIndices.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.chkCreateIndices, 2);
-            this.chkCreateIndices.Location = new System.Drawing.Point(434, 211);
+            this.chkCreateIndices.Location = new System.Drawing.Point(434, 212);
             this.chkCreateIndices.Name = "chkCreateIndices";
-            this.chkCreateIndices.Size = new System.Drawing.Size(301, 19);
+            this.chkCreateIndices.Size = new System.Drawing.Size(300, 17);
             this.chkCreateIndices.TabIndex = 29;
             this.chkCreateIndices.Text = "Create indices (NOT recommended for existing databases)";
             this.chkCreateIndices.UseVisualStyleBackColor = true;
