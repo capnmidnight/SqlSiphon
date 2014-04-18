@@ -561,17 +561,29 @@ namespace InitDB
                 Application.DoEvents();
                 Task.Run(() =>
                 {
-                    this.SyncUI(() => this.tabControl1.SelectedTab = this.tabStdOut);
-
-                    using (var db = CurrentSession.MakeDatabaseConnection())
-                        db.AlterDatabase(script);
-
-                    this.SyncUI(() =>
+                    try
                     {
-                        gv.Rows[e.RowIndex].Frozen = false;
-                        gv.Rows.RemoveAt(e.RowIndex);
-                        gv.Enabled = true;
-                    });
+                        this.SyncUI(() => this.tabControl1.SelectedTab = this.tabStdOut);
+
+                        using (var db = CurrentSession.MakeDatabaseConnection())
+                            db.AlterDatabase(script);
+
+                        this.SyncUI(() =>
+                        {
+                            gv.Rows[e.RowIndex].Frozen = false;
+                            gv.Rows.RemoveAt(e.RowIndex);
+                            gv.Enabled = true;
+                        });
+                    }
+                    catch (Exception exp)
+                    {
+                        this.SyncUI(() =>
+                        {
+                            gv.Enabled = true;
+                            this.tabControl1.SelectedTab = this.tabStdErr;
+                            ToError(string.Format("{0}: {1}", exp.GetType().Name, exp.Message));
+                        });
+                    }
                 });
             }
         }

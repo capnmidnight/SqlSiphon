@@ -69,7 +69,17 @@ namespace SqlSiphon.Mapping
         /// mapped classes that have extra attributes that we
         /// don't need in the database.
         /// </summary>
-        public bool Include { get; set; }
+        private bool _include;
+        public bool IsIncludeSet { get; private set; }
+        public bool Include
+        {
+            get { return _include; }
+            set
+            {
+                this.IsIncludeSet = true;
+                this._include = value;
+            }
+        }
 
         /// <summary>
         /// As this class is abstract, it can't be instantiated.

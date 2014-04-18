@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.IO;
 using SqlSiphon;
-using System.Linq;
+
 namespace InitDB
 {
     class Session : SqlSiphon.BoundObject

@@ -462,8 +462,8 @@ where is_user_defined = 1
             // don't upload auto-incrementing identity columns
             // or columns that have a default value defined
             var colStrings = columns
-                .Where(c => c.Include && !c.IsIdentity && c.DefaultValue == null)
-                .Select(c => this.MaybeMakeColumnTypeString(c))
+                .Where(c => c.Include && !c.IsIdentity && (c.IsIncludeSet || c.DefaultValue == null))
+                .Select(c => this.MaybeMakeColumnTypeString(c, true))
                 .Where(s => !string.IsNullOrEmpty(s))
                 .ToArray();
             if (colStrings.Length > 0)
@@ -503,7 +503,7 @@ where is_user_defined = 1
             }
         }
 
-        private string MaybeMakeColumnTypeString(MappedPropertyAttribute attr)
+        private string MaybeMakeColumnTypeString(MappedPropertyAttribute attr, bool skipDefault = false)
         {
             if (reverseTypeMapping.ContainsKey(attr.SystemType))
             {
@@ -512,7 +512,7 @@ where is_user_defined = 1
                     attr.Name,
                     typeStr,
                     attr.IsOptional ? "" : "NOT ",
-                    attr.DefaultValue ?? "").Trim();
+                    !skipDefault ? attr.DefaultValue ?? "" : "").Trim();
             }
             return null;
         }
@@ -548,8 +548,9 @@ where is_user_defined = 1
                     {
                         // don't upload auto-incrementing identity columns
                         // or columns that have a default value defined
-                        var columns = GetProperties(t)
-                            .Where(p => p.Include && !p.IsIdentity && p.DefaultValue == null)
+                        var props = GetProperties(t);
+                        var columns = props
+                            .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
                             .ToList();
                         foreach (var column in columns)
                         {
