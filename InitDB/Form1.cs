@@ -214,7 +214,7 @@ namespace InitDB
                 adminUserTB.Text != string.Empty ? "-U " + adminUserTB.Text : null,
                 adminPassTB.Text != string.Empty ? "-P " + adminPassTB.Text : null,
                 adminUserTB.Text == string.Empty ? "-E " : null,
-                "-A mrp",
+                "-A mr",
                 "-d " + databaseTB.Text);
         }
 
