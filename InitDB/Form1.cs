@@ -32,6 +32,9 @@ namespace InitDB
             this.browseRegSqlButton.Tag = this.regsqlTB;
             this.txtStdOut.Text = string.Empty;
             this.txtStdErr.Text = string.Empty;
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var version = assembly.GetName().Version;
+            this.Text += " v" + version.ToString(4);
             LoadSessions();
             LoadOptions();
         }
@@ -563,7 +566,11 @@ namespace InitDB
                 {
                     try
                     {
-                        this.SyncUI(() => this.tabControl1.SelectedTab = this.tabStdOut);
+                        this.SyncUI(() =>
+                        {
+                            this.tabControl1.SelectedTab = this.tabStdOut;
+                            this.ToOutput(script);
+                        });
 
                         using (var db = CurrentSession.MakeDatabaseConnection())
                             db.AlterDatabase(script);
@@ -573,12 +580,14 @@ namespace InitDB
                             gv.Rows[e.RowIndex].Frozen = false;
                             gv.Rows.RemoveAt(e.RowIndex);
                             gv.Enabled = true;
+                            this.ToOutput("Success");
                         });
                     }
                     catch (Exception exp)
                     {
                         this.SyncUI(() =>
                         {
+                            gv.Rows[e.RowIndex].Frozen = false;
                             gv.Enabled = true;
                             this.tabControl1.SelectedTab = this.tabStdErr;
                             ToError(string.Format("{0}: {1}", exp.GetType().Name, exp.Message));
