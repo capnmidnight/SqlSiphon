@@ -445,7 +445,7 @@ namespace SqlSiphon
             if (key is string)
                 getter = () => reader[(string)key];
             else if (key is int)
-                getter = () => reader[(int)key];
+                getter = () => reader[(int)key];            
             else if (key is Type)
             {
                 // A raw entity type must have a default constructor. We need to be able to create an
@@ -517,6 +517,8 @@ namespace SqlSiphon
         static protected bool IsTypePrimitive(Type type)
         {
             return type.IsPrimitive
+                || type == typeof(float)
+                || type == typeof(float?)
                 || type == typeof(decimal)
                 || type == typeof(decimal?)
                 || type == typeof(string)
