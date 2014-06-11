@@ -169,6 +169,8 @@ namespace InitDB
                 this.Dump(this.txtStdErr, txt, modal);
                 this.SyncUI(() => this.tabControl1.SelectedTab = this.tabStdErr);
             }
+            analyzeButton.Enabled = true;
+            runButton.Enabled = true;
         }
 
         private void ToOutput(string txt, bool modal = false)
