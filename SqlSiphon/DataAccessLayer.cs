@@ -517,16 +517,13 @@ namespace SqlSiphon
         static protected bool IsTypePrimitive(Type type)
         {
             return type.IsPrimitive
-                || type == typeof(float)
-                || type == typeof(float?)
                 || type == typeof(decimal)
-                || type == typeof(decimal?)
                 || type == typeof(string)
                 || type == typeof(DateTime)
-                || type == typeof(DateTime?)
                 || type == typeof(Guid)
-                || type == typeof(Guid?)
-                || type == typeof(byte[]);
+                || type == typeof(byte[])
+                || (type.IsGenericType
+                    && IsTypePrimitive(type.GetGenericArguments().First()));
         }
 
 
