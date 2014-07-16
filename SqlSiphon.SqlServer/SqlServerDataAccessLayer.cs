@@ -585,7 +585,12 @@ where is_user_defined = 1
 
         protected string FKToRoles<T>()
         {
-            return FK<T>("aspnet_Roles", "RoleID");
+            return FKToRoles<T>("RoleID");
+        }
+
+        protected string FKToRoles<T>(string tableColumn)
+        {
+            return FK<T>(tableColumn, "dbo", "aspnet_Roles", "RoleID");
         }
 
         protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
