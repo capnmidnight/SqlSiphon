@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -29,28 +29,23 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System.Data.Odbc;
-using System.IO;
-using SqlSiphon.Mapping;
+using System;
+using System.Reflection;
 
-namespace SqlSiphon.ODBC
+namespace SqlSiphon.Mapping
 {
-    public abstract class OdbcDataAccessLayer : DataAccessLayer<OdbcConnection, OdbcCommand, OdbcParameter, OdbcDataAdapter, OdbcDataReader>
+    /// <summary>
+    /// Shorthand for "IncludeInPrimaryKey=true"
+    /// 
+    /// Only one attribute of a given type may be applied to
+    /// any type of thing.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+    public class PKAttribute : MappedPropertyAttribute
     {
-        /// <summary>
-        /// creates a new connection to an ODBC database and automatically
-        /// opens the connection. This is only for consuming database connections,
-        /// and cannot synchronize any schema objects.
-        /// </summary>
-        /// <param name="connectionString">a standard MS SQL Server connection string</param>
-        public OdbcDataAccessLayer(string connectionString)
-            : base(connectionString)
+        public PKAttribute()
         {
-        }
-
-        public OdbcDataAccessLayer(OdbcConnection connection)
-            : base(connection)
-        {
+            this.IncludeInPrimaryKey = true;
         }
     }
 }

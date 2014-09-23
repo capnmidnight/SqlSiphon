@@ -184,29 +184,27 @@ namespace SqlSiphon.Postgres
                 return null;
         }
 
-        protected override string MakeSqlTypeString(MappedTypeAttribute type)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision)
         {
             string typeName = null;
-            if (type == null)
-                throw new Exception("Couldn't find type description! You gave me nothing to go on.");
-
-            if (type.SqlType != null)
-                typeName = type.SqlType;
-            else if (type.SystemType != null)
+            
+            if (sqlType != null)
+                typeName = sqlType;
+            else if (systemType != null)
             {
-                typeName = MakeBasicSqlTypeString(type.SystemType);
-                if (typeName == null && type.IsCollection)
-                    typeName = MakeBasicSqlTypeString(type.SystemType.GetElementType()) + "[]";
-                if (typeName == null && type.SystemType.Name != "Void")
+                typeName = MakeBasicSqlTypeString(systemType);
+                if (typeName == null && isCollection)
+                    typeName = MakeBasicSqlTypeString(systemType.GetElementType()) + "[]";
+                if (typeName == null && systemType.Name != "Void")
                     throw new Exception("Couldn't find type description!");
             }
 
-            if (type.IsSizeSet)
+            if (isSizeSet)
             {
-                var format = type.IsPrecisionSet
+                var format = isPrecisionSet
                     ? "{0}[{1},{2}]"
                     : "{0}[{1}]";
-                typeName = string.Format(format, typeName, type.Size, type.Precision);
+                typeName = string.Format(format, typeName, size, precision);
             }
             return typeName;
         }
@@ -214,6 +212,7 @@ namespace SqlSiphon.Postgres
         protected override string MakeParameterString(MappedParameterAttribute p)
         {
             var dirString = "";
+            var typeStr = MakeSqlTypeString(p);
             switch (p.Direction)
             {
                 case ParameterDirection.Input:
@@ -231,10 +230,26 @@ namespace SqlSiphon.Postgres
             if (p.DefaultValue != null)
                 defaultString = " DEFAULT = " + p.DefaultValue.ToString();
 
-            return string.Format("{0} {1} {2}{3}", dirString, p.Name, p.SqlType, defaultString);
+            return string.Format("{0} {1} {2}{3}", dirString, p.Name, typeStr, defaultString);
         }
 
-        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
+        protected override string MakeColumnString(MappedPropertyAttribute p)
+        {
+            var typeStr = MakeSqlTypeString(p);
+            var defaultString = "";
+            if (p.DefaultValue != null)
+                defaultString = "DEFAULT " + p.DefaultValue.ToString();
+            else if (p.IsIdentity)
+                defaultString = "DEFAULT nextval('serial')";
+            
+            return string.Format("{0} {1} {2} {3}",
+                p.Name,
+                typeStr,
+                p.IsOptional ? "NULL": "NOT NULL",
+                defaultString);
+        }
+
+        protected override string MakeDropProcedureScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema, info.Name);
             var parameterSection = string.Join(", ", info.Parameters.Select(p => p.SqlType));
@@ -243,9 +258,9 @@ namespace SqlSiphon.Postgres
                 parameterSection);
         }
 
-        protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
+        protected override string MakeCreateProcedureScript(MappedMethodAttribute info)
         {
-            var identifier = this.MakeIdentifier(info.Schema, info.Name);
+            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
             return string.Format(
 @"create or replace function {0}({1})
@@ -257,6 +272,16 @@ $$ language 'sql'",
                 info.IsCollection ? "setof " : "",
                 info.SqlType,
                 info.Query);
+        }
+
+        protected override string MakeCreateTableScript(MappedClassAttribute info)
+        {
+            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
+            var columnSection = this.MakeColumnSection(info);
+            return string.Format(@"create table if not exists {0} (
+    {1})",
+                identifier,
+                columnSection);
         }
 
         protected override bool ProcedureExists(MappedMethodAttribute info)

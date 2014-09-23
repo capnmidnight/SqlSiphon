@@ -59,7 +59,8 @@ namespace SqlSiphon.Mapping
         {
             get
             {
-                return this.SystemType
+                return this.SystemType != null 
+                    && this.SystemType
                     .FindInterfaces(new TypeFilter((t, o) =>
                         t == typeof(System.Collections.IEnumerable)), null)
                     .Length > 0;
@@ -77,7 +78,7 @@ namespace SqlSiphon.Mapping
         /// <summary>
         /// Get or set the size of the database type. If the size is not set,
         /// (i.e. IsSizeSet returns false) then no size or precision will be
-        /// included in the type specification. Use -1 to mean "MAX".
+        /// included in the type specification. Use 0 to mean "MAX".
         /// </summary>
         public int Size
         {
@@ -117,7 +118,7 @@ namespace SqlSiphon.Mapping
         /// database if no value is provided by the caller. Defaults to
         /// null.
         /// </summary>
-        public object DefaultValue { get; set; }
+        public string DefaultValue { get; set; }
 
         protected bool optionalNotSet = true;
         private bool isOptionalField = false;
@@ -142,7 +143,15 @@ namespace SqlSiphon.Mapping
         private void SetSystemType(Type type)
         {
             if (this.SystemType == null)
+            {
                 this.SystemType = type;
+                if (type.IsGenericType)
+                {
+                    this.SystemType = type.GetGenericArguments()[0];
+                    if (type.Name.StartsWith("Nullable") && this.optionalNotSet)
+                        this.IsOptional = true;
+                }
+            }
         }
 
         /// <summary>
@@ -152,7 +161,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal override void InferProperties(ParameterInfo parameter)
+        public override void InferProperties(ParameterInfo parameter)
         {
             base.InferProperties(parameter);
             this.SetSystemType(parameter.ParameterType);
@@ -165,10 +174,13 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(MethodInfo obj)
+        public virtual void InferProperties(MethodInfo obj)
         {
             base.InferProperties(obj);
-            this.SetSystemType(obj.ReturnType);
+            var type = obj.ReturnType;
+            if (type.IsArray)
+                type = type.GetElementType();
+            this.SetSystemType(type);
         }
 
         /// <summary>
@@ -178,7 +190,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(PropertyInfo obj)
+        public virtual void InferProperties(PropertyInfo obj)
         {
             base.InferProperties(obj);
             this.SetSystemType(obj.PropertyType);
@@ -207,7 +219,7 @@ namespace SqlSiphon.Mapping
                 before,
                 this.SqlType,
                 openSize,
-                this.Size == -1 ? "MAX" : this.Size.ToString(),
+                this.Size == 0 ? "MAX" : this.Size.ToString(),
                 listSeparator,
                 this.Precision,
                 closeSize,

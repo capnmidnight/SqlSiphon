@@ -1,6 +1,6 @@
 ﻿/*
 https://www.github.com/capnmidnight/SqlSiphon
-Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
+Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, 
@@ -28,29 +28,50 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-using System.Data.Odbc;
-using System.IO;
+using System;
 using SqlSiphon.Mapping;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace SqlSiphon.ODBC
+namespace SqlSiphon.Test
 {
-    public abstract class OdbcDataAccessLayer : DataAccessLayer<OdbcConnection, OdbcCommand, OdbcParameter, OdbcDataAdapter, OdbcDataReader>
+    [TestClass]
+    public class MappedPropertyTests
     {
-        /// <summary>
-        /// creates a new connection to an ODBC database and automatically
-        /// opens the connection. This is only for consuming database connections,
-        /// and cannot synchronize any schema objects.
-        /// </summary>
-        /// <param name="connectionString">a standard MS SQL Server connection string</param>
-        public OdbcDataAccessLayer(string connectionString)
-            : base(connectionString)
+        public enum TestEnum
         {
+            Value1,
+            Value2,
+            Value3
         }
 
-        public OdbcDataAccessLayer(OdbcConnection connection)
-            : base(connection)
+        public TestEnum TestProperty { get; set; }
+
+        public MappedPropertyAttribute TestAttribute
         {
+            get
+            {
+                var t = this.GetType();
+                var p = t.GetProperty("TestProperty");
+                var a = new MappedPropertyAttribute();
+                a.InferProperties(p);
+                return a;
+            }
+        }
+
+        [TestMethod]
+        public void SetEnumByInteger()
+        {
+            var p = TestAttribute;
+            p.SetValue(this, 2);
+            Assert.AreEqual(TestEnum.Value3, TestProperty);
+        }
+
+        [TestMethod]
+        public void SetEnumByString()
+        {
+            var p = TestAttribute;
+            p.SetValue(this, "Value2");
+            Assert.AreEqual(TestEnum.Value2, TestProperty);
         }
     }
 }

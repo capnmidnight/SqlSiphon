@@ -69,7 +69,17 @@ namespace SqlSiphon.Mapping
         /// mapped classes that have extra attributes that we
         /// don't need in the database.
         /// </summary>
-        public bool Include { get; set; }
+        private bool _include;
+        public bool IsIncludeSet { get; private set; }
+        public bool Include
+        {
+            get { return _include; }
+            set
+            {
+                this.IsIncludeSet = true;
+                this._include = value;
+            }
+        }
 
         /// <summary>
         /// As this class is abstract, it can't be instantiated.
@@ -115,7 +125,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(ParameterInfo obj)
+        public virtual void InferProperties(ParameterInfo obj)
         {
             this.SetName(obj.Name);
         }
@@ -127,7 +137,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(MemberInfo obj)
+        public virtual void InferProperties(MemberInfo obj)
         {
             this.SetName(obj.Name);
         }
@@ -139,7 +149,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal virtual void InferProperties(Type obj)
+        public virtual void InferProperties(Type obj)
         {
             this.SetName(obj.Name);
         }

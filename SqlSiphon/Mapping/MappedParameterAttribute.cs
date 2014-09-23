@@ -74,7 +74,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal override void InferProperties(ParameterInfo parameter)
+        public override void InferProperties(ParameterInfo parameter)
         {
             base.InferProperties(parameter);
 
@@ -102,8 +102,10 @@ namespace SqlSiphon.Mapping
             // parameter from the method parameter's default value,
             // but only if the DefaultValue property of the attribute
             // was not set to a specific value.
-            if (this.DefaultValue == null && parameter.DefaultValue != DBNull.Value)
-                this.DefaultValue = parameter.DefaultValue;
+            if (this.DefaultValue == null 
+                && parameter.DefaultValue != null
+                && parameter.DefaultValue != DBNull.Value)
+                this.DefaultValue = parameter.DefaultValue.ToString();
         }
     }
 }

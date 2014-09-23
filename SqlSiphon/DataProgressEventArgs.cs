@@ -40,7 +40,7 @@ namespace SqlSiphon
         public int CurrentRow { get; private set; }
         public string Message { get; private set; }
 
-        public DataProgressEventArgs(int rowCount, int currentRow, string message)
+        public DataProgressEventArgs(int currentRow, int rowCount, string message)
         {
             this.RowCount = rowCount;
             this.CurrentRow = currentRow;

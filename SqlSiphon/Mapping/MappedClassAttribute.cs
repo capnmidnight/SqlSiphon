@@ -42,17 +42,19 @@ namespace SqlSiphon.Mapping
     [AttributeUsage(
         AttributeTargets.Class
         | AttributeTargets.Enum,
-        Inherited = true,
+        Inherited = false,
         AllowMultiple = false)]
     public class MappedClassAttribute : MappedSchemaObjectAttribute
     {
-        private List<MappedMethodAttribute> methods;
-        private List<MappedPropertyAttribute> properties;
+        public List<MappedMethodAttribute> Methods { get; private set; }
+        public List<MappedPropertyAttribute> Properties { get; private set; }
+        public Dictionary<int, string> EnumValues { get; private set; }
 
         public MappedClassAttribute()
         {
-            this.methods = new List<MappedMethodAttribute>();
-            this.properties = new List<MappedPropertyAttribute>();
+            this.Methods = new List<MappedMethodAttribute>();
+            this.Properties = new List<MappedPropertyAttribute>();
+            this.EnumValues = new Dictionary<int, string>();
         }
 
         /// <summary>
@@ -87,7 +89,8 @@ namespace SqlSiphon.Mapping
             attr.InferProperties(prop);
             return attr;
         }
-        
+
+        private static BindingFlags PATTERN = BindingFlags.Public | BindingFlags.Instance;
         /// <summary>
         /// A virtual method to analyze an object and figure out the
         /// default settings for it. The attribute can't find the thing
@@ -95,19 +98,40 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        internal override void InferProperties(Type obj)
+        /// 
+        public override void InferProperties(Type obj)
         {
             base.InferProperties(obj);
+            if (obj.IsEnum)
+            {
+                this.Properties.Add(new MappedPropertyAttribute
+                    {
+                        IncludeInPrimaryKey = true,
+                        Name = "Value",
+                        SqlType = "int"
+                    });
 
-            this.methods.AddRange(
-                obj.GetMethods()
-                .Select(this.GetMethodDescriptions)
-                .Where(m => m != null));
+                this.Properties.Add(new MappedPropertyAttribute
+                    {
+                        Name = "Description",
+                        SqlType = "nvarchar(max)"
+                    });
 
-            this.properties.AddRange(
-                obj.GetProperties()
-                .Select(this.GetPropertyDescriptions)
-                .Where(p => p.Include));
+                var names = obj.GetEnumNames();
+                foreach (var name in names)
+                    EnumValues.Add((int)Enum.Parse(obj, name), name);
+            }
+            else
+            {
+                this.Methods.AddRange(
+                    obj.GetMethods(PATTERN)
+                    .Select(this.GetMethodDescriptions)
+                    .Where(m => m != null));
+
+                this.Properties.AddRange(
+                    obj.GetProperties(PATTERN)
+                    .Select(this.GetPropertyDescriptions));
+            }
         }
     }
 }

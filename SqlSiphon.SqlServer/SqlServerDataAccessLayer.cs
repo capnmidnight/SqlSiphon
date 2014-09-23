@@ -55,7 +55,6 @@ namespace SqlSiphon.SqlServer
         public SqlServerDataAccessLayer(string connectionString)
             : base(connectionString)
         {
-            this.SynchronizeProcedures();
         }
 
         protected override void PreCreateProcedures()
@@ -73,15 +72,10 @@ namespace SqlSiphon.SqlServer
             : base(dal)
         {
         }
+
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
         protected override string DefaultSchemaName { get { return "dbo"; } }
-
-        protected override SqlCommand BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams, object[] parameterValues)
-        {
-            var command = base.BuildCommand(procName, commandType, methParams, parameterValues);
-            return command;
-        }
 
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
@@ -149,11 +143,6 @@ namespace SqlSiphon.SqlServer
             reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
         }
 
-        public static object Convert(string sqlType, object value)
-        {
-            return System.Convert.ChangeType(value, typeMapping[sqlType]);
-        }
-
         protected override void ModifyQuery(MappedMethodAttribute info)
         {
             if (info.EnableTransaction)
@@ -190,12 +179,12 @@ where routine_schema = @schemaName
             return ProcedureExistsQuery(info.Schema, info.Name);
         }
 
-        protected override string BuildDropProcedureScript(MappedMethodAttribute info)
+        protected override string MakeDropProcedureScript(MappedMethodAttribute info)
         {
             return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
-        protected override string BuildCreateProcedureScript(MappedMethodAttribute info)
+        protected override string MakeCreateProcedureScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
@@ -211,6 +200,34 @@ end",
                 info.Query);
         }
 
+        protected override string MakeCreateTableScript(MappedClassAttribute info)
+        {
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, info.Name);
+            var columnSection = this.MakeColumnSection(info);
+            var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
+            var pkString = "";
+            if (pk.Length > 0)
+            {
+                pkString = string.Format(",{4}    constraint PK_{1}_{2} primary key({3}){4}",
+                    identifier,
+                    schema,
+                    info.Name,
+                    string.Join(",", pk.Select(c => c.Name)),
+                    Environment.NewLine);
+            }
+            return string.Format(
+@"if not exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
+create table {2}(
+    {3}{4}
+)",
+                schema,
+                info.Name,
+                identifier,
+                columnSection,
+                pkString);
+        }
+
         protected override string MakeParameterString(MappedParameterAttribute p)
         {
             var typeStr = MakeSqlTypeString(p);
@@ -221,34 +238,88 @@ end",
                 IsUDTT(p.SystemType) ? "readonly" : "").Trim();
         }
 
-        protected override string MakeSqlTypeString(MappedTypeAttribute p)
+        protected override string MakeColumnString(MappedPropertyAttribute p)
         {
-            if (p.SqlType == null)
+            var typeStr = MakeSqlTypeString(p);
+            var defaultString = "";
+            if (p.DefaultValue != null)
+                defaultString = string.Format("DEFAULT ({0})", p.DefaultValue);
+            else if (p.IsIdentity)
+                defaultString = "IDENTITY(1, 1)";
+
+            return string.Format("{0} {1} {2} {3}",
+                p.Name,
+                typeStr,
+                p.IsOptional ? "" : "NOT NULL",
+                defaultString);
+        }
+
+        protected override string MakeAddColumnScript(string tableID, MappedPropertyAttribute prop)
+        {
+            return string.Format("alter table {0} add {1} {2};", tableID, prop.Name, prop.SqlType);
+        }
+
+        protected override string MakeDropColumnScript(ColumnInfo c)
+        {
+            return string.Format("alter table {0} drop column {1};",
+                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+                MakeIdentifier(c.column_name));
+        }
+
+        protected override string MakeAlterColumnScript(ColumnInfo c, MappedPropertyAttribute prop)
+        {
+            var temp = prop.DefaultValue;
+            prop.DefaultValue = null;
+            var col = string.Format("alter table {0} alter column {1};",
+                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+                MakeColumnString(prop));
+            prop.DefaultValue = temp;
+            return col;
+        }
+
+        protected override string MakeDefaultConstraintScript(ColumnInfo c, MappedPropertyAttribute prop)
+        {
+            return string.Format("alter table {0} add constraint DEF_{1} default {2} for {1}",
+                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+                c.column_name,
+                prop.DefaultValue);
+        }
+
+
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision)
+        {
+            if (sqlType == null)
             {
-                if (reverseTypeMapping.ContainsKey(p.SystemType))
-                    p.SqlType = reverseTypeMapping[p.SystemType];
-                else if (IsUDTT(p.SystemType))
-                    p.SqlType = MakeUDTTName(p.SystemType);
+                if (reverseTypeMapping.ContainsKey(systemType))
+                    sqlType = reverseTypeMapping[systemType];
+                else if (isCollection || IsUDTT(systemType))
+                    sqlType = MakeUDTTName(systemType);
             }
 
-            if (p.SqlType != null)
+            if (sqlType != null)
             {
-                var typeStr = new StringBuilder(p.SqlType);
-                if (p.IsSizeSet)
+                if (sqlType[sqlType.Length - 1] == ')') // someone already setup the type name, so skip it
+                    return sqlType;
+                else
                 {
-                    typeStr.AppendFormat("({0}", p.Size);
-                    if (p.IsPrecisionSet)
+                    var typeStr = new StringBuilder(sqlType);
+                    if (isSizeSet)
                     {
-                        typeStr.AppendFormat(", {0}", p.Precision);
+                        typeStr.AppendFormat("({0}", size);
+                        if (isPrecisionSet)
+                        {
+                            typeStr.AppendFormat(", {0}", precision);
+                        }
+                        typeStr.Append(")");
                     }
-                    typeStr.Append(")");
-                }
 
-                if (p.SqlType.Contains("var") && !p.SqlType.EndsWith(")"))
-                {
-                    typeStr.Append("(MAX)");
+                    if (sqlType.Contains("var")
+                        && typeStr[typeStr.Length - 1] != ')')
+                    {
+                        typeStr.Append("(MAX)");
+                    }
+                    return typeStr.ToString();
                 }
-                return typeStr.ToString();
             }
             else
             {
@@ -258,13 +329,17 @@ end",
 
         static bool IsUDTT(Type t)
         {
+            var isUDTT = false;
             if (t.IsArray)
+            {
                 t = t.GetElementType();
+                isUDTT = t != typeof(byte) && IsTypePrimitive(t);
+            }
             var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
-            return attr != null && attr.IsUploadable;
+            return (attr != null && attr.IsUploadable) || isUDTT;
         }
 
-        public void SynchronizeUserDefinedTableTypes()
+        public override void SynchronizeUserDefinedTableTypes()
         {
             var type = this.GetType();
             var methods = type.GetMethods();
@@ -287,14 +362,20 @@ end",
                 }
             }
 
+            int total = simpleToSync.Count + complexToSync.Count;
+            int current = 0;
             foreach (var t in simpleToSync.Distinct())
             {
                 SynchronizeSimpleUDTT(t);
+                this.MakeProgress(current, total, string.Format("Syncing simple array type {0}", t.Name));
+                current++;
             }
 
             foreach (var c in complexToSync.Distinct())
             {
                 MaybeSynchronizeUDTT(c);
+                this.MakeProgress(current, total, string.Format("Syncing complex array type {0}", c.Name));
+                current++;
             }
         }
 
@@ -311,15 +392,15 @@ end",
                 t = t.GetElementType();
 
             var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
-            string name = null;
+            if (attr == null)
+            {
+                attr = new SqlServerMappedClassAttribute();
+                attr.Name = t.Name;
+            }
 
-            if (attr != null)
-                name = attr.Name;
+            attr.InferProperties(t);
 
-            if (name == null)
-                name = t.Name;
-
-            return name + "UDTT";
+            return attr.Name + "UDTT";
         }
 
         private void SynchronizeSimpleUDTT(Type t)
@@ -377,9 +458,12 @@ where is_user_defined = 1
         private void CreateComplexUDTT(string fullName, Type mappedClass)
         {
             var sb = new StringBuilder();
-            var columns = GetSettableMembers(mappedClass);
+            var columns = GetProperties(mappedClass);
+            // don't upload auto-incrementing identity columns
+            // or columns that have a default value defined
             var colStrings = columns
-                .Select(c => this.MaybeMakeColumnTypeString(c))
+                .Where(c => c.Include && !c.IsIdentity && (c.IsIncludeSet || c.DefaultValue == null))
+                .Select(c => this.MaybeMakeColumnTypeString(c, true))
                 .Where(s => !string.IsNullOrEmpty(s))
                 .ToArray();
             if (colStrings.Length > 0)
@@ -419,29 +503,16 @@ where is_user_defined = 1
             }
         }
 
-        private string MaybeMakeColumnTypeString(UnifiedSetter c)
+        private string MaybeMakeColumnTypeString(MappedPropertyAttribute attr, bool skipDefault = false)
         {
-            if (reverseTypeMapping.ContainsKey(c.TypeToSet))
+            if (reverseTypeMapping.ContainsKey(attr.SystemType))
             {
-                var attr = MappedObjectAttribute.GetAttribute<MappedPropertyAttribute>(c.TypeToSet);
-                if (attr == null)
-                {
-                    attr = new MappedPropertyAttribute();
-                    attr.IsOptional = true;
-                }
-
-                if (attr.Name == null)
-                    attr.Name = c.Name;
-
-                if (attr.SqlType == null)
-                    attr.SqlType = reverseTypeMapping[c.TypeToSet];
-
                 var typeStr = MakeSqlTypeString(attr);
                 return string.Format("{0} {1} {2}NULL {3}",
                     attr.Name,
                     typeStr,
-                    attr.IsOptional ? "" : "NOT",
-                    attr.DefaultValue ?? "").Trim();
+                    attr.IsOptional ? "" : "NOT ",
+                    !skipDefault ? attr.DefaultValue ?? "" : "").Trim();
             }
             return null;
         }
@@ -475,17 +546,22 @@ where is_user_defined = 1
                     }
                     else
                     {
-                        var columns = GetSettableMembers(t);
+                        // don't upload auto-incrementing identity columns
+                        // or columns that have a default value defined
+                        var props = GetProperties(t);
+                        var columns = props
+                            .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
+                            .ToList();
                         foreach (var column in columns)
                         {
-                            table.Columns.Add(column.Name, column.TypeToSet);
+                            table.Columns.Add(column.Name, column.SystemType);
                         }
                         foreach (object obj in array)
                         {
                             List<object> row = new List<object>();
                             foreach (var column in columns)
                             {
-                                var element = column.GetValue(obj);
+                                var element = column.GetValue<object>(obj);
                                 row.Add(element);
                             }
                             table.Rows.Add(row.ToArray());
@@ -495,6 +571,70 @@ where is_user_defined = 1
                 }
             }
             return parameterValue;
+        }
+
+        protected string FKToUsers<T>()
+        {
+            return FKToUsers<T>("UserID");
+        }
+
+        protected string FKToUsers<T>(string tableColumn)
+        {
+            return FK<T>(tableColumn, "dbo", "aspnet_Users", "UserID");
+        }
+
+        protected string FKToRoles<T>()
+        {
+            return FKToRoles<T>("RoleID");
+        }
+
+        protected string FKToRoles<T>(string tableColumn)
+        {
+            return FK<T>(tableColumn, "dbo", "aspnet_Roles", "RoleID");
+        }
+
+        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        {
+            var constraintName = string.Join("_",
+                "FK",
+                tableSchema ?? DefaultSchemaName,
+                tableName,
+                tableColumns.Replace(',', '_'),
+                "to",
+                foreignSchema ?? DefaultSchemaName,
+                foreignName);
+
+            var tableFullName = MakeIdentifier(
+                tableSchema ?? DefaultSchemaName,
+                tableName);
+
+            var foreignFullName = MakeIdentifier(
+                foreignSchema ?? DefaultSchemaName,
+                foreignName);
+
+            return string.Format(
+@"if not exists(SELECT *  FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME ='{0}')
+    alter table {1} add constraint {2}
+    foreign key({3})
+    references {4}({5});",
+                    constraintName,
+                    tableFullName,
+                    MakeIdentifier(constraintName),
+                    tableColumns,
+                    foreignFullName,
+                    foreignColumns);
+        }
+
+        protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
+        {
+            var columnSection = string.Join(",", tableColumns.Select(c => c + " ASC"));
+            var identifier = MakeIdentifier(tableSchema ?? DefaultSchemaName, tableName);
+            return string.Format(
+@"if not exists(select * from sys.indexes where name = '{0}')
+CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
+                indexName,
+                identifier,
+                columnSection);
         }
     }
 }
