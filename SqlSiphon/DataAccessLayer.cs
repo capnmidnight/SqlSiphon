@@ -280,40 +280,6 @@ namespace SqlSiphon
             return GetEnumerator<EntityT>(parameters).ToList().FirstOrDefault();
         }
 
-        protected EntityT GetQuery<EntityT>(string query)
-        {
-            return this.GetListQuery<EntityT>(query).FirstOrDefault();
-        }
-
-        protected List<EntityT> GetListQuery<EntityT>(string query)
-        {
-            using (var command = BuildCommand(query, CommandType.Text, null, null))
-            {
-                using (var reader = GetReader(command))
-                {
-                    var type = typeof(EntityT);
-                    // The most basic case is returning values from one column in the table.
-                    // The first parameter is skipped because it's the column name to retrieve,
-                    // not a parameter to the stored procedure
-                    IEnumerable<EntityT> iter = null;
-                    if (type.IsPrimitive
-                        || type == typeof(decimal)
-                        || type == typeof(string)
-                        || type == typeof(DateTime)
-                        || type == typeof(Guid))
-                    {
-                        iter = Iterate<EntityT>(reader, 0);
-                    }
-                    else
-                    {
-                        iter = Iterate<EntityT>(reader, type);
-                    }
-                    // the ToList call is necessary to consume the entire enumerator
-                    return iter.ToList();
-                }
-            }
-        }
-
         /// <summary>
         /// Builds a stored procedure command call and executes it without returning any result set
         /// </summary>
@@ -388,12 +354,6 @@ namespace SqlSiphon
                 return GetDataSet(command, parameters);
         }
 
-        protected DataSet GetDataSetQuery(string query)
-        {
-            using (var command = BuildCommand(query, CommandType.Text, null, null))
-                return GetDataSet(command);
-        }
-
         private void Open()
         {
             if (Connection.State == ConnectionState.Closed)
@@ -423,12 +383,6 @@ namespace SqlSiphon
         {
             using (var command = ConstructCommand(parameters))
                 return GetReader(command, parameters);
-        }
-
-        protected DataReaderT GetReaderQuery(string query)
-        {
-            using (var command = BuildCommand(query, CommandType.Text, null, null))
-                return GetReader(command);
         }
 
         /// <summary>
@@ -640,9 +594,17 @@ namespace SqlSiphon
             this.Process(this.newNullableColumns, c => string.Format("add column {0} to {1}", c.Value.Name, c.Key), this.AddColumn);
         }
 
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS")]
+        private List<ColumnInfo> GetColumns()
+        {
+            return GetList<ColumnInfo>();
+        }
+
         public void Analyze()
         {
-            var columns = this.GetListQuery<ColumnInfo>("SELECT * FROM INFORMATION_SCHEMA.COLUMNS");
+            var columns = this.GetColumns();
             var existingSchema = columns
                 .GroupBy(column => MakeIdentifier(column.table_schema ?? DefaultSchemaName, column.table_name))
                 .ToDictionary(g => g.Key, g => g.ToDictionary(v => v.column_name.ToLower()));
