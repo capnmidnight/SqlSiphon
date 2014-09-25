@@ -356,8 +356,15 @@ namespace SqlSiphon
 
         private void Open()
         {
-            if (Connection.State == ConnectionState.Closed)
-                Connection.Open();
+            try
+            {
+                if (Connection.State == ConnectionState.Closed)
+                    Connection.Open();
+            }
+            catch (Exception exp)
+            {
+                throw new Exception("Could not connect to the database at : " + this.Connection.ConnectionString, exp);
+            }
         }
 
         private DataReaderT GetReader(CommandT command, params object[] parameters)
