@@ -59,6 +59,19 @@ namespace SqlSiphon.Test
         }
 
         [TestMethod]
+        public void IsIncludedByDefault1()
+        {
+            var p = new MappedPropertyAttribute();
+            Assert.IsTrue(p.Include);
+        }
+
+        [TestMethod]
+        public void IsIncludedByDefault2()
+        {
+            Assert.IsTrue(TestAttribute.Include);
+        }
+
+        [TestMethod]
         public void SetEnumByInteger()
         {
             var p = TestAttribute;
