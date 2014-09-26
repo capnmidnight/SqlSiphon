@@ -59,10 +59,6 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public bool IncludeInPrimaryKey { get; set; }
 
-        public bool Include { get; set; }
-
-        public bool Ignore { get { return !Include; } set { Include = !value; } }
-
         /// <summary>
         /// When a property references another mapped class,
         /// it will be used to specify a foreign key relation-

@@ -81,12 +81,14 @@ namespace SqlSiphon.Mapping
             }
         }
 
+        public bool Ignore { get { return !Include; } set { Include = !value; } }
+
         /// <summary>
         /// As this class is abstract, it can't be instantiated.
         /// </summary>
         public MappedObjectAttribute()
         {
-            this.Include = true;
+            this._include = true;
         }
 
         /// <summary>
