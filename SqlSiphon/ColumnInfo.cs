@@ -36,9 +36,9 @@ namespace SqlSiphon
     /// INFORMATION_SCHEMA.COLUMNS view.
     /// </summary>
     [Mapping.MappedClass(
-        Include=false,
-        Schema="information_schema",
-        Name="columns")]
+        Include = false,
+        Schema = "information_schema",
+        Name = "columns")]
     public class ColumnInfo
     {
         public string table_schema { get; set; }
@@ -49,6 +49,6 @@ namespace SqlSiphon
         public int? character_maximum_length { get; set; }
         public byte? numeric_precision { get; set; }
         public int? numeric_scale { get; set; }
-        public string column_default { get; set; }       
+        public string column_default { get; set; }
     }
 }

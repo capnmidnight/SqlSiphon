@@ -111,20 +111,6 @@ namespace SqlSiphon.Postgres.Test
         }
 
         [TestMethod]
-        public void GetListFromTextQuery()
-        {
-            var names = d.GetNamesFromTextQuery();
-            var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(expected.Length, names.Count);
-            for (int i = 0; i < expected.Length; ++i)
-            {
-                if (i < expected.Length - 1)
-                    Assert.AreEqual(i + 1, names[i].id);
-                Assert.AreEqual(expected[i], names[i].name);
-            }
-        }
-
-        [TestMethod]
         public void GetOne()
         {
             var name = d.GetName(3);
@@ -144,14 +130,6 @@ namespace SqlSiphon.Postgres.Test
         {
             var name = d.GetNamePrimitiveByIndex(3);
             Assert.AreEqual("mike", name);
-        }
-
-        [TestMethod]
-        public void GetOneFromTextQuery()
-        {
-            var name = d.GetNameFromTextQuery();
-            Assert.AreEqual(4, name.id);
-            Assert.AreEqual("carl", name.name);
         }
 
         [TestMethod]

@@ -406,7 +406,7 @@ namespace SqlSiphon
             if (key is string)
                 getter = () => reader[(string)key];
             else if (key is int)
-                getter = () => reader[(int)key];            
+                getter = () => reader[(int)key];
             else if (key is Type)
             {
                 // A raw entity type must have a default constructor. We need to be able to create an
@@ -815,10 +815,10 @@ namespace SqlSiphon
             get
             {
                 var toRun = this.PopulateEnumTableScripts
-                    .Select(kv=>kv.Value)
+                    .Select(kv => kv.Value)
                     .Union(this.InitialScripts)
                     .ToList();
-                var alreadyRan = this.GetScriptStatus().Select(g=>g.Script);
+                var alreadyRan = this.GetScriptStatus().Select(g => g.Script);
                 foreach (var script in alreadyRan)
                     if (toRun.Contains(script))
                         toRun.Remove(script);

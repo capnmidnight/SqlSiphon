@@ -35,7 +35,7 @@ using System.Reflection;
 namespace SqlSiphon.Mapping
 {
     /// <summary>
-    /// Shorthand for "Include=false"
+    /// Shorthand for "Include = false"
     /// 
     /// Only one attribute of a given type may be applied to
     /// any type of thing.

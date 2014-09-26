@@ -457,6 +457,23 @@ where is_user_defined = 1
 
         private void CreateComplexUDTT(string fullName, Type mappedClass)
         {
+            string script = CreateComplexUDTTScript(fullName, mappedClass);
+
+            if (script != null)
+            {
+                try
+                {
+                    this.ExecuteQuery(script);
+                }
+                catch (Exception exp)
+                {
+                    throw new Exception(string.Format("Could not create UDTT: {0}. Reason: {1}", fullName, exp.Message), exp);
+                }
+            }
+        }
+
+        public string CreateComplexUDTTScript(string fullName, Type mappedClass)
+        {
             var sb = new StringBuilder();
             var columns = GetProperties(mappedClass);
             // don't upload auto-incrementing identity columns
@@ -466,24 +483,19 @@ where is_user_defined = 1
                 .Select(c => this.MaybeMakeColumnTypeString(c, true))
                 .Where(s => !string.IsNullOrEmpty(s))
                 .ToArray();
-            if (colStrings.Length > 0)
+            if (colStrings.Length == 0)
+            {
+                return null;
+            }
+            else
             {
                 var columnDefinition = string.Join("," + Environment.NewLine + "    ", colStrings);
-                var script = string.Format(
+                return string.Format(
     @"CREATE TYPE {0} AS TABLE(
     {1}
 )",
                     fullName,
                     columnDefinition);
-
-                try
-                {
-                    this.ExecuteQuery(script);
-                }
-                catch (Exception exp)
-                {
-                    throw new Exception(string.Format("Could not create UDTT: {0}. Reason: {1}", fullName, exp.Message), exp);
-                }
             }
         }
 

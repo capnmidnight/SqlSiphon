@@ -21,22 +21,22 @@ namespace SqlSiphon.Postgres.Test
             this.CreateProcedures();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         [MappedMethod(
             CommandType = CommandType.StoredProcedure,
             Query = "select * from test_table order by id")]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public List<TestEntity> TestCreateFunction()
         {
             return this.GetList<TestEntity>();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         [MappedMethod(
             CommandType = CommandType.StoredProcedure,
             Query = 
 @"SELECT sum($1[i])::int FROM
 generate_series(array_lower($1,1),array_upper($1,1)
 ) index(i)")]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public int TestArray(int[] arr)
         {
             return this.Get<int>(0, arr);
@@ -47,43 +47,38 @@ generate_series(array_lower($1,1),array_upper($1,1)
             this.DropProcedures();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         [MappedMethod(
             CommandType = CommandType.Text,
             Query = "select * from test_table order by id")]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public List<TestEntity> GetNames()
         {
             return this.GetList<TestEntity>();
         }
 
-        [MappedMethod]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
+        [MappedMethod]
         public List<TestEntity> GetAllNames()
         {
             return this.GetList<TestEntity>();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         [MappedMethod(
             CommandType = CommandType.Text,
             Query = "select * from test_table order by id")]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public List<string> GetNamesPrimitiveByName()
         {
             return this.GetList<string>("name");
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         [MappedMethod(
             CommandType = CommandType.Text,
             Query = "select * from test_table order by id")]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public List<string> GetNamesPrimitiveByIndex()
         {
             return this.GetList<string>(1);
-        }
-
-        public List<TestEntity> GetNamesFromTextQuery()
-        {
-            return this.GetListQuery<TestEntity>("select * from test_table order by id");
         }
 
         [MappedMethod(
@@ -121,11 +116,6 @@ generate_series(array_lower($1,1),array_upper($1,1)
         public string GetNamePrimitiveByIndex(int id)
         {
             return this.Get<string>(1, id);
-        }
-
-        public TestEntity GetNameFromTextQuery()
-        {
-            return this.GetQuery<TestEntity>("select * from test_table where id = 4");
         }
 
         [MappedMethod(
