@@ -83,7 +83,11 @@ namespace SqlSiphon.Mapping
         public MappedMethodAttribute()
         {
             this.Parameters = new List<MappedParameterAttribute>();
+#if (DEBUG) // for debug on slow computers
+            this.Timeout = 3600;
+#else
             this.Timeout = -1;
+#endif
             this.CommandType = CommandType.StoredProcedure;
             this.EnableTransaction = false;
         }
