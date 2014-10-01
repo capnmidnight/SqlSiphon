@@ -98,7 +98,7 @@ namespace InitDB
         private void runButton_Click(object sender, EventArgs e)
         {
             this.runButton.Enabled = false;
-            Application.DoEvents();            
+            Application.DoEvents();
             if (isPathsCorrect())
                 Task.Run(new Action(SetupDB));
         }
@@ -158,7 +158,9 @@ namespace InitDB
             {
                 box.AppendText(txt + Environment.NewLine);
                 if (modal)
+                {
                     MessageBox.Show(txt);
+                }
             });
         }
 
@@ -167,10 +169,13 @@ namespace InitDB
             if (txt != null)
             {
                 this.Dump(this.txtStdErr, txt, modal);
-                this.SyncUI(() => this.tabControl1.SelectedTab = this.tabStdErr);
+                this.SyncUI(() =>
+                {
+                    this.tabControl1.SelectedTab = this.tabStdErr;
+                    this.analyzeButton.Enabled = true;
+                    this.runButton.Enabled = true;
+                });
             }
-            analyzeButton.Enabled = true;
-            runButton.Enabled = true;
         }
 
         private void ToOutput(string txt, bool modal = false)
@@ -566,35 +571,27 @@ namespace InitDB
                 Application.DoEvents();
                 Task.Run(() =>
                 {
-                    try
+                    this.SyncUI(() =>
                     {
-                        this.SyncUI(() =>
+                        try
                         {
                             this.tabControl1.SelectedTab = this.tabStdOut;
                             this.ToOutput(script);
-                        });
-
-                        using (var db = CurrentSession.MakeDatabaseConnection())
-                            db.AlterDatabase(script);
-
-                        this.SyncUI(() =>
-                        {
+                            using (var db = CurrentSession.MakeDatabaseConnection())
+                                db.AlterDatabase(script);
                             gv.Rows[e.RowIndex].Frozen = false;
                             gv.Rows.RemoveAt(e.RowIndex);
                             gv.Enabled = true;
                             this.ToOutput("Success");
-                        });
-                    }
-                    catch (Exception exp)
-                    {
-                        this.SyncUI(() =>
+                        }
+                        catch (Exception exp)
                         {
                             gv.Rows[e.RowIndex].Frozen = false;
                             gv.Enabled = true;
                             this.tabControl1.SelectedTab = this.tabStdErr;
-                            ToError(string.Format("{0}: {1}", exp.GetType().Name, exp.Message));
-                        });
-                    }
+                            this.ToError(string.Format("{0}: {1}", exp.GetType().Name, exp.Message));
+                        }
+                    });
                 });
             }
         }
