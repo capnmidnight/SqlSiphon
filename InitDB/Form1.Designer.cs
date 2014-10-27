@@ -51,9 +51,6 @@
             this.altersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabOther = new System.Windows.Forms.TabPage();
             this.othersGV = new System.Windows.Forms.DataGridView();
-            this.othersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.othersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.othersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabOptions = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.browseRegSqlButton = new System.Windows.Forms.Button();
@@ -94,6 +91,10 @@
             this.chkCreateIndices = new System.Windows.Forms.CheckBox();
             this.analyzeButton = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.othersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.othersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.othersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.othersGVSkipButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabStdOut.SuspendLayout();
@@ -390,33 +391,14 @@
             this.othersGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.othersGVName,
             this.othersGVScript,
-            this.othersGVRunButton});
+            this.othersGVRunButton,
+            this.othersGVSkipButton});
             this.othersGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.othersGV.Location = new System.Drawing.Point(0, 0);
             this.othersGV.Name = "othersGV";
             this.othersGV.Size = new System.Drawing.Size(904, 381);
             this.othersGV.TabIndex = 6;
             this.othersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
-            // 
-            // othersGVName
-            // 
-            this.othersGVName.DataPropertyName = "Key";
-            this.othersGVName.HeaderText = "name";
-            this.othersGVName.Name = "othersGVName";
-            // 
-            // othersGVScript
-            // 
-            this.othersGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.othersGVScript.DataPropertyName = "Value";
-            this.othersGVScript.HeaderText = "script";
-            this.othersGVScript.Name = "othersGVScript";
-            // 
-            // othersGVRunButton
-            // 
-            this.othersGVRunButton.HeaderText = "";
-            this.othersGVRunButton.Name = "othersGVRunButton";
-            this.othersGVRunButton.Text = "run";
-            this.othersGVRunButton.UseColumnTextForButtonValue = true;
             // 
             // tabOptions
             // 
@@ -851,6 +833,35 @@
             this.openFileDialog1.FileName = "openFileDialog1";
             this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
             // 
+            // othersGVName
+            // 
+            this.othersGVName.DataPropertyName = "Key";
+            this.othersGVName.HeaderText = "name";
+            this.othersGVName.Name = "othersGVName";
+            // 
+            // othersGVScript
+            // 
+            this.othersGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.othersGVScript.DataPropertyName = "Value";
+            this.othersGVScript.HeaderText = "script";
+            this.othersGVScript.Name = "othersGVScript";
+            // 
+            // othersGVRunButton
+            // 
+            this.othersGVRunButton.HeaderText = "";
+            this.othersGVRunButton.Name = "othersGVRunButton";
+            this.othersGVRunButton.Text = "run";
+            this.othersGVRunButton.ToolTipText = "run the command against the database";
+            this.othersGVRunButton.UseColumnTextForButtonValue = true;
+            // 
+            // othersGVSkipButton
+            // 
+            this.othersGVSkipButton.HeaderText = "";
+            this.othersGVSkipButton.Name = "othersGVSkipButton";
+            this.othersGVSkipButton.Text = "skip";
+            this.othersGVSkipButton.ToolTipText = "do not run the command, hide it from future use with this database";
+            this.othersGVSkipButton.UseColumnTextForButtonValue = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -949,6 +960,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn othersGVName;
         private System.Windows.Forms.DataGridViewTextBoxColumn othersGVScript;
         private System.Windows.Forms.DataGridViewButtonColumn othersGVRunButton;
+        private System.Windows.Forms.DataGridViewButtonColumn othersGVSkipButton;
     }
 }
 

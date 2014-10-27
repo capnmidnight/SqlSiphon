@@ -54,6 +54,7 @@ namespace SqlSiphon
         void InitializeData();
         void Analyze();
         void AlterDatabase(string script);
+        void MarkScriptAsRan(string script);
 
         event DataProgressEventHandler Progress;
 
@@ -163,12 +164,17 @@ namespace SqlSiphon
             return this.Get<int>(0);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text,
-            Query = "insert into ScriptStatus(Script) values(@script);")]
         public void AlterDatabase(string script)
         {
             this.ExecuteQuery(script);
+            this.MarkScriptAsRan(script);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text,
+            Query = "insert into ScriptStatus(Script) values(@script);")]
+        public void MarkScriptAsRan(string script)
+        {
             this.Execute(script);
         }
 

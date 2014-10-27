@@ -563,22 +563,25 @@ namespace InitDB
         private void scriptGV_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             var gv = sender as DataGridView;
-            if (gv != null && e.ColumnIndex == 2)
+            if (gv != null
+                && 2 <= e.ColumnIndex
+                && e.ColumnIndex < 4)
             {
-                var script = (string)gv.Rows[e.RowIndex].Cells[1].Value;
-                gv.Enabled = false;
-                gv.Rows[e.RowIndex].Frozen = true;
-                Application.DoEvents();
                 Task.Run(() =>
                 {
                     this.SyncUI(() =>
                     {
                         try
                         {
-                            this.tabControl1.SelectedTab = this.tabStdOut;
-                            this.ToOutput(script);
-                            using (var db = CurrentSession.MakeDatabaseConnection())
-                                db.AlterDatabase(script);
+                            var script = (string)gv.Rows[e.RowIndex].Cells[1].Value;
+                            gv.Enabled = false;
+                            gv.Rows[e.RowIndex].Frozen = true;
+                            Application.DoEvents();
+                            switch (e.ColumnIndex)
+                            {
+                                case 2: RunScript(script); break;
+                                case 3: SkipScript(script); break;
+                            }
                             gv.Rows[e.RowIndex].Frozen = false;
                             gv.Rows.RemoveAt(e.RowIndex);
                             gv.Enabled = true;
@@ -594,6 +597,20 @@ namespace InitDB
                     });
                 });
             }
+        }
+
+        private void SkipScript(string script)
+        {
+            using (var db = CurrentSession.MakeDatabaseConnection())
+                db.MarkScriptAsRan(script);
+        }
+
+        private void RunScript(string script)
+        {
+            this.tabControl1.SelectedTab = this.tabStdOut;
+            this.ToOutput(script);
+            using (var db = CurrentSession.MakeDatabaseConnection())
+                db.AlterDatabase(script);
         }
     }
 }
