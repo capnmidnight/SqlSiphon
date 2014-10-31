@@ -546,43 +546,49 @@ where is_user_defined = 1
                     {
                         array = new object[] { parameterValue };
                     }
-
-                    var table = new DataTable(MakeUDTTName(t));
-                    if (reverseTypeMapping.ContainsKey(t))
-                    {
-                        table.Columns.Add("Value", t);
-                        foreach (object obj in array)
-                        {
-                            table.Rows.Add(new object[] { obj });
-                        }
-                    }
-                    else
-                    {
-                        // don't upload auto-incrementing identity columns
-                        // or columns that have a default value defined
-                        var props = GetProperties(t);
-                        var columns = props
-                            .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
-                            .ToList();
-                        foreach (var column in columns)
-                        {
-                            table.Columns.Add(column.Name, column.SystemType);
-                        }
-                        foreach (object obj in array)
-                        {
-                            List<object> row = new List<object>();
-                            foreach (var column in columns)
-                            {
-                                var element = column.GetValue<object>(obj);
-                                row.Add(element);
-                            }
-                            table.Rows.Add(row.ToArray());
-                        }
-                    }
+                    var tableName = MakeUDTTName(t);
+                    var table = MakeDataTable(tableName, t, array);
                     return table;
                 }
             }
             return parameterValue;
+        }
+
+        private static DataTable MakeDataTable(string tableName, Type t, System.Collections.IEnumerable array)
+        {
+            var table = new DataTable(tableName);
+            if (reverseTypeMapping.ContainsKey(t))
+            {
+                table.Columns.Add("Value", t);
+                foreach (object obj in array)
+                {
+                    table.Rows.Add(new object[] { obj });
+                }
+            }
+            else
+            {
+                // don't upload auto-incrementing identity columns
+                // or columns that have a default value defined
+                var props = GetProperties(t);
+                var columns = props
+                    .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
+                    .ToList();
+                foreach (var column in columns)
+                {
+                    table.Columns.Add(column.Name, column.SystemType);
+                }
+                foreach (object obj in array)
+                {
+                    List<object> row = new List<object>();
+                    foreach (var column in columns)
+                    {
+                        var element = column.GetValue<object>(obj);
+                        row.Add(element);
+                    }
+                    table.Rows.Add(row.ToArray());
+                }
+            }
+            return table;
         }
 
         protected string FKToUsers<T>()
@@ -647,6 +653,32 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                 indexName,
                 identifier,
                 columnSection);
+        }
+
+        public void Insert<T>(params T[] data)
+        {
+            if (data != null && data.Length > 0)
+            {
+                var t = typeof(T);
+                var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
+                if (attr == null)
+                {
+                    throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
+                }
+                attr.InferProperties(t);
+                var tableData = MakeDataTable(attr.Name, t, data);
+                if (this.Connection.State == ConnectionState.Closed)
+                {
+                    this.Connection.Open();
+                }
+                var bulkCopy = new SqlBulkCopy(this.Connection);
+                foreach (var column in tableData.Columns.Cast<DataColumn>())
+                {
+                    bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                }
+                bulkCopy.DestinationTableName = attr.Name;
+                bulkCopy.WriteToServer(tableData);
+            }
         }
     }
 }
