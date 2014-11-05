@@ -279,10 +279,11 @@ create table {2}(
 
         protected override string MakeDefaultConstraintScript(ColumnInfo c, MappedPropertyAttribute prop)
         {
-            return string.Format("alter table {0} add constraint DEF_{1} default {2} for {1}",
-                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
-                c.column_name,
-                prop.DefaultValue);
+            return string.Format("alter table {0} add constraint DEF_{1}_{2} default {3} for {2}",
+               MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+               c.table_name,
+               c.column_name,
+               prop.DefaultValue);
         }
 
 
