@@ -45,7 +45,7 @@ namespace SqlSiphon.SqlServer
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
+    public abstract class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>, IAspnetMemberships
     {
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
@@ -602,26 +602,6 @@ where is_user_defined = 1
                 }
             }
             return table;
-        }
-
-        protected string FKToUsers<T>()
-        {
-            return FKToUsers<T>("UserID");
-        }
-
-        protected string FKToUsers<T>(string tableColumn)
-        {
-            return FK<T>(tableColumn, "dbo", "aspnet_Users", "UserID");
-        }
-
-        protected string FKToRoles<T>()
-        {
-            return FKToRoles<T>("RoleID");
-        }
-
-        protected string FKToRoles<T>(string tableColumn)
-        {
-            return FK<T>(tableColumn, "dbo", "aspnet_Roles", "RoleID");
         }
 
         protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)

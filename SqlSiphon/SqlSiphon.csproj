@@ -54,6 +54,7 @@
   -->
   <ItemGroup>
     <Compile Include="BoundObject.cs" />
+    <Compile Include="IAspnetMemberships.cs" />
     <Compile Include="InformationSchema\Columns.cs" />
     <Compile Include="DataAccessLayer.cs" />
     <Compile Include="DataProgressEventArgs.cs" />

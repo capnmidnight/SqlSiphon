@@ -64,6 +64,13 @@ namespace SqlSiphon
         KeyValuePair<string, string>[] DropScripts { get; }
         KeyValuePair<string, string>[] AlterScripts { get; }
         KeyValuePair<string, string>[] OtherScripts { get; }
+
+        string FK<T, F>();
+        string FK<T, F>(string tableColumns);
+        string FK<T, F>(string tableColumns, string foreignColumns);
+        string FK<T>(string foreignName, string foreignColumns);
+        string FK<T>(string foreignSchema, string foreignName, string foreignColumns);
+        string FK<T>(string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
     }
 
     /// <summary>
@@ -1036,7 +1043,7 @@ AND COLUMN_NAME = @columnName;")]
             }
         }
 
-        protected string FK<T, F>()
+        public string FK<T, F>()
         {
             var f = typeof(F);
             var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
@@ -1048,7 +1055,7 @@ AND COLUMN_NAME = @columnName;")]
             return FK<T>(foreignColumns, foreign.Schema, foreign.Name, foreignColumns);
         }
 
-        protected string FK<T, F>(string tableColumns)
+        public string FK<T, F>(string tableColumns)
         {
             var f = typeof(F);
             var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
@@ -1060,7 +1067,7 @@ AND COLUMN_NAME = @columnName;")]
             return FK<T>(tableColumns, foreign.Schema, foreign.Name, foreignColumns);
         }
 
-        protected string FK<T, F>(string tableColumns, string foreignColumns)
+        public string FK<T, F>(string tableColumns, string foreignColumns)
         {
             var f = typeof(F);
             var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
@@ -1069,17 +1076,17 @@ AND COLUMN_NAME = @columnName;")]
             return FK<T>(tableColumns, foreign.Schema, foreign.Name, foreignColumns);
         }
 
-        protected string FK<T>(string foreignName, string foreignColumns)
+        public string FK<T>(string foreignName, string foreignColumns)
         {
             return FK<T>(foreignColumns, null, foreignName, foreignColumns);
         }
 
-        protected string FK<T>(string foreignSchema, string foreignName, string foreignColumns)
+        public string FK<T>(string foreignSchema, string foreignName, string foreignColumns)
         {
             return FK<T>(foreignColumns, foreignSchema, foreignName, foreignColumns);
         }
 
-        protected string FK<T>(string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        public string FK<T>(string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
         {
             var t = typeof(T);
             var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);

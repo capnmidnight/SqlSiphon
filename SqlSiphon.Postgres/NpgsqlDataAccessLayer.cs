@@ -149,6 +149,12 @@ namespace SqlSiphon.Postgres
         {
         }
 
+        public NpgsqlDataAccessLayer(NpgsqlDataAccessLayer dal)
+            : base(dal.Connection)
+        {
+        }
+
+
         protected override string IdentifierPartBegin { get { return "\""; } }
         protected override string IdentifierPartEnd { get { return "\""; } }
         protected override string DefaultSchemaName { get { return "public"; } }

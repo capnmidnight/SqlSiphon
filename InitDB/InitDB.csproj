@@ -59,12 +59,22 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Mono.Security">
+      <HintPath>..\..\consulting\Rieker\DOT Total Solutions\Rieker Portal-beta\Third Party Tools\Mono.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql">
+      <HintPath>..\..\consulting\Rieker\DOT Total Solutions\Rieker Portal-beta\Third Party Tools\Npgsql.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj">
+      <Project>{175a4d4a-2c9d-4edd-b9cc-7adc3322cc1c}</Project>
+      <Name>SqlSiphon.Postgres</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj">
       <Project>{1c09319b-01e7-4f56-b29b-61fd4e546f54}</Project>
       <Name>SqlSiphon.SqlServer</Name>
