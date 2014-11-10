@@ -9,7 +9,9 @@ namespace SqlSiphon
     {
 
     }
-
+    /// <summary>
+    /// A simple mixin for any implementing user wanting to use ASP.NET Memberships.
+    /// </summary>
     public static class IAspnetMemebershipsExt
     {
         public static string FKToUsers<T>(this IAspnetMemberships dal)
