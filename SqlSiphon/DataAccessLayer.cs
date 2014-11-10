@@ -178,6 +178,58 @@ namespace SqlSiphon
             this.Execute(script);
         }
 
+
+        /// <summary>
+        /// Performs a basic insert operation for a collection of data. By default, this will perform poorly, as it does
+        /// a naive INSERT statement for each element of the array. It is meant as a base implementation that can be overridden
+        /// in deriving classes to support their vendor's bulk-insert operation.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        public virtual void Insert<T>(IEnumerable<T> data)
+        {
+            if (data != null)
+            {
+                var t = typeof(T);
+                var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
+                if (attr == null)
+                {
+                    throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
+                }
+                attr.InferProperties(t);
+
+                // don't upload auto-incrementing identity columns
+                // or columns that have a default value defined
+                var props = GetProperties(t);
+                var columns = props
+                    .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
+                    .ToArray();
+                var methParams = columns.Select(c => c.ToParameter()).ToArray();
+
+                var columnNames = columns.Select(c => c.Name);
+                var parameterNames = columnNames.Select(c => "@" + c);
+
+                string query = string.Format("insert into {0}({1}) values({2})",
+                    this.MakeIdentifier(attr.Schema, attr.Name),
+                    string.Join(", ", columnNames),
+                    string.Join(", ", parameterNames));
+
+                using (var command = BuildCommand(query, CommandType.Text, methParams))
+                {
+                    foreach (T obj in data)
+                    {
+                        var parameterValues = new object[columns.Length];
+                        for(int i = 0; i < columns.Length; ++i)
+                        {
+                            parameterValues[i] = columns[i].GetValue<object>(obj);
+                        }
+                        this.CopyParameterValues(command, parameterValues.ToArray());
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Creates a stored procedure command call from a variable array of parameters. The stored
         /// procedure to call is determined by walking the Stack Trace to find a method with the
@@ -223,12 +275,9 @@ namespace SqlSiphon
 
             // To support calling stored procedures from non-default schemas:
             var procName = MakeIdentifier(meta.Schema, meta.Name);
-
-            var command = BuildCommand(
-                meta.CommandType == CommandType.Text ? meta.Query : procName,
-                meta.CommandType,
-                meta.Parameters.ToArray(),
-                parameterValues);
+            var methParams = meta.Parameters.ToArray();
+            var command = BuildCommand(meta.CommandType == CommandType.Text ? meta.Query : procName, meta.CommandType, methParams);
+            this.CopyParameterValues(command, parameterValues);
 
             if (meta.Timeout > -1)
                 command.CommandTimeout = meta.Timeout;
@@ -243,7 +292,7 @@ namespace SqlSiphon
                 .ToArray());
         }
 
-        protected virtual CommandT BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams, object[] parameterValues)
+        protected virtual CommandT BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams)
         {
             // the mapped method must match the name of a stored procedure in the database, or the
             // query or procedure name must be provided explicitly in the MappedMethodAttribute's
@@ -253,18 +302,25 @@ namespace SqlSiphon
             command.CommandType = commandType;
             // meta.Query defaults to null, so default behavior is to use the procedure name
             command.CommandText = procName;
-            command.Parameters.AddRange(MakeProcedureParameters(methParams, parameterValues));
+            command.Parameters.AddRange(MakeProcedureParameters(methParams));
             return command;
         }
 
-        private ParameterT[] MakeProcedureParameters(MappedParameterAttribute[] methParams, object[] parametersValues)
+        private void CopyParameterValues(CommandT command, object[] parameterValues)
+        {
+            for (var i = 0; i < command.Parameters.Count; ++i)
+            {
+                command.Parameters[i].Value = PrepareParameter(parameterValues[i]) ?? DBNull.Value;
+            }
+        }
+
+        private ParameterT[] MakeProcedureParameters(MappedParameterAttribute[] methParams)
         {
             List<ParameterT> procedureParams = new List<ParameterT>();
             for (int i = 0; methParams != null && i < methParams.Length; ++i)
             {
                 var p = new ParameterT();
                 p.ParameterName = methParams[i].Name;
-                p.Value = PrepareParameter(parametersValues[i]) ?? DBNull.Value;
                 p.Direction = methParams[i].Direction;
                 procedureParams.Add(p);
             }
@@ -308,7 +364,7 @@ namespace SqlSiphon
         protected virtual void ExecuteQuery(string query)
         {
             if (!string.IsNullOrWhiteSpace(query))
-                using (var command = BuildCommand(query, CommandType.Text, null, null))
+                using (var command = BuildCommand(query, CommandType.Text, null))
                     Execute(command);
         }
 
@@ -610,9 +666,21 @@ namespace SqlSiphon
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [MappedMethod(CommandType = CommandType.Text, Query = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS")]
-        private List<ColumnInfo> GetColumns()
+        protected List<InformationSchema.Columns> GetColumns()
         {
-            return GetList<ColumnInfo>();
+            return GetList<InformationSchema.Columns>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query = 
+@"SELECT *
+FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
+WHERE TABLE_SCHEMA = @tableSchema
+AND TABLE_NAME = @tableName
+AND COLUMN_NAME = @columnName;")]
+        protected List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints(string tableSchema, string tableName, string columnName)
+        {
+            return GetList<InformationSchema.ConstraintColumnUsage>(tableSchema, tableName, columnName);
         }
 
         public void Analyze()
@@ -654,9 +722,9 @@ namespace SqlSiphon
 
             this.newNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
             this.newNonNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
-            this.columnsToAlter = new List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>>();
-            this.defaultsToAdd = new List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>>();
-            this.columnsToDrop = new List<ColumnInfo>();
+            this.columnsToAlter = new List<KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>>();
+            this.defaultsToAdd = new List<KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>>();
+            this.columnsToDrop = new List<InformationSchema.Columns>();
             this.PopulateEnumTableScripts = allMappedTypes.SelectMany(kv =>
                 kv.Value.EnumValues.Select(v =>
                     new KeyValuePair<string, string>(kv.Key + "_" + v.Value,
@@ -679,11 +747,11 @@ namespace SqlSiphon
                 this.columnsToAlter.AddRange(props
                     .Where(p => table.ContainsKey(p.Key.ToLower())
                         && IsTypeChanged(table[p.Key.ToLower()], p.Value))
-                    .Select(p => new KeyValuePair<ColumnInfo, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
+                    .Select(p => new KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
                 this.defaultsToAdd.AddRange(props
                     .Where(p => table.ContainsKey(p.Key.ToLower())
                         && IsDefaultChanged(table[p.Key.ToLower()], p.Value))
-                    .Select(p => new KeyValuePair<ColumnInfo, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
+                    .Select(p => new KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
                 this.columnsToDrop.AddRange(table.Values
                     .Where(c => !props.ContainsKey(c.column_name.ToLower())));
             }
@@ -696,9 +764,9 @@ namespace SqlSiphon
 
         private List<KeyValuePair<string, MappedPropertyAttribute>> newNullableColumns;
         private List<KeyValuePair<string, MappedPropertyAttribute>> newNonNullableColumns;
-        private List<ColumnInfo> columnsToDrop;
-        private List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>> columnsToAlter;
-        private List<KeyValuePair<ColumnInfo, MappedPropertyAttribute>> defaultsToAdd;
+        private List<InformationSchema.Columns> columnsToDrop;
+        private List<KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>> columnsToAlter;
+        private List<KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>> defaultsToAdd;
 
         public KeyValuePair<string, string>[] AddNullableColumnScripts
         {
@@ -835,7 +903,7 @@ namespace SqlSiphon
         }
 
         private static Regex UnwrappingPattern = new Regex("^\\((.+)\\)$", RegexOptions.Compiled);
-        private bool IsDefaultChanged(ColumnInfo column, MappedPropertyAttribute property)
+        private bool IsDefaultChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
         {
             var unwrapped = column.column_default;
             while (unwrapped != null
@@ -847,7 +915,7 @@ namespace SqlSiphon
             return changed;
         }
 
-        private bool IsTypeChanged(ColumnInfo column, MappedPropertyAttribute property)
+        private bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
         {
             var temp = new MappedPropertyAttribute(column);
             var origType = this.MakeSqlTypeString(temp);
@@ -1148,7 +1216,7 @@ namespace SqlSiphon
         {
             throw new NotImplementedException();
         }
-        protected virtual string MakeDropColumnScript(ColumnInfo c)
+        protected virtual string MakeDropColumnScript(InformationSchema.Columns c)
         {
             throw new NotImplementedException();
         }
@@ -1156,11 +1224,11 @@ namespace SqlSiphon
         {
             throw new NotImplementedException();
         }
-        protected virtual string MakeAlterColumnScript(ColumnInfo columnInfo, MappedPropertyAttribute prop)
+        protected virtual string MakeAlterColumnScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop)
         {
             throw new NotImplementedException();
         }
-        protected virtual string MakeDefaultConstraintScript(ColumnInfo columnInfo, MappedPropertyAttribute prop)
+        protected virtual string MakeDefaultConstraintScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop)
         {
             throw new NotImplementedException();
         }

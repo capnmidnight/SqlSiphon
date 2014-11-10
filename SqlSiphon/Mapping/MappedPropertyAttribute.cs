@@ -102,7 +102,7 @@ namespace SqlSiphon.Mapping
             this.Cascade = true;
         }
 
-        internal MappedPropertyAttribute(ColumnInfo column)
+        internal MappedPropertyAttribute(InformationSchema.Columns column)
         {
             this.DefaultValue = column.column_default;
             this.IsOptional = column.is_nullable.ToLower() == "yes";
@@ -172,6 +172,24 @@ namespace SqlSiphon.Mapping
         public T GetValue<T>(object obj)
         {
             return (T)this.originalProperty.GetValue(obj, null);
+        }
+
+        public MappedParameterAttribute ToParameter()
+        {
+            var p = new MappedParameterAttribute
+            {
+                DefaultValue = this.DefaultValue,
+                Direction = System.Data.ParameterDirection.Input,
+                Ignore = this.Ignore,
+                Include = this.Include,
+                IsOptional = this.IsOptional,
+                Precision = this.Precision,
+                Size = this.Size,
+                Name = this.Name,
+                Schema = this.Schema,
+                SqlType = this.SqlType
+            };
+            return p;    
         }
     }
 }

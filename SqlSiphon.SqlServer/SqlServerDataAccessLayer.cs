@@ -259,14 +259,26 @@ create table {2}(
             return string.Format("alter table {0} add {1} {2};", tableID, prop.Name, prop.SqlType);
         }
 
-        protected override string MakeDropColumnScript(ColumnInfo c)
+        protected override string MakeDropColumnScript(InformationSchema.Columns c)
         {
-            return string.Format("alter table {0} drop column {1};",
-                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+            var script = new StringBuilder();
+            var constraints = this.GetColumnConstraints(c.table_schema, c.table_name, c.column_name);
+            var tableName = this.MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name);
+            foreach (var constraint in constraints)
+            {
+                script.AppendFormat("if exists(select * from information_schema.referential_constraints where constraint_schema = '{0}' and constraint_name = '{1}') alter table {2} drop constraint {1};\n", 
+                    constraint.constraint_schema, 
+                    constraint.constraint_name, 
+                    tableName, 
+                    this.MakeIdentifier(constraint.constraint_name));
+            }
+            script.AppendFormat("alter table {0} drop column {1};",
+                tableName,
                 MakeIdentifier(c.column_name));
+            return script.ToString();
         }
 
-        protected override string MakeAlterColumnScript(ColumnInfo c, MappedPropertyAttribute prop)
+        protected override string MakeAlterColumnScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
         {
             var temp = prop.DefaultValue;
             prop.DefaultValue = null;
@@ -277,7 +289,7 @@ create table {2}(
             return col;
         }
 
-        protected override string MakeDefaultConstraintScript(ColumnInfo c, MappedPropertyAttribute prop)
+        protected override string MakeDefaultConstraintScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
         {
             return string.Format("alter table {0} add constraint DEF_{1}_{2} default {3} for {2}",
                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
@@ -656,9 +668,9 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                 columnSection);
         }
 
-        public void Insert<T>(params T[] data)
+        public override void Insert<T>(IEnumerable<T> data)
         {
-            if (data != null && data.Length > 0)
+            if (data != null)
             {
                 var t = typeof(T);
                 var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
@@ -668,17 +680,31 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                 }
                 attr.InferProperties(t);
                 var tableData = MakeDataTable(attr.Name, t, data);
-                if (this.Connection.State == ConnectionState.Closed)
+
+                //should make it using bulk insert when mono-project fix it for varbinary data
+                //see https://bugzilla.xamarin.com/show_bug.cgi?id=20563
+#if MONO
+                var usesVarBinary = tableData.Columns.Cast<DataColumn>().Any(c => c.DataType == typeof(byte[]));
+                if(usesVarBinary)
                 {
-                    this.Connection.Open();
+                    base.Insert(data);
                 }
-                var bulkCopy = new SqlBulkCopy(this.Connection);
-                foreach (var column in tableData.Columns.Cast<DataColumn>())
-                {
-                    bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                else{
+#endif
+                    if (this.Connection.State == ConnectionState.Closed)
+                    {
+                        this.Connection.Open();
+                    }
+                    var bulkCopy = new SqlBulkCopy(this.Connection);
+                    foreach (var column in tableData.Columns.Cast<DataColumn>())
+                    {
+                        bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                    }
+                    bulkCopy.DestinationTableName = attr.Name;
+                    bulkCopy.WriteToServer(tableData);
+#if MONO
                 }
-                bulkCopy.DestinationTableName = attr.Name;
-                bulkCopy.WriteToServer(tableData);
+#endif
             }
         }
     }

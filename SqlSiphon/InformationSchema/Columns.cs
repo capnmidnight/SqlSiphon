@@ -29,7 +29,7 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-namespace SqlSiphon
+namespace SqlSiphon.InformationSchema
 {
     /// <summary>
     /// This is an entity object for the SQL standard 
@@ -37,9 +37,8 @@ namespace SqlSiphon
     /// </summary>
     [Mapping.MappedClass(
         Include = false,
-        Schema = "information_schema",
-        Name = "columns")]
-    public class ColumnInfo
+        Schema = "information_schema")]
+    public class Columns
     {
         public string table_schema { get; set; }
         public string table_name { get; set; }
