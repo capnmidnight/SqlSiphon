@@ -85,6 +85,12 @@ namespace SqlSiphon
         where DataAdapterT : DbDataAdapter, new()
         where DataReaderT : DbDataReader
     {
+        protected static readonly bool IsOnMonoRuntime;
+        static DataAccessLayer()
+        {
+            IsOnMonoRuntime = Type.GetType("Mono.Runtime") != null;
+        }
+
         private bool isConnectionOwned;
 
         private MappedClassAttribute meta;

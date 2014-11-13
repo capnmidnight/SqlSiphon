@@ -266,10 +266,10 @@ create table {2}(
             var tableName = this.MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name);
             foreach (var constraint in constraints)
             {
-                script.AppendFormat("if exists(select * from information_schema.referential_constraints where constraint_schema = '{0}' and constraint_name = '{1}') alter table {2} drop constraint {1};\n", 
-                    constraint.constraint_schema, 
-                    constraint.constraint_name, 
-                    tableName, 
+                script.AppendFormat("if exists(select * from information_schema.referential_constraints where constraint_schema = '{0}' and constraint_name = '{1}') alter table {2} drop constraint {1};\n",
+                    constraint.constraint_schema,
+                    constraint.constraint_name,
+                    tableName,
                     this.MakeIdentifier(constraint.constraint_name));
             }
             script.AppendFormat("alter table {0} drop column {1};",
@@ -663,14 +663,13 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
 
                 //should make it using bulk insert when mono-project fix it for varbinary data
                 //see https://bugzilla.xamarin.com/show_bug.cgi?id=20563
-#if MONO
                 var usesVarBinary = tableData.Columns.Cast<DataColumn>().Any(c => c.DataType == typeof(byte[]));
-                if(usesVarBinary)
+                if (IsOnMonoRuntime && usesVarBinary)
                 {
                     base.Insert(data);
                 }
-                else{
-#endif
+                else
+                {
                     if (this.Connection.State == ConnectionState.Closed)
                     {
                         this.Connection.Open();
@@ -682,9 +681,7 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                     }
                     bulkCopy.DestinationTableName = attr.Name;
                     bulkCopy.WriteToServer(tableData);
-#if MONO
                 }
-#endif
             }
         }
     }
