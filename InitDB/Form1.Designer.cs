@@ -51,6 +51,10 @@
             this.altersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabOther = new System.Windows.Forms.TabPage();
             this.othersGV = new System.Windows.Forms.DataGridView();
+            this.othersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.othersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.othersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.othersGVSkipButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabOptions = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.browseRegSqlButton = new System.Windows.Forms.Button();
@@ -61,6 +65,9 @@
             this.regsqlTB = new System.Windows.Forms.TextBox();
             this.cancelOptionsButton = new System.Windows.Forms.Button();
             this.saveOptionsButton = new System.Windows.Forms.Button();
+            this.label11 = new System.Windows.Forms.Label();
+            this.browsePsqlButton = new System.Windows.Forms.Button();
+            this.psqlTB = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.saveSessionButton = new System.Windows.Forms.Button();
             this.savedSessionList = new System.Windows.Forms.ComboBox();
@@ -91,10 +98,6 @@
             this.chkCreateIndices = new System.Windows.Forms.CheckBox();
             this.analyzeButton = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.othersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.othersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.othersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.othersGVSkipButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabStdOut.SuspendLayout();
@@ -400,6 +403,35 @@
             this.othersGV.TabIndex = 6;
             this.othersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
+            // othersGVName
+            // 
+            this.othersGVName.DataPropertyName = "Key";
+            this.othersGVName.HeaderText = "name";
+            this.othersGVName.Name = "othersGVName";
+            // 
+            // othersGVScript
+            // 
+            this.othersGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.othersGVScript.DataPropertyName = "Value";
+            this.othersGVScript.HeaderText = "script";
+            this.othersGVScript.Name = "othersGVScript";
+            // 
+            // othersGVRunButton
+            // 
+            this.othersGVRunButton.HeaderText = "";
+            this.othersGVRunButton.Name = "othersGVRunButton";
+            this.othersGVRunButton.Text = "run";
+            this.othersGVRunButton.ToolTipText = "run the command against the database";
+            this.othersGVRunButton.UseColumnTextForButtonValue = true;
+            // 
+            // othersGVSkipButton
+            // 
+            this.othersGVSkipButton.HeaderText = "";
+            this.othersGVSkipButton.Name = "othersGVSkipButton";
+            this.othersGVSkipButton.Text = "skip";
+            this.othersGVSkipButton.ToolTipText = "do not run the command, hide it from future use with this database";
+            this.othersGVSkipButton.UseColumnTextForButtonValue = true;
+            // 
             // tabOptions
             // 
             this.tabOptions.Controls.Add(this.tableLayoutPanel4);
@@ -423,12 +455,16 @@
             this.tableLayoutPanel4.Controls.Add(this.label6, 0, 1);
             this.tableLayoutPanel4.Controls.Add(this.sqlcmdTB, 1, 0);
             this.tableLayoutPanel4.Controls.Add(this.regsqlTB, 1, 1);
-            this.tableLayoutPanel4.Controls.Add(this.cancelOptionsButton, 2, 2);
-            this.tableLayoutPanel4.Controls.Add(this.saveOptionsButton, 1, 2);
+            this.tableLayoutPanel4.Controls.Add(this.cancelOptionsButton, 2, 3);
+            this.tableLayoutPanel4.Controls.Add(this.saveOptionsButton, 1, 3);
+            this.tableLayoutPanel4.Controls.Add(this.label11, 0, 2);
+            this.tableLayoutPanel4.Controls.Add(this.browsePsqlButton, 2, 2);
+            this.tableLayoutPanel4.Controls.Add(this.psqlTB, 1, 2);
             this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
-            this.tableLayoutPanel4.RowCount = 3;
+            this.tableLayoutPanel4.RowCount = 4;
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -518,6 +554,36 @@
             this.saveOptionsButton.Text = "Save";
             this.saveOptionsButton.UseVisualStyleBackColor = true;
             this.saveOptionsButton.Click += new System.EventHandler(this.saveOptionsButton_Click);
+            // 
+            // label11
+            // 
+            this.label11.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(96, 68);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(90, 13);
+            this.label11.TabIndex = 15;
+            this.label11.Text = "PSQL tool path:";
+            // 
+            // browsePsqlButton
+            // 
+            this.browsePsqlButton.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.browsePsqlButton.Location = new System.Drawing.Point(815, 63);
+            this.browsePsqlButton.Name = "browsePsqlButton";
+            this.browsePsqlButton.Size = new System.Drawing.Size(80, 23);
+            this.browsePsqlButton.TabIndex = 16;
+            this.browsePsqlButton.Text = "Browse...";
+            this.browsePsqlButton.UseVisualStyleBackColor = true;
+            this.browsePsqlButton.Click += new System.EventHandler(this.browse_Click);
+            // 
+            // psqlTB
+            // 
+            this.psqlTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.psqlTB.Location = new System.Drawing.Point(192, 65);
+            this.psqlTB.Name = "psqlTB";
+            this.psqlTB.Size = new System.Drawing.Size(617, 20);
+            this.psqlTB.TabIndex = 17;
+            this.psqlTB.TextChanged += new System.EventHandler(this.enableSaveCancelButtons);
             // 
             // label7
             // 
@@ -833,35 +899,6 @@
             this.openFileDialog1.FileName = "openFileDialog1";
             this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
             // 
-            // othersGVName
-            // 
-            this.othersGVName.DataPropertyName = "Key";
-            this.othersGVName.HeaderText = "name";
-            this.othersGVName.Name = "othersGVName";
-            // 
-            // othersGVScript
-            // 
-            this.othersGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.othersGVScript.DataPropertyName = "Value";
-            this.othersGVScript.HeaderText = "script";
-            this.othersGVScript.Name = "othersGVScript";
-            // 
-            // othersGVRunButton
-            // 
-            this.othersGVRunButton.HeaderText = "";
-            this.othersGVRunButton.Name = "othersGVRunButton";
-            this.othersGVRunButton.Text = "run";
-            this.othersGVRunButton.ToolTipText = "run the command against the database";
-            this.othersGVRunButton.UseColumnTextForButtonValue = true;
-            // 
-            // othersGVSkipButton
-            // 
-            this.othersGVSkipButton.HeaderText = "";
-            this.othersGVSkipButton.Name = "othersGVSkipButton";
-            this.othersGVSkipButton.Text = "skip";
-            this.othersGVSkipButton.ToolTipText = "do not run the command, hide it from future use with this database";
-            this.othersGVSkipButton.UseColumnTextForButtonValue = true;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -961,6 +998,9 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn othersGVScript;
         private System.Windows.Forms.DataGridViewButtonColumn othersGVRunButton;
         private System.Windows.Forms.DataGridViewButtonColumn othersGVSkipButton;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Button browsePsqlButton;
+        private System.Windows.Forms.TextBox psqlTB;
     }
 }
 

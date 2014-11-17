@@ -16,11 +16,13 @@ namespace InitDB
         private static string SESSIONS_FILENAME = "sessions.dat";
         private static string OPTIONS_FILENAME = "options.dat";
         private static string SQLCMD_PATH_KEY = "SQLCMDPATH";
+        private static string PSQL_PATH_KEY = "PGSQLPATH";
         private static string REG_ASPNET_PATH_KEY = "REGASPNETPATH";
         private static string HORIZONTAL_LINE = "================================================================================";
         public static string DEFAULT_SESSION_NAME = "<none>";
         private static string DEFAULT_REG_ASPNET_PATH = @"C:\Windows\Microsoft.NET\Framework\v4.0.30319\aspnet_regsql.exe";
         private static string DEFAULT_SQLCMD_PATH = @"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\sqlcmd.exe";
+        private static string DEFAULT_PSQL_PATH = @"C:\Program Files\PostgreSQL\9.3\bin\psql.exe";
         private Dictionary<string, Session> sessions;
         private Dictionary<string, string> options;
         private BindingList<string> names;
@@ -30,6 +32,7 @@ namespace InitDB
             this.browseAssemblyBtn.Tag = this.assemblyTB;
             this.browseSqlCmdButton.Tag = this.sqlcmdTB;
             this.browseRegSqlButton.Tag = this.regsqlTB;
+            this.browsePsqlButton.Tag = this.psqlTB;
             this.txtStdOut.Text = string.Empty;
             this.txtStdErr.Text = string.Empty;
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -54,6 +57,9 @@ namespace InitDB
             if (!this.options.ContainsKey(SQLCMD_PATH_KEY))
                 this.options.Add(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH);
 
+            if (!this.options.ContainsKey(PSQL_PATH_KEY))
+                this.options.Add(PSQL_PATH_KEY, DEFAULT_PSQL_PATH);
+
             if (!this.options.ContainsKey(REG_ASPNET_PATH_KEY))
                 this.options.Add(REG_ASPNET_PATH_KEY, DEFAULT_REG_ASPNET_PATH);
 
@@ -64,6 +70,7 @@ namespace InitDB
         {
             this.sqlcmdTB.Text = this.options[SQLCMD_PATH_KEY];
             this.regsqlTB.Text = this.options[REG_ASPNET_PATH_KEY];
+            this.psqlTB.Text = this.options[PSQL_PATH_KEY];
         }
 
         private void LoadSessions()
@@ -539,10 +546,12 @@ namespace InitDB
         {
             cancelOptionsButton.Enabled =
                 this.options[REG_ASPNET_PATH_KEY] != this.regsqlTB.Text
-                || this.options[SQLCMD_PATH_KEY] != this.sqlcmdTB.Text;
+                || this.options[SQLCMD_PATH_KEY] != this.sqlcmdTB.Text
+                || this.options[PSQL_PATH_KEY] != this.psqlTB.Text;
             saveOptionsButton.Enabled
                 = File.Exists(sqlcmdTB.Text)
                     && File.Exists(regsqlTB.Text)
+                    && File.Exists(psqlTB.Text)
                     && cancelOptionsButton.Enabled;
         }
 
