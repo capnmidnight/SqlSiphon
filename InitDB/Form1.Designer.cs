@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.dbTypeList = new System.Windows.Forms.ComboBox();
+            this.label12 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabStdOut = new System.Windows.Forms.TabPage();
             this.txtStdOut = new System.Windows.Forms.TextBox();
@@ -123,42 +125,45 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 92F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 88F));
-            this.tableLayoutPanel1.Controls.Add(this.tabControl1, 0, 10);
+            this.tableLayoutPanel1.Controls.Add(this.dbTypeList, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.label12, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.tabControl1, 0, 11);
             this.tableLayoutPanel1.Controls.Add(this.label7, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.saveSessionButton, 4, 0);
             this.tableLayoutPanel1.Controls.Add(this.savedSessionList, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.deleteSessionButton, 5, 0);
-            this.tableLayoutPanel1.Controls.Add(this.browseAssemblyBtn, 5, 5);
-            this.tableLayoutPanel1.Controls.Add(this.label3, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.sqlUserTB, 1, 4);
-            this.tableLayoutPanel1.Controls.Add(this.label4, 2, 4);
-            this.tableLayoutPanel1.Controls.Add(this.sqlPassTB, 3, 4);
-            this.tableLayoutPanel1.Controls.Add(this.adminPassTB, 3, 3);
-            this.tableLayoutPanel1.Controls.Add(this.label10, 2, 3);
-            this.tableLayoutPanel1.Controls.Add(this.adminUserTB, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.label9, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.serverTB, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.label2, 2, 2);
-            this.tableLayoutPanel1.Controls.Add(this.databaseTB, 3, 2);
-            this.tableLayoutPanel1.Controls.Add(this.assemblyTB, 1, 5);
-            this.tableLayoutPanel1.Controls.Add(this.label8, 0, 5);
-            this.tableLayoutPanel1.Controls.Add(this.chkCreateDatabase, 1, 6);
-            this.tableLayoutPanel1.Controls.Add(this.chkCreateTables, 2, 6);
-            this.tableLayoutPanel1.Controls.Add(this.chkCreateLogin, 1, 7);
-            this.tableLayoutPanel1.Controls.Add(this.chkRegSql, 1, 8);
-            this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 2);
-            this.tableLayoutPanel1.Controls.Add(this.chkSyncProcedures, 2, 9);
-            this.tableLayoutPanel1.Controls.Add(this.chkInitializeData, 1, 9);
-            this.tableLayoutPanel1.Controls.Add(this.chkCreateFKs, 2, 7);
-            this.tableLayoutPanel1.Controls.Add(this.chkCreateIndices, 2, 8);
-            this.tableLayoutPanel1.Controls.Add(this.analyzeButton, 5, 3);
+            this.tableLayoutPanel1.Controls.Add(this.browseAssemblyBtn, 5, 6);
+            this.tableLayoutPanel1.Controls.Add(this.label3, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.sqlUserTB, 1, 5);
+            this.tableLayoutPanel1.Controls.Add(this.label4, 2, 5);
+            this.tableLayoutPanel1.Controls.Add(this.sqlPassTB, 3, 5);
+            this.tableLayoutPanel1.Controls.Add(this.adminPassTB, 3, 4);
+            this.tableLayoutPanel1.Controls.Add(this.label10, 2, 4);
+            this.tableLayoutPanel1.Controls.Add(this.adminUserTB, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.label9, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this.serverTB, 1, 3);
+            this.tableLayoutPanel1.Controls.Add(this.label2, 2, 3);
+            this.tableLayoutPanel1.Controls.Add(this.databaseTB, 3, 3);
+            this.tableLayoutPanel1.Controls.Add(this.assemblyTB, 1, 6);
+            this.tableLayoutPanel1.Controls.Add(this.label8, 0, 6);
+            this.tableLayoutPanel1.Controls.Add(this.chkCreateDatabase, 1, 7);
+            this.tableLayoutPanel1.Controls.Add(this.chkCreateTables, 2, 7);
+            this.tableLayoutPanel1.Controls.Add(this.chkCreateLogin, 1, 8);
+            this.tableLayoutPanel1.Controls.Add(this.chkRegSql, 1, 9);
+            this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 3);
+            this.tableLayoutPanel1.Controls.Add(this.chkSyncProcedures, 2, 10);
+            this.tableLayoutPanel1.Controls.Add(this.chkInitializeData, 1, 10);
+            this.tableLayoutPanel1.Controls.Add(this.chkCreateFKs, 2, 8);
+            this.tableLayoutPanel1.Controls.Add(this.chkCreateIndices, 2, 9);
+            this.tableLayoutPanel1.Controls.Add(this.analyzeButton, 5, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 11;
+            this.tableLayoutPanel1.RowCount = 12;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 8F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
@@ -168,8 +173,33 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(918, 671);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(918, 782);
             this.tableLayoutPanel1.TabIndex = 0;
+            // 
+            // dbTypeList
+            // 
+            this.dbTypeList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dbTypeList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.dbTypeList.FormattingEnabled = true;
+            this.dbTypeList.Items.AddRange(new object[] {
+            "Microsoft SQL Server",
+            "PostgreSQL"});
+            this.dbTypeList.Location = new System.Drawing.Point(189, 41);
+            this.dbTypeList.Name = "dbTypeList";
+            this.dbTypeList.Size = new System.Drawing.Size(239, 21);
+            this.dbTypeList.Sorted = true;
+            this.dbTypeList.TabIndex = 32;
+            // 
+            // label12
+            // 
+            this.label12.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(104, 46);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(79, 13);
+            this.label12.TabIndex = 31;
+            this.label12.Text = "Database type:";
             // 
             // tabControl1
             // 
@@ -182,10 +212,10 @@
             this.tabControl1.Controls.Add(this.tabOther);
             this.tabControl1.Controls.Add(this.tabOptions);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(3, 261);
+            this.tabControl1.Location = new System.Drawing.Point(3, 291);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(912, 407);
+            this.tabControl1.Size = new System.Drawing.Size(912, 488);
             this.tabControl1.TabIndex = 18;
             // 
             // tabStdOut
@@ -194,7 +224,7 @@
             this.tabStdOut.Location = new System.Drawing.Point(4, 22);
             this.tabStdOut.Name = "tabStdOut";
             this.tabStdOut.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdOut.Size = new System.Drawing.Size(904, 381);
+            this.tabStdOut.Size = new System.Drawing.Size(904, 462);
             this.tabStdOut.TabIndex = 0;
             this.tabStdOut.Text = "Standard output";
             this.tabStdOut.UseVisualStyleBackColor = true;
@@ -210,7 +240,7 @@
             this.txtStdOut.Name = "txtStdOut";
             this.txtStdOut.ReadOnly = true;
             this.txtStdOut.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdOut.Size = new System.Drawing.Size(898, 375);
+            this.txtStdOut.Size = new System.Drawing.Size(898, 456);
             this.txtStdOut.TabIndex = 1;
             this.txtStdOut.TabStop = false;
             this.txtStdOut.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -221,7 +251,7 @@
             this.tabStdErr.Location = new System.Drawing.Point(4, 22);
             this.tabStdErr.Name = "tabStdErr";
             this.tabStdErr.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdErr.Size = new System.Drawing.Size(904, 381);
+            this.tabStdErr.Size = new System.Drawing.Size(904, 462);
             this.tabStdErr.TabIndex = 1;
             this.tabStdErr.Text = "Standard error";
             this.tabStdErr.UseVisualStyleBackColor = true;
@@ -237,7 +267,7 @@
             this.txtStdErr.Name = "txtStdErr";
             this.txtStdErr.ReadOnly = true;
             this.txtStdErr.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdErr.Size = new System.Drawing.Size(898, 375);
+            this.txtStdErr.Size = new System.Drawing.Size(898, 456);
             this.txtStdErr.TabIndex = 0;
             this.txtStdErr.TabStop = false;
             this.txtStdErr.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -247,7 +277,7 @@
             this.tabCreates.Controls.Add(this.createsGV);
             this.tabCreates.Location = new System.Drawing.Point(4, 22);
             this.tabCreates.Name = "tabCreates";
-            this.tabCreates.Size = new System.Drawing.Size(904, 381);
+            this.tabCreates.Size = new System.Drawing.Size(904, 462);
             this.tabCreates.TabIndex = 5;
             this.tabCreates.Text = "Objects to add";
             this.tabCreates.UseVisualStyleBackColor = true;
@@ -263,7 +293,7 @@
             this.createsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.createsGV.Location = new System.Drawing.Point(0, 0);
             this.createsGV.Name = "createsGV";
-            this.createsGV.Size = new System.Drawing.Size(904, 381);
+            this.createsGV.Size = new System.Drawing.Size(904, 462);
             this.createsGV.TabIndex = 3;
             this.createsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
@@ -292,7 +322,7 @@
             this.tabDrops.Controls.Add(this.dropsGV);
             this.tabDrops.Location = new System.Drawing.Point(4, 22);
             this.tabDrops.Name = "tabDrops";
-            this.tabDrops.Size = new System.Drawing.Size(904, 381);
+            this.tabDrops.Size = new System.Drawing.Size(904, 462);
             this.tabDrops.TabIndex = 2;
             this.tabDrops.Text = "Objects to drop";
             this.tabDrops.UseVisualStyleBackColor = true;
@@ -308,7 +338,7 @@
             this.dropsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dropsGV.Location = new System.Drawing.Point(0, 0);
             this.dropsGV.Name = "dropsGV";
-            this.dropsGV.Size = new System.Drawing.Size(904, 381);
+            this.dropsGV.Size = new System.Drawing.Size(904, 462);
             this.dropsGV.TabIndex = 2;
             this.dropsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
@@ -337,7 +367,7 @@
             this.tabAlters.Controls.Add(this.altersGV);
             this.tabAlters.Location = new System.Drawing.Point(4, 22);
             this.tabAlters.Name = "tabAlters";
-            this.tabAlters.Size = new System.Drawing.Size(904, 381);
+            this.tabAlters.Size = new System.Drawing.Size(904, 462);
             this.tabAlters.TabIndex = 3;
             this.tabAlters.Text = "Objects to alter";
             this.tabAlters.UseVisualStyleBackColor = true;
@@ -353,7 +383,7 @@
             this.altersGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.altersGV.Location = new System.Drawing.Point(0, 0);
             this.altersGV.Name = "altersGV";
-            this.altersGV.Size = new System.Drawing.Size(904, 381);
+            this.altersGV.Size = new System.Drawing.Size(904, 462);
             this.altersGV.TabIndex = 5;
             this.altersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
@@ -382,7 +412,7 @@
             this.tabOther.Controls.Add(this.othersGV);
             this.tabOther.Location = new System.Drawing.Point(4, 22);
             this.tabOther.Name = "tabOther";
-            this.tabOther.Size = new System.Drawing.Size(904, 381);
+            this.tabOther.Size = new System.Drawing.Size(904, 462);
             this.tabOther.TabIndex = 6;
             this.tabOther.Text = "Other scripts";
             this.tabOther.UseVisualStyleBackColor = true;
@@ -399,7 +429,7 @@
             this.othersGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.othersGV.Location = new System.Drawing.Point(0, 0);
             this.othersGV.Name = "othersGV";
-            this.othersGV.Size = new System.Drawing.Size(904, 381);
+            this.othersGV.Size = new System.Drawing.Size(904, 462);
             this.othersGV.TabIndex = 6;
             this.othersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
@@ -438,7 +468,7 @@
             this.tabOptions.Location = new System.Drawing.Point(4, 22);
             this.tabOptions.Name = "tabOptions";
             this.tabOptions.Padding = new System.Windows.Forms.Padding(3);
-            this.tabOptions.Size = new System.Drawing.Size(904, 381);
+            this.tabOptions.Size = new System.Drawing.Size(904, 462);
             this.tabOptions.TabIndex = 4;
             this.tabOptions.Text = "Options";
             this.tabOptions.UseVisualStyleBackColor = true;
@@ -468,7 +498,7 @@
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(898, 375);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(898, 456);
             this.tableLayoutPanel4.TabIndex = 0;
             // 
             // browseRegSqlButton
@@ -535,7 +565,7 @@
             // 
             this.cancelOptionsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelOptionsButton.Enabled = false;
-            this.cancelOptionsButton.Location = new System.Drawing.Point(820, 349);
+            this.cancelOptionsButton.Location = new System.Drawing.Point(820, 430);
             this.cancelOptionsButton.Name = "cancelOptionsButton";
             this.cancelOptionsButton.Size = new System.Drawing.Size(75, 23);
             this.cancelOptionsButton.TabIndex = 13;
@@ -547,7 +577,7 @@
             // 
             this.saveOptionsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.saveOptionsButton.Enabled = false;
-            this.saveOptionsButton.Location = new System.Drawing.Point(734, 349);
+            this.saveOptionsButton.Location = new System.Drawing.Point(734, 430);
             this.saveOptionsButton.Name = "saveOptionsButton";
             this.saveOptionsButton.Size = new System.Drawing.Size(75, 23);
             this.saveOptionsButton.TabIndex = 14;
@@ -559,9 +589,9 @@
             // 
             this.label11.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(96, 68);
+            this.label11.Location = new System.Drawing.Point(104, 68);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(90, 13);
+            this.label11.Size = new System.Drawing.Size(82, 13);
             this.label11.TabIndex = 15;
             this.label11.Text = "PSQL tool path:";
             // 
@@ -633,7 +663,7 @@
             // browseAssemblyBtn
             // 
             this.browseAssemblyBtn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.browseAssemblyBtn.Location = new System.Drawing.Point(833, 131);
+            this.browseAssemblyBtn.Location = new System.Drawing.Point(833, 161);
             this.browseAssemblyBtn.Name = "browseAssemblyBtn";
             this.browseAssemblyBtn.Size = new System.Drawing.Size(82, 24);
             this.browseAssemblyBtn.TabIndex = 14;
@@ -645,16 +675,16 @@
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(67, 106);
+            this.label3.Location = new System.Drawing.Point(69, 136);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(116, 13);
+            this.label3.Size = new System.Drawing.Size(114, 13);
             this.label3.TabIndex = 2;
-            this.label3.Text = "SQL Login User Name:";
+            this.label3.Text = "App Login User Name:";
             // 
             // sqlUserTB
             // 
             this.sqlUserTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.sqlUserTB.Location = new System.Drawing.Point(189, 103);
+            this.sqlUserTB.Location = new System.Drawing.Point(189, 133);
             this.sqlUserTB.Name = "sqlUserTB";
             this.sqlUserTB.Size = new System.Drawing.Size(239, 20);
             this.sqlUserTB.TabIndex = 6;
@@ -664,17 +694,17 @@
             // 
             this.label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(466, 106);
+            this.label4.Location = new System.Drawing.Point(468, 136);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(109, 13);
+            this.label4.Size = new System.Drawing.Size(107, 13);
             this.label4.TabIndex = 3;
-            this.label4.Text = "SQL Login Password:";
+            this.label4.Text = "App Login Password:";
             // 
             // sqlPassTB
             // 
             this.sqlPassTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.sqlPassTB, 2);
-            this.sqlPassTB.Location = new System.Drawing.Point(581, 103);
+            this.sqlPassTB.Location = new System.Drawing.Point(581, 133);
             this.sqlPassTB.Name = "sqlPassTB";
             this.sqlPassTB.Size = new System.Drawing.Size(246, 20);
             this.sqlPassTB.TabIndex = 7;
@@ -683,7 +713,7 @@
             // 
             this.adminPassTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.adminPassTB, 2);
-            this.adminPassTB.Location = new System.Drawing.Point(580, 73);
+            this.adminPassTB.Location = new System.Drawing.Point(580, 103);
             this.adminPassTB.Margin = new System.Windows.Forms.Padding(2);
             this.adminPassTB.Name = "adminPassTB";
             this.adminPassTB.Size = new System.Drawing.Size(248, 20);
@@ -693,7 +723,7 @@
             // 
             this.label10.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(488, 76);
+            this.label10.Location = new System.Drawing.Point(488, 106);
             this.label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(88, 13);
@@ -703,7 +733,7 @@
             // adminUserTB
             // 
             this.adminUserTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.adminUserTB.Location = new System.Drawing.Point(188, 73);
+            this.adminUserTB.Location = new System.Drawing.Point(188, 103);
             this.adminUserTB.Margin = new System.Windows.Forms.Padding(2);
             this.adminUserTB.Name = "adminUserTB";
             this.adminUserTB.Size = new System.Drawing.Size(241, 20);
@@ -713,7 +743,7 @@
             // 
             this.label9.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(89, 76);
+            this.label9.Location = new System.Drawing.Point(89, 106);
             this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(95, 13);
@@ -724,7 +754,7 @@
             // 
             this.label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(142, 46);
+            this.label1.Location = new System.Drawing.Point(142, 76);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(41, 13);
             this.label1.TabIndex = 0;
@@ -733,7 +763,7 @@
             // serverTB
             // 
             this.serverTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.serverTB.Location = new System.Drawing.Point(189, 43);
+            this.serverTB.Location = new System.Drawing.Point(189, 73);
             this.serverTB.Name = "serverTB";
             this.serverTB.Size = new System.Drawing.Size(239, 20);
             this.serverTB.TabIndex = 2;
@@ -743,7 +773,7 @@
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(488, 46);
+            this.label2.Location = new System.Drawing.Point(488, 76);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(87, 13);
             this.label2.TabIndex = 1;
@@ -753,7 +783,7 @@
             // 
             this.databaseTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.databaseTB, 2);
-            this.databaseTB.Location = new System.Drawing.Point(581, 43);
+            this.databaseTB.Location = new System.Drawing.Point(581, 73);
             this.databaseTB.Name = "databaseTB";
             this.databaseTB.Size = new System.Drawing.Size(246, 20);
             this.databaseTB.TabIndex = 5;
@@ -763,7 +793,7 @@
             // 
             this.assemblyTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.assemblyTB, 4);
-            this.assemblyTB.Location = new System.Drawing.Point(189, 133);
+            this.assemblyTB.Location = new System.Drawing.Point(189, 163);
             this.assemblyTB.Name = "assemblyTB";
             this.assemblyTB.Size = new System.Drawing.Size(638, 20);
             this.assemblyTB.TabIndex = 13;
@@ -772,7 +802,7 @@
             // 
             this.label8.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(103, 136);
+            this.label8.Location = new System.Drawing.Point(103, 166);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(80, 13);
             this.label8.TabIndex = 23;
@@ -782,7 +812,7 @@
             // 
             this.chkCreateDatabase.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateDatabase.AutoSize = true;
-            this.chkCreateDatabase.Location = new System.Drawing.Point(189, 162);
+            this.chkCreateDatabase.Location = new System.Drawing.Point(189, 192);
             this.chkCreateDatabase.Name = "chkCreateDatabase";
             this.chkCreateDatabase.Size = new System.Drawing.Size(104, 17);
             this.chkCreateDatabase.TabIndex = 15;
@@ -794,7 +824,7 @@
             this.chkCreateTables.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateTables.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.chkCreateTables, 2);
-            this.chkCreateTables.Location = new System.Drawing.Point(434, 162);
+            this.chkCreateTables.Location = new System.Drawing.Point(434, 192);
             this.chkCreateTables.Name = "chkCreateTables";
             this.chkCreateTables.Size = new System.Drawing.Size(88, 17);
             this.chkCreateTables.TabIndex = 18;
@@ -805,7 +835,7 @@
             // 
             this.chkCreateLogin.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateLogin.AutoSize = true;
-            this.chkCreateLogin.Location = new System.Drawing.Point(189, 187);
+            this.chkCreateLogin.Location = new System.Drawing.Point(189, 217);
             this.chkCreateLogin.Name = "chkCreateLogin";
             this.chkCreateLogin.Size = new System.Drawing.Size(129, 17);
             this.chkCreateLogin.TabIndex = 16;
@@ -816,7 +846,7 @@
             // 
             this.chkRegSql.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkRegSql.AutoSize = true;
-            this.chkRegSql.Location = new System.Drawing.Point(189, 212);
+            this.chkRegSql.Location = new System.Drawing.Point(189, 242);
             this.chkRegSql.Name = "chkRegSql";
             this.chkRegSql.Size = new System.Drawing.Size(179, 17);
             this.chkRegSql.TabIndex = 17;
@@ -826,7 +856,7 @@
             // runButton
             // 
             this.runButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.runButton.Location = new System.Drawing.Point(833, 41);
+            this.runButton.Location = new System.Drawing.Point(833, 71);
             this.runButton.Name = "runButton";
             this.runButton.Size = new System.Drawing.Size(82, 24);
             this.runButton.TabIndex = 22;
@@ -841,7 +871,7 @@
             this.chkSyncProcedures.Checked = true;
             this.chkSyncProcedures.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tableLayoutPanel1.SetColumnSpan(this.chkSyncProcedures, 2);
-            this.chkSyncProcedures.Location = new System.Drawing.Point(434, 237);
+            this.chkSyncProcedures.Location = new System.Drawing.Point(434, 267);
             this.chkSyncProcedures.Name = "chkSyncProcedures";
             this.chkSyncProcedures.Size = new System.Drawing.Size(138, 17);
             this.chkSyncProcedures.TabIndex = 20;
@@ -852,7 +882,7 @@
             // 
             this.chkInitializeData.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkInitializeData.AutoSize = true;
-            this.chkInitializeData.Location = new System.Drawing.Point(189, 237);
+            this.chkInitializeData.Location = new System.Drawing.Point(189, 267);
             this.chkInitializeData.Name = "chkInitializeData";
             this.chkInitializeData.Size = new System.Drawing.Size(87, 17);
             this.chkInitializeData.TabIndex = 19;
@@ -864,7 +894,7 @@
             this.chkCreateFKs.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateFKs.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.chkCreateFKs, 2);
-            this.chkCreateFKs.Location = new System.Drawing.Point(434, 187);
+            this.chkCreateFKs.Location = new System.Drawing.Point(434, 217);
             this.chkCreateFKs.Name = "chkCreateFKs";
             this.chkCreateFKs.Size = new System.Drawing.Size(117, 17);
             this.chkCreateFKs.TabIndex = 28;
@@ -876,7 +906,7 @@
             this.chkCreateIndices.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.chkCreateIndices.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.chkCreateIndices, 2);
-            this.chkCreateIndices.Location = new System.Drawing.Point(434, 212);
+            this.chkCreateIndices.Location = new System.Drawing.Point(434, 242);
             this.chkCreateIndices.Name = "chkCreateIndices";
             this.chkCreateIndices.Size = new System.Drawing.Size(300, 17);
             this.chkCreateIndices.TabIndex = 29;
@@ -886,7 +916,7 @@
             // analyzeButton
             // 
             this.analyzeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.analyzeButton.Location = new System.Drawing.Point(833, 71);
+            this.analyzeButton.Location = new System.Drawing.Point(833, 101);
             this.analyzeButton.Name = "analyzeButton";
             this.analyzeButton.Size = new System.Drawing.Size(82, 23);
             this.analyzeButton.TabIndex = 30;
@@ -903,7 +933,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(918, 671);
+            this.ClientSize = new System.Drawing.Size(918, 782);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "Form1";
             this.Text = "Initialize CARS database";
@@ -1001,6 +1031,8 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Button browsePsqlButton;
         private System.Windows.Forms.TextBox psqlTB;
+        private System.Windows.Forms.ComboBox dbTypeList;
+        private System.Windows.Forms.Label label12;
     }
 }
 

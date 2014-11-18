@@ -13,6 +13,7 @@ namespace InitDB
 {
     public partial class Form1 : Form
     {
+        private static string POSTGRES = "PostgreSQL";
         private static string SESSIONS_FILENAME = "sessions.dat";
         private static string OPTIONS_FILENAME = "options.dat";
         private static string SQLCMD_PATH_KEY = "SQLCMDPATH";
@@ -106,22 +107,37 @@ namespace InitDB
         {
             this.runButton.Enabled = false;
             Application.DoEvents();
-            if (isPathsCorrect())
+            if (PathsAreCorrect())
                 Task.Run(new Action(SetupDB));
         }
 
-        private bool isPathsCorrect()
+        private bool IsPostgres()
         {
-            var sqlcmdGood = File.Exists(sqlcmdTB.Text);
+            if (this.InvokeRequired)
+            {
+                return (bool)this.Invoke(new Func<bool>(this.IsPostgres));
+            }
+            else
+            {
+                return ((string)dbTypeList.SelectedItem) == POSTGRES;
+            }
+        }
+
+        private bool PathsAreCorrect()
+        {
+            var sqlcmdGood = this.IsPostgres() || File.Exists(sqlcmdTB.Text);
+            var psqlGood = !this.IsPostgres() || File.Exists(psqlTB.Text);
             var regsqlGood = File.Exists(regsqlTB.Text);
             var assemblyGood = File.Exists(assemblyTB.Text);
+            if (!psqlGood)
+                this.ToError("Can't find PSQL");
             if (!sqlcmdGood)
                 this.ToError("Can't find SQLCMD");
             if (!regsqlGood)
                 this.ToError("Can't find ASPNET_REGSQL");
             if (!assemblyGood)
                 this.ToError("Can't find Assembly");
-            return sqlcmdGood && regsqlGood && assemblyGood;
+            return psqlGood && sqlcmdGood && regsqlGood && assemblyGood;
         }
 
         private bool RunProcess(string name, params string[] args)
@@ -207,19 +223,110 @@ namespace InitDB
             else act();
         }
 
-        private bool RunQueryWithSQLCMD(string qry, string database = null, bool isFile = false)
+        private bool RunQueryWithPSQL(string qry, string database, bool isFile)
         {
             bool success = false;
             if (isFile && !File.Exists(qry))
+            {
                 this.ToError(string.Format("Tried running script from file \"{0}\", but it doesn't exist!", qry));
+            }
+            else if (string.IsNullOrWhiteSpace(adminUserTB.Text) || string.IsNullOrWhiteSpace(adminPassTB.Text))
+            {
+                this.ToError("PSQL does not support Windows Authentication. Please provide a username and password for the server process.");
+            }
             else
+            {
+                string server = serverTB.Text;
+                string port = null;
+                var i = server.IndexOf(":");
+                if(i > -1){
+                    port = server.Substring(i + 1);
+                    server = server.Substring(0, i);
+                }
+
+                // we can't send a password to the server directly, so we have twiddle the user's
+                // pgpass.conf file. See this page for more information on the pgpass.conf file:
+                //     http://www.postgresql.org/docs/current/static/libpq-pgpass.html
+                var confPath = System.Windows.Forms.Application.UserAppDataPath;
+                i = confPath.IndexOf("InitDB");
+                confPath = Path.Combine(confPath.Substring(0, i), "postgresql", "pgpass.conf");
+                bool lineAdded = false;
+                string[] originalConf = null;
+                if (File.Exists(confPath))
+                {
+                    originalConf = File.ReadAllLines(confPath);
+                }
+                var lineToAdd = string.Format(
+                    "{0}:{1}:{2}:{3}:{4}",
+                    server, 
+                    port ?? "*", 
+                    database ?? "*", 
+                    adminUserTB.Text, 
+                    adminPassTB.Text);
+
+                if (originalConf == null)
+                {
+                    lineAdded = true;
+                    File.WriteAllText(confPath, lineToAdd);
+                }
+                else
+                {
+                    var conf = originalConf.ToList();
+                    i = conf.IndexOf(lineToAdd);
+                    if (i == -1)
+                    {
+                        conf.Add(lineToAdd);
+                        lineAdded = true;
+                        File.WriteAllLines(confPath, conf);
+                    }
+                }
+
+                try
+                {
+                    success = RunProcess(
+                        psqlTB.Text,
+                        "-h " + server,
+                        string.IsNullOrWhiteSpace(port) ? null : "-p " + port,
+                        "-U " + adminUserTB.Text,
+                        string.Format(" -{0} \"{1}\"", isFile ? "f" : "c", qry),
+                        (database != null) ? "-d " + database : null);
+                }
+                finally
+                {
+                    // put everything back the way it was
+                    if (lineAdded)
+                    {
+                        if (originalConf == null)
+                        {
+                            File.Delete(confPath);
+                        }
+                        else
+                        {
+                            File.WriteAllLines(confPath, originalConf);
+                        }
+                    }
+                }
+            }
+            return success;
+        }
+
+        private bool RunQueryWithSQLCMD(string qry, string database, bool isFile)
+        {
+            bool success = false;
+            if (isFile && !File.Exists(qry))
+            {
+                this.ToError(string.Format("Tried running script from file \"{0}\", but it doesn't exist!", qry));
+            }
+            else
+            {
                 success = RunProcess(
                     sqlcmdTB.Text,
                     "-S " + serverTB.Text,
-                    adminUserTB.Text != string.Empty ? "-U " + adminUserTB.Text : null,
-                    adminPassTB.Text != string.Empty ? "-P " + adminPassTB.Text : null,
+                    string.IsNullOrWhiteSpace(adminUserTB.Text) ? null : "-U " + adminUserTB.Text,
+                    string.IsNullOrWhiteSpace(adminPassTB.Text) ? null : "-P " + adminPassTB.Text,
                     (database != null) ? "-d " + database : null,
                     string.Format(" -{0} \"{1}\"", isFile ? "i" : "Q", qry));
+            }
             return success;
         }
 
@@ -237,31 +344,42 @@ namespace InitDB
 
         private void SetupDB()
         {
+            Func<string, string, bool, bool> runQuery;
+            if (this.IsPostgres())
+            {
+                runQuery = RunQueryWithPSQL;
+            }
+            else
+            {
+                runQuery = RunQueryWithSQLCMD;
+            }
+
             try
             {
-                bool succeeded = true;
-                if (chkCreateDatabase.Checked)
-                    succeeded &= RunQueryWithSQLCMD(string.Format("CREATE DATABASE {0};", databaseTB.Text));
-
-                if (chkCreateLogin.Checked)
+                bool succeeded = (!chkCreateDatabase.Checked || runQuery(string.Format("CREATE DATABASE {0};", databaseTB.Text), null, false));
+                if (succeeded && chkCreateLogin.Checked)
                 {
-                    if (succeeded)
-                        succeeded &= RunQueryWithSQLCMD(string.Format("CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};", sqlUserTB.Text, sqlPassTB.Text, databaseTB.Text));
-                    if (succeeded)
-                        succeeded &= RunQueryWithSQLCMD(string.Format("CREATE USER {0} FOR LOGIN {0};", sqlUserTB.Text), databaseTB.Text);
-                    if (succeeded)
-                        succeeded &= RunQueryWithSQLCMD(string.Format("ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;", sqlUserTB.Text), databaseTB.Text);
-                    if (succeeded)
-                        succeeded &= RunQueryWithSQLCMD(string.Format("ALTER ROLE db_owner ADD MEMBER {0};", sqlUserTB.Text), databaseTB.Text);
+                    if (this.IsPostgres())
+                    {
+                        succeeded = runQuery(string.Format("CREATE USER {0} WITH PASSWORD '{1}'", sqlUserTB.Text, sqlPassTB.Text), null, false);
+                    }
+                    else
+                    {
+                        succeeded = runQuery(string.Format("CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};", sqlUserTB.Text, sqlPassTB.Text, databaseTB.Text), null, false)
+                            && runQuery(string.Format("CREATE USER {0} FOR LOGIN {0};", sqlUserTB.Text), databaseTB.Text, false)
+                            && runQuery(string.Format("ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;", sqlUserTB.Text), databaseTB.Text, false)
+                            && runQuery(string.Format("ALTER ROLE db_owner ADD MEMBER {0};", sqlUserTB.Text), databaseTB.Text, false);
+                    }
                 }
 
-                if (succeeded && chkRegSql.Checked)
-                    succeeded &= RunASPNET_REGSQL();
+                if (succeeded && !this.IsPostgres() && chkRegSql.Checked)
+                {
+                    succeeded = RunASPNET_REGSQL();
+                }
 
                 if (succeeded)
                 {
-
-                    using (var db = this.CurrentSession.MakeDatabaseConnection())
+                    using (var db = this.MakeDatabaseConnection())
                     {
                         db.Progress += db_Progress;
                         var t = db.GetType();
@@ -285,9 +403,13 @@ namespace InitDB
                 }
 
                 if (succeeded)
+                {
                     this.ToOutput("All done", true);
+                }
                 else
+                {
                     this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
+                }
             }
             catch (Exception exp)
             {
@@ -323,11 +445,11 @@ namespace InitDB
         private void analyzeButton_Click(object sender, EventArgs e)
         {
             analyzeButton.Enabled = false;
-            if (isPathsCorrect())
+            if (PathsAreCorrect())
             {
                 Task.Run(() =>
                 {
-                    using (var db = this.CurrentSession.MakeDatabaseConnection())
+                    using (var db = this.MakeDatabaseConnection())
                     {
                         WithDropReport("schema analysis", db, db.Analyze);
                         this.SyncUI(() =>
@@ -421,6 +543,7 @@ namespace InitDB
         {
             var sesh = new Session(
                 this.savedSessionList.Text,
+                (string)this.dbTypeList.SelectedItem,
                 this.serverTB.Text,
                 this.databaseTB.Text,
                 this.adminUserTB.Text,
@@ -490,6 +613,7 @@ namespace InitDB
                 if (this.CurrentSession != null)
                 {
                     this.serverTB.Text = this.CurrentSession.Server;
+                    this.dbTypeList.SelectedItem = this.CurrentSession.DatabaseType;
                     this.databaseTB.Text = this.CurrentSession.DBName;
                     this.adminUserTB.Text = this.CurrentSession.AdminName;
                     this.adminPassTB.Text = this.CurrentSession.AdminPassword;
@@ -508,7 +632,7 @@ namespace InitDB
                     {
                         this.txtStdOut.Text = "";
                         this.txtStdErr.Text = "";
-                        this.ToOutput(this.CurrentSession.GetMOTD());
+                        this.ToOutput(this.GetMOTD());
                     }
                     catch { }
                 }
@@ -522,6 +646,100 @@ namespace InitDB
                 altersGV.Rows.Clear();
                 othersGV.Rows.Clear();
             }
+        }
+
+        public string GetMOTD()
+        {
+            var motd = "Could not create database connection";
+            var db = this.MakeDatabaseConnection();
+            if (db != null)
+            {
+                motd = db.MOTD;
+                db.Dispose();
+            }
+            return motd;
+        }
+
+        public ISqlSiphon MakeDatabaseConnection()
+        {
+            if (File.Exists(this.assemblyTB.Text))
+            {
+                var ss = typeof(ISqlSiphon);
+                var vt = this.IsPostgres()
+                    ? typeof(SqlSiphon.Postgres.NpgsqlDataAccessLayer)
+                    : typeof(SqlSiphon.SqlServer.SqlServerDataAccessLayer);
+                var constructorParams = new[] { typeof(string) };
+                var constructorArgs = new object[] { this.MakeConnectionString() };
+                var assembly = System.Reflection.Assembly.LoadFrom(this.assemblyTB.Text);
+                var constructor = assembly.GetTypes()
+                    .Where(t => t.GetInterfaces().Contains(ss)
+                                && t.IsSubclassOf(vt)
+                                && !t.IsAbstract
+                                && !t.IsInterface)
+                    .Select(t => t.GetConstructor(constructorParams))
+                    .FirstOrDefault();
+                if (constructor != null)
+                {
+                    return (ISqlSiphon)constructor.Invoke(constructorArgs);
+                }
+            }
+            return null;
+        }
+
+        private string MakeConnectionString()
+        {
+            var cred = new[] { 
+                new[]{this.adminUserTB.Text, this.adminPassTB.Text}, 
+                new[]{this.sqlUserTB.Text, this.sqlPassTB.Text}}
+                .Where(s => !string.IsNullOrEmpty(s[0]) && !string.IsNullOrEmpty(s[1]))
+                .FirstOrDefault();
+            string connStr = null;
+            if (this.IsPostgres())
+            {
+                var builder = new Npgsql.NpgsqlConnectionStringBuilder
+                {
+                    Database = this.databaseTB.Text.ToLower()
+                };
+
+                if (cred != null)
+                {
+                    builder.UserName = cred[0];
+                    builder.Add("Password", cred[1]);
+                }
+
+                var i = this.serverTB.Text.IndexOf(":");
+                if (i > -1)
+                {
+                    builder.Host = this.serverTB.Text.Substring(0, i);
+                    int port = 0;
+                    if (int.TryParse(this.serverTB.Text.Substring(i + 1), out port))
+                    {
+                        builder.Port = port;
+                    }
+                }
+                else
+                {
+                    builder.Host = this.serverTB.Text;
+                }
+
+                connStr = builder.ConnectionString;
+            }
+            else
+            {
+                var builder = new System.Data.SqlClient.SqlConnectionStringBuilder
+                {
+                    DataSource = this.serverTB.Text,
+                    InitialCatalog = this.databaseTB.Text
+                };
+                builder.IntegratedSecurity = cred == null;
+                if (cred != null)
+                {
+                    builder.UserID = cred[0];
+                    builder.Password = cred[1];
+                }
+                connStr = builder.ConnectionString;
+            }
+            return connStr;
         }
 
         private void savedSessionList_TextUpdate(object sender, EventArgs e)
@@ -610,7 +828,7 @@ namespace InitDB
 
         private void SkipScript(string script)
         {
-            using (var db = CurrentSession.MakeDatabaseConnection())
+            using (var db = this.MakeDatabaseConnection())
                 db.MarkScriptAsRan(script);
         }
 
@@ -618,7 +836,7 @@ namespace InitDB
         {
             this.tabControl1.SelectedTab = this.tabStdOut;
             this.ToOutput(script);
-            using (var db = CurrentSession.MakeDatabaseConnection())
+            using (var db = this.MakeDatabaseConnection())
                 db.AlterDatabase(script);
         }
     }
