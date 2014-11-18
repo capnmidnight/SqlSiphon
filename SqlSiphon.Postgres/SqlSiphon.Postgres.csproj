@@ -77,7 +77,14 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Memberships\aspnet_Applications.cs" />
+    <Compile Include="Memberships\aspnet_Membership.cs" />
+    <Compile Include="Memberships\aspnet_Roles.cs" />
+    <Compile Include="Memberships\aspnet_SchemaVersions.cs" />
+    <Compile Include="Memberships\aspnet_Users.cs" />
+    <Compile Include="Memberships\aspnet_UsersInRoles.cs" />
     <Compile Include="NpgsqlDataAccessLayer.cs" />
+    <Compile Include="NpgsqlDataAccessLayerMemberships.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
