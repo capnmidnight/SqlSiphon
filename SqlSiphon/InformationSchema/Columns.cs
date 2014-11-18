@@ -46,7 +46,7 @@ namespace SqlSiphon.InformationSchema
         public string data_type { get; set; }
         public string is_nullable { get; set; }
         public int? character_maximum_length { get; set; }
-        public byte? numeric_precision { get; set; }
+        public int? numeric_precision { get; set; }
         public int? numeric_scale { get; set; }
         public string column_default { get; set; }
     }

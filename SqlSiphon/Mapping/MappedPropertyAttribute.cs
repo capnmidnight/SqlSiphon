@@ -102,35 +102,6 @@ namespace SqlSiphon.Mapping
             this.Cascade = true;
         }
 
-        internal MappedPropertyAttribute(InformationSchema.Columns column)
-        {
-            this.DefaultValue = column.column_default;
-            this.IsOptional = column.is_nullable.ToLower() == "yes";
-            this.Name = column.column_name;
-            this.SqlType = column.data_type;
-
-            if (column.data_type == "nvarchar"
-                || column.data_type == "varchar")
-            {
-                if (column.character_maximum_length != null
-                    && column.character_maximum_length != -1)
-                    this.Size = column.character_maximum_length.Value;
-            }
-            else
-            {
-                if (column.numeric_precision != null
-                    && !(column.data_type == "int"
-                        && column.numeric_precision == 10)
-                    && !(column.data_type == "real"
-                        && column.numeric_precision == 24)
-                    && column.numeric_precision != 0)
-                    this.Precision = column.numeric_precision.Value;
-                if (column.numeric_scale != null
-                        && column.numeric_scale != 0)
-                    this.Size = column.numeric_scale.Value;
-            }
-        }
-
         public override void InferProperties(System.Reflection.PropertyInfo obj)
         {
             base.InferProperties(obj);

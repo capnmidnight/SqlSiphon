@@ -42,7 +42,7 @@ namespace SqlSiphon.Postgres
     /// A base class for building Data Access Layers that connect to MySQL
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract class NpgsqlDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
+    public abstract partial class NpgsqlDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
@@ -70,8 +70,8 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("double precision", typeof(double));
             typeMapping.Add("float8", typeof(double));
             typeMapping.Add("inet", typeof(System.Net.IPAddress));
-            typeMapping.Add("int", typeof(int));
             typeMapping.Add("integer", typeof(int));
+            typeMapping.Add("int", typeof(int));
             typeMapping.Add("int4", typeof(int));
             typeMapping.Add("interval", typeof(TimeSpan));
             //typeMapping.Add("line", typeof());
@@ -183,29 +183,49 @@ namespace SqlSiphon.Postgres
 
             var temp = MappedObjectAttribute.GetAttribute<MappedTypeAttribute>(t);
             if (temp != null)
+            {
                 return MakeSqlTypeString(temp);
+            }
             else if (reverseTypeMapping.ContainsKey(t))
+            {
                 return reverseTypeMapping[t];
+            }
             else
+            {
                 return null;
+            }
         }
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision)
         {
             string typeName = null;
-            
+
             if (sqlType != null)
+            {
                 typeName = sqlType;
+            }
             else if (systemType != null)
             {
                 typeName = MakeBasicSqlTypeString(systemType);
-                if (typeName == null && isCollection)
-                    typeName = MakeBasicSqlTypeString(systemType.GetElementType()) + "[]";
+                if (typeName == null)
+                {
+                    if (isCollection)
+                    {
+                        typeName = MakeBasicSqlTypeString(systemType.GetElementType()) + "[]";
+                    }
+                    else
+                    {
+                        typeName = MakeComplexSqlTypeString(systemType);
+                    }
+                }
+
                 if (typeName == null && systemType.Name != "Void")
+                {
                     throw new Exception("Couldn't find type description!");
+                }
             }
 
-            if (isSizeSet)
+            if (isSizeSet && typeName.IndexOf("[") == -1)
             {
                 var format = isPrecisionSet
                     ? "{0}[{1},{2}]"
@@ -213,6 +233,24 @@ namespace SqlSiphon.Postgres
                 typeName = string.Format(format, typeName, size, precision);
             }
             return typeName;
+        }
+
+        private string MakeComplexSqlTypeString(Type systemType)
+        {
+            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(systemType);
+            if (attr != null)
+            {
+                attr.InferProperties(systemType);
+                var columns = this.MakeColumnSection(attr);
+                var sqlType = string.Format("TABLE ({0})", columns);
+                return sqlType;
+            }
+            return null;
+        }
+
+        protected override string MakeIdentifier(params string[] parts)
+        {
+            return base.MakeIdentifier(parts).ToLower();
         }
 
         protected override string MakeParameterString(MappedParameterAttribute p)
@@ -244,14 +282,22 @@ namespace SqlSiphon.Postgres
             var typeStr = MakeSqlTypeString(p);
             var defaultString = "";
             if (p.DefaultValue != null)
-                defaultString = "DEFAULT " + p.DefaultValue.ToString();
+            {
+                var val = p.DefaultValue.ToString();
+                if(val.ToLower() == "getdate()"){
+                    val = "current_date";
+                }
+                defaultString = "DEFAULT " + val;
+            }
             else if (p.IsIdentity)
-                defaultString = "DEFAULT nextval('serial')";
-            
+            {
+                typeStr = typeStr.Replace("integer", "serial");
+            }
+
             return string.Format("{0} {1} {2} {3}",
                 p.Name,
                 typeStr,
-                p.IsOptional ? "NULL": "NOT NULL",
+                p.IsOptional ? "NULL" : "NOT NULL",
                 defaultString);
         }
 
@@ -282,12 +328,43 @@ $$ language 'sql'",
 
         protected override string MakeCreateTableScript(MappedClassAttribute info)
         {
-            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
-            var columnSection = this.MakeColumnSection(info);
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, info.Name);
+            var columnSection = this.MakeColumnSection(info); 
+            var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
+            var pkString = "";
+            if (pk.Length > 0)
+            {
+                pkString = string.Format(",{0}    constraint PK_{1}_{2} primary key({3}){0}",
+                    Environment.NewLine,
+                    schema,
+                    info.Name,
+                    string.Join(",", pk.Select(c => c.Name)));
+            }
             return string.Format(@"create table if not exists {0} (
-    {1})",
+    {1}{2})",
                 identifier,
-                columnSection);
+                columnSection,
+                pkString);
+        }
+
+        protected override string MakeAlterColumnScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
+        {
+            var temp = prop.DefaultValue;
+            prop.DefaultValue = null;
+            var col = string.Format("alter table {0} alter column {1};",
+                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+                MakeColumnString(prop));
+            prop.DefaultValue = temp;
+            return col.Replace("NOT NULL", "SET NOT NULL");
+        }
+
+        protected override string MakeDefaultConstraintScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
+        {
+            var col = string.Format("alter table {0} alter column {1};",
+                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
+                MakeColumnString(prop));
+            return col;
         }
 
         protected override bool ProcedureExists(MappedMethodAttribute info)
@@ -295,6 +372,85 @@ $$ language 'sql'",
             // just assume the procedure exists, because the drop and create
             // procedures will take care of it.
             return true;
+        }
+
+
+        protected override bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
+        {
+            var sizeSet = false;
+            var precisionSet = false;
+            int size = 0, precision = 0;
+            if (column.data_type == "nvarchar"
+                || column.data_type == "varchar")
+            {
+                if (column.character_maximum_length != null
+                    && column.character_maximum_length != -1)
+                {
+                    sizeSet = true;
+                    size = column.character_maximum_length.Value;
+                }
+            }
+            else
+            {
+                if (column.numeric_precision != null
+                    && !(column.data_type == "integer"
+                        && column.numeric_precision == 32)
+                    && !(column.data_type == "double precision"
+                        && column.numeric_precision == 53)
+                    && column.numeric_precision != 0)
+                {
+                    precisionSet = true;
+                    precision = column.numeric_precision.Value;
+                }
+                if (column.numeric_scale != null
+                        && column.numeric_scale != 0)
+                {
+                    sizeSet = true;
+                    size = column.numeric_scale.Value;
+                }
+            }
+
+            var newType = this.MakeSqlTypeString(property);
+
+            var changed = (column.is_nullable.ToLower() == "yes") != property.IsOptional
+                || column.data_type != newType
+                || sizeSet != property.IsSizeSet
+                || size != property.Size
+                || precisionSet != property.IsPrecisionSet
+                || precision != property.Precision;
+
+            return changed;
+        }
+
+        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        {
+            var constraintName = string.Join("_",
+                "FK",
+                tableSchema ?? DefaultSchemaName,
+                tableName,
+                tableColumns.Replace(',', '_'),
+                "to",
+                foreignSchema ?? DefaultSchemaName,
+                foreignName);
+
+            var tableFullName = MakeIdentifier(
+                tableSchema ?? DefaultSchemaName,
+                tableName);
+
+            var foreignFullName = MakeIdentifier(
+                foreignSchema ?? DefaultSchemaName,
+                foreignName);
+
+            return string.Format(
+@"alter table {0} drop constraint if exists {1};
+alter table {0} add constraint {1}
+    foreign key({2})
+    references {3}({4});",
+                    tableFullName,
+                    MakeIdentifier(constraintName),
+                    tableColumns,
+                    foreignFullName,
+                    foreignColumns);
         }
     }
 }

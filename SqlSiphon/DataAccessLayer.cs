@@ -254,7 +254,7 @@ namespace SqlSiphon
         /// <param name="parameterValues">a variable number of parameters to pass to the stored procedure.
         /// </param>
         /// <returns>a SqlCommand structure for encapsulating a stored procedure call</returns>
-        private CommandT ConstructCommand(params object[] parameterValues) { return ConstructCommand(false, parameterValues); }
+        protected CommandT ConstructCommand(params object[] parameterValues) { return ConstructCommand(false, parameterValues); }
         private CommandT ConstructCommand(bool isPrimitive, params object[] parameterValues)
         {
             // because this method is private, it will never be called directly by a method tagged
@@ -297,12 +297,13 @@ namespace SqlSiphon
             return command;
         }
 
-        protected string MakeIdentifier(params string[] parts)
+        protected virtual string MakeIdentifier(params string[] parts)
         {
-            return string.Join(IdentifierPartSeperator, parts
+            var identifier = string.Join(IdentifierPartSeperator, parts
                 .Where(p => p != null)
                 .Select(p => string.Format("{0}{1}{2}", IdentifierPartBegin, p, IdentifierPartEnd))
                 .ToArray());
+            return identifier;
         }
 
         protected virtual CommandT BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams)
@@ -353,6 +354,18 @@ namespace SqlSiphon
         {
             // the ToList call is necessary to consume the entire enumerator
             return GetEnumerator<EntityT>(parameters).ToList().FirstOrDefault();
+        }
+
+        protected EntityT Return<EntityT>(params object[] parameters)
+        {
+            using (var cmd = this.ConstructCommand(parameters))
+            {
+                var p = new ParameterT();
+                p.Direction = ParameterDirection.ReturnValue;
+                cmd.Parameters.Add(p);
+                cmd.ExecuteNonQuery();
+                return (EntityT)p.Value;
+            }
         }
 
         /// <summary>
@@ -696,6 +709,18 @@ AND COLUMN_NAME = @columnName;")]
             return GetList<InformationSchema.ConstraintColumnUsage>(tableSchema, tableName, columnName);
         }
 
+        private MappedClassAttribute GetTableDefinition(Type x){
+            var y = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(x);
+            if (y != null)
+            {
+                y.InferProperties(x);
+                if (y.Schema == null)
+                    y.Schema = DefaultSchemaName;
+                y.Properties.ForEach(p => p.SqlType = p.SqlType ?? MakeSqlTypeString(p));
+            }
+            return y;
+        }
+
         public void Analyze()
         {
             var columns = this.GetColumns();
@@ -704,24 +729,20 @@ AND COLUMN_NAME = @columnName;")]
                 .ToDictionary(g => g.Key, g => g.ToDictionary(v => v.column_name.ToLower()));
 
             var t = this.GetType();
-            var allMappedTypes = t.Assembly.GetTypes()
-                .Where(x => x.Namespace == t.Namespace)
-                .Union(new Type[] { typeof(ScriptStatus) })
-                .Select(x =>
+            var allMappedTypes = new Dictionary<string, MappedClassAttribute>();
+            var types = t.Assembly
+                .GetTypes()
+                .Where(t2 => t2.Namespace == t.Namespace)
+                .ToList();
+            types.Add(typeof(ScriptStatus));
+            foreach (var t2 in types)
+            {
+                var table = this.GetTableDefinition(t2);
+                if (table != null && table.Include)
                 {
-                    var y = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(x);
-                    if (y != null)
-                    {
-                        y.InferProperties(x);
-                        if (y.Schema == null)
-                            y.Schema = DefaultSchemaName;
-                        y.Properties.ForEach(p => p.SqlType = p.SqlType ?? MakeSqlTypeString(p));
-                    }
-                    return y;
-                })
-                .Where(m => m != null && m.Include)
-                .ToDictionary(table => MakeIdentifier(table.Schema, table.Name));
-
+                    allMappedTypes.Add(MakeIdentifier(table.Schema, table.Name), table);
+                }
+            }
             this.newTables = allMappedTypes
                 .Where(table => !existingSchema.ContainsKey(table.Key)).Select(table => table.Value)
                 .ToList();
@@ -730,7 +751,9 @@ AND COLUMN_NAME = @columnName;")]
                 .ToDictionary(table => table.Key);
             this.tablesToDrop = existingSchema
                 .Where(table => !allMappedTypes.ContainsKey(table.Key)
-                    && !table.Key.Contains("aspnet"))
+                    && !table.Key.Contains("aspnet")
+                    && !table.Key.Contains("\"information_schema\"")
+                    && !table.Key.Contains("\"pg_catalog\""))
                 .Select(table => table.Key).ToList();
 
             this.newNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
@@ -928,21 +951,7 @@ AND COLUMN_NAME = @columnName;")]
             return changed;
         }
 
-        private bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
-        {
-            var temp = new MappedPropertyAttribute(column);
-            var origType = this.MakeSqlTypeString(temp);
-            var newType = this.MakeSqlTypeString(property);
-
-            var changed = temp.IsOptional != property.IsOptional
-                || origType != newType
-                || temp.IsSizeSet != property.IsSizeSet
-                || temp.Size != property.Size
-                || temp.IsPrecisionSet != property.IsPrecisionSet
-                || temp.Precision != property.Precision;
-
-            return changed;
-        }
+        protected abstract bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property);
 
         private enum Change
         {
@@ -1157,8 +1166,9 @@ AND COLUMN_NAME = @columnName;")]
 
         private string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
         {
+            var arr = collect.ToArray();
             separator = separator ?? "," + Environment.NewLine + "    ";
-            var str = string.Join(separator, collect.Select(format));
+            var str = string.Join(separator, arr.Select(format));
             return str;
         }
 
@@ -1197,10 +1207,17 @@ AND COLUMN_NAME = @columnName;")]
 
         protected string MakeSqlTypeString(MappedTypeAttribute p)
         {
-            var systemType = p.SystemType;
-            if (systemType != null && systemType.IsEnum)
-                systemType = typeof(int);
-            return MakeSqlTypeString(p.SqlType, systemType, p.IsCollection, p.IsSizeSet, p.Size, p.IsPrecisionSet, p.Precision);
+            if (p.Include)
+            {
+                var systemType = p.SystemType;
+                if (systemType != null && systemType.IsEnum)
+                    systemType = typeof(int);
+                return MakeSqlTypeString(p.SqlType, systemType, p.IsCollection, p.IsSizeSet, p.Size, p.IsPrecisionSet, p.Precision);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         protected virtual string[] FKScripts { get { return null; } }

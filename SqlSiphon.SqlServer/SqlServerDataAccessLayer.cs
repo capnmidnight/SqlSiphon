@@ -45,7 +45,7 @@ namespace SqlSiphon.SqlServer
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
+    public abstract partial class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
@@ -209,12 +209,11 @@ end",
             var pkString = "";
             if (pk.Length > 0)
             {
-                pkString = string.Format(",{4}    constraint PK_{1}_{2} primary key({3}){4}",
-                    identifier,
+                pkString = string.Format(",{0}    constraint PK_{1}_{2} primary key({3}){0}",
+                    Environment.NewLine,
                     schema,
                     info.Name,
-                    string.Join(",", pk.Select(c => c.Name)),
-                    Environment.NewLine);
+                    string.Join(",", pk.Select(c => c.Name)));
             }
             return string.Format(
 @"if not exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
@@ -683,6 +682,50 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                     bulkCopy.WriteToServer(tableData);
                 }
             }
+        }
+
+        protected override bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
+        {
+            var sizeSet = false;
+            var precisionSet = false;
+            int size = 0;
+            if (column.data_type == "nvarchar"
+                || column.data_type == "varchar")
+            {
+                if (column.character_maximum_length != null
+                    && column.character_maximum_length != -1){
+                    sizeSet = true;
+                    size = column.character_maximum_length.Value;
+                }
+            }
+            else
+            {
+                if (column.numeric_precision != null
+                    && !((column.data_type == "int"
+                            || column.data_type == "integer")
+                        && column.numeric_precision == 10)
+                    && !(column.data_type == "real"
+                        && column.numeric_precision == 24)
+                    && column.numeric_precision != 0){
+                        precisionSet = true;
+                }
+                if (column.numeric_scale != null
+                        && column.numeric_scale != 0){
+                    sizeSet = true;
+                    size = column.numeric_scale.Value;
+                }
+            }
+
+            var newType = this.MakeSqlTypeString(property);
+
+            var changed = (column.is_nullable.ToLower() == "yes") != property.IsOptional
+                || column.data_type != newType
+                || sizeSet != property.IsSizeSet
+                || size != property.Size
+                || precisionSet != property.IsPrecisionSet
+                || column.numeric_precision.Value != property.Precision;
+
+            return changed;
         }
     }
 }
