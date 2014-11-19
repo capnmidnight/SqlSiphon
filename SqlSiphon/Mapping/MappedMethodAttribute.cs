@@ -41,7 +41,7 @@ namespace SqlSiphon.Mapping
     /// An attribute to use for tagging methods as being mapped to a stored procedure call.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public class MappedMethodAttribute : MappedTypeAttribute
+    public class MappedMethodAttribute : MappedObjectAttribute
     {
         /// <summary>
         /// The number of milliseconds before ADO.NET gives up waiting on the command.
@@ -88,6 +88,23 @@ namespace SqlSiphon.Mapping
             this.EnableTransaction = false;
         }
 
+        public MappedMethodAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, ISqlSiphon dal)
+        {
+            this.Schema = routine.specific_schema;
+            this.Name = routine.specific_name;
+            this.CommandType = System.Data.CommandType.StoredProcedure;
+            this.EnableTransaction = false;
+            this.Query = routine.routine_body;
+            this.Parameters = new List<MappedParameterAttribute>();
+            if (parameters != null)
+            {
+                foreach (var p in parameters)
+                {
+                    this.Parameters.Add(new MappedParameterAttribute(p, dal));
+                }
+            }
+        }
+
         /// <summary>
         /// Finds the MappedParameterAttribute for the giving ParameterInfo,
         /// or makes one up if it can't find one. All parameters in a mapped
@@ -114,11 +131,13 @@ namespace SqlSiphon.Mapping
         {
             base.InferProperties(obj);
             this.originalMethod = obj;
-            this.Parameters.AddRange(
-                obj.GetParameters()
+            this.Parameters.AddRange(obj.GetParameters()
                 .Select(this.ToMappedParameter));
         }
 
-        
+        public override string ToString()
+        {
+            return "ROUTINE " + base.ToString();
+        }
     }
 }

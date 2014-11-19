@@ -53,6 +53,13 @@ namespace SqlSiphon.Mapping
     public abstract class MappedObjectAttribute : Attribute
     {
         /// <summary>
+        /// Get or set a schema name for objects in the database. Defaults to
+        /// null, which causes the data access system to use whatever is
+        /// defined as the default value for the database vendor.
+        /// </summary>
+        public string Schema { get; set; }
+
+        /// <summary>
         /// A property to override the default interpretation
         /// of the type's name. Usually, objects in the database
         /// are named after the type of thing that we are
@@ -99,7 +106,7 @@ namespace SqlSiphon.Mapping
         /// <returns>The attribute instance, or null if no such
         /// attribute exists</returns>
         public static T GetAttribute<T>(ICustomAttributeProvider obj)
-            where T : MappedObjectAttribute
+            where T : MappedObjectAttribute, new()
         {
             var attr = obj
                 .GetCustomAttributes(typeof(T), false)
@@ -121,15 +128,98 @@ namespace SqlSiphon.Mapping
         }
 
         /// <summary>
-        /// A virtual method to analyze an object and figure out the
-        /// default settings for it. The attribute can't find the thing
-        /// its attached to on its own, so this can't be done in a
-        /// constructor, we have to do it for it.
+        /// The .NET type to which this database object is going to map
         /// </summary>
-        /// <param name="obj">The object to InferProperties</param>
-        public virtual void InferProperties(ParameterInfo obj)
+        public Type SystemType { get; protected set; }
+
+        /// <summary>
+        /// The Database type to which this .NET type is going to map
+        /// </summary>
+        public string SqlType { get; set; }
+
+        /// <summary>
+        /// Returns true if a size was specified for the database type. This
+        /// doesn't mean anything for .NET types.
+        /// </summary>
+        public bool IsSizeSet { get; private set; }
+        
+        private int typeSize;
+
+        /// <summary>
+        /// Get or set the size of the database type. If the size is not set,
+        /// (i.e. IsSizeSet returns false) then no size or precision will be
+        /// included in the type specification. Use 0 to mean "MAX".
+        /// </summary>
+        public int Size
         {
-            this.SetName(obj.Name);
+            get { return this.typeSize; }
+            set
+            {
+                this.IsSizeSet = true;
+                this.typeSize = value;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the precision was specified for the database type.
+        /// This doesn't mean anything for .NET types.
+        /// </summary>
+        public bool IsPrecisionSet { get; private set; }
+
+        private int typePrecision;
+
+        /// <summary>
+        /// Get or set the precision of the database type. If the precision
+        /// is not set (i.e. IsPrecisionSet returns false), then no precision
+        /// will be included in the type specification.
+        /// </summary>
+        public int Precision
+        {
+            get { return this.typePrecision; }
+            set
+            {
+                this.IsPrecisionSet = true;
+                this.typePrecision = value;
+            }
+        }
+
+        /// <summary>
+        /// Get or set the default value to be inserted provided to the 
+        /// database if no value is provided by the caller. Defaults to
+        /// null.
+        /// </summary>
+        public string DefaultValue { get; set; }
+
+        protected bool optionalNotSet = true;
+        private bool isOptionalField = false;
+
+        /// <summary>
+        /// Get or set whether or not the caller is required to provide
+        /// a value to the database. If set to true, includes the "NULLABLE"
+        /// annotation on database types. Defaults to false.
+        /// </summary>
+        public bool IsOptional
+        {
+            get { return isOptionalField; }
+            set
+            {
+                optionalNotSet = false;
+                isOptionalField = value;
+            }
+        }
+
+        private void SetSystemType(Type type)
+        {
+            if (this.SystemType == null)
+            {
+                this.SystemType = type;
+                if (type.IsGenericType)
+                {
+                    this.SystemType = type.GetGenericArguments()[0];
+                    if (type.Name.StartsWith("Nullable") && this.optionalNotSet)
+                        this.IsOptional = true;
+                }
+            }
         }
 
         /// <summary>
@@ -139,9 +229,39 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        public virtual void InferProperties(MemberInfo obj)
+        public virtual void InferProperties(MethodInfo obj)
         {
             this.SetName(obj.Name);
+            var type = obj.ReturnType;
+            if (type.IsArray)
+                type = type.GetElementType();
+            this.SetSystemType(type);
+        }
+
+        /// <summary>
+        /// A virtual method to analyze an object and figure out the
+        /// default settings for it. The attribute can't find the thing
+        /// its attached to on its own, so this can't be done in a
+        /// constructor, we have to do it for it.
+        /// </summary>
+        /// <param name="obj">The object to InferProperties</param>
+        public virtual void InferProperties(PropertyInfo obj)
+        {
+            this.SetName(obj.Name);
+            this.SetSystemType(obj.PropertyType);
+        }
+
+        /// <summary>
+        /// A virtual method to analyze an object and figure out the
+        /// default settings for it. The attribute can't find the thing
+        /// its attached to on its own, so this can't be done in a
+        /// constructor, we have to do it for it.
+        /// </summary>
+        /// <param name="obj">The object to InferProperties</param>
+        public virtual void InferProperties(ParameterInfo obj)
+        {
+            this.SetName(obj.Name);
+            this.SetSystemType(obj.ParameterType);
         }
 
         /// <summary>
@@ -154,6 +274,12 @@ namespace SqlSiphon.Mapping
         public virtual void InferProperties(Type obj)
         {
             this.SetName(obj.Name);
+            this.SetSystemType(obj);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[{0}].[{1}]", this.Schema, this.Name);
         }
     }
 }

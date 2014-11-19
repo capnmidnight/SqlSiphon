@@ -42,37 +42,13 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon
 {
-    public interface ISqlSiphon : IDisposable
+    public class ConnectionFailedException : Exception
     {
-        void CreateTables();
-        void CreateForeignKeys();
-        void RunAllManualScripts();
-        void DropProcedures();
-        void SynchronizeUserDefinedTableTypes();
-        void CreateProcedures();
-        void CreateIndices();
-        void InitializeData();
-        void Analyze();
-        void AlterDatabase(string script);
-        void MarkScriptAsRan(string script);
-
-        event DataProgressEventHandler Progress;
-
-        string MOTD { get; }
-
-        KeyValuePair<string, string>[] CreateScripts { get; }
-        KeyValuePair<string, string>[] DropScripts { get; }
-        KeyValuePair<string, string>[] AlterScripts { get; }
-        KeyValuePair<string, string>[] OtherScripts { get; }
-
-        string FK<T, F>();
-        string FK<T, F>(string tableColumns);
-        string FK<T, F>(string tableColumns, string foreignColumns);
-        string FK<T>(string foreignName, string foreignColumns);
-        string FK<T>(string foreignSchema, string foreignName, string foreignColumns);
-        string FK<T>(string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
+        public ConnectionFailedException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
-
     /// <summary>
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
@@ -99,7 +75,6 @@ namespace SqlSiphon
         protected virtual string IdentifierPartBegin { get { return ""; } }
         protected virtual string IdentifierPartEnd { get { return ""; } }
         protected virtual string IdentifierPartSeperator { get { return "."; } }
-        protected virtual string DefaultSchemaName { get { return null; } }
 
         public ConnectionT Connection { get; private set; }
 
@@ -232,7 +207,7 @@ namespace SqlSiphon
                     foreach (T obj in data)
                     {
                         var parameterValues = new object[columns.Length];
-                        for(int i = 0; i < columns.Length; ++i)
+                        for (int i = 0; i < columns.Length; ++i)
                         {
                             parameterValues[i] = columns[i].GetValue<object>(obj);
                         }
@@ -297,7 +272,7 @@ namespace SqlSiphon
             return command;
         }
 
-        protected virtual string MakeIdentifier(params string[] parts)
+        public virtual string MakeIdentifier(params string[] parts)
         {
             var identifier = string.Join(IdentifierPartSeperator, parts
                 .Where(p => p != null)
@@ -451,7 +426,7 @@ namespace SqlSiphon
             }
             catch (Exception exp)
             {
-                throw new Exception("Could not connect to the database at : " + this.Connection.ConnectionString, exp);
+                throw new ConnectionFailedException("Could not connect to the database at : " + this.Connection.ConnectionString, exp);
             }
         }
 
@@ -658,58 +633,20 @@ namespace SqlSiphon
             }
         }
 
-        /// <summary>
-        /// Scans the Data Access Layer for public methods that have stored procedure
-        /// definitions, and creates/alters procedures as necessary to bring them all
-        /// up to date.
-        /// </summary>
-        public void DropProcedures()
-        {
-            this.Process(meta.Methods, m => string.Format("drop procedure {0}", m.Name), this.DropProcedure);
-        }
-
-        public void CreateProcedures()
-        {
-            this.Process(meta.Methods, m => string.Format("create procedure {0}", m.Name), this.CreateProcedure);
-        }
-
-        /// <summary>
-        /// If any mapped classes do not have matching tables in the
-        /// database, this method creates them after a connection is
-        /// made to the server.
-        /// 
-        /// This will only create tables for classes that are in the
-        /// same namespace as this data access layer.
-        /// </summary>
-        public void CreateTables()
-        {
-            this.Analyze();
-            // tables that don't already exist can be created without fear.
-            this.Process(this.newTables, c => string.Format("create table {0}", c.Name), this.CreateTable);
-            this.Process(this.newNullableColumns, c => string.Format("add column {0} to {1}", c.Value.Name, c.Key), this.AddColumn);
-        }
-
-
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS")]
-        protected List<InformationSchema.Columns> GetColumns()
-        {
-            return GetList<InformationSchema.Columns>();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query = 
+        [MappedMethod(CommandType = CommandType.Text, Query =
 @"SELECT *
 FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
 WHERE TABLE_SCHEMA = @tableSchema
 AND TABLE_NAME = @tableName
 AND COLUMN_NAME = @columnName;")]
-        protected List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints(string tableSchema, string tableName, string columnName)
+        public List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints(string tableSchema, string tableName, string columnName)
         {
             return GetList<InformationSchema.ConstraintColumnUsage>(tableSchema, tableName, columnName);
         }
 
-        private MappedClassAttribute GetTableDefinition(Type x){
+        private MappedClassAttribute GetTableDefinition(Type x)
+        {
             var y = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(x);
             if (y != null)
             {
@@ -721,237 +658,31 @@ AND COLUMN_NAME = @columnName;")]
             return y;
         }
 
-        public void Analyze()
+        private void FilterTypes(Dictionary<string, MappedClassAttribute> tables, IEnumerable<Type> types)
         {
-            var columns = this.GetColumns();
-            var existingSchema = columns
-                .GroupBy(column => MakeIdentifier(column.table_schema ?? DefaultSchemaName, column.table_name))
-                .ToDictionary(g => g.Key, g => g.ToDictionary(v => v.column_name.ToLower()));
-
-            var t = this.GetType();
-            var allMappedTypes = new Dictionary<string, MappedClassAttribute>();
-            var types = t.Assembly
-                .GetTypes()
-                .Where(t2 => t2.Namespace == t.Namespace)
-                .ToList();
-            types.Add(typeof(ScriptStatus));
             foreach (var t2 in types)
             {
                 var table = this.GetTableDefinition(t2);
                 if (table != null && table.Include)
                 {
-                    allMappedTypes.Add(MakeIdentifier(table.Schema, table.Name), table);
+                    tables.Add(MakeIdentifier(table.Schema, table.Name), table);
                 }
             }
-            this.newTables = allMappedTypes
-                .Where(table => !existingSchema.ContainsKey(table.Key)).Select(table => table.Value)
-                .ToList();
-            var changedTables = allMappedTypes
-                .Where(table => existingSchema.ContainsKey(table.Key))
-                .ToDictionary(table => table.Key);
-            this.tablesToDrop = existingSchema
-                .Where(table => !allMappedTypes.ContainsKey(table.Key)
-                    && !table.Key.Contains("aspnet")
-                    && !table.Key.Contains("\"information_schema\"")
-                    && !table.Key.Contains("\"pg_catalog\""))
-                .Select(table => table.Key).ToList();
-
-            this.newNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
-            this.newNonNullableColumns = new List<KeyValuePair<string, MappedPropertyAttribute>>();
-            this.columnsToAlter = new List<KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>>();
-            this.defaultsToAdd = new List<KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>>();
-            this.columnsToDrop = new List<InformationSchema.Columns>();
-            this.PopulateEnumTableScripts = allMappedTypes.SelectMany(kv =>
-                kv.Value.EnumValues.Select(v =>
-                    new KeyValuePair<string, string>(kv.Key + "_" + v.Value,
-                        string.Format("if not exists(select * from {0} where Value = {1}) insert into {0}(Value, Description) values({1}, '{2}')",
-                            kv.Key,
-                            v.Key,
-                            v.Value.Replace("'", "''"))))).ToArray();
-
-            // for tables that already exist, figure out if they have any overlapping columns
-            foreach (var tableName in changedTables.Keys)
-            {
-                var type = allMappedTypes[tableName];
-                var table = existingSchema[tableName];
-                var props = type.Properties.Where(p => p.Include).ToDictionary(p => p.Name.ToLower());
-                var cols = props
-                    .Where(p => !table.ContainsKey(p.Key.ToLower()))
-                    .Select(p => p.Value);
-                newNullableColumns.AddRange(cols.Where(c => c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
-                this.newNonNullableColumns.AddRange(cols.Where(c => !c.IsOptional).Select(c => new KeyValuePair<string, MappedPropertyAttribute>(tableName, c)));
-                this.columnsToAlter.AddRange(props
-                    .Where(p => table.ContainsKey(p.Key.ToLower())
-                        && IsTypeChanged(table[p.Key.ToLower()], p.Value))
-                    .Select(p => new KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
-                this.defaultsToAdd.AddRange(props
-                    .Where(p => table.ContainsKey(p.Key.ToLower())
-                        && IsDefaultChanged(table[p.Key.ToLower()], p.Value))
-                    .Select(p => new KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>(table[p.Key.ToLower()], p.Value)));
-                this.columnsToDrop.AddRange(table.Values
-                    .Where(c => !props.ContainsKey(c.column_name.ToLower())));
-            }
         }
 
-
-
-        private List<MappedClassAttribute> newTables;
-        private List<string> tablesToDrop;
-
-        private List<KeyValuePair<string, MappedPropertyAttribute>> newNullableColumns;
-        private List<KeyValuePair<string, MappedPropertyAttribute>> newNonNullableColumns;
-        private List<InformationSchema.Columns> columnsToDrop;
-        private List<KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>> columnsToAlter;
-        private List<KeyValuePair<InformationSchema.Columns, MappedPropertyAttribute>> defaultsToAdd;
-
-        public KeyValuePair<string, string>[] AddNullableColumnScripts
+        protected virtual DatabaseState GetFinalState()
         {
-            get
-            {
-                return newNullableColumns.Select(x =>
-                    new KeyValuePair<string, string>(x.Key + this.IdentifierPartSeperator + MakeIdentifier(x.Value.Name),
-                    this.MakeAddColumnScript(x.Key, x.Value))).ToArray();
-            }
+            var final = new DatabaseState(this.GetType().Assembly, this);
+            final.AddType(typeof(ScriptStatus), this);
+            return final;
         }
 
-        public KeyValuePair<string, string>[] AddNonNullableColumnScripts
+        public DatabaseDelta Analyze()
         {
-            get
-            {
-                return newNonNullableColumns.Select(x =>
-                    new KeyValuePair<string, string>(x.Key + this.IdentifierPartSeperator + MakeIdentifier(x.Value.Name),
-                    this.MakeAddColumnScript(x.Key, x.Value))).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] DropColumnScripts
-        {
-            get
-            {
-                return columnsToDrop.Select(x =>
-                    new KeyValuePair<string, string>(MakeIdentifier(x.table_schema ?? DefaultSchemaName, x.table_name, x.column_name),
-                    this.MakeDropColumnScript(x))).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] DropTableScripts
-        {
-            get
-            {
-                return tablesToDrop.Select(t => new KeyValuePair<string, string>(t, "drop table " + t)).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] DropForeignKeyScripts
-        {
-            get
-            {
-                return FKScripts.Select(s =>
-                {
-                    var m = FKNameRegex.Match(s);
-                    var script = s.Substring(0, m.Captures[0].Index + m.Captures[0].Length)
-                        .Replace("add constraint", "drop constraint")
-                        .Replace("not exists", "exists");
-                    return new KeyValuePair<string, string>(m.Groups[1].Value, script);
-                }).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] AddForeignKeyScripts
-        {
-            get
-            {
-                return FKScripts.Select(s =>
-                {
-                    var m = FKNameRegex.Match(s);
-                    return new KeyValuePair<string, string>(m.Groups[1].Value, s);
-                }).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] AlterColumnScripts
-        {
-            get
-            {
-                return columnsToAlter.Select(x =>
-                    new KeyValuePair<string, string>(MakeIdentifier(x.Key.table_schema ?? DefaultSchemaName, x.Key.table_name, x.Key.column_name),
-                    this.MakeAlterColumnScript(x.Key, x.Value)))
-                    .Union(this.defaultsToAdd.Select(x =>
-                    new KeyValuePair<string, string>(MakeIdentifier(x.Key.table_schema ?? DefaultSchemaName, x.Key.table_name, x.Key.column_name),
-                    this.MakeDefaultConstraintScript(x.Key, x.Value)))).ToArray();
-            }
-        }
-
-
-        public KeyValuePair<string, string>[] AddTableScripts
-        {
-            get
-            {
-                return newTables.Select(t => new KeyValuePair<string, string>(MakeIdentifier(t.Schema ?? DefaultSchemaName, t.Name),
-                    this.MakeCreateTableScript(t))).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] CreateScripts
-        {
-            get
-            {
-                return AddTableScripts
-                    .Union(AddNullableColumnScripts).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] AlterScripts
-        {
-            get
-            {
-                return AddNonNullableColumnScripts.Union(AlterColumnScripts).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] DropScripts
-        {
-            get
-            {
-                return DropTableScripts
-                    .Union(DropColumnScripts).ToArray();
-            }
-        }
-
-        public KeyValuePair<string, string>[] PopulateEnumTableScripts { get; private set; }
-
-        public KeyValuePair<string, string>[] OtherScripts
-        {
-            get
-            {
-                var toRun = this.PopulateEnumTableScripts
-                    .Select(kv => kv.Value)
-                    .Union(this.InitialScripts)
-                    .ToList();
-                var alreadyRan = this.GetScriptStatus().Select(g => g.Script);
-                foreach (var script in alreadyRan)
-                    if (toRun.Contains(script))
-                        toRun.Remove(script);
-                return toRun.Select((s, i) => new KeyValuePair<string, string>(
-                    string.Format("manual script {0}", i), s))
-                    .ToArray();
-            }
-        }
-
-        private static Regex UnwrappingPattern = new Regex("^\\((.+)\\)$", RegexOptions.Compiled);
-        private bool IsDefaultChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
-        {
-            var unwrapped = column.column_default;
-            while (unwrapped != null
-                && UnwrappingPattern.IsMatch(unwrapped))
-                unwrapped = UnwrappingPattern.Match(unwrapped).Groups[1].Value;
-            var changed = unwrapped != property.DefaultValue;
-            if (changed)
-                changed = true;
-            return changed;
-        }
-
-        protected abstract bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property);
+            var initial = new DatabaseState(this);
+            var final = this.GetFinalState();
+            return final.Diff(initial, this);
+        }        
 
         private enum Change
         {
@@ -960,108 +691,10 @@ AND COLUMN_NAME = @columnName;")]
             Change
         }
 
-        private void ExecuteScripts(string message, List<string> scripts)
-        {
-            if (scripts != null)
-            {
-                this.Process(scripts, s => message, this.ExecuteQuery);
-            }
-        }
-
-        public void CreateForeignKeys()
-        {
-            this.ExecuteScripts("Foreign keys", this.FKScripts.ToList());
-        }
-
-        public void RunAllManualScripts()
-        {
-            this.ExecuteScripts("Manual scripts", this.OtherScripts.Select(kv => kv.Value).ToList());
-        }
-
-        public void CreateIndices()
-        {
-            this.ExecuteScripts("Indices", this.IndexScripts.ToList());
-        }
-
-        public void InitializeData()
-        {
-            this.ExecuteScripts("Initial data", this.InitialScripts.ToList());
-        }
-
-        private void DropProcedure(MappedMethodAttribute info)
-        {
-            if (info.CommandType == CommandType.StoredProcedure
-                && !string.IsNullOrEmpty(info.Query))
-            {
-                info.Schema = info.Schema ?? DefaultSchemaName;
-                var identifier = this.MakeIdentifier(info.Schema, info.Name);
-                if (this.ProcedureExists(info))
-                {
-                    var script = MakeDropProcedureScript(info);
-                    try
-                    {
-                        this.ExecuteQuery(script);
-                    }
-                    catch (Exception exp)
-                    {
-                        throw new Exception(string.Format("Could not drop procedure: {0}. Reason: {1}", identifier, exp.Message), exp);
-                    }
-                }
-            }
-        }
-
-        private void CreateTable(MappedClassAttribute type)
-        {
-            var schema = type.Schema ?? DefaultSchemaName;
-            var identifier = this.MakeIdentifier(schema, type.Name);
-            var script = MakeCreateTableScript(type);
-            try
-            {
-                this.ExecuteQuery(script);
-            }
-            catch (Exception exp)
-            {
-                throw new Exception(string.Format("Could not create table: {0}. Reason: {1}", identifier, exp.Message), exp);
-            }
-        }
-
-        private void AddColumn(KeyValuePair<string, MappedPropertyAttribute> column)
-        {
-            var tableID = column.Key;
-            var script = this.MakeAddColumnScript(tableID, column.Value);
-            try
-            {
-                this.ExecuteQuery(script);
-            }
-            catch (Exception exp)
-            {
-                throw new Exception(string.Format("Could not add column: {0} to table: {1}. Reason: {2}", column.Value.Name, tableID, exp.Message), exp);
-            }
-        }
-
-        private void CreateProcedure(MappedMethodAttribute info)
-        {
-            if (info.CommandType == CommandType.StoredProcedure
-                && !string.IsNullOrEmpty(info.Query))
-            {
-                var schema = info.Schema ?? DefaultSchemaName;
-                var identifier = this.MakeIdentifier(schema, info.Name);
-                var script = MakeCreateProcedureScript(info);
-                try
-                {
-                    this.ExecuteQuery(script);
-                }
-                catch (Exception exp)
-                {
-                    throw new Exception(string.Format("Could not create procedure: {0}. Reason: {1}", identifier, exp.Message), exp);
-                }
-            }
-        }
-
         public string FK<T, F>()
         {
             var f = typeof(F);
-            var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
+            var foreign = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(f);
             foreign.InferProperties(f);
             var foreignColumns = this.ArgumentList(
                 foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
@@ -1073,7 +706,7 @@ AND COLUMN_NAME = @columnName;")]
         public string FK<T, F>(string tableColumns)
         {
             var f = typeof(F);
-            var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
+            var foreign = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(f);
             foreign.InferProperties(f);
             var foreignColumns = this.ArgumentList(
                 foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
@@ -1085,7 +718,7 @@ AND COLUMN_NAME = @columnName;")]
         public string FK<T, F>(string tableColumns, string foreignColumns)
         {
             var f = typeof(F);
-            var foreign = MappedClassAttribute.GetAttribute<MappedClassAttribute>(f);
+            var foreign = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(f);
             foreign.InferProperties(f);
 
             return FK<T>(tableColumns, foreign.Schema, foreign.Name, foreignColumns);
@@ -1104,7 +737,7 @@ AND COLUMN_NAME = @columnName;")]
         public string FK<T>(string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
         {
             var t = typeof(T);
-            var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);
+            var table = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
             table.InferProperties(t);
 
             return MakeFKScript(table.Schema, table.Name, tableColumns, foreignSchema, foreignName, foreignColumns);
@@ -1113,7 +746,7 @@ AND COLUMN_NAME = @columnName;")]
         private string BuildIndex<T>(Func<MappedClassAttribute, string[]> getColumns, Func<MappedClassAttribute, string[], string> getIndexName)
         {
             var t = typeof(T);
-            var table = MappedClassAttribute.GetAttribute<MappedClassAttribute>(t);
+            var table = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
             table.InferProperties(t);
             var columns = getColumns(table);
             var indexName = getIndexName(table, columns);
@@ -1205,14 +838,18 @@ AND COLUMN_NAME = @columnName;")]
             //do nothing in the base case
         }
 
-        protected string MakeSqlTypeString(MappedTypeAttribute p)
+        protected string MakeSqlTypeString(MappedObjectAttribute p)
         {
             if (p.Include)
             {
                 var systemType = p.SystemType;
                 if (systemType != null && systemType.IsEnum)
                     systemType = typeof(int);
-                return MakeSqlTypeString(p.SqlType, systemType, p.IsCollection, p.IsSizeSet, p.Size, p.IsPrecisionSet, p.Precision);
+                return MakeSqlTypeString(
+                    p.SqlType, 
+                    systemType, 
+                    p.IsSizeSet ? new Nullable<int>(p.Size) : null, 
+                    p.IsPrecisionSet ? new Nullable<int>(p.Precision) : null);
             }
             else
             {
@@ -1224,61 +861,28 @@ AND COLUMN_NAME = @columnName;")]
         protected virtual string[] IndexScripts { get { return null; } }
         protected virtual string[] InitialScripts { get { return null; } }
 
-        public virtual string MOTD { get { return ""; } }
-
-        protected virtual bool ProcedureExists(MappedMethodAttribute info)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeDropProcedureScript(MappedMethodAttribute info)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeCreateProcedureScript(MappedMethodAttribute info)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeCreateTableScript(MappedClassAttribute info)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeColumnString(MappedPropertyAttribute p)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeDropColumnScript(InformationSchema.Columns c)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeAddColumnScript(string tableID, MappedPropertyAttribute prop)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeAlterColumnScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeDefaultConstraintScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
-        {
-            throw new NotImplementedException();
-        }
-        protected virtual string MakeParameterString(MappedParameterAttribute p)
-        {
-            throw new NotImplementedException();
-        }
-        public virtual void SynchronizeUserDefinedTableTypes()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision);
+        public abstract string MakeCreateTableScript(MappedClassAttribute info);
+        public abstract string MakeDropTableScript(MappedClassAttribute table);
+        public abstract string MakeCreateColumnScript(MappedPropertyAttribute prop);
+        protected abstract string MakeDropProcedureScript(MappedMethodAttribute info);
+        protected abstract string MakeCreateProcedureScript(MappedMethodAttribute info);
+        protected abstract string MakeColumnString(MappedPropertyAttribute p);
+        protected abstract string MakeDropColumnScript(InformationSchema.Columns c);
+        protected abstract string MakeAlterColumnScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop);
+        protected abstract string MakeDefaultConstraintScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop);
+        protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
+        protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
+        protected abstract string MakeParameterString(MappedParameterAttribute p);
+        protected abstract bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property);
+        public abstract string DefaultSchemaName { get; }
+        public abstract List<InformationSchema.Columns> GetColumns();
+        public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
+        public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
+        public abstract List<InformationSchema.Routines> GetRoutines();
+        public abstract List<InformationSchema.Parameters> GetParameters();
+        public abstract List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints();
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
+        public abstract Type GetSystemType(string sqlType);
+        public abstract bool DescribesIdentity(ref string defaultValue);
     }
 }

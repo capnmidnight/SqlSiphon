@@ -45,7 +45,7 @@ namespace SqlSiphon.SqlServer
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract partial class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
+    public partial class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
@@ -55,12 +55,6 @@ namespace SqlSiphon.SqlServer
         public SqlServerDataAccessLayer(string connectionString)
             : base(connectionString)
         {
-        }
-
-        protected override void PreCreateProcedures()
-        {
-            base.PreCreateProcedures();
-            this.SynchronizeUserDefinedTableTypes();
         }
 
         public SqlServerDataAccessLayer(SqlConnection connection)
@@ -75,7 +69,7 @@ namespace SqlSiphon.SqlServer
 
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
-        protected override string DefaultSchemaName { get { return "dbo"; } }
+        public override string DefaultSchemaName { get { return "dbo"; } }
 
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
@@ -162,23 +156,6 @@ end catch;", transactionName);
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text,
-            Query =
-@"select routine_name 
-from information_schema.routines 
-where routine_schema = @schemaName 
-    and routine_name = @routineName")]
-        public bool ProcedureExistsQuery(string schemaName, string routineName)
-        {
-            return this.GetList<string>("routine_name", schemaName, routineName).Count >= 1;
-        }
-
-        protected override bool ProcedureExists(MappedMethodAttribute info)
-        {
-            return ProcedureExistsQuery(info.Schema, info.Name);
-        }
-
         protected override string MakeDropProcedureScript(MappedMethodAttribute info)
         {
             return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
@@ -200,7 +177,7 @@ end",
                 info.Query);
         }
 
-        protected override string MakeCreateTableScript(MappedClassAttribute info)
+        public override string MakeCreateTableScript(MappedClassAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
@@ -227,14 +204,25 @@ create table {2}(
                 pkString);
         }
 
+        public override string MakeDropTableScript(MappedClassAttribute info)
+        {
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, info.Name);
+            return string.Format(
+@"if exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
+    drop table {2};",
+                schema,
+                info.Name,
+                identifier);
+        }
+
         protected override string MakeParameterString(MappedParameterAttribute p)
         {
             var typeStr = MakeSqlTypeString(p);
             return string.Join(" ",
                 "@" + p.Name,
                 typeStr,
-                p.DefaultValue ?? "",
-                IsUDTT(p.SystemType) ? "readonly" : "").Trim();
+                p.DefaultValue ?? "").Trim();
         }
 
         protected override string MakeColumnString(MappedPropertyAttribute p)
@@ -253,9 +241,12 @@ create table {2}(
                 defaultString);
         }
 
-        protected override string MakeAddColumnScript(string tableID, MappedPropertyAttribute prop)
+        public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
         {
-            return string.Format("alter table {0} add {1} {2};", tableID, prop.Name, prop.SqlType);
+            return string.Format("alter table {0} add {1} {2};",
+                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name), 
+                prop.Name, 
+                prop.SqlType);
         }
 
         protected override string MakeDropColumnScript(InformationSchema.Columns c)
@@ -298,14 +289,11 @@ create table {2}(
         }
 
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
         {
-            if (sqlType == null)
+            if (sqlType == null && reverseTypeMapping.ContainsKey(systemType))
             {
-                if (reverseTypeMapping.ContainsKey(systemType))
-                    sqlType = reverseTypeMapping[systemType];
-                else if (isCollection || IsUDTT(systemType))
-                    sqlType = MakeUDTTName(systemType);
+                sqlType = reverseTypeMapping[systemType];
             }
 
             if (sqlType != null)
@@ -315,10 +303,10 @@ create table {2}(
                 else
                 {
                     var typeStr = new StringBuilder(sqlType);
-                    if (isSizeSet)
+                    if (size.HasValue)
                     {
                         typeStr.AppendFormat("({0}", size);
-                        if (isPrecisionSet)
+                        if (precision.HasValue)
                         {
                             typeStr.AppendFormat(", {0}", precision);
                         }
@@ -336,194 +324,6 @@ create table {2}(
             else
             {
                 return null;
-            }
-        }
-
-        static bool IsUDTT(Type t)
-        {
-            var isUDTT = false;
-            if (t.IsArray)
-            {
-                t = t.GetElementType();
-                isUDTT = t != typeof(byte) && IsTypePrimitive(t);
-            }
-            var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
-            return (attr != null && attr.IsUploadable) || isUDTT;
-        }
-
-        public override void SynchronizeUserDefinedTableTypes()
-        {
-            var type = this.GetType();
-            var methods = type.GetMethods();
-            var complexToSync = new List<Type>();
-            var simpleToSync = new List<Type>();
-            foreach (var method in methods)
-            {
-                foreach (var parameter in method.GetParameters())
-                {
-                    if (IsUDTT(parameter.ParameterType))
-                    {
-                        var t = parameter.ParameterType;
-                        if (t.IsArray)
-                            t = t.GetElementType();
-                        if (IsUDTT(t))
-                            complexToSync.Add(t);
-                        else
-                            simpleToSync.Add(t);
-                    }
-                }
-            }
-
-            int total = simpleToSync.Count + complexToSync.Count;
-            int current = 0;
-            foreach (var t in simpleToSync.Distinct())
-            {
-                SynchronizeSimpleUDTT(t);
-                this.MakeProgress(current, total, string.Format("Syncing simple array type {0}", t.Name));
-                current++;
-            }
-
-            foreach (var c in complexToSync.Distinct())
-            {
-                MaybeSynchronizeUDTT(c);
-                this.MakeProgress(current, total, string.Format("Syncing complex array type {0}", c.Name));
-                current++;
-            }
-        }
-
-        private void MaybeSynchronizeUDTT(Type t)
-        {
-            var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
-            if (attr != null && attr.IsUploadable)
-                SynchronizeComplexUDTT(t, attr);
-        }
-
-        public static string MakeUDTTName(Type t)
-        {
-            if (t.IsArray)
-                t = t.GetElementType();
-
-            var attr = MappedObjectAttribute.GetAttribute<SqlServerMappedClassAttribute>(t);
-            if (attr == null)
-            {
-                attr = new SqlServerMappedClassAttribute();
-                attr.Name = t.Name;
-            }
-
-            attr.InferProperties(t);
-
-            return attr.Name + "UDTT";
-        }
-
-        private void SynchronizeSimpleUDTT(Type t)
-        {
-            var name = MakeUDTTName(t);
-            var fullName = MakeIdentifier(DefaultSchemaName, name);
-            if (this.UDTTExists(DefaultSchemaName, name))
-            {
-                this.DropUDTT(fullName);
-            }
-            this.CreateSimpleUDTT(fullName, t);
-        }
-
-        private void SynchronizeComplexUDTT(Type c, SqlServerMappedClassAttribute attr)
-        {
-            var schema = DefaultSchemaName;
-            if (attr != null && attr.Schema != null)
-                schema = attr.Schema;
-            var name = MakeUDTTName(c);
-            var fullName = MakeIdentifier(schema, name);
-            if (this.UDTTExists(schema, name))
-            {
-                this.DropUDTT(fullName);
-            }
-            this.CreateComplexUDTT(fullName, c);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text,
-            Query =
-@"SELECT types.name
-FROM sys.types
-	inner join sys.schemas on types.schema_id = schemas.schema_id
-where is_user_defined = 1
-	and is_table_type = 1
-	and schemas.name = @schemaName
-	and types.name = @UDTTName;")]
-        protected bool UDTTExists(string schemaName, string UDTTName)
-        {
-            return this.GetList<string>("name", schemaName, UDTTName).Count >= 1;
-        }
-
-        private void DropUDTT(string fullName)
-        {
-            try
-            {
-                this.ExecuteQuery(string.Format("DROP TYPE {0}", fullName));
-            }
-            catch (Exception exp)
-            {
-                throw new Exception(string.Format("Could not create UDTT: {0}. Reason: {1}", fullName, exp.Message), exp);
-            }
-        }
-
-        private void CreateComplexUDTT(string fullName, Type mappedClass)
-        {
-            string script = CreateComplexUDTTScript(fullName, mappedClass);
-
-            if (script != null)
-            {
-                try
-                {
-                    this.ExecuteQuery(script);
-                }
-                catch (Exception exp)
-                {
-                    throw new Exception(string.Format("Could not create UDTT: {0}. Reason: {1}", fullName, exp.Message), exp);
-                }
-            }
-        }
-
-        public string CreateComplexUDTTScript(string fullName, Type mappedClass)
-        {
-            var sb = new StringBuilder();
-            var columns = GetProperties(mappedClass);
-            // don't upload auto-incrementing identity columns
-            // or columns that have a default value defined
-            var colStrings = columns
-                .Where(c => c.Include && !c.IsIdentity && (c.IsIncludeSet || c.DefaultValue == null))
-                .Select(c => this.MaybeMakeColumnTypeString(c, true))
-                .Where(s => !string.IsNullOrEmpty(s))
-                .ToArray();
-            if (colStrings.Length == 0)
-            {
-                return null;
-            }
-            else
-            {
-                var columnDefinition = string.Join("," + Environment.NewLine + "    ", colStrings);
-                return string.Format(
-    @"CREATE TYPE {0} AS TABLE(
-    {1}
-)",
-                    fullName,
-                    columnDefinition);
-            }
-        }
-
-        private void CreateSimpleUDTT(string fullName, Type mappedClass)
-        {
-            var sb = new StringBuilder();
-            var columnDefinition = reverseTypeMapping[mappedClass];
-            var script = string.Format(@"CREATE TYPE {0} AS TABLE(Value {1})", fullName, columnDefinition);
-
-            try
-            {
-                this.ExecuteQuery(script);
-            }
-            catch (Exception exp)
-            {
-                throw new Exception(string.Format("Could not create UDTT: {0}. Reason: {1}", fullName, exp.Message), exp);
             }
         }
 
@@ -546,22 +346,6 @@ where is_user_defined = 1
             if (parameterValue != null)
             {
                 var t = parameterValue.GetType();
-                if (IsUDTT(t))
-                {
-                    System.Collections.IEnumerable array = null;
-                    if (t.IsArray)
-                    {
-                        t = t.GetElementType();
-                        array = (System.Collections.IEnumerable)parameterValue;
-                    }
-                    else
-                    {
-                        array = new object[] { parameterValue };
-                    }
-                    var tableName = MakeUDTTName(t);
-                    var table = MakeDataTable(tableName, t, array);
-                    return table;
-                }
             }
             return parameterValue;
         }
@@ -635,6 +419,41 @@ where is_user_defined = 1
                     foreignColumns);
         }
 
+        public override bool DescribesIdentity(ref string defaultValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<InformationSchema.Columns> GetColumns()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<InformationSchema.Parameters> GetParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<InformationSchema.Routines> GetRoutines()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<InformationSchema.TableConstraints> GetTableConstraints()
+        {
+            throw new NotImplementedException();
+        }
+        
         protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
         {
             var columnSection = string.Join(",", tableColumns.Select(c => c + " ASC"));
@@ -726,6 +545,11 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                 || column.numeric_precision.Value != property.Precision;
 
             return changed;
+        }
+
+        public override Type GetSystemType(string sqlType)
+        {
+            return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
         }
     }
 }

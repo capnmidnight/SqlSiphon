@@ -54,21 +54,27 @@
   -->
   <ItemGroup>
     <Compile Include="BoundObject.cs" />
+    <Compile Include="DatabaseDelta.cs" />
     <Compile Include="IAspnetMemberships.cs" />
     <Compile Include="InformationSchema\Columns.cs" />
     <Compile Include="DataAccessLayer.cs" />
     <Compile Include="DataProgressEventArgs.cs" />
+    <Compile Include="InformationSchema\Routines.cs" />
+    <Compile Include="InformationSchema\ReferentialConstriants.cs" />
+    <Compile Include="InformationSchema\TableConstraints.cs" />
     <Compile Include="InformationSchema\ConstraintColumnUsage.cs" />
+    <Compile Include="InformationSchema\Parameters.cs" />
+    <Compile Include="ISqlSiphon.cs" />
     <Compile Include="Mapping\AutoPKAttribute.cs" />
+    <Compile Include="DatabaseState.cs" />
     <Compile Include="Mapping\MappedClassAttribute.cs" />
     <Compile Include="Mapping\MappedMethodAttribute.cs" />
     <Compile Include="Mapping\MappedObjectAttribute.cs" />
     <Compile Include="Mapping\MappedParameterAttribute.cs" />
     <Compile Include="Mapping\MappedPropertyAttribute.cs" />
-    <Compile Include="Mapping\MappedSchemaObjectAttribute.cs" />
-    <Compile Include="Mapping\MappedTypeAttribute.cs" />
     <Compile Include="Mapping\ExcludeAttribute.cs" />
     <Compile Include="Mapping\PKAttribute.cs" />
+    <Compile Include="Mapping\Relationship.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptStatus.cs" />
   </ItemGroup>

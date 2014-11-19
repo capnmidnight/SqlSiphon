@@ -47,5 +47,10 @@ namespace SqlSiphon.Mapping
         {
             this.IncludeInPrimaryKey = true;
         }
+
+        public override string ToString()
+        {
+            return base.ToString() + " PK";
+        }
     }
 }

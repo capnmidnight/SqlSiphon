@@ -36,21 +36,84 @@
             this.txtStdOut = new System.Windows.Forms.TextBox();
             this.tabStdErr = new System.Windows.Forms.TabPage();
             this.txtStdErr = new System.Windows.Forms.TextBox();
-            this.tabCreates = new System.Windows.Forms.TabPage();
-            this.createsGV = new System.Windows.Forms.DataGridView();
+            this.tabTables = new System.Windows.Forms.TabPage();
+            this.tabControl2 = new System.Windows.Forms.TabControl();
+            this.tabTableCreate = new System.Windows.Forms.TabPage();
+            this.createTablesGV = new System.Windows.Forms.DataGridView();
             this.createsGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.createsGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.createsGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.tabDrops = new System.Windows.Forms.TabPage();
-            this.dropsGV = new System.Windows.Forms.DataGridView();
+            this.tabTableDrop = new System.Windows.Forms.TabPage();
+            this.dropTablesGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn1 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabTableUnaltered = new System.Windows.Forms.TabPage();
+            this.unalteredTablesGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn2 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabColumns = new System.Windows.Forms.TabPage();
+            this.columnsTabs = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.createColumnsGV = new System.Windows.Forms.DataGridView();
             this.dropsGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dropsGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dropsGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.tabAlters = new System.Windows.Forms.TabPage();
-            this.altersGV = new System.Windows.Forms.DataGridView();
-            this.altersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.altersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.altersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.dropColumnsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn4 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.alteredColumnsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn3 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.unalteredColumnsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn5 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabRelationships = new System.Windows.Forms.TabPage();
+            this.tabControl3 = new System.Windows.Forms.TabControl();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.createRelationshipsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn6 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabPage6 = new System.Windows.Forms.TabPage();
+            this.dropRelationshipsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn7 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabPage7 = new System.Windows.Forms.TabPage();
+            this.unalteredRelationshipsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn16 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn8 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabRoutines = new System.Windows.Forms.TabPage();
+            this.tabControl5 = new System.Windows.Forms.TabControl();
+            this.tabPage8 = new System.Windows.Forms.TabPage();
+            this.createRoutinesGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn17 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn18 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn9 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabPage9 = new System.Windows.Forms.TabPage();
+            this.dropRoutinesGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn19 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn20 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn10 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabPage10 = new System.Windows.Forms.TabPage();
+            this.alteredRoutinesGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn21 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn22 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn11 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.tabPage11 = new System.Windows.Forms.TabPage();
+            this.unalteredRoutinesGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn23 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn24 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn12 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabOther = new System.Windows.Forms.TabPage();
             this.othersGV = new System.Windows.Forms.DataGridView();
             this.othersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -104,12 +167,42 @@
             this.tabControl1.SuspendLayout();
             this.tabStdOut.SuspendLayout();
             this.tabStdErr.SuspendLayout();
-            this.tabCreates.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.createsGV)).BeginInit();
-            this.tabDrops.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dropsGV)).BeginInit();
-            this.tabAlters.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.altersGV)).BeginInit();
+            this.tabTables.SuspendLayout();
+            this.tabControl2.SuspendLayout();
+            this.tabTableCreate.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.createTablesGV)).BeginInit();
+            this.tabTableDrop.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dropTablesGV)).BeginInit();
+            this.tabTableUnaltered.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.unalteredTablesGV)).BeginInit();
+            this.tabColumns.SuspendLayout();
+            this.columnsTabs.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.createColumnsGV)).BeginInit();
+            this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dropColumnsGV)).BeginInit();
+            this.tabPage4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.alteredColumnsGV)).BeginInit();
+            this.tabPage3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.unalteredColumnsGV)).BeginInit();
+            this.tabRelationships.SuspendLayout();
+            this.tabControl3.SuspendLayout();
+            this.tabPage5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.createRelationshipsGV)).BeginInit();
+            this.tabPage6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dropRelationshipsGV)).BeginInit();
+            this.tabPage7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.unalteredRelationshipsGV)).BeginInit();
+            this.tabRoutines.SuspendLayout();
+            this.tabControl5.SuspendLayout();
+            this.tabPage8.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.createRoutinesGV)).BeginInit();
+            this.tabPage9.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dropRoutinesGV)).BeginInit();
+            this.tabPage10.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.alteredRoutinesGV)).BeginInit();
+            this.tabPage11.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.unalteredRoutinesGV)).BeginInit();
             this.tabOther.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.othersGV)).BeginInit();
             this.tabOptions.SuspendLayout();
@@ -206,9 +299,10 @@
             this.tableLayoutPanel1.SetColumnSpan(this.tabControl1, 6);
             this.tabControl1.Controls.Add(this.tabStdOut);
             this.tabControl1.Controls.Add(this.tabStdErr);
-            this.tabControl1.Controls.Add(this.tabCreates);
-            this.tabControl1.Controls.Add(this.tabDrops);
-            this.tabControl1.Controls.Add(this.tabAlters);
+            this.tabControl1.Controls.Add(this.tabTables);
+            this.tabControl1.Controls.Add(this.tabColumns);
+            this.tabControl1.Controls.Add(this.tabRelationships);
+            this.tabControl1.Controls.Add(this.tabRoutines);
             this.tabControl1.Controls.Add(this.tabOther);
             this.tabControl1.Controls.Add(this.tabOptions);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -272,30 +366,53 @@
             this.txtStdErr.TabStop = false;
             this.txtStdErr.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
             // 
-            // tabCreates
+            // tabTables
             // 
-            this.tabCreates.Controls.Add(this.createsGV);
-            this.tabCreates.Location = new System.Drawing.Point(4, 22);
-            this.tabCreates.Name = "tabCreates";
-            this.tabCreates.Size = new System.Drawing.Size(904, 462);
-            this.tabCreates.TabIndex = 5;
-            this.tabCreates.Text = "Objects to add";
-            this.tabCreates.UseVisualStyleBackColor = true;
+            this.tabTables.Controls.Add(this.tabControl2);
+            this.tabTables.Location = new System.Drawing.Point(4, 22);
+            this.tabTables.Name = "tabTables";
+            this.tabTables.Size = new System.Drawing.Size(904, 462);
+            this.tabTables.TabIndex = 5;
+            this.tabTables.Text = "Tables";
+            this.tabTables.UseVisualStyleBackColor = true;
             // 
-            // createsGV
+            // tabControl2
             // 
-            this.createsGV.AllowUserToAddRows = false;
-            this.createsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.createsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.tabControl2.Controls.Add(this.tabTableCreate);
+            this.tabControl2.Controls.Add(this.tabTableDrop);
+            this.tabControl2.Controls.Add(this.tabTableUnaltered);
+            this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl2.Location = new System.Drawing.Point(0, 0);
+            this.tabControl2.Name = "tabControl2";
+            this.tabControl2.SelectedIndex = 0;
+            this.tabControl2.Size = new System.Drawing.Size(904, 462);
+            this.tabControl2.TabIndex = 4;
+            // 
+            // tabTableCreate
+            // 
+            this.tabTableCreate.Controls.Add(this.createTablesGV);
+            this.tabTableCreate.Location = new System.Drawing.Point(4, 22);
+            this.tabTableCreate.Name = "tabTableCreate";
+            this.tabTableCreate.Padding = new System.Windows.Forms.Padding(3);
+            this.tabTableCreate.Size = new System.Drawing.Size(896, 436);
+            this.tabTableCreate.TabIndex = 0;
+            this.tabTableCreate.Text = "Create";
+            this.tabTableCreate.UseVisualStyleBackColor = true;
+            // 
+            // createTablesGV
+            // 
+            this.createTablesGV.AllowUserToAddRows = false;
+            this.createTablesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.createTablesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.createsGVName,
             this.createsGVScript,
             this.createsGVRunButton});
-            this.createsGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.createsGV.Location = new System.Drawing.Point(0, 0);
-            this.createsGV.Name = "createsGV";
-            this.createsGV.Size = new System.Drawing.Size(904, 462);
-            this.createsGV.TabIndex = 3;
-            this.createsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
+            this.createTablesGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.createTablesGV.Location = new System.Drawing.Point(3, 3);
+            this.createTablesGV.Name = "createTablesGV";
+            this.createTablesGV.Size = new System.Drawing.Size(890, 430);
+            this.createTablesGV.TabIndex = 3;
+            this.createTablesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // createsGVName
             // 
@@ -317,30 +434,143 @@
             this.createsGVRunButton.Text = "run";
             this.createsGVRunButton.UseColumnTextForButtonValue = true;
             // 
-            // tabDrops
+            // tabTableDrop
             // 
-            this.tabDrops.Controls.Add(this.dropsGV);
-            this.tabDrops.Location = new System.Drawing.Point(4, 22);
-            this.tabDrops.Name = "tabDrops";
-            this.tabDrops.Size = new System.Drawing.Size(904, 462);
-            this.tabDrops.TabIndex = 2;
-            this.tabDrops.Text = "Objects to drop";
-            this.tabDrops.UseVisualStyleBackColor = true;
+            this.tabTableDrop.Controls.Add(this.dropTablesGV);
+            this.tabTableDrop.Location = new System.Drawing.Point(4, 22);
+            this.tabTableDrop.Name = "tabTableDrop";
+            this.tabTableDrop.Padding = new System.Windows.Forms.Padding(3);
+            this.tabTableDrop.Size = new System.Drawing.Size(896, 436);
+            this.tabTableDrop.TabIndex = 1;
+            this.tabTableDrop.Text = "Drop";
+            this.tabTableDrop.UseVisualStyleBackColor = true;
             // 
-            // dropsGV
+            // dropTablesGV
             // 
-            this.dropsGV.AllowUserToAddRows = false;
-            this.dropsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dropsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dropTablesGV.AllowUserToAddRows = false;
+            this.dropTablesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dropTablesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.dataGridViewTextBoxColumn2,
+            this.dataGridViewButtonColumn1});
+            this.dropTablesGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dropTablesGV.Location = new System.Drawing.Point(3, 3);
+            this.dropTablesGV.Name = "dropTablesGV";
+            this.dropTablesGV.Size = new System.Drawing.Size(890, 430);
+            this.dropTablesGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn1.HeaderText = "name";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn2.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn2.HeaderText = "script";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            // 
+            // dataGridViewButtonColumn1
+            // 
+            this.dataGridViewButtonColumn1.HeaderText = "";
+            this.dataGridViewButtonColumn1.Name = "dataGridViewButtonColumn1";
+            this.dataGridViewButtonColumn1.Text = "run";
+            this.dataGridViewButtonColumn1.UseColumnTextForButtonValue = true;
+            // 
+            // tabTableUnaltered
+            // 
+            this.tabTableUnaltered.Controls.Add(this.unalteredTablesGV);
+            this.tabTableUnaltered.Location = new System.Drawing.Point(4, 22);
+            this.tabTableUnaltered.Name = "tabTableUnaltered";
+            this.tabTableUnaltered.Size = new System.Drawing.Size(896, 436);
+            this.tabTableUnaltered.TabIndex = 2;
+            this.tabTableUnaltered.Text = "Unaltered";
+            this.tabTableUnaltered.UseVisualStyleBackColor = true;
+            // 
+            // unalteredTablesGV
+            // 
+            this.unalteredTablesGV.AllowUserToAddRows = false;
+            this.unalteredTablesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.unalteredTablesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn3,
+            this.dataGridViewTextBoxColumn4,
+            this.dataGridViewButtonColumn2});
+            this.unalteredTablesGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.unalteredTablesGV.Location = new System.Drawing.Point(0, 0);
+            this.unalteredTablesGV.Name = "unalteredTablesGV";
+            this.unalteredTablesGV.Size = new System.Drawing.Size(896, 436);
+            this.unalteredTablesGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            this.dataGridViewTextBoxColumn3.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn3.HeaderText = "name";
+            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            // 
+            // dataGridViewTextBoxColumn4
+            // 
+            this.dataGridViewTextBoxColumn4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn4.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn4.HeaderText = "script";
+            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+            // 
+            // dataGridViewButtonColumn2
+            // 
+            this.dataGridViewButtonColumn2.HeaderText = "";
+            this.dataGridViewButtonColumn2.Name = "dataGridViewButtonColumn2";
+            this.dataGridViewButtonColumn2.Text = "run";
+            this.dataGridViewButtonColumn2.UseColumnTextForButtonValue = true;
+            // 
+            // tabColumns
+            // 
+            this.tabColumns.Controls.Add(this.columnsTabs);
+            this.tabColumns.Location = new System.Drawing.Point(4, 22);
+            this.tabColumns.Name = "tabColumns";
+            this.tabColumns.Size = new System.Drawing.Size(904, 462);
+            this.tabColumns.TabIndex = 2;
+            this.tabColumns.Text = "Columns";
+            this.tabColumns.UseVisualStyleBackColor = true;
+            // 
+            // columnsTabs
+            // 
+            this.columnsTabs.Controls.Add(this.tabPage1);
+            this.columnsTabs.Controls.Add(this.tabPage2);
+            this.columnsTabs.Controls.Add(this.tabPage4);
+            this.columnsTabs.Controls.Add(this.tabPage3);
+            this.columnsTabs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.columnsTabs.Location = new System.Drawing.Point(0, 0);
+            this.columnsTabs.Name = "columnsTabs";
+            this.columnsTabs.SelectedIndex = 0;
+            this.columnsTabs.Size = new System.Drawing.Size(904, 462);
+            this.columnsTabs.TabIndex = 5;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.createColumnsGV);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(896, 436);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Create";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // createColumnsGV
+            // 
+            this.createColumnsGV.AllowUserToAddRows = false;
+            this.createColumnsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.createColumnsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dropsGVName,
             this.dropsGVScript,
             this.dropsGVRunButton});
-            this.dropsGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dropsGV.Location = new System.Drawing.Point(0, 0);
-            this.dropsGV.Name = "dropsGV";
-            this.dropsGV.Size = new System.Drawing.Size(904, 462);
-            this.dropsGV.TabIndex = 2;
-            this.dropsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
+            this.createColumnsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.createColumnsGV.Location = new System.Drawing.Point(3, 3);
+            this.createColumnsGV.Name = "createColumnsGV";
+            this.createColumnsGV.Size = new System.Drawing.Size(890, 430);
+            this.createColumnsGV.TabIndex = 2;
+            this.createColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dropsGVName
             // 
@@ -362,50 +592,495 @@
             this.dropsGVRunButton.Text = "run";
             this.dropsGVRunButton.UseColumnTextForButtonValue = true;
             // 
-            // tabAlters
+            // tabPage2
             // 
-            this.tabAlters.Controls.Add(this.altersGV);
-            this.tabAlters.Location = new System.Drawing.Point(4, 22);
-            this.tabAlters.Name = "tabAlters";
-            this.tabAlters.Size = new System.Drawing.Size(904, 462);
-            this.tabAlters.TabIndex = 3;
-            this.tabAlters.Text = "Objects to alter";
-            this.tabAlters.UseVisualStyleBackColor = true;
+            this.tabPage2.Controls.Add(this.dropColumnsGV);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(896, 436);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Drop";
+            this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // altersGV
+            // dropColumnsGV
             // 
-            this.altersGV.AllowUserToAddRows = false;
-            this.altersGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.altersGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.altersGVName,
-            this.altersGVScript,
-            this.altersGVRunButton});
-            this.altersGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.altersGV.Location = new System.Drawing.Point(0, 0);
-            this.altersGV.Name = "altersGV";
-            this.altersGV.Size = new System.Drawing.Size(904, 462);
-            this.altersGV.TabIndex = 5;
-            this.altersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
+            this.dropColumnsGV.AllowUserToAddRows = false;
+            this.dropColumnsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dropColumnsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn7,
+            this.dataGridViewTextBoxColumn8,
+            this.dataGridViewButtonColumn4});
+            this.dropColumnsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dropColumnsGV.Location = new System.Drawing.Point(3, 3);
+            this.dropColumnsGV.Name = "dropColumnsGV";
+            this.dropColumnsGV.Size = new System.Drawing.Size(890, 430);
+            this.dropColumnsGV.TabIndex = 4;
             // 
-            // altersGVName
+            // dataGridViewTextBoxColumn7
             // 
-            this.altersGVName.DataPropertyName = "Key";
-            this.altersGVName.HeaderText = "name";
-            this.altersGVName.Name = "altersGVName";
+            this.dataGridViewTextBoxColumn7.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn7.HeaderText = "name";
+            this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             // 
-            // altersGVScript
+            // dataGridViewTextBoxColumn8
             // 
-            this.altersGVScript.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.altersGVScript.DataPropertyName = "Value";
-            this.altersGVScript.HeaderText = "script";
-            this.altersGVScript.Name = "altersGVScript";
+            this.dataGridViewTextBoxColumn8.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn8.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn8.HeaderText = "script";
+            this.dataGridViewTextBoxColumn8.Name = "dataGridViewTextBoxColumn8";
             // 
-            // altersGVRunButton
+            // dataGridViewButtonColumn4
             // 
-            this.altersGVRunButton.HeaderText = "";
-            this.altersGVRunButton.Name = "altersGVRunButton";
-            this.altersGVRunButton.Text = "run";
-            this.altersGVRunButton.UseColumnTextForButtonValue = true;
+            this.dataGridViewButtonColumn4.HeaderText = "";
+            this.dataGridViewButtonColumn4.Name = "dataGridViewButtonColumn4";
+            this.dataGridViewButtonColumn4.Text = "run";
+            this.dataGridViewButtonColumn4.UseColumnTextForButtonValue = true;
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.alteredColumnsGV);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(896, 436);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Altered";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // alteredColumnsGV
+            // 
+            this.alteredColumnsGV.AllowUserToAddRows = false;
+            this.alteredColumnsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.alteredColumnsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn5,
+            this.dataGridViewTextBoxColumn6,
+            this.dataGridViewButtonColumn3});
+            this.alteredColumnsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.alteredColumnsGV.Location = new System.Drawing.Point(0, 0);
+            this.alteredColumnsGV.Name = "alteredColumnsGV";
+            this.alteredColumnsGV.Size = new System.Drawing.Size(896, 436);
+            this.alteredColumnsGV.TabIndex = 5;
+            // 
+            // dataGridViewTextBoxColumn5
+            // 
+            this.dataGridViewTextBoxColumn5.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn5.HeaderText = "name";
+            this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+            // 
+            // dataGridViewTextBoxColumn6
+            // 
+            this.dataGridViewTextBoxColumn6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn6.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn6.HeaderText = "script";
+            this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+            // 
+            // dataGridViewButtonColumn3
+            // 
+            this.dataGridViewButtonColumn3.HeaderText = "";
+            this.dataGridViewButtonColumn3.Name = "dataGridViewButtonColumn3";
+            this.dataGridViewButtonColumn3.Text = "run";
+            this.dataGridViewButtonColumn3.UseColumnTextForButtonValue = true;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.unalteredColumnsGV);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(896, 436);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Unaltered";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // unalteredColumnsGV
+            // 
+            this.unalteredColumnsGV.AllowUserToAddRows = false;
+            this.unalteredColumnsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.unalteredColumnsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn9,
+            this.dataGridViewTextBoxColumn10,
+            this.dataGridViewButtonColumn5});
+            this.unalteredColumnsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.unalteredColumnsGV.Location = new System.Drawing.Point(0, 0);
+            this.unalteredColumnsGV.Name = "unalteredColumnsGV";
+            this.unalteredColumnsGV.Size = new System.Drawing.Size(896, 436);
+            this.unalteredColumnsGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn9
+            // 
+            this.dataGridViewTextBoxColumn9.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn9.HeaderText = "name";
+            this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
+            // 
+            // dataGridViewTextBoxColumn10
+            // 
+            this.dataGridViewTextBoxColumn10.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn10.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn10.HeaderText = "script";
+            this.dataGridViewTextBoxColumn10.Name = "dataGridViewTextBoxColumn10";
+            // 
+            // dataGridViewButtonColumn5
+            // 
+            this.dataGridViewButtonColumn5.HeaderText = "";
+            this.dataGridViewButtonColumn5.Name = "dataGridViewButtonColumn5";
+            this.dataGridViewButtonColumn5.Text = "run";
+            this.dataGridViewButtonColumn5.UseColumnTextForButtonValue = true;
+            // 
+            // tabRelationships
+            // 
+            this.tabRelationships.Controls.Add(this.tabControl3);
+            this.tabRelationships.Location = new System.Drawing.Point(4, 22);
+            this.tabRelationships.Name = "tabRelationships";
+            this.tabRelationships.Size = new System.Drawing.Size(904, 462);
+            this.tabRelationships.TabIndex = 3;
+            this.tabRelationships.Text = "Relationships";
+            this.tabRelationships.UseVisualStyleBackColor = true;
+            // 
+            // tabControl3
+            // 
+            this.tabControl3.Controls.Add(this.tabPage5);
+            this.tabControl3.Controls.Add(this.tabPage6);
+            this.tabControl3.Controls.Add(this.tabPage7);
+            this.tabControl3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl3.Location = new System.Drawing.Point(0, 0);
+            this.tabControl3.Name = "tabControl3";
+            this.tabControl3.SelectedIndex = 0;
+            this.tabControl3.Size = new System.Drawing.Size(904, 462);
+            this.tabControl3.TabIndex = 5;
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.createRelationshipsGV);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(896, 436);
+            this.tabPage5.TabIndex = 0;
+            this.tabPage5.Text = "Create";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // createRelationshipsGV
+            // 
+            this.createRelationshipsGV.AllowUserToAddRows = false;
+            this.createRelationshipsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.createRelationshipsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn11,
+            this.dataGridViewTextBoxColumn12,
+            this.dataGridViewButtonColumn6});
+            this.createRelationshipsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.createRelationshipsGV.Location = new System.Drawing.Point(3, 3);
+            this.createRelationshipsGV.Name = "createRelationshipsGV";
+            this.createRelationshipsGV.Size = new System.Drawing.Size(890, 430);
+            this.createRelationshipsGV.TabIndex = 3;
+            // 
+            // dataGridViewTextBoxColumn11
+            // 
+            this.dataGridViewTextBoxColumn11.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn11.HeaderText = "name";
+            this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
+            // 
+            // dataGridViewTextBoxColumn12
+            // 
+            this.dataGridViewTextBoxColumn12.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn12.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn12.HeaderText = "script";
+            this.dataGridViewTextBoxColumn12.Name = "dataGridViewTextBoxColumn12";
+            // 
+            // dataGridViewButtonColumn6
+            // 
+            this.dataGridViewButtonColumn6.HeaderText = "";
+            this.dataGridViewButtonColumn6.Name = "dataGridViewButtonColumn6";
+            this.dataGridViewButtonColumn6.Text = "run";
+            this.dataGridViewButtonColumn6.UseColumnTextForButtonValue = true;
+            // 
+            // tabPage6
+            // 
+            this.tabPage6.Controls.Add(this.dropRelationshipsGV);
+            this.tabPage6.Location = new System.Drawing.Point(4, 22);
+            this.tabPage6.Name = "tabPage6";
+            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage6.Size = new System.Drawing.Size(896, 436);
+            this.tabPage6.TabIndex = 1;
+            this.tabPage6.Text = "Drop";
+            this.tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // dropRelationshipsGV
+            // 
+            this.dropRelationshipsGV.AllowUserToAddRows = false;
+            this.dropRelationshipsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dropRelationshipsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn13,
+            this.dataGridViewTextBoxColumn14,
+            this.dataGridViewButtonColumn7});
+            this.dropRelationshipsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dropRelationshipsGV.Location = new System.Drawing.Point(3, 3);
+            this.dropRelationshipsGV.Name = "dropRelationshipsGV";
+            this.dropRelationshipsGV.Size = new System.Drawing.Size(890, 430);
+            this.dropRelationshipsGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn13
+            // 
+            this.dataGridViewTextBoxColumn13.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn13.HeaderText = "name";
+            this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
+            // 
+            // dataGridViewTextBoxColumn14
+            // 
+            this.dataGridViewTextBoxColumn14.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn14.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn14.HeaderText = "script";
+            this.dataGridViewTextBoxColumn14.Name = "dataGridViewTextBoxColumn14";
+            // 
+            // dataGridViewButtonColumn7
+            // 
+            this.dataGridViewButtonColumn7.HeaderText = "";
+            this.dataGridViewButtonColumn7.Name = "dataGridViewButtonColumn7";
+            this.dataGridViewButtonColumn7.Text = "run";
+            this.dataGridViewButtonColumn7.UseColumnTextForButtonValue = true;
+            // 
+            // tabPage7
+            // 
+            this.tabPage7.Controls.Add(this.unalteredRelationshipsGV);
+            this.tabPage7.Location = new System.Drawing.Point(4, 22);
+            this.tabPage7.Name = "tabPage7";
+            this.tabPage7.Size = new System.Drawing.Size(896, 436);
+            this.tabPage7.TabIndex = 2;
+            this.tabPage7.Text = "Unaltered";
+            this.tabPage7.UseVisualStyleBackColor = true;
+            // 
+            // unalteredRelationshipsGV
+            // 
+            this.unalteredRelationshipsGV.AllowUserToAddRows = false;
+            this.unalteredRelationshipsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.unalteredRelationshipsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn15,
+            this.dataGridViewTextBoxColumn16,
+            this.dataGridViewButtonColumn8});
+            this.unalteredRelationshipsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.unalteredRelationshipsGV.Location = new System.Drawing.Point(0, 0);
+            this.unalteredRelationshipsGV.Name = "unalteredRelationshipsGV";
+            this.unalteredRelationshipsGV.Size = new System.Drawing.Size(896, 436);
+            this.unalteredRelationshipsGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn15
+            // 
+            this.dataGridViewTextBoxColumn15.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn15.HeaderText = "name";
+            this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
+            // 
+            // dataGridViewTextBoxColumn16
+            // 
+            this.dataGridViewTextBoxColumn16.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn16.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn16.HeaderText = "script";
+            this.dataGridViewTextBoxColumn16.Name = "dataGridViewTextBoxColumn16";
+            // 
+            // dataGridViewButtonColumn8
+            // 
+            this.dataGridViewButtonColumn8.HeaderText = "";
+            this.dataGridViewButtonColumn8.Name = "dataGridViewButtonColumn8";
+            this.dataGridViewButtonColumn8.Text = "run";
+            this.dataGridViewButtonColumn8.UseColumnTextForButtonValue = true;
+            // 
+            // tabRoutines
+            // 
+            this.tabRoutines.Controls.Add(this.tabControl5);
+            this.tabRoutines.Location = new System.Drawing.Point(4, 22);
+            this.tabRoutines.Name = "tabRoutines";
+            this.tabRoutines.Size = new System.Drawing.Size(904, 462);
+            this.tabRoutines.TabIndex = 7;
+            this.tabRoutines.Text = "Routines";
+            this.tabRoutines.UseVisualStyleBackColor = true;
+            // 
+            // tabControl5
+            // 
+            this.tabControl5.Controls.Add(this.tabPage8);
+            this.tabControl5.Controls.Add(this.tabPage9);
+            this.tabControl5.Controls.Add(this.tabPage10);
+            this.tabControl5.Controls.Add(this.tabPage11);
+            this.tabControl5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl5.Location = new System.Drawing.Point(0, 0);
+            this.tabControl5.Name = "tabControl5";
+            this.tabControl5.SelectedIndex = 0;
+            this.tabControl5.Size = new System.Drawing.Size(904, 462);
+            this.tabControl5.TabIndex = 6;
+            // 
+            // tabPage8
+            // 
+            this.tabPage8.Controls.Add(this.createRoutinesGV);
+            this.tabPage8.Location = new System.Drawing.Point(4, 22);
+            this.tabPage8.Name = "tabPage8";
+            this.tabPage8.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage8.Size = new System.Drawing.Size(896, 436);
+            this.tabPage8.TabIndex = 0;
+            this.tabPage8.Text = "Create";
+            this.tabPage8.UseVisualStyleBackColor = true;
+            // 
+            // createRoutinesGV
+            // 
+            this.createRoutinesGV.AllowUserToAddRows = false;
+            this.createRoutinesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.createRoutinesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn17,
+            this.dataGridViewTextBoxColumn18,
+            this.dataGridViewButtonColumn9});
+            this.createRoutinesGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.createRoutinesGV.Location = new System.Drawing.Point(3, 3);
+            this.createRoutinesGV.Name = "createRoutinesGV";
+            this.createRoutinesGV.Size = new System.Drawing.Size(890, 430);
+            this.createRoutinesGV.TabIndex = 2;
+            // 
+            // dataGridViewTextBoxColumn17
+            // 
+            this.dataGridViewTextBoxColumn17.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn17.HeaderText = "name";
+            this.dataGridViewTextBoxColumn17.Name = "dataGridViewTextBoxColumn17";
+            // 
+            // dataGridViewTextBoxColumn18
+            // 
+            this.dataGridViewTextBoxColumn18.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn18.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn18.HeaderText = "script";
+            this.dataGridViewTextBoxColumn18.Name = "dataGridViewTextBoxColumn18";
+            // 
+            // dataGridViewButtonColumn9
+            // 
+            this.dataGridViewButtonColumn9.HeaderText = "";
+            this.dataGridViewButtonColumn9.Name = "dataGridViewButtonColumn9";
+            this.dataGridViewButtonColumn9.Text = "run";
+            this.dataGridViewButtonColumn9.UseColumnTextForButtonValue = true;
+            // 
+            // tabPage9
+            // 
+            this.tabPage9.Controls.Add(this.dropRoutinesGV);
+            this.tabPage9.Location = new System.Drawing.Point(4, 22);
+            this.tabPage9.Name = "tabPage9";
+            this.tabPage9.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage9.Size = new System.Drawing.Size(896, 436);
+            this.tabPage9.TabIndex = 1;
+            this.tabPage9.Text = "Drop";
+            this.tabPage9.UseVisualStyleBackColor = true;
+            // 
+            // dropRoutinesGV
+            // 
+            this.dropRoutinesGV.AllowUserToAddRows = false;
+            this.dropRoutinesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dropRoutinesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn19,
+            this.dataGridViewTextBoxColumn20,
+            this.dataGridViewButtonColumn10});
+            this.dropRoutinesGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dropRoutinesGV.Location = new System.Drawing.Point(3, 3);
+            this.dropRoutinesGV.Name = "dropRoutinesGV";
+            this.dropRoutinesGV.Size = new System.Drawing.Size(890, 430);
+            this.dropRoutinesGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn19
+            // 
+            this.dataGridViewTextBoxColumn19.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn19.HeaderText = "name";
+            this.dataGridViewTextBoxColumn19.Name = "dataGridViewTextBoxColumn19";
+            // 
+            // dataGridViewTextBoxColumn20
+            // 
+            this.dataGridViewTextBoxColumn20.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn20.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn20.HeaderText = "script";
+            this.dataGridViewTextBoxColumn20.Name = "dataGridViewTextBoxColumn20";
+            // 
+            // dataGridViewButtonColumn10
+            // 
+            this.dataGridViewButtonColumn10.HeaderText = "";
+            this.dataGridViewButtonColumn10.Name = "dataGridViewButtonColumn10";
+            this.dataGridViewButtonColumn10.Text = "run";
+            this.dataGridViewButtonColumn10.UseColumnTextForButtonValue = true;
+            // 
+            // tabPage10
+            // 
+            this.tabPage10.Controls.Add(this.alteredRoutinesGV);
+            this.tabPage10.Location = new System.Drawing.Point(4, 22);
+            this.tabPage10.Name = "tabPage10";
+            this.tabPage10.Size = new System.Drawing.Size(896, 436);
+            this.tabPage10.TabIndex = 3;
+            this.tabPage10.Text = "Altered";
+            this.tabPage10.UseVisualStyleBackColor = true;
+            // 
+            // alteredRoutinesGV
+            // 
+            this.alteredRoutinesGV.AllowUserToAddRows = false;
+            this.alteredRoutinesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.alteredRoutinesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn21,
+            this.dataGridViewTextBoxColumn22,
+            this.dataGridViewButtonColumn11});
+            this.alteredRoutinesGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.alteredRoutinesGV.Location = new System.Drawing.Point(0, 0);
+            this.alteredRoutinesGV.Name = "alteredRoutinesGV";
+            this.alteredRoutinesGV.Size = new System.Drawing.Size(896, 436);
+            this.alteredRoutinesGV.TabIndex = 5;
+            // 
+            // dataGridViewTextBoxColumn21
+            // 
+            this.dataGridViewTextBoxColumn21.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn21.HeaderText = "name";
+            this.dataGridViewTextBoxColumn21.Name = "dataGridViewTextBoxColumn21";
+            // 
+            // dataGridViewTextBoxColumn22
+            // 
+            this.dataGridViewTextBoxColumn22.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn22.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn22.HeaderText = "script";
+            this.dataGridViewTextBoxColumn22.Name = "dataGridViewTextBoxColumn22";
+            // 
+            // dataGridViewButtonColumn11
+            // 
+            this.dataGridViewButtonColumn11.HeaderText = "";
+            this.dataGridViewButtonColumn11.Name = "dataGridViewButtonColumn11";
+            this.dataGridViewButtonColumn11.Text = "run";
+            this.dataGridViewButtonColumn11.UseColumnTextForButtonValue = true;
+            // 
+            // tabPage11
+            // 
+            this.tabPage11.Controls.Add(this.unalteredRoutinesGV);
+            this.tabPage11.Location = new System.Drawing.Point(4, 22);
+            this.tabPage11.Name = "tabPage11";
+            this.tabPage11.Size = new System.Drawing.Size(896, 436);
+            this.tabPage11.TabIndex = 2;
+            this.tabPage11.Text = "Unaltered";
+            this.tabPage11.UseVisualStyleBackColor = true;
+            // 
+            // unalteredRoutinesGV
+            // 
+            this.unalteredRoutinesGV.AllowUserToAddRows = false;
+            this.unalteredRoutinesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.unalteredRoutinesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn23,
+            this.dataGridViewTextBoxColumn24,
+            this.dataGridViewButtonColumn12});
+            this.unalteredRoutinesGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.unalteredRoutinesGV.Location = new System.Drawing.Point(0, 0);
+            this.unalteredRoutinesGV.Name = "unalteredRoutinesGV";
+            this.unalteredRoutinesGV.Size = new System.Drawing.Size(896, 436);
+            this.unalteredRoutinesGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn23
+            // 
+            this.dataGridViewTextBoxColumn23.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn23.HeaderText = "name";
+            this.dataGridViewTextBoxColumn23.Name = "dataGridViewTextBoxColumn23";
+            // 
+            // dataGridViewTextBoxColumn24
+            // 
+            this.dataGridViewTextBoxColumn24.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn24.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn24.HeaderText = "script";
+            this.dataGridViewTextBoxColumn24.Name = "dataGridViewTextBoxColumn24";
+            // 
+            // dataGridViewButtonColumn12
+            // 
+            this.dataGridViewButtonColumn12.HeaderText = "";
+            this.dataGridViewButtonColumn12.Name = "dataGridViewButtonColumn12";
+            this.dataGridViewButtonColumn12.Text = "run";
+            this.dataGridViewButtonColumn12.UseColumnTextForButtonValue = true;
             // 
             // tabOther
             // 
@@ -944,12 +1619,42 @@
             this.tabStdOut.PerformLayout();
             this.tabStdErr.ResumeLayout(false);
             this.tabStdErr.PerformLayout();
-            this.tabCreates.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.createsGV)).EndInit();
-            this.tabDrops.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dropsGV)).EndInit();
-            this.tabAlters.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.altersGV)).EndInit();
+            this.tabTables.ResumeLayout(false);
+            this.tabControl2.ResumeLayout(false);
+            this.tabTableCreate.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.createTablesGV)).EndInit();
+            this.tabTableDrop.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dropTablesGV)).EndInit();
+            this.tabTableUnaltered.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.unalteredTablesGV)).EndInit();
+            this.tabColumns.ResumeLayout(false);
+            this.columnsTabs.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.createColumnsGV)).EndInit();
+            this.tabPage2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dropColumnsGV)).EndInit();
+            this.tabPage4.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.alteredColumnsGV)).EndInit();
+            this.tabPage3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.unalteredColumnsGV)).EndInit();
+            this.tabRelationships.ResumeLayout(false);
+            this.tabControl3.ResumeLayout(false);
+            this.tabPage5.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.createRelationshipsGV)).EndInit();
+            this.tabPage6.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dropRelationshipsGV)).EndInit();
+            this.tabPage7.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.unalteredRelationshipsGV)).EndInit();
+            this.tabRoutines.ResumeLayout(false);
+            this.tabControl5.ResumeLayout(false);
+            this.tabPage8.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.createRoutinesGV)).EndInit();
+            this.tabPage9.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dropRoutinesGV)).EndInit();
+            this.tabPage10.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.alteredRoutinesGV)).EndInit();
+            this.tabPage11.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.unalteredRoutinesGV)).EndInit();
             this.tabOther.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.othersGV)).EndInit();
             this.tabOptions.ResumeLayout(false);
@@ -999,7 +1704,7 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox adminUserTB;
         private System.Windows.Forms.TextBox adminPassTB;
-        private System.Windows.Forms.TabPage tabDrops;
+        private System.Windows.Forms.TabPage tabColumns;
         private System.Windows.Forms.TabPage tabOptions;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
         private System.Windows.Forms.Button cancelOptionsButton;
@@ -1008,20 +1713,16 @@
         private System.Windows.Forms.CheckBox chkCreateIndices;
         private System.Windows.Forms.Button analyzeButton;
         private System.Windows.Forms.TextBox txtStdOut;
-        private System.Windows.Forms.TabPage tabCreates;
-        private System.Windows.Forms.DataGridView createsGV;
+        private System.Windows.Forms.TabPage tabTables;
+        private System.Windows.Forms.DataGridView createTablesGV;
         private System.Windows.Forms.DataGridViewTextBoxColumn createsGVName;
         private System.Windows.Forms.DataGridViewTextBoxColumn createsGVScript;
         private System.Windows.Forms.DataGridViewButtonColumn createsGVRunButton;
-        private System.Windows.Forms.DataGridView dropsGV;
+        private System.Windows.Forms.DataGridView createColumnsGV;
         private System.Windows.Forms.DataGridViewTextBoxColumn dropsGVName;
         private System.Windows.Forms.DataGridViewTextBoxColumn dropsGVScript;
         private System.Windows.Forms.DataGridViewButtonColumn dropsGVRunButton;
-        private System.Windows.Forms.TabPage tabAlters;
-        private System.Windows.Forms.DataGridView altersGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn altersGVName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn altersGVScript;
-        private System.Windows.Forms.DataGridViewButtonColumn altersGVRunButton;
+        private System.Windows.Forms.TabPage tabRelationships;
         private System.Windows.Forms.TabPage tabOther;
         private System.Windows.Forms.DataGridView othersGV;
         private System.Windows.Forms.DataGridViewTextBoxColumn othersGVName;
@@ -1033,6 +1734,73 @@
         private System.Windows.Forms.TextBox psqlTB;
         private System.Windows.Forms.ComboBox dbTypeList;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.TabControl tabControl2;
+        private System.Windows.Forms.TabPage tabTableCreate;
+        private System.Windows.Forms.TabPage tabTableDrop;
+        private System.Windows.Forms.DataGridView dropTablesGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn1;
+        private System.Windows.Forms.TabPage tabTableUnaltered;
+        private System.Windows.Forms.TabPage tabRoutines;
+        private System.Windows.Forms.DataGridView unalteredTablesGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn2;
+        private System.Windows.Forms.TabControl columnsTabs;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.DataGridView dropColumnsGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn4;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.DataGridView unalteredColumnsGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn10;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn5;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.DataGridView alteredColumnsGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn3;
+        private System.Windows.Forms.TabControl tabControl3;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.DataGridView createRelationshipsGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn11;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn12;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn6;
+        private System.Windows.Forms.TabPage tabPage6;
+        private System.Windows.Forms.DataGridView dropRelationshipsGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn13;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn14;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn7;
+        private System.Windows.Forms.TabPage tabPage7;
+        private System.Windows.Forms.DataGridView unalteredRelationshipsGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn15;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn16;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn8;
+        private System.Windows.Forms.TabControl tabControl5;
+        private System.Windows.Forms.TabPage tabPage8;
+        private System.Windows.Forms.DataGridView createRoutinesGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn17;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn18;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn9;
+        private System.Windows.Forms.TabPage tabPage9;
+        private System.Windows.Forms.DataGridView dropRoutinesGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn19;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn20;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn10;
+        private System.Windows.Forms.TabPage tabPage10;
+        private System.Windows.Forms.DataGridView alteredRoutinesGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn21;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn22;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn11;
+        private System.Windows.Forms.TabPage tabPage11;
+        private System.Windows.Forms.DataGridView unalteredRoutinesGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn23;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn24;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn12;
     }
 }
 

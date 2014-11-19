@@ -43,7 +43,7 @@ namespace SqlSiphon.Mapping
     /// any type of thing.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
-    public class MappedParameterAttribute : MappedTypeAttribute
+    public class MappedParameterAttribute : MappedObjectAttribute
     {
         private bool directionNotSet = true;
         private ParameterDirection paramDirection;
@@ -66,6 +66,28 @@ namespace SqlSiphon.Mapping
         }
 
         public MappedParameterAttribute() {}
+
+        public MappedParameterAttribute(InformationSchema.Parameters parameter, ISqlSiphon dal)
+        {
+            this.Include = true;
+
+            if (parameter.numeric_precision.HasValue)
+            {
+                this.Precision = parameter.numeric_precision.Value;
+            }
+
+            if (parameter.numeric_scale.HasValue)
+            {
+                this.Size = parameter.numeric_scale.Value;
+            }
+            else if (parameter.character_maximum_length.HasValue)
+            {
+                this.Size = parameter.character_maximum_length.Value;
+            }
+
+            this.SqlType = parameter.data_type;
+            this.SystemType = dal.GetSystemType(this.SqlType);
+        }
         
         /// <summary>
         /// A virtual method to analyze an object and figure out the

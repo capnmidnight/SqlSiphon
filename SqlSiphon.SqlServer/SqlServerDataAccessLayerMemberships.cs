@@ -45,13 +45,147 @@ namespace SqlSiphon.SqlServer
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract partial class SqlServerDataAccessLayer
+    public partial class SqlServerDataAccessLayer
     {
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [MappedMethod]
-        public int aspnet_UsersInRoles_RemoveUsersFromRoles(string ApplicationName, string UserNames, string RoleNames)
+        public int aspnet_UsersInRoles_RemoveUsersFromRoles(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            string UserNames,
+            string RoleNames)
         {
             return this.Return<int>(ApplicationName, UserNames, RoleNames);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public int aspnet_UsersInRoles_IsUserInRole(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string UserName,
+            [MappedParameter(Size = 256)]string RoleName)
+        {
+            return this.Return<int>(ApplicationName, UserName, RoleName);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public List<string> aspnet_UsersInRoles_GetUsersInRoles(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string RoleName)
+        {
+            return this.GetList<string>("UserName", ApplicationName, RoleName);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public List<string> aspnet_UsersInRoles_GetRolesForUser(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string UserName)
+        {
+            return this.GetList<string>("UserName", ApplicationName, UserName);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public List<string> aspnet_UsersInRoles_FindUsersInRole(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string RoleName,
+            [MappedParameter(Size = 256)]string UserNameToMatch)
+        {
+            return this.GetList<string>("UserName", ApplicationName, RoleName, UserNameToMatch);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public int aspnet_UsersInRoles_AddUsersToRoles(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            string UserNames,
+            string RoleNames,
+            DateTime CurrentTimeUtc)
+        {
+            return this.Return<int>(ApplicationName, UserNames, RoleNames, CurrentTimeUtc);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public int aspnet_Users_DeleteUser(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string UserName,
+            int TablesToDeleteFrom,
+            out int NumTablesDeletedFrom)
+        {
+            NumTablesDeletedFrom = 0;
+            var ps = new object[] { ApplicationName, UserName, TablesToDeleteFrom, NumTablesDeletedFrom };
+            var returnCode = this.Return<int>(ps);
+            NumTablesDeletedFrom = (int)ps.Last();
+            return returnCode;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public int aspnet_Users_CreateUser(
+            Guid ApplicationId,
+            [MappedParameter(Size = 256)]string UserName, 
+            bool IsUserAnonymous, 
+            DateTime LastActivityDate, 
+            out Guid UserId)
+        {
+            UserId = Guid.Empty;
+            var ps = new object[] { ApplicationId, UserName, IsUserAnonymous, LastActivityDate, UserId };
+            var returnCode = this.Return<int>(ps);
+            UserId = (Guid)ps.Last();
+            return returnCode;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public int aspnet_Roles_RoleExists(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string RoleName)
+        {
+            return this.Return<int>(ApplicationName, RoleName);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public List<string> aspnet_Roles_GetAllRoles([MappedParameter(Size = 256)]string ApplicationName)
+        {
+            return this.GetList<string>("RoleName", ApplicationName);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public int aspnet_Roles_DeleteRole(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string RoleName,
+            bool DeleteOnlyIfRoleIsEmpty)
+        {
+            return this.Return<int>(ApplicationName, RoleName, DeleteOnlyIfRoleIsEmpty);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public int aspnet_Roles_CreateRole(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string RoleName)
+        {
+            return this.Return<int>(ApplicationName, RoleName);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod]
+        public int aspnet_Membership_UpdateUserInfo(
+            [MappedParameter(Size = 256)]string ApplicationName,
+            [MappedParameter(Size = 256)]string UserName,
+            bool IsPasswordCorrect,
+            bool UpdateLastLoginActivityDate,
+            int MaxInvalidPasswordAttempts,
+            int PasswordAttemptWindow,
+            DateTime CurrentTimeUtc,
+            DateTime LastLoginDate,
+            DateTime LastActivityDate)
+        {
+            return this.Return<int>(ApplicationName, UserName, IsPasswordCorrect, UpdateLastLoginActivityDate, MaxInvalidPasswordAttempts, PasswordAttemptWindow, CurrentTimeUtc, LastLoginDate, LastActivityDate);
         }
     }
 }

@@ -30,6 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace SqlSiphon.Mapping
@@ -43,7 +44,7 @@ namespace SqlSiphon.Mapping
     /// any type of thing.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public class MappedPropertyAttribute : MappedTypeAttribute
+    public class MappedPropertyAttribute : MappedObjectAttribute
     {
         private PropertyInfo originalProperty;
         /// <summary>
@@ -59,31 +60,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public bool IncludeInPrimaryKey { get; set; }
 
-        /// <summary>
-        /// When a property references another mapped class,
-        /// it will be used to specify a foreign key relation-
-        /// ship. The mapped table for this class will have
-        /// to have columns added to it that match the
-        /// primary key of the foreign table. By default,
-        /// those columns will be named the same name as they
-        /// are named in the foreign table. This will cause
-        /// a conflict in the case of one table having foreign-
-        /// key references to any set of tables whose primary
-        /// keys are named the same. By setting the PrefixColumnNames
-        /// property to true, the columns added to this table
-        /// will have the name of the property this attribute
-        /// is tagged to used as a prefix on each column's name.
-        /// Defaults to true.
-        /// </summary>
-        public bool PrefixColumnNames { get; set; }
-
-        /// <summary>
-        /// If the property this attribute is tagged to specifies
-        /// a foreign key relationship, then setting the Cascade
-        /// property will specify CASCADE DELETE and CASCADE UPDATE
-        /// on the foreign key constraint. Defaults to true.
-        /// </summary>
-        public bool Cascade { get; set; }
+        public MappedClassAttribute Table { get; set; }
 
         /// <summary>
         /// Specifies the property maps to a column in a table that
@@ -98,13 +75,60 @@ namespace SqlSiphon.Mapping
         {
             this.IsIdentity = false;
             this.IncludeInPrimaryKey = false;
-            this.PrefixColumnNames = true;
-            this.Cascade = true;
         }
 
-        public override void InferProperties(System.Reflection.PropertyInfo obj)
+        public MappedPropertyAttribute(MappedClassAttribute table, InformationSchema.Columns column, bool includeInPK, ISqlSiphon dal)
         {
-            base.InferProperties(obj);
+            this.Table = table;
+            this.Name = column.column_name;
+            var defVal = column.column_default;
+            this.IsIdentity = dal.DescribesIdentity(ref defVal);
+            this.DefaultValue = defVal;
+            this.IncludeInPrimaryKey = includeInPK;
+            this.Include = true;
+
+            if (column.is_nullable != null && column.is_nullable.ToLower() == "yes")
+            {
+                this.IsOptional = true;
+            }
+
+            this.SqlType = column.udt_name ?? column.data_type;
+            if (this.SqlType[0] == '_')
+            {
+                this.SqlType = this.SqlType.Substring(1);
+            }
+            this.SystemType = dal.GetSystemType(this.SqlType);
+            if (this.SystemType == null)
+            {
+                throw new Exception("Couldn't find a matching type for " + this.SqlType ?? "<NULL TYPE>");
+            }
+            var systemSize = 0;
+            if (this.SystemType.IsPrimitive)
+            {
+                systemSize = System.Runtime.InteropServices.Marshal.SizeOf(this.SystemType);
+            }
+
+            if (column.numeric_precision.HasValue
+                && column.numeric_precision.Value != systemSize * 8)
+            {
+                this.Size = column.numeric_precision.Value;
+            }
+            
+            if (column.character_maximum_length.HasValue)
+            {
+                this.Size = column.character_maximum_length.Value;
+            }
+
+            if (column.numeric_scale.HasValue && column.numeric_scale.Value > 0)
+            {
+                this.Precision = column.numeric_scale.Value;
+            }
+        }
+
+        public void InferProperties(MappedClassAttribute table, System.Reflection.PropertyInfo obj)
+        {
+            this.InferProperties(obj);
+            this.Table = table;
             this.originalProperty = obj;
         }
 
@@ -160,7 +184,54 @@ namespace SqlSiphon.Mapping
                 Schema = this.Schema,
                 SqlType = this.SqlType
             };
-            return p;    
+            return p;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is MappedPropertyAttribute)
+            {
+                var attr = (MappedPropertyAttribute)obj;
+                return attr.DefaultValue == this.DefaultValue
+                    && attr.Include == this.Include
+                    && attr.IncludeInPrimaryKey == this.IncludeInPrimaryKey
+                    && attr.IsIdentity == this.IsIdentity
+                    && attr.IsOptional == this.IsOptional
+                    && attr.Name.ToLower() == this.Name.ToLower()
+                    && attr.Precision == this.Precision
+                    && attr.Size == this.Size
+                    && attr.SystemType == this.SystemType
+                    && attr.Table != null
+                    && this.Table != null
+                    && attr.Table.Schema.ToLower() == this.Table.Schema.ToLower()
+                    && attr.Table.Name.ToLower() == this.Table.Name.ToLower();
+            }
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return string.Join(",", new object[]{
+                this.Table != null ? this.Table.Schema : "_",
+                this.Table != null ? this.Table.Name : "_",
+                this.Name ?? "_",
+                this.Include,
+                this.SystemType != null ? this.SystemType.FullName : "_",
+                this.Size,
+                this.Precision,
+                this.IsOptional,
+                this.DefaultValue ?? "_",
+                this.IncludeInPrimaryKey,
+                this.IsIdentity}.Select(o => o.ToString())).GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return string.Format("COLUMN [{0}].[{1}].[{2}] {3}",
+                this.Table != null ? this.Table.Schema : null,
+                this.Table != null ? this.Table.Name : null,
+                this.Name,
+                this.SystemType != null ? this.SystemType.FullName : null);
         }
     }
 }

@@ -187,6 +187,35 @@ namespace InitDB
             });
         }
 
+        static string UnrollStackTrace(Exception e)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendFormat(@"<stacktrace timestamp=""{0}"">
+", DateTime.Now);
+            var exp = e;
+            for (int i = 0; exp != null; ++i)
+            {
+                sb.AppendFormat(
+@"<exception depth=""{0}"" type=""{1}"">
+    <source>{2}</source>
+    <message>{3}</message>
+    <stackTrace>{4}</stackTrace>
+</exception>
+", i, exp.GetType().FullName, exp.Source, exp.Message, exp.StackTrace);
+                exp = exp.InnerException;
+            }
+            sb.AppendLine("</stacktrace>");
+            return sb.ToString();
+        }
+
+        private void ToError(Exception exp, bool modal = false)
+        {
+            if (exp != null)
+            {
+                this.ToError(UnrollStackTrace(exp), modal);
+            }
+        }
+
         private void ToError(string txt, bool modal = false)
         {
             if (txt != null)
@@ -239,7 +268,8 @@ namespace InitDB
                 string server = serverTB.Text;
                 string port = null;
                 var i = server.IndexOf(":");
-                if(i > -1){
+                if (i > -1)
+                {
                     port = server.Substring(i + 1);
                     server = server.Substring(0, i);
                 }
@@ -258,10 +288,10 @@ namespace InitDB
                 }
                 var lineToAdd = string.Format(
                     "{0}:{1}:{2}:{3}:{4}",
-                    server, 
-                    port ?? "*", 
-                    database ?? "*", 
-                    adminUserTB.Text, 
+                    server,
+                    port ?? "*",
+                    database ?? "*",
+                    adminUserTB.Text,
                     adminPassTB.Text);
 
                 if (originalConf == null)
@@ -393,8 +423,8 @@ namespace InitDB
                         if (succeeded && chkCreateIndices.Checked)
                             succeeded &= SyncIndices(db);
 
-                        if (succeeded && chkSyncProcedures.Checked)
-                            succeeded &= SyncProcedures(db);
+                        //if (succeeded && chkSyncProcedures.Checked)
+                        //    succeeded &= SyncProcedures(db);
 
                         if (succeeded && chkInitializeData.Checked)
                             succeeded &= InitData(db);
@@ -413,7 +443,7 @@ namespace InitDB
             }
             catch (Exception exp)
             {
-                this.ToError(exp.Message, true);
+                this.ToError(exp, true);
             }
             finally
             {
@@ -426,22 +456,6 @@ namespace InitDB
             this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow + 1, e.RowCount, e.Message));
         }
 
-        private bool SyncX(string name, Action act)
-        {
-            try
-            {
-                this.ToOutput("Synchronizing " + name);
-                act();
-                this.ToOutput(name + " synched");
-                return true;
-            }
-            catch (Exception exp)
-            {
-                this.ToError(exp.Message);
-                return false;
-            }
-        }
-
         private void analyzeButton_Click(object sender, EventArgs e)
         {
             analyzeButton.Enabled = false;
@@ -449,14 +463,41 @@ namespace InitDB
             {
                 Task.Run(() =>
                 {
-                    using (var db = this.MakeDatabaseConnection())
+                    try
                     {
-                        WithDropReport("schema analysis", db, db.Analyze);
-                        this.SyncUI(() =>
+                        this.ToOutput("Synchronizing schema.");
+                        DatabaseDelta delta;
+                        using (var db = this.MakeDatabaseConnection())
                         {
-                            FillGV(this.createsGV, db.CreateScripts);
-                            this.analyzeButton.Enabled = true;
-                        });
+                            delta = db.Analyze();
+                        }
+                        if (delta != null)
+                        {
+                            this.SyncUI(() =>
+                            {
+                                FillGV(this.createTablesGV, delta.CreateTablesScripts);
+                                FillGV(this.dropTablesGV, delta.DropTablesScripts);
+                                FillGV(this.unalteredTablesGV, delta.UnalteredTablesScripts);
+                                FillGV(this.createColumnsGV, delta.CreateColumnsScripts);
+                                FillGV(this.dropColumnsGV, delta.DropColumnsScripts);
+                                FillGV(this.alteredColumnsGV, delta.AlteredColumnsScripts);
+                                FillGV(this.unalteredColumnsGV, delta.UnalteredColumnsScripts);
+                                FillGV(this.createRelationshipsGV, delta.CreateRelationshipsScripts);
+                                FillGV(this.dropRelationshipsGV, delta.DropRelationshipsScripts);
+                                FillGV(this.unalteredRelationshipsGV, delta.UnalteredRelationshipsScripts);
+                                FillGV(this.createRoutinesGV, delta.CreateRoutinesScripts);
+                                FillGV(this.dropRoutinesGV, delta.DropRoutinesScripts);
+                                FillGV(this.alteredRoutinesGV, delta.AlteredRoutinesScripts);
+                                FillGV(this.unalteredRoutinesGV, delta.UnalteredRoutinesScripts);
+                                FillGV(this.othersGV, delta.OtherScripts);
+                                this.analyzeButton.Enabled = true;
+                            });
+                        }
+                        this.ToOutput("Schema synched.");
+                    }
+                    catch (Exception exp)
+                    {
+                        this.ToError(exp);
                     }
                 });
             }
@@ -464,7 +505,7 @@ namespace InitDB
 
         private bool SyncTables(SqlSiphon.ISqlSiphon db)
         {
-            return WithDropReport("tables", db, db.CreateTables);
+            return false; // WithDropReport("tables", db, db.CreateTables);
         }
 
         private static void FillGV(DataGridView gv, IEnumerable<KeyValuePair<string, string>> collect)
@@ -474,43 +515,19 @@ namespace InitDB
                 gv.Rows.Add(entry.Key, entry.Value);
         }
 
-        private bool WithDropReport(string name, ISqlSiphon db, Action act)
-        {
-            return this.SyncX(name, () =>
-            {
-                act();
-                this.SyncUI(() =>
-                {
-                    FillGV(this.altersGV, db.AlterScripts);
-                    FillGV(this.dropsGV, db.DropScripts);
-                    FillGV(this.othersGV, db.OtherScripts);
-                });
-            });
-        }
-
         private bool SyncFKs(ISqlSiphon db)
         {
-            return this.SyncX("foreign keys", db.CreateForeignKeys);
+            return false; // this.SyncX("foreign keys", db.CreateForeignKeys);
         }
 
         private bool SyncIndices(ISqlSiphon db)
         {
-            return this.SyncX("indices", db.CreateIndices);
-        }
-
-        private bool SyncProcedures(SqlSiphon.ISqlSiphon db)
-        {
-            return this.SyncX("procedures", () =>
-            {
-                db.DropProcedures();
-                db.SynchronizeUserDefinedTableTypes();
-                db.CreateProcedures();
-            });
+            return false; //this.SyncX("indices", db.CreateIndices);
         }
 
         private bool InitData(SqlSiphon.ISqlSiphon db)
         {
-            return this.SyncX("Initial data", db.RunAllManualScripts);
+            return false; //this.SyncX("Initial data", db.RunAllManualScripts);
         }
 
         private void BrowseFile(TextBox path)
@@ -632,7 +649,6 @@ namespace InitDB
                     {
                         this.txtStdOut.Text = "";
                         this.txtStdErr.Text = "";
-                        this.ToOutput(this.GetMOTD());
                     }
                     catch { }
                 }
@@ -641,23 +657,22 @@ namespace InitDB
                     = deleteSessionButton.Enabled
                     = (sessionName != DEFAULT_SESSION_NAME);
 
-                createsGV.Rows.Clear();
-                dropsGV.Rows.Clear();
-                altersGV.Rows.Clear();
-                othersGV.Rows.Clear();
+                this.createTablesGV.Rows.Clear();
+                this.dropTablesGV.Rows.Clear();
+                this.unalteredTablesGV.Rows.Clear();
+                this.createColumnsGV.Rows.Clear();
+                this.dropColumnsGV.Rows.Clear();
+                this.alteredColumnsGV.Rows.Clear();
+                this.unalteredColumnsGV.Rows.Clear();
+                this.createRelationshipsGV.Rows.Clear();
+                this.dropRelationshipsGV.Rows.Clear();
+                this.unalteredRelationshipsGV.Rows.Clear();
+                this.createRoutinesGV.Rows.Clear();
+                this.dropRoutinesGV.Rows.Clear();
+                this.alteredRoutinesGV.Rows.Clear();
+                this.unalteredRoutinesGV.Rows.Clear();
+                this.othersGV.Rows.Clear();
             }
-        }
-
-        public string GetMOTD()
-        {
-            var motd = "Could not create database connection";
-            var db = this.MakeDatabaseConnection();
-            if (db != null)
-            {
-                motd = db.MOTD;
-                db.Dispose();
-            }
-            return motd;
         }
 
         public ISqlSiphon MakeDatabaseConnection()

@@ -42,67 +42,84 @@ namespace SqlSiphon.Postgres
     /// A base class for building Data Access Layers that connect to MySQL
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract partial class NpgsqlDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
+    public partial class NpgsqlDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
         static NpgsqlDataAccessLayer()
         {
             typeMapping = new Dictionary<string, Type>();
+
             typeMapping.Add("bigint", typeof(long));
             typeMapping.Add("int8", typeof(long));
             typeMapping.Add("bigserial", typeof(long));
             typeMapping.Add("serial8", typeof(long));
+
             typeMapping.Add("bit", typeof(bool[]));
-            typeMapping.Add("bit varying", typeof(List<bool>));
             typeMapping.Add("varbit", typeof(bool[]));
-            typeMapping.Add("bool", typeof(bool));
+
+            typeMapping.Add("bit varying", typeof(List<bool>));
+
             typeMapping.Add("boolean", typeof(bool));
-            //typeMapping.Add("box", typeof());
+            typeMapping.Add("bool", typeof(bool));
+
             typeMapping.Add("bytea", typeof(byte[]));
-            typeMapping.Add("varchar", typeof(string));
+
+            typeMapping.Add("text", typeof(string));
             typeMapping.Add("character varying", typeof(string));
-            typeMapping.Add("char", typeof(char[]));
+            typeMapping.Add("varchar", typeof(string));
+            typeMapping.Add("_varchar", typeof(string));
+            typeMapping.Add("tsquery", typeof(string));
+            typeMapping.Add("xml", typeof(string));
+            typeMapping.Add("json", typeof(string));
+
             typeMapping.Add("character", typeof(char[]));
+            typeMapping.Add("char", typeof(char[]));
+
+            typeMapping.Add("inet", typeof(System.Net.IPAddress));
             typeMapping.Add("cidr", typeof(System.Net.IPAddress));
-            //typeMapping.Add("circle", typeof());
+
             typeMapping.Add("date", typeof(DateTime));
+
             typeMapping.Add("double precision", typeof(double));
             typeMapping.Add("float8", typeof(double));
-            typeMapping.Add("inet", typeof(System.Net.IPAddress));
+
             typeMapping.Add("integer", typeof(int));
             typeMapping.Add("int", typeof(int));
             typeMapping.Add("int4", typeof(int));
+            typeMapping.Add("serial", typeof(int));
+            typeMapping.Add("serial4", typeof(int));
+
             typeMapping.Add("interval", typeof(TimeSpan));
-            //typeMapping.Add("line", typeof());
-            //typeMapping.Add("lseg", typeof());
-            //typeMapping.Add("macaddr", typeof());
+
             typeMapping.Add("money", typeof(decimal));
             typeMapping.Add("numeric", typeof(decimal));
-            //typeMapping.Add("path", typeof(decimal));
-            //typeMapping.Add("point", typeof(decimal));
-            //typeMapping.Add("polygon", typeof(decimal));
+
             typeMapping.Add("real", typeof(float));
             typeMapping.Add("float4", typeof(float));
+
             typeMapping.Add("smallint", typeof(short));
             typeMapping.Add("int2", typeof(short));
             typeMapping.Add("smallserial", typeof(short));
             typeMapping.Add("serial2", typeof(short));
-            typeMapping.Add("serial", typeof(int));
-            typeMapping.Add("serial4", typeof(int));
-            typeMapping.Add("text", typeof(string));
+
             typeMapping.Add("time", typeof(DateTime));
             typeMapping.Add("time with time zone", typeof(DateTime));
             typeMapping.Add("timestamp", typeof(DateTime));
             typeMapping.Add("timestamp with time zone", typeof(DateTime));
-            typeMapping.Add("tsquery", typeof(string));
+
+            typeMapping.Add("uuid", typeof(Guid));
+
+            //typeMapping.Add("box", typeof());
+            //typeMapping.Add("circle", typeof());
+            //typeMapping.Add("line", typeof());
+            //typeMapping.Add("lseg", typeof());
+            //typeMapping.Add("macaddr", typeof());
+            //typeMapping.Add("path", typeof(decimal));
+            //typeMapping.Add("point", typeof(decimal));
+            //typeMapping.Add("polygon", typeof(decimal));
             //typeMapping.Add("tsvector", typeof());
             //typeMapping.Add("txid_snapshot", typeof());
-            typeMapping.Add("uuid", typeof(Guid));
-            typeMapping.Add("xml", typeof(string));
-            typeMapping.Add("json", typeof(string));
-
-
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
@@ -157,7 +174,7 @@ namespace SqlSiphon.Postgres
 
         protected override string IdentifierPartBegin { get { return "\""; } }
         protected override string IdentifierPartEnd { get { return "\""; } }
-        protected override string DefaultSchemaName { get { return "public"; } }
+        public override string DefaultSchemaName { get { return "public"; } }
 
         protected override void ModifyQuery(MappedMethodAttribute info)
         {
@@ -171,6 +188,46 @@ namespace SqlSiphon.Postgres
                 info.Query = info.Query.Replace("@" + param.Name, ":" + param.Name);
         }
 
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
+        {
+            if (systemType.BaseType == typeof(SqlSiphon.InformationSchema.Columns))
+            {
+                systemType = typeof(NpgsqlDataAccessLayer).BaseType.GetGenericArguments()[systemType.GenericParameterPosition];
+            }
+            string typeName = null;
+
+            if (sqlType != null)
+            {
+                typeName = sqlType;
+            }
+            else if (systemType != null)
+            {
+                typeName = MakeBasicSqlTypeString(systemType);
+                if (typeName == null)
+                {
+                    typeName = MakeComplexSqlTypeString(systemType);
+                }
+
+                if (typeName == null && systemType.Name != "Void")
+                {
+                    throw new Exception("Couldn't find type description!");
+                }
+            }
+
+            if (size.HasValue && typeName.IndexOf("[") == -1)
+            {
+                if (typeName == "text")
+                {
+                    typeName = "varchar";
+                }
+                var format = precision.HasValue
+                    ? "{0}({1},{2})"
+                    : "{0}({1})";
+                typeName = string.Format(format, typeName, size, precision);
+            }
+            return typeName;
+        }
+
         private string MakeBasicSqlTypeString(Type t)
         {
             if (t.IsGenericType)
@@ -181,7 +238,7 @@ namespace SqlSiphon.Postgres
                 t = subTypes.First();
             }
 
-            var temp = MappedObjectAttribute.GetAttribute<MappedTypeAttribute>(t);
+            var temp = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
             if (temp != null)
             {
                 return MakeSqlTypeString(temp);
@@ -194,45 +251,6 @@ namespace SqlSiphon.Postgres
             {
                 return null;
             }
-        }
-
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, bool isSizeSet, int size, bool isPrecisionSet, int precision)
-        {
-            string typeName = null;
-
-            if (sqlType != null)
-            {
-                typeName = sqlType;
-            }
-            else if (systemType != null)
-            {
-                typeName = MakeBasicSqlTypeString(systemType);
-                if (typeName == null)
-                {
-                    if (isCollection)
-                    {
-                        typeName = MakeBasicSqlTypeString(systemType.GetElementType()) + "[]";
-                    }
-                    else
-                    {
-                        typeName = MakeComplexSqlTypeString(systemType);
-                    }
-                }
-
-                if (typeName == null && systemType.Name != "Void")
-                {
-                    throw new Exception("Couldn't find type description!");
-                }
-            }
-
-            if (isSizeSet && typeName.IndexOf("[") == -1)
-            {
-                var format = isPrecisionSet
-                    ? "{0}[{1},{2}]"
-                    : "{0}[{1}]";
-                typeName = string.Format(format, typeName, size, precision);
-            }
-            return typeName;
         }
 
         private string MakeComplexSqlTypeString(Type systemType)
@@ -248,9 +266,37 @@ namespace SqlSiphon.Postgres
             return null;
         }
 
-        protected override string MakeIdentifier(params string[] parts)
+        public override string MakeIdentifier(params string[] parts)
         {
             return base.MakeIdentifier(parts).ToLower();
+        }
+
+        public override bool DescribesIdentity(ref string defaultValue)
+        {
+            if (defaultValue != null && defaultValue.IndexOf("nextval") == 0)
+            {
+                defaultValue = null;
+                return true;
+            }
+            return false;
+        }
+
+        protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
+        {
+            return string.Format("alter table if exists {0} add column {1} {2}",
+                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
+                prop.Name,
+                this.MakeSqlTypeString(prop));
+        }
+
+        protected override string MakeDropColumnScript(InformationSchema.Columns c)
+        {
+            throw new NotImplementedException();
         }
 
         protected override string MakeParameterString(MappedParameterAttribute p)
@@ -316,17 +362,16 @@ namespace SqlSiphon.Postgres
             var parameterSection = this.MakeParameterSection(info);
             return string.Format(
 @"create or replace function {0}({1})
-    returns {2}{3} as $$
-{4}
+    returns {2} as $$
+{3}
 $$ language 'sql'",
                 identifier,
                 parameterSection,
-                info.IsCollection ? "setof " : "",
                 info.SqlType,
                 info.Query);
         }
 
-        protected override string MakeCreateTableScript(MappedClassAttribute info)
+        public override string MakeCreateTableScript(MappedClassAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
@@ -348,6 +393,13 @@ $$ language 'sql'",
                 pkString);
         }
 
+        public override string MakeDropTableScript(MappedClassAttribute info)
+        {
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, info.Name);
+            return "drop table if exists " + identifier;
+        }
+
         protected override string MakeAlterColumnScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
         {
             var temp = prop.DefaultValue;
@@ -367,21 +419,12 @@ $$ language 'sql'",
             return col;
         }
 
-        protected override bool ProcedureExists(MappedMethodAttribute info)
-        {
-            // just assume the procedure exists, because the drop and create
-            // procedures will take care of it.
-            return true;
-        }
-
-
         protected override bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
         {
             var sizeSet = false;
             var precisionSet = false;
             int size = 0, precision = 0;
-            if (column.data_type == "nvarchar"
-                || column.data_type == "varchar")
+            if (column.udt_name == "varchar")
             {
                 if (column.character_maximum_length != null
                     && column.character_maximum_length != -1)
@@ -393,9 +436,9 @@ $$ language 'sql'",
             else
             {
                 if (column.numeric_precision != null
-                    && !(column.data_type == "integer"
+                    && !(column.udt_name == "int4"
                         && column.numeric_precision == 32)
-                    && !(column.data_type == "double precision"
+                    && !(column.udt_name == "double precision"
                         && column.numeric_precision == 53)
                     && column.numeric_precision != 0)
                 {
@@ -413,7 +456,9 @@ $$ language 'sql'",
             var newType = this.MakeSqlTypeString(property);
 
             var changed = (column.is_nullable.ToLower() == "yes") != property.IsOptional
-                || column.data_type != newType
+                || !typeMapping.ContainsKey(column.udt_name)
+                || !typeMapping.ContainsKey(property.SqlType)
+                || typeMapping[column.udt_name] != typeMapping[newType]
                 || sizeSet != property.IsSizeSet
                 || size != property.Size
                 || precisionSet != property.IsPrecisionSet
@@ -451,6 +496,84 @@ alter table {0} add constraint {1}
                     tableColumns,
                     foreignFullName,
                     foreignColumns);
+        }
+
+        public override Type GetSystemType(string sqlType)
+        {
+            return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.columns
+where table_schema != 'information_schema'
+    and table_schema != 'pg_catalog'
+order by table_catalog, table_schema, table_name, ordinal_position")]
+        public override List<InformationSchema.Columns> GetColumns()
+        {
+            return GetList<InformationSchema.Columns>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.table_constraints
+where table_schema != 'information_schema'
+    and table_schema != 'pg_catalog'
+order by table_catalog, table_schema, table_name")]
+        public override List<InformationSchema.TableConstraints> GetTableConstraints()
+        {
+            return GetList<InformationSchema.TableConstraints>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.referential_constraints
+where constraint_schema != 'information_schema'
+    and constraint_schema != 'pg_catalog'
+order by constraint_catalog, constraint_schema, constraint_name")]
+        public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
+        {
+            return GetList<InformationSchema.ReferentialConstraints>();
+        }
+
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.routines
+where specific_schema != 'information_schema'
+    and specific_schema != 'pg_catalog'
+order by specific_catalog, specific_schema, specific_name")]
+        public override List<InformationSchema.Routines> GetRoutines()
+        {
+            return GetList<InformationSchema.Routines>();
+        }
+
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.parameters
+where specific_schema != 'information_schema'
+    and specific_schema != 'pg_catalog'
+order by specific_catalog, specific_schema, specific_name, ordinal_position")]
+        public override List<InformationSchema.Parameters> GetParameters()
+        {
+            return GetList<InformationSchema.Parameters>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query = 
+@"select * 
+from information_schema.constraint_column_usage
+where constraint_schema != 'information_schema'
+    and constraint_schema != 'pg_catalog'")]
+        public override List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints()
+        {
+            return GetList<InformationSchema.ConstraintColumnUsage>();
         }
     }
 }

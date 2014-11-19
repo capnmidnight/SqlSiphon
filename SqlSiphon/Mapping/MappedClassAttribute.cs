@@ -44,17 +44,36 @@ namespace SqlSiphon.Mapping
         | AttributeTargets.Enum,
         Inherited = false,
         AllowMultiple = false)]
-    public class MappedClassAttribute : MappedSchemaObjectAttribute
+    public class MappedClassAttribute : MappedObjectAttribute
     {
-        public List<MappedMethodAttribute> Methods { get; private set; }
         public List<MappedPropertyAttribute> Properties { get; private set; }
         public Dictionary<int, string> EnumValues { get; private set; }
 
         public MappedClassAttribute()
         {
-            this.Methods = new List<MappedMethodAttribute>();
             this.Properties = new List<MappedPropertyAttribute>();
             this.EnumValues = new Dictionary<int, string>();
+        }
+
+        public MappedClassAttribute(
+            InformationSchema.Columns[] columns, 
+            InformationSchema.TableConstraints[] constraints, 
+            InformationSchema.ConstraintColumnUsage[] constraintColumns, 
+            ISqlSiphon dal)
+            : this()
+        {
+            var testColumn = columns.First();
+            this.Schema = testColumn.table_schema;
+            this.Name = testColumn.table_name;
+            this.Include = true;
+            var columnConstraints = constraintColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name), c => dal.MakeIdentifier(c.constraint_schema, c.constraint_name));
+            var constraintTypes = constraints.ToDictionary(c => dal.MakeIdentifier(c.constraint_schema, c.constraint_name), c => c.constraint_type);
+            foreach (var column in columns)
+            {
+                var constraintName = columnConstraints.ContainsKey(column.column_name) ? columnConstraints[column.column_name] : null;
+                var constraintType = constraintName != null && constraintTypes.ContainsKey(constraintName) ? constraintTypes[constraintName] : null;
+                this.Properties.Add(new MappedPropertyAttribute(this, column, constraintType == "PRIMARY KEY", dal));
+            }
         }
 
         /// <summary>
@@ -75,23 +94,6 @@ namespace SqlSiphon.Mapping
         }
 
         /// <summary>
-        /// For a reflected property, determine the mapping parameters.
-        /// Properties get mapped by default, so if the property does
-        /// not have a MappedPropertyAttribute, then one is generated
-        /// for it and some settings are inferred.
-        /// </summary>
-        /// <param name="prop"></param>
-        /// <returns></returns>
-        private MappedPropertyAttribute GetPropertyDescriptions(PropertyInfo prop)
-        {
-            var attr = GetAttribute<MappedPropertyAttribute>(prop)
-                ?? new MappedPropertyAttribute();
-            attr.InferProperties(prop);
-            return attr;
-        }
-
-        private static BindingFlags PATTERN = BindingFlags.Public | BindingFlags.Instance;
-        /// <summary>
         /// A virtual method to analyze an object and figure out the
         /// default settings for it. The attribute can't find the thing
         /// its attached to on its own, so this can't be done in a
@@ -105,17 +107,19 @@ namespace SqlSiphon.Mapping
             if (obj.IsEnum)
             {
                 this.Properties.Add(new MappedPropertyAttribute
-                    {
-                        IncludeInPrimaryKey = true,
-                        Name = "Value",
-                        SqlType = "int"
-                    });
+                {
+                    Table = this,
+                    IncludeInPrimaryKey = true,
+                    Name = "Value",
+                    SqlType = "int"
+                });
 
                 this.Properties.Add(new MappedPropertyAttribute
-                    {
-                        Name = "Description",
-                        SqlType = "nvarchar(max)"
-                    });
+                {
+                    Table = this,
+                    Name = "Description",
+                    SqlType = "nvarchar(max)"
+                });
 
                 var names = obj.GetEnumNames();
                 foreach (var name in names)
@@ -123,15 +127,22 @@ namespace SqlSiphon.Mapping
             }
             else
             {
-                this.Methods.AddRange(
-                    obj.GetMethods(PATTERN)
-                    .Select(this.GetMethodDescriptions)
-                    .Where(m => m != null));
-
-                this.Properties.AddRange(
-                    obj.GetProperties(PATTERN)
-                    .Select(this.GetPropertyDescriptions));
+                var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                for (var i = 0; i < props.Length; ++i)
+                {
+                    var attr = GetAttribute<MappedPropertyAttribute>(props[i]) ?? new MappedPropertyAttribute();
+                    attr.InferProperties(this, props[i]);
+                    if (attr.Include)
+                    {
+                        this.Properties.Add(attr);
+                    }
+                }
             }
+        }
+
+        public override string ToString()
+        {
+            return "TABLE " + base.ToString();
         }
     }
 }
