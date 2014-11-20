@@ -864,6 +864,7 @@ AND COLUMN_NAME = @columnName;")]
         public abstract string DefaultSchemaName { get; }
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(ref string defaultValue);
+        public abstract bool ColumnChanged(MappedPropertyAttribute a, MappedPropertyAttribute b);
 
         public abstract List<InformationSchema.Columns> GetColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();

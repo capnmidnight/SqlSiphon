@@ -303,13 +303,131 @@ namespace SqlSiphon.Postgres
 
         public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
         {
-            var temp = final.DefaultValue;
-            final.DefaultValue = null;
-            var col = string.Format("alter table if exists {0} alter column {1};",
-                this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name),
-                this.MakeColumnString(final));
-            final.DefaultValue = temp;
-            return col;
+            var preamble = string.Format(
+                "alter table if exists {0}",
+                this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name));
+
+            if (final.Include != initial.Include)
+            {
+                return string.Format(
+                    "{0} {1} column {2} {3}",
+                    preamble,
+                    final.Include ? "add" : "drop",
+                    this.MakeIdentifier(final.Name),
+                    final.Include ? this.MakeSqlTypeString(final) : "")
+                    .Trim();
+            }
+            else if (final.Name.ToLower() != initial.Name.ToLower())
+            {
+                // this shouldn't happen, but maybe some day we will develop a way to keep track
+                // of a column changing its name over time. Maybe we can generate some kind of
+                // unique id for a column, and then always know what that column refers to, even
+                // if the name changes, but for now, we can't.
+                return string.Format(
+                    "{0} rename column {1} to {2}",
+                    preamble,
+                    this.MakeIdentifier(initial.Name),
+                    this.MakeIdentifier(final.Name));
+            }
+            else if (final.DefaultValue != initial.DefaultValue)
+            {
+                return string.Format(
+                    "{0} alter column {1} {2} default {3}",
+                    preamble,
+                    this.MakeIdentifier(final.Name),
+                    final.DefaultValue == null ? "drop" : "set",
+                    final.DefaultValue ?? "")
+                    .Trim();
+            }
+            else if (final.IsOptional != initial.IsOptional)
+            {
+                return string.Format(
+                    "{0} alter column {1} {2} not null",
+                    preamble,
+                    this.MakeIdentifier(final.Name),
+                    final.IsOptional ? "drop" : "set");
+            }
+            else if (final.SystemType != initial.SystemType
+                || final.Size != initial.Size
+                || final.Precision != initial.Precision)
+            {
+                return string.Format(
+                    "{0} alter column {1} set data type {2}",
+                    preamble,
+                    this.MakeIdentifier(final.Name),
+                    this.MakeSqlTypeString(final));
+            }
+            else
+            {
+                // by this point, the columns should be identical, but we still need a base case
+                return null;
+            }
+        }
+
+        public override bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute intial)
+        {
+            var tests = new bool[]{
+                final.Include == intial.Include,
+                final.IncludeInPrimaryKey == intial.IncludeInPrimaryKey,
+                final.IsIdentity == intial.IsIdentity,
+                final.IsOptional == intial.IsOptional,
+                final.Name.ToLower() == intial.Name.ToLower(),
+                final.SystemType == intial.SystemType,
+                final.Table != null,
+                intial.Table != null,
+                final.Table.Schema.ToLower() == intial.Table.Schema.ToLower(),
+                final.Table.Name.ToLower() == intial.Table.Name.ToLower()
+            };
+            var unchanged = tests.Aggregate((a, b) => a && b);
+            if (final.SystemType == intial.SystemType){
+                if(final.DefaultValue != null 
+                    && intial.DefaultValue != null 
+                    && final.DefaultValue != intial.DefaultValue)
+                {
+                    bool valuesMatch;
+                    if (final.SystemType == typeof(bool))
+                    {
+                        var xb = final.DefaultValue.Replace("'", "").ToLower();
+                        var xbb = xb == "true" || xb == "1";
+                        var yb = intial.DefaultValue.Replace("'", "").ToLower();
+                        var ybb = yb == "true" || yb == "1";
+                        valuesMatch = xbb == ybb;
+                    }
+                    else if (final.SystemType == typeof(DateTime))
+                    {
+                        valuesMatch = final.DefaultValue == "'9999/12/31 23:59:59.99999'" && intial.DefaultValue == "'9999-12-31'::date"
+                                || final.DefaultValue == "getdate()" && intial.DefaultValue == "('now'::text)::date";
+                    }
+                    else if (final.SystemType == typeof(double))
+                    {
+                        valuesMatch = final.DefaultValue == "(" + intial.DefaultValue + ")" 
+                            || intial.DefaultValue == "(" + final.DefaultValue + ")";
+                    }
+                    else
+                    {
+                        valuesMatch = false;
+                    }
+
+                    if (valuesMatch)
+                    {
+                        intial.DefaultValue = final.DefaultValue;
+                    }
+                    unchanged = unchanged && valuesMatch;
+                }
+                
+                if (final.Size != intial.Size)
+                {
+                    if (final.SystemType != typeof(double) || final.IsSizeSet || intial.Size != 53)
+                    {
+                        unchanged = false;
+                    }
+                }
+
+                if (final.Precision != intial.Precision)
+                {
+                }
+            }
+            return !unchanged;
         }
 
         protected override string MakeParameterString(MappedParameterAttribute p)
@@ -343,7 +461,8 @@ namespace SqlSiphon.Postgres
             if (p.DefaultValue != null)
             {
                 var val = p.DefaultValue.ToString();
-                if(val.ToLower() == "getdate()"){
+                if (val.ToLower() == "getdate()")
+                {
                     val = "current_date";
                 }
                 defaultString = "DEFAULT " + val;
@@ -388,7 +507,7 @@ $$ language 'sql'",
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
-            var columnSection = this.MakeColumnSection(info); 
+            var columnSection = this.MakeColumnSection(info);
             var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
             var pkString = "";
             if (pk.Length > 0)
@@ -568,7 +687,7 @@ order by specific_catalog, specific_schema, specific_name, ordinal_position")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query = 
+        [MappedMethod(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.constraint_column_usage
 where constraint_schema != 'information_schema'

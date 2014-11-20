@@ -70,7 +70,8 @@ namespace SqlSiphon.Mapping
             var constraintTypes = constraints.ToDictionary(c => dal.MakeIdentifier(c.constraint_schema, c.constraint_name), c => c.constraint_type);
             foreach (var column in columns)
             {
-                var constraintName = columnConstraints.ContainsKey(column.column_name) ? columnConstraints[column.column_name] : null;
+                var key = dal.MakeIdentifier(column.column_name);
+                var constraintName = columnConstraints.ContainsKey(key) ? columnConstraints[key] : null;
                 var constraintType = constraintName != null && constraintTypes.ContainsKey(constraintName) ? constraintTypes[constraintName] : null;
                 this.Properties.Add(new MappedPropertyAttribute(this, column, constraintType == "PRIMARY KEY", dal));
             }

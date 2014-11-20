@@ -85,7 +85,7 @@ namespace SqlSiphon
                             var ic = iColumns[columnName];
                             fColumns.Remove(columnName);
                             iColumns.Remove(columnName);
-                            if (!fc.Equals(ic))
+                            if (dal.ColumnChanged(fc, ic))
                             {
                                 this.AlteredColumnsScripts.Add(columnName, dal.MakeAlterColumnScript(fc, ic));
                                 altered = true;

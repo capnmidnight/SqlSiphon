@@ -407,6 +407,27 @@ create table {2}(
                     foreignColumns);
         }
 
+        public override bool ColumnChanged(MappedPropertyAttribute x, MappedPropertyAttribute y)
+        {
+            var tests = new bool[]{
+                x.DefaultValue == y.DefaultValue,
+                x.Include == y.Include,
+                x.IncludeInPrimaryKey == y.IncludeInPrimaryKey,
+                x.IsIdentity == y.IsIdentity,
+                x.IsOptional == y.IsOptional,
+                x.Name.ToLower() == y.Name.ToLower(),
+                x.Precision == y.Precision,
+                x.Size == y.Size,
+                x.SystemType == y.SystemType,
+                x.Table != null,
+                y.Table != null,
+                x.Table.Schema.ToLower() == y.Table.Schema.ToLower(),
+                x.Table.Name.ToLower() == y.Table.Name.ToLower()
+            };
+            var final = tests.Aggregate((a, b) => a && b);
+            return final;
+        }
+
         public override bool DescribesIdentity(ref string defaultValue)
         {
             throw new NotImplementedException();

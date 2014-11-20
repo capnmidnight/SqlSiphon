@@ -187,44 +187,6 @@ namespace SqlSiphon.Mapping
             return p;
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is MappedPropertyAttribute)
-            {
-                var attr = (MappedPropertyAttribute)obj;
-                return attr.DefaultValue == this.DefaultValue
-                    && attr.Include == this.Include
-                    && attr.IncludeInPrimaryKey == this.IncludeInPrimaryKey
-                    && attr.IsIdentity == this.IsIdentity
-                    && attr.IsOptional == this.IsOptional
-                    && attr.Name.ToLower() == this.Name.ToLower()
-                    && attr.Precision == this.Precision
-                    && attr.Size == this.Size
-                    && attr.SystemType == this.SystemType
-                    && attr.Table != null
-                    && this.Table != null
-                    && attr.Table.Schema.ToLower() == this.Table.Schema.ToLower()
-                    && attr.Table.Name.ToLower() == this.Table.Name.ToLower();
-            }
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return string.Join(",", new object[]{
-                this.Table != null ? this.Table.Schema : "_",
-                this.Table != null ? this.Table.Name : "_",
-                this.Name ?? "_",
-                this.Include,
-                this.SystemType != null ? this.SystemType.FullName : "_",
-                this.Size,
-                this.Precision,
-                this.IsOptional,
-                this.DefaultValue ?? "_",
-                this.IncludeInPrimaryKey,
-                this.IsIdentity}.Select(o => o.ToString())).GetHashCode();
-        }
-
         public override string ToString()
         {
             return string.Format("COLUMN [{0}].[{1}].[{2}] {3}",
