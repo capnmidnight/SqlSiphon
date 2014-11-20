@@ -294,9 +294,22 @@ namespace SqlSiphon.Postgres
                 this.MakeSqlTypeString(prop));
         }
 
-        protected override string MakeDropColumnScript(InformationSchema.Columns c)
+        public override string MakeDropColumnScript(MappedPropertyAttribute prop)
         {
-            throw new NotImplementedException();
+            return string.Format("alter table if exists {0} drop column if exists {1};",
+                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
+                this.MakeIdentifier(prop.Name));
+        }
+
+        public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
+        {
+            var temp = final.DefaultValue;
+            final.DefaultValue = null;
+            var col = string.Format("alter table if exists {0} alter column {1};",
+                this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name),
+                this.MakeColumnString(final));
+            final.DefaultValue = temp;
+            return col;
         }
 
         protected override string MakeParameterString(MappedParameterAttribute p)
@@ -398,17 +411,6 @@ $$ language 'sql'",
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
             return "drop table if exists " + identifier;
-        }
-
-        protected override string MakeAlterColumnScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
-        {
-            var temp = prop.DefaultValue;
-            prop.DefaultValue = null;
-            var col = string.Format("alter table {0} alter column {1};",
-                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
-                MakeColumnString(prop));
-            prop.DefaultValue = temp;
-            return col.Replace("NOT NULL", "SET NOT NULL");
         }
 
         protected override string MakeDefaultConstraintScript(InformationSchema.Columns c, MappedPropertyAttribute prop)

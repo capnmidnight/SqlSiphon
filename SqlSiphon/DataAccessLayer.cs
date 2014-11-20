@@ -861,28 +861,31 @@ AND COLUMN_NAME = @columnName;")]
         protected virtual string[] IndexScripts { get { return null; } }
         protected virtual string[] InitialScripts { get { return null; } }
 
-        public abstract string MakeCreateTableScript(MappedClassAttribute info);
-        public abstract string MakeDropTableScript(MappedClassAttribute table);
-        public abstract string MakeCreateColumnScript(MappedPropertyAttribute prop);
-        protected abstract string MakeDropProcedureScript(MappedMethodAttribute info);
-        protected abstract string MakeCreateProcedureScript(MappedMethodAttribute info);
-        protected abstract string MakeColumnString(MappedPropertyAttribute p);
-        protected abstract string MakeDropColumnScript(InformationSchema.Columns c);
-        protected abstract string MakeAlterColumnScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop);
-        protected abstract string MakeDefaultConstraintScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop);
-        protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
-        protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
-        protected abstract string MakeParameterString(MappedParameterAttribute p);
-        protected abstract bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property);
         public abstract string DefaultSchemaName { get; }
+        public abstract Type GetSystemType(string sqlType);
+        public abstract bool DescribesIdentity(ref string defaultValue);
+
         public abstract List<InformationSchema.Columns> GetColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
         public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
         public abstract List<InformationSchema.Routines> GetRoutines();
         public abstract List<InformationSchema.Parameters> GetParameters();
         public abstract List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints();
+
+        public abstract string MakeCreateTableScript(MappedClassAttribute table);
+        public abstract string MakeDropTableScript(MappedClassAttribute table);
+        public abstract string MakeCreateColumnScript(MappedPropertyAttribute column);
+        public abstract string MakeDropColumnScript(MappedPropertyAttribute column);
+        public abstract string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial);
+
+        protected abstract string MakeDropProcedureScript(MappedMethodAttribute info);
+        protected abstract string MakeCreateProcedureScript(MappedMethodAttribute info);
+        protected abstract string MakeColumnString(MappedPropertyAttribute p);
+        protected abstract string MakeDefaultConstraintScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop);
+        protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
+        protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
+        protected abstract string MakeParameterString(MappedParameterAttribute p);
+        protected abstract bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property);
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
-        public abstract Type GetSystemType(string sqlType);
-        public abstract bool DescribesIdentity(ref string defaultValue);
     }
 }

@@ -244,38 +244,26 @@ create table {2}(
         public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
         {
             return string.Format("alter table {0} add {1} {2};",
-                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name), 
-                prop.Name, 
+                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
+                this.MakeIdentifier(prop.Name),
                 prop.SqlType);
         }
 
-        protected override string MakeDropColumnScript(InformationSchema.Columns c)
+        public override string MakeDropColumnScript(MappedPropertyAttribute prop)
         {
-            var script = new StringBuilder();
-            var constraints = this.GetColumnConstraints(c.table_schema, c.table_name, c.column_name);
-            var tableName = this.MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name);
-            foreach (var constraint in constraints)
-            {
-                script.AppendFormat("if exists(select * from information_schema.referential_constraints where constraint_schema = '{0}' and constraint_name = '{1}') alter table {2} drop constraint {1};\n",
-                    constraint.constraint_schema,
-                    constraint.constraint_name,
-                    tableName,
-                    this.MakeIdentifier(constraint.constraint_name));
-            }
-            script.AppendFormat("alter table {0} drop column {1};",
-                tableName,
-                MakeIdentifier(c.column_name));
-            return script.ToString();
+            return string.Format("alter table {0} drop column {1};",
+                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
+                this.MakeIdentifier(prop.Name));
         }
-
-        protected override string MakeAlterColumnScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
+        
+        public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
         {
-            var temp = prop.DefaultValue;
-            prop.DefaultValue = null;
+            var temp = final.DefaultValue;
+            final.DefaultValue = null;
             var col = string.Format("alter table {0} alter column {1};",
-                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
-                MakeColumnString(prop));
-            prop.DefaultValue = temp;
+                this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name),
+                this.MakeColumnString(final));
+            final.DefaultValue = temp;
             return col;
         }
 
@@ -453,7 +441,7 @@ create table {2}(
         {
             throw new NotImplementedException();
         }
-        
+
         protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
         {
             var columnSection = string.Join(",", tableColumns.Select(c => c + " ASC"));
@@ -512,7 +500,8 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                 || column.data_type == "varchar")
             {
                 if (column.character_maximum_length != null
-                    && column.character_maximum_length != -1){
+                    && column.character_maximum_length != -1)
+                {
                     sizeSet = true;
                     size = column.character_maximum_length.Value;
                 }
@@ -525,11 +514,13 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                         && column.numeric_precision == 10)
                     && !(column.data_type == "real"
                         && column.numeric_precision == 24)
-                    && column.numeric_precision != 0){
-                        precisionSet = true;
+                    && column.numeric_precision != 0)
+                {
+                    precisionSet = true;
                 }
                 if (column.numeric_scale != null
-                        && column.numeric_scale != 0){
+                        && column.numeric_scale != 0)
+                {
                     sizeSet = true;
                     size = column.numeric_scale.Value;
                 }

@@ -37,5 +37,7 @@ namespace SqlSiphon
         string MakeCreateTableScript(Mapping.MappedClassAttribute table);
         string MakeDropTableScript(Mapping.MappedClassAttribute table);
         string MakeCreateColumnScript(Mapping.MappedPropertyAttribute column);
+        string MakeDropColumnScript(Mapping.MappedPropertyAttribute column);
+        string MakeAlterColumnScript(Mapping.MappedPropertyAttribute final, Mapping.MappedPropertyAttribute initial);
     }
 }

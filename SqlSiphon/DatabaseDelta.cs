@@ -87,7 +87,7 @@ namespace SqlSiphon
                             iColumns.Remove(columnName);
                             if (!fc.Equals(ic))
                             {
-                                this.AlteredColumnsScripts.Add(columnName, "-- alter column");
+                                this.AlteredColumnsScripts.Add(columnName, dal.MakeAlterColumnScript(fc, ic));
                                 altered = true;
                             }
                             else
@@ -102,7 +102,7 @@ namespace SqlSiphon
                         }
                         else
                         {
-                            this.DropColumnsScripts.Add(columnName, "-- drop column");
+                            this.DropColumnsScripts.Add(columnName, dal.MakeDropColumnScript(iColumns[columnName]));
                             altered = true;
                         }
                     }
