@@ -50,7 +50,7 @@ namespace InitDB
         private Dictionary<string, string> options;
         private BindingList<string> names;
         private ScriptView viewScript = new ScriptView();
-        
+
         public MainForm()
         {
             InitializeComponent();
@@ -66,7 +66,7 @@ namespace InitDB
             LoadSessions();
             LoadOptions();
         }
-       
+
         public ISqlSiphon MakeDatabaseConnection()
         {
             if (File.Exists(this.assemblyTB.Text))
@@ -312,16 +312,22 @@ namespace InitDB
             using (var proc = new Process())
             {
                 proc.StartInfo = procInfo;
-                proc.ErrorDataReceived += proc_ErrorDataReceived;
-                proc.ErrorDataReceived += new DataReceivedEventHandler(delegate(object sender, DataReceivedEventArgs e)
+                var err = new DataReceivedEventHandler(delegate(object sender, DataReceivedEventArgs e)
                 {
-                    succeeded = false;
+                    if (e.Data != null)
+                    {
+                        this.ToError(e.Data);
+                        succeeded = false;
+                    }
                 });
+                proc.ErrorDataReceived += err;
                 proc.OutputDataReceived += proc_OutputDataReceived;
                 proc.Start();
                 proc.BeginOutputReadLine();
                 proc.BeginErrorReadLine();
                 proc.WaitForExit();
+                proc.OutputDataReceived -= proc_OutputDataReceived;
+                proc.ErrorDataReceived -= err;
             }
             this.ToOutput(string.Format("finished {0}", shortName));
             this.ToOutput(HORIZONTAL_LINE);
@@ -331,11 +337,6 @@ namespace InitDB
         private void proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             this.ToOutput(e.Data);
-        }
-
-        private void proc_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            this.ToError(e.Data);
         }
 
         private bool RunQueryWithPSQL(string qry, string database, bool isFile)
@@ -486,11 +487,8 @@ namespace InitDB
 
                 if (chkCreateDatabase.Checked)
                 {
-                    succeeded = runQuery(string.Format("CREATE DATABASE {0};", dbName), null, false);
-                    if (succeeded && this.IsPostgres())
-                    {
-                        succeeded = runQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", dbName, false);
-                    }
+                    succeeded = runQuery(string.Format("CREATE DATABASE {0};", dbName), null, false)
+                        && (!this.IsPostgres() || runQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", dbName, false));
                 }
                 if (succeeded && chkCreateLogin.Checked)
                 {

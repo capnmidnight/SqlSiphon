@@ -388,7 +388,7 @@ create table {2}(
             }
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
         {
             if (sqlType == null && reverseTypeMapping.ContainsKey(systemType))
             {

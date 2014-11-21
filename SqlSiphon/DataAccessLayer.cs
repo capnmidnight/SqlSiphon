@@ -638,8 +638,10 @@ AND COLUMN_NAME = @columnName;")]
 
         protected virtual DatabaseState GetFinalState()
         {
-            var final = new DatabaseState(this.GetType().Assembly, this);
-            final.AddType(typeof(ScriptStatus), this);
+            var asm = this.GetType().Assembly;
+            var types = asm.GetTypes().ToList();
+            types.Insert(0, typeof(ScriptStatus));
+            var final = new DatabaseState(types, this);
             return final;
         }
 
@@ -726,6 +728,7 @@ AND COLUMN_NAME = @columnName;")]
         {
             if (p.Include)
             {
+                var isIdentity = p is MappedPropertyAttribute && ((MappedPropertyAttribute)p).IsIdentity;
                 var systemType = p.SystemType;
                 if (systemType != null && systemType.IsEnum)
                     systemType = typeof(int);
@@ -733,7 +736,8 @@ AND COLUMN_NAME = @columnName;")]
                     p.SqlType,
                     systemType,
                     p.IsSizeSet ? new Nullable<int>(p.Size) : null,
-                    p.IsPrecisionSet ? new Nullable<int>(p.Precision) : null);
+                    p.IsPrecisionSet ? new Nullable<int>(p.Precision) : null,
+                    isIdentity);
             }
             else
             {
@@ -769,7 +773,7 @@ AND COLUMN_NAME = @columnName;")]
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         public abstract bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial);
 
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
         protected abstract string MakeCreateIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
         protected abstract string MakeColumnString(MappedPropertyAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(MappedParameterAttribute p);

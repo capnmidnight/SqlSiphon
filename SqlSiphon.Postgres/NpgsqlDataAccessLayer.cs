@@ -208,7 +208,7 @@ namespace SqlSiphon.Postgres
             return state;
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
         {
             string typeName = null;
 
@@ -218,14 +218,21 @@ namespace SqlSiphon.Postgres
             }
             else if (systemType != null)
             {
-                typeName = MakeBasicSqlTypeString(systemType);
-                if (typeName == null)
+                if (systemType == typeof(int) && isIdentity)
                 {
-                    typeName = MakeComplexSqlTypeString(systemType);
-
-                    if (typeName == null && systemType.Name != "Void")
+                    typeName = "serial";
+                }
+                else
+                {
+                    typeName = MakeBasicSqlTypeString(systemType);
+                    if (typeName == null)
                     {
-                        throw new Exception(string.Format("Couldn't find type description for type: {0}", systemType != null ? systemType.FullName : "N/A"));
+                        typeName = MakeComplexSqlTypeString(systemType);
+
+                        if (typeName == null && systemType.Name != "Void")
+                        {
+                            throw new Exception(string.Format("Couldn't find type description for type: {0}", systemType != null ? systemType.FullName : "N/A"));
+                        }
                     }
                 }
             }
@@ -331,7 +338,7 @@ namespace SqlSiphon.Postgres
         public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
         {
             var preamble = string.Format(
-                "alter table if exists {0};",
+                "alter table if exists {0}",
                 this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name));
 
             if (final.Include != initial.Include)
@@ -384,7 +391,6 @@ namespace SqlSiphon.Postgres
         {
             var tests = new bool[]{
                 final.Include == initial.Include,
-                final.IncludeInPrimaryKey == initial.IncludeInPrimaryKey,
                 final.IsIdentity == initial.IsIdentity,
                 final.IsOptional == initial.IsOptional,
                 final.Name.ToLower() == initial.Name.ToLower(),

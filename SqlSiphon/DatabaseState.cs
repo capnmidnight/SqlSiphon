@@ -28,10 +28,9 @@ namespace SqlSiphon
         /// mappings to database objects.
         /// </summary>
         /// <param name="asm"></param>
-        public DatabaseState(Assembly asm, ISqlSiphon dal)
+        public DatabaseState(IEnumerable<Type> types, ISqlSiphon dal)
             : this()
         {
-            var types = asm.GetTypes();
             foreach (var type in types)
             {
                 AddType(type, dal);
