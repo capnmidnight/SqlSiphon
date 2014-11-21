@@ -186,6 +186,18 @@ namespace SqlSiphon.Postgres
             return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
         }
 
+        protected override DatabaseState GetFinalState()
+        {
+            var state = base.GetFinalState();
+            state.AddType(typeof(Memberships.aspnet_Applications), this);
+            state.AddType(typeof(Memberships.aspnet_Membership), this);
+            state.AddType(typeof(Memberships.aspnet_Roles), this);
+            state.AddType(typeof(Memberships.aspnet_SchemaVersions), this);
+            state.AddType(typeof(Memberships.aspnet_Users), this);
+            state.AddType(typeof(Memberships.aspnet_UsersInRoles), this);
+            return state;
+        }
+
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
         {
             string typeName = null;
@@ -231,13 +243,7 @@ namespace SqlSiphon.Postgres
                     throw new Exception("Type is too complex!");
                 t = subTypes.First();
             }
-
-            var temp = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
-            if (temp != null)
-            {
-                return MakeSqlTypeString(temp);
-            }
-            else if (reverseTypeMapping.ContainsKey(t))
+            if (reverseTypeMapping.ContainsKey(t))
             {
                 return reverseTypeMapping[t];
             }
@@ -380,67 +386,72 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        public override bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute intial)
+        public override bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
+        {
+            return this.MakeCreateRoutineScript(a) != this.MakeCreateRoutineScript(b);
+        }
+
+        public override bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial)
         {
             var tests = new bool[]{
-                final.Include == intial.Include,
-                final.IncludeInPrimaryKey == intial.IncludeInPrimaryKey,
-                final.IsIdentity == intial.IsIdentity,
-                final.IsOptional == intial.IsOptional,
-                final.Name.ToLower() == intial.Name.ToLower(),
-                final.SystemType == intial.SystemType,
+                final.Include == initial.Include,
+                final.IncludeInPrimaryKey == initial.IncludeInPrimaryKey,
+                final.IsIdentity == initial.IsIdentity,
+                final.IsOptional == initial.IsOptional,
+                final.Name.ToLower() == initial.Name.ToLower(),
+                final.SystemType == initial.SystemType,
                 final.Table != null,
-                intial.Table != null,
-                final.Table.Schema.ToLower() == intial.Table.Schema.ToLower(),
-                final.Table.Name.ToLower() == intial.Table.Name.ToLower()
+                initial.Table != null,
+                final.Table.Schema.ToLower() == initial.Table.Schema.ToLower(),
+                final.Table.Name.ToLower() == initial.Table.Name.ToLower()
             };
             var unchanged = tests.Aggregate((a, b) => a && b);
-            if (final.SystemType == intial.SystemType)
+            if (final.SystemType == initial.SystemType)
             {
                 if (final.DefaultValue != null
-                    && intial.DefaultValue != null
-                    && final.DefaultValue != intial.DefaultValue)
+                    && initial.DefaultValue != null
+                    && final.DefaultValue != initial.DefaultValue)
                 {
-                    bool valuesMatch;
+                    bool valuesMatch = true;
                     if (final.SystemType == typeof(bool))
                     {
                         var xb = final.DefaultValue.Replace("'", "").ToLower();
                         var xbb = xb == "true" || xb == "1";
-                        var yb = intial.DefaultValue.Replace("'", "").ToLower();
+                        var yb = initial.DefaultValue.Replace("'", "").ToLower();
                         var ybb = yb == "true" || yb == "1";
                         valuesMatch = xbb == ybb;
                     }
                     else if (final.SystemType == typeof(DateTime))
                     {
-                        valuesMatch = final.DefaultValue == "'9999/12/31 23:59:59.99999'" && intial.DefaultValue == "'9999-12-31'::date"
-                                || final.DefaultValue == "getdate()" && intial.DefaultValue == "('now'::text)::date";
+                        valuesMatch = final.DefaultValue == "'9999/12/31 23:59:59.99999'" && initial.DefaultValue == "'9999-12-31'::date"
+                                || final.DefaultValue == "getdate()" && initial.DefaultValue == "('now'::text)::date";
                     }
                     else if (final.SystemType == typeof(double))
                     {
-                        valuesMatch = final.DefaultValue == "(" + intial.DefaultValue + ")"
-                            || intial.DefaultValue == "(" + final.DefaultValue + ")";
+                        valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
+                            || initial.DefaultValue == "(" + final.DefaultValue + ")";
                     }
-                    else
+                    else if(final.DefaultValue != "newid()" || initial.DefaultValue != "uuid_generate_v4()")
                     {
                         valuesMatch = false;
                     }
 
                     if (valuesMatch)
                     {
-                        intial.DefaultValue = final.DefaultValue;
+                        initial.DefaultValue = final.DefaultValue;
                     }
                     unchanged = unchanged && valuesMatch;
                 }
 
-                if (final.Size != intial.Size)
+                if (final.Size != initial.Size)
                 {
-                    if (final.SystemType != typeof(double) || final.IsSizeSet || intial.Size != 53)
+                    if (final.SystemType != typeof(double) || final.IsSizeSet || initial.Size != 53)
                     {
                         unchanged = false;
                     }
                 }
 
-                if (final.Precision != intial.Precision)
+                if (final.Precision != initial.Precision)
                 {
                 }
             }
@@ -478,10 +489,14 @@ namespace SqlSiphon.Postgres
                 nullString = column.IsOptional ? "NULL" : "NOT NULL";
                 if (column.DefaultValue != null)
                 {
-                    var val = column.DefaultValue.ToString();
-                    if (val.ToLower() == "getdate()")
+                    var val = column.DefaultValue.ToString().ToLower();
+                    if (val == "getdate()")
                     {
                         val = "current_date";
+                    }
+                    else if (val == "newid()")
+                    {
+                        val = "uuid_generate_v4()";
                     }
                     defaultString = "DEFAULT " + val;
                 }
@@ -507,23 +522,36 @@ namespace SqlSiphon.Postgres
                 parameterSection);
         }
 
-        public override string MakeCreateRoutineScript(MappedMethodAttribute routine)
+        public override string MakeCreateRoutineScript(MappedMethodAttribute info)
+        {
+            return this.MakeRoutineScript(info);
+        }
+
+        public override string MakeAlterRoutineScript(MappedMethodAttribute info)
+        {
+            return this.MakeRoutineScript(info);
+        }
+
+        private string MakeRoutineScript(MappedMethodAttribute routine)
         {
             var query = routine.Query;
             var parameters = routine.Parameters
-                .OrderBy(p => p.Name.Length)
+                .Select((p, i) => new { i = i, name = p.Name })
+                .OrderBy(p => p.name.Length)
                 .Reverse();
             foreach (var param in parameters)
             {
-                query = query.Replace("@" + param.Name, param.Name);
+                query = query.Replace("@" + param.name, "$" + param.i.ToString());
             }
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine);
             return string.Format(
 @"create or replace function {0}({1})
     returns {2} as $$
+begin
 {3}
-$$ language 'sql'",
+end;
+$$ language plpgsql",
                 identifier,
                 parameterSection,
                 routine.SqlType,

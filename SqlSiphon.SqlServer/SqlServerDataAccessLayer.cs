@@ -144,6 +144,16 @@ namespace SqlSiphon.SqlServer
 
         public override string MakeCreateRoutineScript(MappedMethodAttribute info)
         {
+            return this.MakeRoutineScript(info, "create");
+        }
+
+        public override string MakeAlterRoutineScript(MappedMethodAttribute info)
+        {
+            return this.MakeRoutineScript(info, "alter");
+        }
+
+        private string MakeRoutineScript(MappedMethodAttribute info, string operation)
+        {
             var query = info.Query;
             if (info.EnableTransaction)
             {
@@ -163,12 +173,13 @@ end catch;", transactionName);
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
             return string.Format(
-@"create procedure {0}
-    {1}
+@"{0} procedure {1}
+    {2}
 as begin
     set nocount on;
-    {2}
+    {3}
 end",
+                operation,
                 identifier,
                 parameterSection,
                 query);
@@ -374,6 +385,12 @@ create table {2}(
             return string.Format(@"alter table {0} drop constraint {1}",
                     this.MakeIdentifier(relation.From.Schema, relation.From.Name),
                     this.MakeIdentifier(relation.Name));
+        }
+
+
+        public override bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
+        {
+            return this.MakeCreateRoutineScript(a) != this.MakeCreateRoutineScript(b);
         }
 
         public override bool ColumnChanged(MappedPropertyAttribute x, MappedPropertyAttribute y)

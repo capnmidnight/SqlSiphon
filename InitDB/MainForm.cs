@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace InitDB
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         private static string POSTGRES = "PostgreSQL";
         private static string SESSIONS_FILENAME = "sessions.dat";
@@ -27,7 +27,8 @@ namespace InitDB
         private Dictionary<string, Session> sessions;
         private Dictionary<string, string> options;
         private BindingList<string> names;
-        public Form1()
+        private ScriptView viewScript = new ScriptView();
+        public MainForm()
         {
             InitializeComponent();
             this.browseAssemblyBtn.Tag = this.assemblyTB;
@@ -386,7 +387,21 @@ namespace InitDB
 
             try
             {
-                bool succeeded = (!chkCreateDatabase.Checked || runQuery(string.Format("CREATE DATABASE {0};", databaseTB.Text), null, false));
+                bool succeeded = true;
+                var dbName = databaseTB.Text;
+                if (this.IsPostgres())
+                {
+                    dbName = dbName.ToLower();
+                }
+
+                if (chkCreateDatabase.Checked)
+                {
+                    succeeded = runQuery(string.Format("CREATE DATABASE {0};", dbName), null, false);
+                    if (succeeded && this.IsPostgres())
+                    {
+                        succeeded = runQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", dbName, false);
+                    }
+                }
                 if (succeeded && chkCreateLogin.Checked)
                 {
                     if (this.IsPostgres())
@@ -395,10 +410,10 @@ namespace InitDB
                     }
                     else
                     {
-                        succeeded = runQuery(string.Format("CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};", sqlUserTB.Text, sqlPassTB.Text, databaseTB.Text), null, false)
-                            && runQuery(string.Format("CREATE USER {0} FOR LOGIN {0};", sqlUserTB.Text), databaseTB.Text, false)
-                            && runQuery(string.Format("ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;", sqlUserTB.Text), databaseTB.Text, false)
-                            && runQuery(string.Format("ALTER ROLE db_owner ADD MEMBER {0};", sqlUserTB.Text), databaseTB.Text, false);
+                        succeeded = runQuery(string.Format("CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};", sqlUserTB.Text, sqlPassTB.Text, dbName), null, false)
+                            && runQuery(string.Format("CREATE USER {0} FOR LOGIN {0};", sqlUserTB.Text), dbName, false)
+                            && runQuery(string.Format("ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;", sqlUserTB.Text), dbName, false)
+                            && runQuery(string.Format("ALTER ROLE db_owner ADD MEMBER {0};", sqlUserTB.Text), dbName, false);
                     }
                 }
 
@@ -805,9 +820,7 @@ namespace InitDB
         private void scriptGV_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             var gv = sender as DataGridView;
-            if (gv != null
-                && 2 <= e.ColumnIndex
-                && e.ColumnIndex < 4)
+            if (gv != null)
             {
                 Task.Run(() =>
                 {
@@ -817,24 +830,31 @@ namespace InitDB
                         {
                             var script = (string)gv.Rows[e.RowIndex].Cells[1].Value;
                             gv.Enabled = false;
-                            gv.Rows[e.RowIndex].Frozen = true;
                             Application.DoEvents();
                             switch (e.ColumnIndex)
                             {
-                                case 2: RunScript(script); break;
-                                case 3: SkipScript(script); break;
+                                case 0:
+                                    gv.Rows[e.RowIndex].Cells[1].Value = viewScript.Prompt(script);
+                                    break;
+                                case 2:
+                                    RunScript(script);
+                                    gv.Rows.RemoveAt(e.RowIndex);
+                                    break;
+                                case 3:
+                                    SkipScript(script);
+                                    gv.Rows.RemoveAt(e.RowIndex);
+                                    break;
                             }
-                            gv.Rows[e.RowIndex].Frozen = false;
-                            gv.Rows.RemoveAt(e.RowIndex);
-                            gv.Enabled = true;
                             this.ToOutput("Success");
                         }
                         catch (Exception exp)
                         {
-                            gv.Rows[e.RowIndex].Frozen = false;
-                            gv.Enabled = true;
                             this.tabControl1.SelectedTab = this.tabStdErr;
                             this.ToError(string.Format("{0}: {1}", exp.GetType().Name, exp.Message));
+                        }
+                        finally
+                        {
+                            gv.Enabled = true;
                         }
                     });
                 });

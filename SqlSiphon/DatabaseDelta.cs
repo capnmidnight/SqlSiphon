@@ -35,7 +35,7 @@ namespace SqlSiphon
                 }
                 else
                 {
-                    remove(key, final[key]);
+                    remove(key, initial[key]);
                 }
             }
         }
@@ -96,8 +96,14 @@ namespace SqlSiphon
                 (routineName, finalRoutine) => this.CreateRoutinesScripts.Add(routineName, dal.MakeCreateRoutineScript(finalRoutine)),
                 (routineName, finalRoutine, initialRoutine) =>
                 {
-                    this.DropRoutinesScripts.Add(routineName, dal.MakeDropRoutineScript(initialRoutine));
-                    this.CreateRoutinesScripts.Add(routineName, dal.MakeCreateRoutineScript(finalRoutine));
+                    if (dal.RoutineChanged(finalRoutine, initialRoutine))
+                    {
+                        this.AlteredRoutinesScripts.Add(routineName, dal.MakeAlterRoutineScript(finalRoutine));
+                    }
+                    else
+                    {
+                        this.UnalteredRoutinesScripts.Add(routineName, "-- no changes");
+                    }
                 });
         }
 

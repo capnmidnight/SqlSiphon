@@ -760,6 +760,7 @@ AND COLUMN_NAME = @columnName;")]
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(ref string defaultValue);
         public abstract bool ColumnChanged(MappedPropertyAttribute a, MappedPropertyAttribute b);
+        public abstract bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b);
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
         protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
@@ -768,11 +769,15 @@ AND COLUMN_NAME = @columnName;")]
 
         public abstract string MakeCreateTableScript(MappedClassAttribute table);
         public abstract string MakeDropTableScript(MappedClassAttribute table);
+
         public abstract string MakeCreateColumnScript(MappedPropertyAttribute column);
         public abstract string MakeDropColumnScript(MappedPropertyAttribute column);
         public abstract string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial);
+
         public abstract string MakeDropRoutineScript(MappedMethodAttribute routine);
         public abstract string MakeCreateRoutineScript(MappedMethodAttribute routine);
+        public abstract string MakeAlterRoutineScript(MappedMethodAttribute routine);
+
         public abstract string MakeDropRelationshipScript(Relationship relation);
         public abstract string MakeCreateRelationshipScript(Relationship relation);
     }

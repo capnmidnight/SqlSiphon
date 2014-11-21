@@ -31,7 +31,7 @@ namespace InitDB
 
 
         public Session()
-            : this(InitDB.Form1.DEFAULT_SESSION_NAME, "", "localhost\\SQLEXPRESS", "", "", "", "", "", "", false, false, false, false, false, true, false, false)
+            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "", "localhost\\SQLEXPRESS", "", "", "", "", "", "", false, false, false, false, false, true, false, false)
         {
         }
 

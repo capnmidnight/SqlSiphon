@@ -1,6 +1,6 @@
 ﻿namespace InitDB
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,6 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.dbTypeList = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
@@ -40,71 +53,79 @@
             this.tabControl2 = new System.Windows.Forms.TabControl();
             this.tabTableCreate = new System.Windows.Forms.TabPage();
             this.createTablesGV = new System.Windows.Forms.DataGridView();
-            this.createsGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.createsGVName = new System.Windows.Forms.DataGridViewButtonColumn();
             this.createsGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.createsGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabTableDrop = new System.Windows.Forms.TabPage();
             this.dropTablesGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewButtonColumn1 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabTableUnaltered = new System.Windows.Forms.TabPage();
             this.unalteredTablesGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabColumns = new System.Windows.Forms.TabPage();
             this.columnsTabs = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.createColumnsGV = new System.Windows.Forms.DataGridView();
-            this.dropsGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dropsGVName = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dropsGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dropsGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.dropColumnsGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dataGridViewTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewButtonColumn4 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.alteredColumnsGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewButtonColumn3 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.unalteredColumnsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabRelationships = new System.Windows.Forms.TabPage();
             this.tabControl3 = new System.Windows.Forms.TabControl();
             this.tabPage5 = new System.Windows.Forms.TabPage();
             this.createRelationshipsGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewButtonColumn6 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.dropRelationshipsGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dataGridViewTextBoxColumn14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewButtonColumn7 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.unalteredRelationshipsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewTextBoxColumn16 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabRoutines = new System.Windows.Forms.TabPage();
             this.tabControl5 = new System.Windows.Forms.TabControl();
             this.tabPage8 = new System.Windows.Forms.TabPage();
             this.createRoutinesGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn17 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn17 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dataGridViewTextBoxColumn18 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewButtonColumn9 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage9 = new System.Windows.Forms.TabPage();
             this.dropRoutinesGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn19 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn19 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dataGridViewTextBoxColumn20 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewButtonColumn10 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage10 = new System.Windows.Forms.TabPage();
             this.alteredRoutinesGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn21 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn21 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.dataGridViewTextBoxColumn22 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewButtonColumn11 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage11 = new System.Windows.Forms.TabPage();
             this.unalteredRoutinesGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn23 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewTextBoxColumn24 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabOther = new System.Windows.Forms.TabPage();
             this.othersGV = new System.Windows.Forms.DataGridView();
-            this.othersGVName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.othersGVName = new System.Windows.Forms.DataGridViewButtonColumn();
             this.othersGVScript = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.othersGVRunButton = new System.Windows.Forms.DataGridViewButtonColumn();
             this.othersGVSkipButton = new System.Windows.Forms.DataGridViewButtonColumn();
@@ -151,14 +172,6 @@
             this.chkCreateIndices = new System.Windows.Forms.CheckBox();
             this.analyzeButton = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn16 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn23 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn24 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabStdOut.SuspendLayout();
@@ -398,6 +411,7 @@
             // createTablesGV
             // 
             this.createTablesGV.AllowUserToAddRows = false;
+            this.createTablesGV.AllowUserToDeleteRows = false;
             this.createTablesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.createTablesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.createsGVName,
@@ -406,6 +420,7 @@
             this.createTablesGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.createTablesGV.Location = new System.Drawing.Point(3, 3);
             this.createTablesGV.Name = "createTablesGV";
+            this.createTablesGV.ReadOnly = true;
             this.createTablesGV.Size = new System.Drawing.Size(890, 430);
             this.createTablesGV.TabIndex = 3;
             this.createTablesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -413,8 +428,14 @@
             // createsGVName
             // 
             this.createsGVName.DataPropertyName = "Key";
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.createsGVName.DefaultCellStyle = dataGridViewCellStyle1;
             this.createsGVName.HeaderText = "name";
             this.createsGVName.Name = "createsGVName";
+            this.createsGVName.ReadOnly = true;
+            this.createsGVName.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.createsGVName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.createsGVName.Width = 200;
             // 
             // createsGVScript
             // 
@@ -422,11 +443,13 @@
             this.createsGVScript.DataPropertyName = "Value";
             this.createsGVScript.HeaderText = "script";
             this.createsGVScript.Name = "createsGVScript";
+            this.createsGVScript.ReadOnly = true;
             // 
             // createsGVRunButton
             // 
             this.createsGVRunButton.HeaderText = "";
             this.createsGVRunButton.Name = "createsGVRunButton";
+            this.createsGVRunButton.ReadOnly = true;
             this.createsGVRunButton.Text = "run";
             this.createsGVRunButton.UseColumnTextForButtonValue = true;
             // 
@@ -444,6 +467,7 @@
             // dropTablesGV
             // 
             this.dropTablesGV.AllowUserToAddRows = false;
+            this.dropTablesGV.AllowUserToDeleteRows = false;
             this.dropTablesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dropTablesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn1,
@@ -452,6 +476,7 @@
             this.dropTablesGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dropTablesGV.Location = new System.Drawing.Point(3, 3);
             this.dropTablesGV.Name = "dropTablesGV";
+            this.dropTablesGV.ReadOnly = true;
             this.dropTablesGV.Size = new System.Drawing.Size(890, 430);
             this.dropTablesGV.TabIndex = 4;
             this.dropTablesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -459,8 +484,14 @@
             // dataGridViewTextBoxColumn1
             // 
             this.dataGridViewTextBoxColumn1.DataPropertyName = "Key";
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewTextBoxColumn1.HeaderText = "name";
             this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn1.Width = 200;
             // 
             // dataGridViewTextBoxColumn2
             // 
@@ -468,11 +499,13 @@
             this.dataGridViewTextBoxColumn2.DataPropertyName = "Value";
             this.dataGridViewTextBoxColumn2.HeaderText = "script";
             this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            this.dataGridViewTextBoxColumn2.ReadOnly = true;
             // 
             // dataGridViewButtonColumn1
             // 
             this.dataGridViewButtonColumn1.HeaderText = "";
             this.dataGridViewButtonColumn1.Name = "dataGridViewButtonColumn1";
+            this.dataGridViewButtonColumn1.ReadOnly = true;
             this.dataGridViewButtonColumn1.Text = "run";
             this.dataGridViewButtonColumn1.UseColumnTextForButtonValue = true;
             // 
@@ -489,6 +522,7 @@
             // unalteredTablesGV
             // 
             this.unalteredTablesGV.AllowUserToAddRows = false;
+            this.unalteredTablesGV.AllowUserToDeleteRows = false;
             this.unalteredTablesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.unalteredTablesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn3,
@@ -496,8 +530,25 @@
             this.unalteredTablesGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.unalteredTablesGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredTablesGV.Name = "unalteredTablesGV";
+            this.unalteredTablesGV.ReadOnly = true;
             this.unalteredTablesGV.Size = new System.Drawing.Size(896, 436);
             this.unalteredTablesGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            this.dataGridViewTextBoxColumn3.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn3.HeaderText = "name";
+            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            this.dataGridViewTextBoxColumn3.ReadOnly = true;
+            this.dataGridViewTextBoxColumn3.Width = 200;
+            // 
+            // dataGridViewTextBoxColumn4
+            // 
+            this.dataGridViewTextBoxColumn4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn4.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn4.HeaderText = "script";
+            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+            this.dataGridViewTextBoxColumn4.ReadOnly = true;
             // 
             // tabColumns
             // 
@@ -536,6 +587,7 @@
             // createColumnsGV
             // 
             this.createColumnsGV.AllowUserToAddRows = false;
+            this.createColumnsGV.AllowUserToDeleteRows = false;
             this.createColumnsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.createColumnsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dropsGVName,
@@ -544,6 +596,7 @@
             this.createColumnsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.createColumnsGV.Location = new System.Drawing.Point(3, 3);
             this.createColumnsGV.Name = "createColumnsGV";
+            this.createColumnsGV.ReadOnly = true;
             this.createColumnsGV.Size = new System.Drawing.Size(890, 430);
             this.createColumnsGV.TabIndex = 2;
             this.createColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -551,8 +604,14 @@
             // dropsGVName
             // 
             this.dropsGVName.DataPropertyName = "Key";
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dropsGVName.DefaultCellStyle = dataGridViewCellStyle3;
             this.dropsGVName.HeaderText = "name";
             this.dropsGVName.Name = "dropsGVName";
+            this.dropsGVName.ReadOnly = true;
+            this.dropsGVName.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dropsGVName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dropsGVName.Width = 200;
             // 
             // dropsGVScript
             // 
@@ -560,11 +619,13 @@
             this.dropsGVScript.DataPropertyName = "Value";
             this.dropsGVScript.HeaderText = "script";
             this.dropsGVScript.Name = "dropsGVScript";
+            this.dropsGVScript.ReadOnly = true;
             // 
             // dropsGVRunButton
             // 
             this.dropsGVRunButton.HeaderText = "";
             this.dropsGVRunButton.Name = "dropsGVRunButton";
+            this.dropsGVRunButton.ReadOnly = true;
             this.dropsGVRunButton.Text = "run";
             this.dropsGVRunButton.UseColumnTextForButtonValue = true;
             // 
@@ -582,6 +643,7 @@
             // dropColumnsGV
             // 
             this.dropColumnsGV.AllowUserToAddRows = false;
+            this.dropColumnsGV.AllowUserToDeleteRows = false;
             this.dropColumnsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dropColumnsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn7,
@@ -590,6 +652,7 @@
             this.dropColumnsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dropColumnsGV.Location = new System.Drawing.Point(3, 3);
             this.dropColumnsGV.Name = "dropColumnsGV";
+            this.dropColumnsGV.ReadOnly = true;
             this.dropColumnsGV.Size = new System.Drawing.Size(890, 430);
             this.dropColumnsGV.TabIndex = 4;
             this.dropColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -597,8 +660,14 @@
             // dataGridViewTextBoxColumn7
             // 
             this.dataGridViewTextBoxColumn7.DataPropertyName = "Key";
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn7.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewTextBoxColumn7.HeaderText = "name";
             this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
+            this.dataGridViewTextBoxColumn7.ReadOnly = true;
+            this.dataGridViewTextBoxColumn7.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn7.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn7.Width = 200;
             // 
             // dataGridViewTextBoxColumn8
             // 
@@ -606,11 +675,13 @@
             this.dataGridViewTextBoxColumn8.DataPropertyName = "Value";
             this.dataGridViewTextBoxColumn8.HeaderText = "script";
             this.dataGridViewTextBoxColumn8.Name = "dataGridViewTextBoxColumn8";
+            this.dataGridViewTextBoxColumn8.ReadOnly = true;
             // 
             // dataGridViewButtonColumn4
             // 
             this.dataGridViewButtonColumn4.HeaderText = "";
             this.dataGridViewButtonColumn4.Name = "dataGridViewButtonColumn4";
+            this.dataGridViewButtonColumn4.ReadOnly = true;
             this.dataGridViewButtonColumn4.Text = "run";
             this.dataGridViewButtonColumn4.UseColumnTextForButtonValue = true;
             // 
@@ -627,6 +698,7 @@
             // alteredColumnsGV
             // 
             this.alteredColumnsGV.AllowUserToAddRows = false;
+            this.alteredColumnsGV.AllowUserToDeleteRows = false;
             this.alteredColumnsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.alteredColumnsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn5,
@@ -635,6 +707,7 @@
             this.alteredColumnsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.alteredColumnsGV.Location = new System.Drawing.Point(0, 0);
             this.alteredColumnsGV.Name = "alteredColumnsGV";
+            this.alteredColumnsGV.ReadOnly = true;
             this.alteredColumnsGV.Size = new System.Drawing.Size(896, 436);
             this.alteredColumnsGV.TabIndex = 5;
             this.alteredColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -642,8 +715,14 @@
             // dataGridViewTextBoxColumn5
             // 
             this.dataGridViewTextBoxColumn5.DataPropertyName = "Key";
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridViewTextBoxColumn5.HeaderText = "name";
             this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+            this.dataGridViewTextBoxColumn5.ReadOnly = true;
+            this.dataGridViewTextBoxColumn5.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn5.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn5.Width = 200;
             // 
             // dataGridViewTextBoxColumn6
             // 
@@ -651,11 +730,13 @@
             this.dataGridViewTextBoxColumn6.DataPropertyName = "Value";
             this.dataGridViewTextBoxColumn6.HeaderText = "script";
             this.dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+            this.dataGridViewTextBoxColumn6.ReadOnly = true;
             // 
             // dataGridViewButtonColumn3
             // 
             this.dataGridViewButtonColumn3.HeaderText = "";
             this.dataGridViewButtonColumn3.Name = "dataGridViewButtonColumn3";
+            this.dataGridViewButtonColumn3.ReadOnly = true;
             this.dataGridViewButtonColumn3.Text = "run";
             this.dataGridViewButtonColumn3.UseColumnTextForButtonValue = true;
             // 
@@ -672,6 +753,7 @@
             // unalteredColumnsGV
             // 
             this.unalteredColumnsGV.AllowUserToAddRows = false;
+            this.unalteredColumnsGV.AllowUserToDeleteRows = false;
             this.unalteredColumnsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.unalteredColumnsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn9,
@@ -679,8 +761,25 @@
             this.unalteredColumnsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.unalteredColumnsGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredColumnsGV.Name = "unalteredColumnsGV";
+            this.unalteredColumnsGV.ReadOnly = true;
             this.unalteredColumnsGV.Size = new System.Drawing.Size(896, 436);
             this.unalteredColumnsGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn9
+            // 
+            this.dataGridViewTextBoxColumn9.DataPropertyName = "Key";
+            this.dataGridViewTextBoxColumn9.HeaderText = "name";
+            this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
+            this.dataGridViewTextBoxColumn9.ReadOnly = true;
+            this.dataGridViewTextBoxColumn9.Width = 200;
+            // 
+            // dataGridViewTextBoxColumn10
+            // 
+            this.dataGridViewTextBoxColumn10.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn10.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn10.HeaderText = "script";
+            this.dataGridViewTextBoxColumn10.Name = "dataGridViewTextBoxColumn10";
+            this.dataGridViewTextBoxColumn10.ReadOnly = true;
             // 
             // tabRelationships
             // 
@@ -718,6 +817,7 @@
             // createRelationshipsGV
             // 
             this.createRelationshipsGV.AllowUserToAddRows = false;
+            this.createRelationshipsGV.AllowUserToDeleteRows = false;
             this.createRelationshipsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.createRelationshipsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn11,
@@ -726,6 +826,7 @@
             this.createRelationshipsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.createRelationshipsGV.Location = new System.Drawing.Point(3, 3);
             this.createRelationshipsGV.Name = "createRelationshipsGV";
+            this.createRelationshipsGV.ReadOnly = true;
             this.createRelationshipsGV.Size = new System.Drawing.Size(890, 430);
             this.createRelationshipsGV.TabIndex = 3;
             this.createRelationshipsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -733,8 +834,14 @@
             // dataGridViewTextBoxColumn11
             // 
             this.dataGridViewTextBoxColumn11.DataPropertyName = "Key";
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn11.DefaultCellStyle = dataGridViewCellStyle6;
             this.dataGridViewTextBoxColumn11.HeaderText = "name";
             this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
+            this.dataGridViewTextBoxColumn11.ReadOnly = true;
+            this.dataGridViewTextBoxColumn11.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn11.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn11.Width = 200;
             // 
             // dataGridViewTextBoxColumn12
             // 
@@ -742,11 +849,13 @@
             this.dataGridViewTextBoxColumn12.DataPropertyName = "Value";
             this.dataGridViewTextBoxColumn12.HeaderText = "script";
             this.dataGridViewTextBoxColumn12.Name = "dataGridViewTextBoxColumn12";
+            this.dataGridViewTextBoxColumn12.ReadOnly = true;
             // 
             // dataGridViewButtonColumn6
             // 
             this.dataGridViewButtonColumn6.HeaderText = "";
             this.dataGridViewButtonColumn6.Name = "dataGridViewButtonColumn6";
+            this.dataGridViewButtonColumn6.ReadOnly = true;
             this.dataGridViewButtonColumn6.Text = "run";
             this.dataGridViewButtonColumn6.UseColumnTextForButtonValue = true;
             // 
@@ -764,6 +873,7 @@
             // dropRelationshipsGV
             // 
             this.dropRelationshipsGV.AllowUserToAddRows = false;
+            this.dropRelationshipsGV.AllowUserToDeleteRows = false;
             this.dropRelationshipsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dropRelationshipsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn13,
@@ -772,6 +882,7 @@
             this.dropRelationshipsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dropRelationshipsGV.Location = new System.Drawing.Point(3, 3);
             this.dropRelationshipsGV.Name = "dropRelationshipsGV";
+            this.dropRelationshipsGV.ReadOnly = true;
             this.dropRelationshipsGV.Size = new System.Drawing.Size(890, 430);
             this.dropRelationshipsGV.TabIndex = 4;
             this.dropRelationshipsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -779,8 +890,14 @@
             // dataGridViewTextBoxColumn13
             // 
             this.dataGridViewTextBoxColumn13.DataPropertyName = "Key";
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn13.DefaultCellStyle = dataGridViewCellStyle7;
             this.dataGridViewTextBoxColumn13.HeaderText = "name";
             this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
+            this.dataGridViewTextBoxColumn13.ReadOnly = true;
+            this.dataGridViewTextBoxColumn13.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn13.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn13.Width = 200;
             // 
             // dataGridViewTextBoxColumn14
             // 
@@ -788,11 +905,13 @@
             this.dataGridViewTextBoxColumn14.DataPropertyName = "Value";
             this.dataGridViewTextBoxColumn14.HeaderText = "script";
             this.dataGridViewTextBoxColumn14.Name = "dataGridViewTextBoxColumn14";
+            this.dataGridViewTextBoxColumn14.ReadOnly = true;
             // 
             // dataGridViewButtonColumn7
             // 
             this.dataGridViewButtonColumn7.HeaderText = "";
             this.dataGridViewButtonColumn7.Name = "dataGridViewButtonColumn7";
+            this.dataGridViewButtonColumn7.ReadOnly = true;
             this.dataGridViewButtonColumn7.Text = "run";
             this.dataGridViewButtonColumn7.UseColumnTextForButtonValue = true;
             // 
@@ -809,6 +928,7 @@
             // unalteredRelationshipsGV
             // 
             this.unalteredRelationshipsGV.AllowUserToAddRows = false;
+            this.unalteredRelationshipsGV.AllowUserToDeleteRows = false;
             this.unalteredRelationshipsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.unalteredRelationshipsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn15,
@@ -816,8 +936,29 @@
             this.unalteredRelationshipsGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.unalteredRelationshipsGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredRelationshipsGV.Name = "unalteredRelationshipsGV";
+            this.unalteredRelationshipsGV.ReadOnly = true;
             this.unalteredRelationshipsGV.Size = new System.Drawing.Size(896, 436);
             this.unalteredRelationshipsGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn15
+            // 
+            this.dataGridViewTextBoxColumn15.DataPropertyName = "Key";
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn15.DefaultCellStyle = dataGridViewCellStyle8;
+            this.dataGridViewTextBoxColumn15.HeaderText = "name";
+            this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
+            this.dataGridViewTextBoxColumn15.ReadOnly = true;
+            this.dataGridViewTextBoxColumn15.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn15.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn15.Width = 200;
+            // 
+            // dataGridViewTextBoxColumn16
+            // 
+            this.dataGridViewTextBoxColumn16.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn16.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn16.HeaderText = "script";
+            this.dataGridViewTextBoxColumn16.Name = "dataGridViewTextBoxColumn16";
+            this.dataGridViewTextBoxColumn16.ReadOnly = true;
             // 
             // tabRoutines
             // 
@@ -856,6 +997,7 @@
             // createRoutinesGV
             // 
             this.createRoutinesGV.AllowUserToAddRows = false;
+            this.createRoutinesGV.AllowUserToDeleteRows = false;
             this.createRoutinesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.createRoutinesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn17,
@@ -864,6 +1006,7 @@
             this.createRoutinesGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.createRoutinesGV.Location = new System.Drawing.Point(3, 3);
             this.createRoutinesGV.Name = "createRoutinesGV";
+            this.createRoutinesGV.ReadOnly = true;
             this.createRoutinesGV.Size = new System.Drawing.Size(890, 430);
             this.createRoutinesGV.TabIndex = 2;
             this.createRoutinesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -871,8 +1014,14 @@
             // dataGridViewTextBoxColumn17
             // 
             this.dataGridViewTextBoxColumn17.DataPropertyName = "Key";
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn17.DefaultCellStyle = dataGridViewCellStyle9;
             this.dataGridViewTextBoxColumn17.HeaderText = "name";
             this.dataGridViewTextBoxColumn17.Name = "dataGridViewTextBoxColumn17";
+            this.dataGridViewTextBoxColumn17.ReadOnly = true;
+            this.dataGridViewTextBoxColumn17.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn17.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn17.Width = 200;
             // 
             // dataGridViewTextBoxColumn18
             // 
@@ -880,11 +1029,13 @@
             this.dataGridViewTextBoxColumn18.DataPropertyName = "Value";
             this.dataGridViewTextBoxColumn18.HeaderText = "script";
             this.dataGridViewTextBoxColumn18.Name = "dataGridViewTextBoxColumn18";
+            this.dataGridViewTextBoxColumn18.ReadOnly = true;
             // 
             // dataGridViewButtonColumn9
             // 
             this.dataGridViewButtonColumn9.HeaderText = "";
             this.dataGridViewButtonColumn9.Name = "dataGridViewButtonColumn9";
+            this.dataGridViewButtonColumn9.ReadOnly = true;
             this.dataGridViewButtonColumn9.Text = "run";
             this.dataGridViewButtonColumn9.UseColumnTextForButtonValue = true;
             // 
@@ -902,6 +1053,7 @@
             // dropRoutinesGV
             // 
             this.dropRoutinesGV.AllowUserToAddRows = false;
+            this.dropRoutinesGV.AllowUserToDeleteRows = false;
             this.dropRoutinesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dropRoutinesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn19,
@@ -910,6 +1062,7 @@
             this.dropRoutinesGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dropRoutinesGV.Location = new System.Drawing.Point(3, 3);
             this.dropRoutinesGV.Name = "dropRoutinesGV";
+            this.dropRoutinesGV.ReadOnly = true;
             this.dropRoutinesGV.Size = new System.Drawing.Size(890, 430);
             this.dropRoutinesGV.TabIndex = 4;
             this.dropRoutinesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -917,8 +1070,14 @@
             // dataGridViewTextBoxColumn19
             // 
             this.dataGridViewTextBoxColumn19.DataPropertyName = "Key";
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn19.DefaultCellStyle = dataGridViewCellStyle10;
             this.dataGridViewTextBoxColumn19.HeaderText = "name";
             this.dataGridViewTextBoxColumn19.Name = "dataGridViewTextBoxColumn19";
+            this.dataGridViewTextBoxColumn19.ReadOnly = true;
+            this.dataGridViewTextBoxColumn19.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn19.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn19.Width = 200;
             // 
             // dataGridViewTextBoxColumn20
             // 
@@ -926,11 +1085,13 @@
             this.dataGridViewTextBoxColumn20.DataPropertyName = "Value";
             this.dataGridViewTextBoxColumn20.HeaderText = "script";
             this.dataGridViewTextBoxColumn20.Name = "dataGridViewTextBoxColumn20";
+            this.dataGridViewTextBoxColumn20.ReadOnly = true;
             // 
             // dataGridViewButtonColumn10
             // 
             this.dataGridViewButtonColumn10.HeaderText = "";
             this.dataGridViewButtonColumn10.Name = "dataGridViewButtonColumn10";
+            this.dataGridViewButtonColumn10.ReadOnly = true;
             this.dataGridViewButtonColumn10.Text = "run";
             this.dataGridViewButtonColumn10.UseColumnTextForButtonValue = true;
             // 
@@ -947,6 +1108,7 @@
             // alteredRoutinesGV
             // 
             this.alteredRoutinesGV.AllowUserToAddRows = false;
+            this.alteredRoutinesGV.AllowUserToDeleteRows = false;
             this.alteredRoutinesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.alteredRoutinesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn21,
@@ -955,6 +1117,7 @@
             this.alteredRoutinesGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.alteredRoutinesGV.Location = new System.Drawing.Point(0, 0);
             this.alteredRoutinesGV.Name = "alteredRoutinesGV";
+            this.alteredRoutinesGV.ReadOnly = true;
             this.alteredRoutinesGV.Size = new System.Drawing.Size(896, 436);
             this.alteredRoutinesGV.TabIndex = 5;
             this.alteredRoutinesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -962,8 +1125,14 @@
             // dataGridViewTextBoxColumn21
             // 
             this.dataGridViewTextBoxColumn21.DataPropertyName = "Key";
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn21.DefaultCellStyle = dataGridViewCellStyle11;
             this.dataGridViewTextBoxColumn21.HeaderText = "name";
             this.dataGridViewTextBoxColumn21.Name = "dataGridViewTextBoxColumn21";
+            this.dataGridViewTextBoxColumn21.ReadOnly = true;
+            this.dataGridViewTextBoxColumn21.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn21.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn21.Width = 200;
             // 
             // dataGridViewTextBoxColumn22
             // 
@@ -971,11 +1140,13 @@
             this.dataGridViewTextBoxColumn22.DataPropertyName = "Value";
             this.dataGridViewTextBoxColumn22.HeaderText = "script";
             this.dataGridViewTextBoxColumn22.Name = "dataGridViewTextBoxColumn22";
+            this.dataGridViewTextBoxColumn22.ReadOnly = true;
             // 
             // dataGridViewButtonColumn11
             // 
             this.dataGridViewButtonColumn11.HeaderText = "";
             this.dataGridViewButtonColumn11.Name = "dataGridViewButtonColumn11";
+            this.dataGridViewButtonColumn11.ReadOnly = true;
             this.dataGridViewButtonColumn11.Text = "run";
             this.dataGridViewButtonColumn11.UseColumnTextForButtonValue = true;
             // 
@@ -992,6 +1163,7 @@
             // unalteredRoutinesGV
             // 
             this.unalteredRoutinesGV.AllowUserToAddRows = false;
+            this.unalteredRoutinesGV.AllowUserToDeleteRows = false;
             this.unalteredRoutinesGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.unalteredRoutinesGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn23,
@@ -999,8 +1171,29 @@
             this.unalteredRoutinesGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.unalteredRoutinesGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredRoutinesGV.Name = "unalteredRoutinesGV";
+            this.unalteredRoutinesGV.ReadOnly = true;
             this.unalteredRoutinesGV.Size = new System.Drawing.Size(896, 436);
             this.unalteredRoutinesGV.TabIndex = 4;
+            // 
+            // dataGridViewTextBoxColumn23
+            // 
+            this.dataGridViewTextBoxColumn23.DataPropertyName = "Key";
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn23.DefaultCellStyle = dataGridViewCellStyle12;
+            this.dataGridViewTextBoxColumn23.HeaderText = "name";
+            this.dataGridViewTextBoxColumn23.Name = "dataGridViewTextBoxColumn23";
+            this.dataGridViewTextBoxColumn23.ReadOnly = true;
+            this.dataGridViewTextBoxColumn23.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewTextBoxColumn23.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewTextBoxColumn23.Width = 200;
+            // 
+            // dataGridViewTextBoxColumn24
+            // 
+            this.dataGridViewTextBoxColumn24.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn24.DataPropertyName = "Value";
+            this.dataGridViewTextBoxColumn24.HeaderText = "script";
+            this.dataGridViewTextBoxColumn24.Name = "dataGridViewTextBoxColumn24";
+            this.dataGridViewTextBoxColumn24.ReadOnly = true;
             // 
             // tabOther
             // 
@@ -1015,6 +1208,7 @@
             // othersGV
             // 
             this.othersGV.AllowUserToAddRows = false;
+            this.othersGV.AllowUserToDeleteRows = false;
             this.othersGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.othersGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.othersGVName,
@@ -1024,6 +1218,7 @@
             this.othersGV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.othersGV.Location = new System.Drawing.Point(0, 0);
             this.othersGV.Name = "othersGV";
+            this.othersGV.ReadOnly = true;
             this.othersGV.Size = new System.Drawing.Size(904, 462);
             this.othersGV.TabIndex = 6;
             this.othersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -1031,8 +1226,14 @@
             // othersGVName
             // 
             this.othersGVName.DataPropertyName = "Key";
+            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.othersGVName.DefaultCellStyle = dataGridViewCellStyle13;
             this.othersGVName.HeaderText = "name";
             this.othersGVName.Name = "othersGVName";
+            this.othersGVName.ReadOnly = true;
+            this.othersGVName.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.othersGVName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.othersGVName.Width = 200;
             // 
             // othersGVScript
             // 
@@ -1040,11 +1241,13 @@
             this.othersGVScript.DataPropertyName = "Value";
             this.othersGVScript.HeaderText = "script";
             this.othersGVScript.Name = "othersGVScript";
+            this.othersGVScript.ReadOnly = true;
             // 
             // othersGVRunButton
             // 
             this.othersGVRunButton.HeaderText = "";
             this.othersGVRunButton.Name = "othersGVRunButton";
+            this.othersGVRunButton.ReadOnly = true;
             this.othersGVRunButton.Text = "run";
             this.othersGVRunButton.ToolTipText = "run the command against the database";
             this.othersGVRunButton.UseColumnTextForButtonValue = true;
@@ -1053,6 +1256,7 @@
             // 
             this.othersGVSkipButton.HeaderText = "";
             this.othersGVSkipButton.Name = "othersGVSkipButton";
+            this.othersGVSkipButton.ReadOnly = true;
             this.othersGVSkipButton.Text = "skip";
             this.othersGVSkipButton.ToolTipText = "do not run the command, hide it from future use with this database";
             this.othersGVSkipButton.UseColumnTextForButtonValue = true;
@@ -1524,65 +1728,13 @@
             this.openFileDialog1.FileName = "openFileDialog1";
             this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
             // 
-            // dataGridViewTextBoxColumn3
-            // 
-            this.dataGridViewTextBoxColumn3.DataPropertyName = "Key";
-            this.dataGridViewTextBoxColumn3.HeaderText = "name";
-            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
-            // 
-            // dataGridViewTextBoxColumn4
-            // 
-            this.dataGridViewTextBoxColumn4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dataGridViewTextBoxColumn4.DataPropertyName = "Value";
-            this.dataGridViewTextBoxColumn4.HeaderText = "script";
-            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
-            // 
-            // dataGridViewTextBoxColumn9
-            // 
-            this.dataGridViewTextBoxColumn9.DataPropertyName = "Key";
-            this.dataGridViewTextBoxColumn9.HeaderText = "name";
-            this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
-            // 
-            // dataGridViewTextBoxColumn10
-            // 
-            this.dataGridViewTextBoxColumn10.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dataGridViewTextBoxColumn10.DataPropertyName = "Value";
-            this.dataGridViewTextBoxColumn10.HeaderText = "script";
-            this.dataGridViewTextBoxColumn10.Name = "dataGridViewTextBoxColumn10";
-            // 
-            // dataGridViewTextBoxColumn15
-            // 
-            this.dataGridViewTextBoxColumn15.DataPropertyName = "Key";
-            this.dataGridViewTextBoxColumn15.HeaderText = "name";
-            this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
-            // 
-            // dataGridViewTextBoxColumn16
-            // 
-            this.dataGridViewTextBoxColumn16.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dataGridViewTextBoxColumn16.DataPropertyName = "Value";
-            this.dataGridViewTextBoxColumn16.HeaderText = "script";
-            this.dataGridViewTextBoxColumn16.Name = "dataGridViewTextBoxColumn16";
-            // 
-            // dataGridViewTextBoxColumn23
-            // 
-            this.dataGridViewTextBoxColumn23.DataPropertyName = "Key";
-            this.dataGridViewTextBoxColumn23.HeaderText = "name";
-            this.dataGridViewTextBoxColumn23.Name = "dataGridViewTextBoxColumn23";
-            // 
-            // dataGridViewTextBoxColumn24
-            // 
-            this.dataGridViewTextBoxColumn24.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dataGridViewTextBoxColumn24.DataPropertyName = "Value";
-            this.dataGridViewTextBoxColumn24.HeaderText = "script";
-            this.dataGridViewTextBoxColumn24.Name = "dataGridViewTextBoxColumn24";
-            // 
-            // Form1
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(918, 782);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "Form1";
+            this.Name = "MainForm";
             this.Text = "Initialize CARS database";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
@@ -1687,20 +1839,10 @@
         private System.Windows.Forms.TextBox txtStdOut;
         private System.Windows.Forms.TabPage tabTables;
         private System.Windows.Forms.DataGridView createTablesGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn createsGVName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn createsGVScript;
-        private System.Windows.Forms.DataGridViewButtonColumn createsGVRunButton;
         private System.Windows.Forms.DataGridView createColumnsGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dropsGVName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dropsGVScript;
-        private System.Windows.Forms.DataGridViewButtonColumn dropsGVRunButton;
         private System.Windows.Forms.TabPage tabRelationships;
         private System.Windows.Forms.TabPage tabOther;
         private System.Windows.Forms.DataGridView othersGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn othersGVName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn othersGVScript;
-        private System.Windows.Forms.DataGridViewButtonColumn othersGVRunButton;
-        private System.Windows.Forms.DataGridViewButtonColumn othersGVSkipButton;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Button browsePsqlButton;
         private System.Windows.Forms.TextBox psqlTB;
@@ -1710,9 +1852,6 @@
         private System.Windows.Forms.TabPage tabTableCreate;
         private System.Windows.Forms.TabPage tabTableDrop;
         private System.Windows.Forms.DataGridView dropTablesGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn1;
         private System.Windows.Forms.TabPage tabTableUnaltered;
         private System.Windows.Forms.TabPage tabRoutines;
         private System.Windows.Forms.DataGridView unalteredTablesGV;
@@ -1720,55 +1859,68 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.DataGridView dropColumnsGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn4;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.DataGridView unalteredColumnsGV;
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.DataGridView alteredColumnsGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn3;
         private System.Windows.Forms.TabControl tabControl3;
         private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.DataGridView createRelationshipsGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn11;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn12;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn6;
         private System.Windows.Forms.TabPage tabPage6;
         private System.Windows.Forms.DataGridView dropRelationshipsGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn13;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn14;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn7;
         private System.Windows.Forms.TabPage tabPage7;
         private System.Windows.Forms.DataGridView unalteredRelationshipsGV;
         private System.Windows.Forms.TabControl tabControl5;
         private System.Windows.Forms.TabPage tabPage8;
         private System.Windows.Forms.DataGridView createRoutinesGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn17;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn18;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn9;
         private System.Windows.Forms.TabPage tabPage9;
         private System.Windows.Forms.DataGridView dropRoutinesGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn19;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn20;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn10;
         private System.Windows.Forms.TabPage tabPage10;
         private System.Windows.Forms.DataGridView alteredRoutinesGV;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn21;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn22;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn11;
         private System.Windows.Forms.TabPage tabPage11;
         private System.Windows.Forms.DataGridView unalteredRoutinesGV;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
+        private System.Windows.Forms.DataGridViewButtonColumn createsGVName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn createsGVScript;
+        private System.Windows.Forms.DataGridViewButtonColumn createsGVRunButton;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn1;
+        private System.Windows.Forms.DataGridViewButtonColumn dropsGVName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dropsGVScript;
+        private System.Windows.Forms.DataGridViewButtonColumn dropsGVRunButton;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn7;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn4;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn3;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn10;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn15;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn11;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn12;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn6;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn13;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn14;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn7;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn15;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn16;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn23;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn17;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn18;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn9;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn19;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn20;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn10;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn21;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn22;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn11;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn23;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn24;
+        private System.Windows.Forms.DataGridViewButtonColumn othersGVName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn othersGVScript;
+        private System.Windows.Forms.DataGridViewButtonColumn othersGVRunButton;
+        private System.Windows.Forms.DataGridViewButtonColumn othersGVSkipButton;
     }
 }
 
