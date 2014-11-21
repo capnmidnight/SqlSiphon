@@ -471,39 +471,88 @@ create table {2}(
             throw new NotImplementedException();
         }
 
-        public override List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override List<InformationSchema.KeyColumnUsage> GetKeyColumns()
-        {
-            throw new NotImplementedException();
-        }
-
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.columns
+where table_schema != 'information_schema'
+    and table_schema != 'pg_catalog'
+order by table_catalog, table_schema, table_name, ordinal_position;")]
         public override List<InformationSchema.Columns> GetColumns()
         {
-            throw new NotImplementedException();
+            return GetList<InformationSchema.Columns>();
         }
 
-        public override List<InformationSchema.Parameters> GetParameters()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override List<InformationSchema.Routines> GetRoutines()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
-        {
-            throw new NotImplementedException();
-        }
-
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.table_constraints
+where table_schema != 'information_schema'
+    and table_schema != 'pg_catalog'
+order by table_catalog, table_schema, table_name;")]
         public override List<InformationSchema.TableConstraints> GetTableConstraints()
         {
-            throw new NotImplementedException();
+            return GetList<InformationSchema.TableConstraints>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.referential_constraints
+where constraint_schema != 'information_schema'
+    and constraint_schema != 'pg_catalog'
+order by constraint_catalog, constraint_schema, constraint_name;")]
+        public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
+        {
+            return GetList<InformationSchema.ReferentialConstraints>();
+        }
+
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.routines
+where specific_schema != 'information_schema'
+    and specific_schema != 'pg_catalog'
+order by specific_catalog, specific_schema, specific_name;")]
+        public override List<InformationSchema.Routines> GetRoutines()
+        {
+            return GetList<InformationSchema.Routines>();
+        }
+
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select *
+from information_schema.parameters
+where specific_schema != 'information_schema'
+    and specific_schema != 'pg_catalog'
+order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
+        public override List<InformationSchema.Parameters> GetParameters()
+        {
+            return GetList<InformationSchema.Parameters>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select * 
+from information_schema.constraint_column_usage
+where constraint_schema != 'information_schema'
+    and constraint_schema != 'pg_catalog';")]
+        public override List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns()
+        {
+            return GetList<InformationSchema.ConstraintColumnUsage>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select * 
+from information_schema.key_column_usage
+where constraint_schema != 'information_schema'
+    and constraint_schema != 'pg_catalog';")]
+        public override List<InformationSchema.KeyColumnUsage> GetKeyColumns()
+        {
+            return GetList<InformationSchema.KeyColumnUsage>();
         }
 
         protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
