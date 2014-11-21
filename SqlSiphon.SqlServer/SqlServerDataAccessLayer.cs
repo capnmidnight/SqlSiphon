@@ -190,26 +190,15 @@ end",
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
             var columnSection = this.MakeColumnSection(info, false);
-            var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
-            var pkString = "";
-            if (pk.Length > 0)
-            {
-                pkString = string.Format(",{0}    constraint PK_{1}_{2} primary key({3}){0}",
-                    Environment.NewLine,
-                    schema,
-                    info.Name,
-                    string.Join(",", pk.Select(c => c.Name)));
-            }
             return string.Format(
 @"if not exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
 create table {2}(
-    {3}{4}
+    {3}
 )",
                 schema,
                 info.Name,
                 identifier,
-                columnSection,
-                pkString);
+                columnSection);
         }
 
         public override string MakeDropTableScript(MappedClassAttribute info)
@@ -303,7 +292,9 @@ create table {2}(
                         valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
                             || initial.DefaultValue == "(" + final.DefaultValue + ")"
                             || final.DefaultValue == "((" + initial.DefaultValue + "))"
-                            || initial.DefaultValue == "((" + final.DefaultValue + "))"; ;
+                            || initial.DefaultValue == "((" + final.DefaultValue + "))"
+                            || final.DefaultValue == "('" + initial.DefaultValue + "')"
+                            || initial.DefaultValue == "('" + final.DefaultValue + "')"; ;
                     }
                     else
                     {
