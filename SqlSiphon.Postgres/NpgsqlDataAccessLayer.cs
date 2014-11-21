@@ -545,21 +545,11 @@ $$ language plpgsql;",
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
             var columnSection = this.MakeColumnSection(info, false);
-            var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
-            var pkString = "";
-            if (pk.Length > 0)
-            {
-                pkString = string.Format(",{0}    constraint PK_{1}_{2} primary key({3}){0}",
-                    Environment.NewLine,
-                    schema,
-                    info.Name,
-                    string.Join(",", pk.Select(c => c.Name)));
-            }
             return string.Format(@"create table if not exists {0} (
-    {1}{2});",
+    {1}
+);",
                 identifier,
-                columnSection,
-                pkString);
+                columnSection);
         }
 
         public override string MakeDropTableScript(MappedClassAttribute info)
