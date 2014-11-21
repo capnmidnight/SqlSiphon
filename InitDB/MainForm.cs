@@ -582,7 +582,6 @@ namespace InitDB
                 catch (Exception exp)
                 {
                     this.ToError(exp);
-                    return false;
                 }
             }
             return true;

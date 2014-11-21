@@ -32,6 +32,7 @@ using System;
 using System.Data;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using Npgsql;
 using SqlSiphon.Mapping;
@@ -218,21 +219,14 @@ namespace SqlSiphon.Postgres
             }
             else if (systemType != null)
             {
-                if (systemType == typeof(int) && isIdentity)
+                typeName = MakeBasicSqlTypeString(systemType);
+                if (typeName == null)
                 {
-                    typeName = "serial";
-                }
-                else
-                {
-                    typeName = MakeBasicSqlTypeString(systemType);
-                    if (typeName == null)
-                    {
-                        typeName = MakeComplexSqlTypeString(systemType);
+                    typeName = MakeComplexSqlTypeString(systemType);
 
-                        if (typeName == null && systemType.Name != "Void")
-                        {
-                            throw new Exception(string.Format("Couldn't find type description for type: {0}", systemType != null ? systemType.FullName : "N/A"));
-                        }
+                    if (typeName == null && systemType.Name != "Void")
+                    {
+                        throw new Exception(string.Format("Couldn't find type description for type: {0}", systemType != null ? systemType.FullName : "N/A"));
                     }
                 }
             }
@@ -426,7 +420,7 @@ namespace SqlSiphon.Postgres
                         valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
                             || initial.DefaultValue == "(" + final.DefaultValue + ")";
                     }
-                    else if(final.DefaultValue != "newid()" || initial.DefaultValue != "uuid_generate_v4()")
+                    else if (final.DefaultValue != "newid()" || initial.DefaultValue != "uuid_generate_v4()")
                     {
                         valuesMatch = false;
                     }
@@ -513,9 +507,50 @@ namespace SqlSiphon.Postgres
                 parameterSection);
         }
 
+        private static Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         public override string MakeCreateRoutineScript(MappedMethodAttribute routine)
         {
             var query = routine.Query;
+            var declarations = new List<string>();
+            query = HoistPattern.Replace(query, new MatchEvaluator(m =>
+            {
+                var parts = m.Groups
+                    .Cast<Group>()
+                    .Skip(1)
+                    .Select(g => g.Value.Trim())
+                    .Where(s => s.Length > 0)
+                    .First()
+                    .Split(',')
+                    .ToArray();
+                declarations.AddRange(parts);
+                return "";
+            }));
+            for (int i = 0; i < declarations.Count; ++i)
+            {
+                var parts = declarations[i]
+                    .Trim()
+                    .Split(' ', '\t', '\n', '\r')
+                    .Select(p => p.Trim())
+                    .Where(p => p.Length > 0)
+                    .ToArray();
+                if (parts.Length == 2)
+                {
+                    if (parts[1] == "uniqueidentifier")
+                    {
+                        parts[1] = "uuid";
+                    }
+                }
+                else
+                {
+                }
+                declarations[i] = "\n\t" + string.Join(" ", parts) + ";";
+            }
+            var declarationString = "";
+            if (declarations.Count > 0)
+            {
+                declarationString = "declare " + string.Join("", declarations);
+            }
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine);
             query = this.MakeDropRoutineScript(routine) + string.Format(
@@ -523,13 +558,15 @@ namespace SqlSiphon.Postgres
 {1}
 )
     returns {2} as $$
-begin
 {3}
+begin
+{4}
 end;
 $$ language plpgsql;",
                 identifier,
                 parameterSection,
                 this.MakeSqlTypeString(routine),
+                declarationString,
                 query);
             query = query.Replace("@", "P_");
             return query;
@@ -540,11 +577,26 @@ $$ language plpgsql;",
             return this.MakeDropRoutineScript(routine) + "\n" + this.MakeCreateRoutineScript(routine);
         }
 
-        public override string MakeCreateTableScript(MappedClassAttribute info)
+        public override string MakeCreateTableScript(MappedClassAttribute table)
         {
-            var schema = info.Schema ?? DefaultSchemaName;
-            var identifier = this.MakeIdentifier(schema, info.Name);
-            var columnSection = this.MakeColumnSection(info, false);
+            var schema = table.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, table.Name);
+            var reset = new List<MappedPropertyAttribute>();
+            foreach (var column in table.Properties)
+            {
+                if (string.IsNullOrWhiteSpace(column.SqlType)
+                    && column.SystemType == typeof(int)
+                    && column.IsIdentity)
+                {
+                    column.SqlType = "serial";
+                    reset.Add(column);
+                }
+            }
+            var columnSection = this.MakeColumnSection(table, false);
+            foreach (var column in reset)
+            {
+                column.SqlType = null;
+            }
             return string.Format(@"create table if not exists {0} (
     {1}
 );",
@@ -592,7 +644,7 @@ drop index if exists {2};",
 
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
         {
-            var keys = string.Join(", ", key.KeyColumns.Select(c=>this.MakeIdentifier(c.Name)));
+            var keys = string.Join(", ", key.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
             return string.Format(
 @"create unique index {0} on {1} ({2});
 alter table {1} add constraint {3} primary key using index {0};",
