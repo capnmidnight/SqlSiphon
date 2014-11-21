@@ -132,7 +132,7 @@ namespace SqlSiphon
                 }
 
                 var routines = dal.GetRoutines()
-                    .ToDictionary(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name));
+                    .ToDictionary(prm => dal.MakeIdentifier(prm.routine_schema, prm.routine_name));
                 var parameters = dal.GetParameters()
                     .GroupBy(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name))
                     .ToDictionary(g => g.Key, g => g.ToArray());

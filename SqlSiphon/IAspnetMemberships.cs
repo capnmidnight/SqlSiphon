@@ -36,30 +36,4 @@ namespace SqlSiphon
         int aspnet_UsersInRoles_IsUserInRole(string ApplicationName, string UserName, string RoleName);
         int aspnet_UsersInRoles_RemoveUsersFromRoles(string ApplicationName, string UserNames, string RoleNames);
     }
-
-    /// <summary>
-    /// A simple mixin for any implementing user wanting to use ASP.NET Memberships.
-    /// </summary>
-    public static class IAspnetMemebershipsExt
-    {
-        public static string FKToUsers<T>(this IAspnetMemberships dal)
-        {
-            return dal.FKToUsers<T>("UserID");
-        }
-
-        public static string FKToUsers<T>(this IAspnetMemberships dal, string tableColumn)
-        {
-            return dal.FK<T>(tableColumn, null, "aspnet_Users", "UserID");
-        }
-
-        public static string FKToRoles<T>(this IAspnetMemberships dal)
-        {
-            return dal.FKToRoles<T>("RoleID");
-        }
-
-        public static string FKToRoles<T>(this IAspnetMemberships dal, string tableColumn)
-        {
-            return dal.FK<T>(tableColumn, null, "aspnet_Roles", "RoleID");
-        }
-    }
 }

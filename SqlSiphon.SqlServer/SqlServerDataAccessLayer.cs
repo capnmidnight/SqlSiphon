@@ -156,12 +156,12 @@ end catch;", transactionName);
             }
         }
 
-        protected override string MakeDropProcedureScript(MappedMethodAttribute info)
+        public override string MakeDropRoutineScript(MappedMethodAttribute info)
         {
             return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
-        protected override string MakeCreateProcedureScript(MappedMethodAttribute info)
+        public override string MakeCreateRoutineScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
@@ -267,16 +267,6 @@ create table {2}(
             return col;
         }
 
-        protected override string MakeDefaultConstraintScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
-        {
-            return string.Format("alter table {0} add constraint DEF_{1}_{2} default {3} for {2}",
-               MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
-               c.table_name,
-               c.column_name,
-               prop.DefaultValue);
-        }
-
-
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
         {
             if (sqlType == null && reverseTypeMapping.ContainsKey(systemType))
@@ -329,15 +319,6 @@ create table {2}(
             return null;
         }
 
-        protected override object PrepareParameter(object parameterValue)
-        {
-            if (parameterValue != null)
-            {
-                var t = parameterValue.GetType();
-            }
-            return parameterValue;
-        }
-
         private static DataTable MakeDataTable(string tableName, Type t, System.Collections.IEnumerable array)
         {
             var table = new DataTable(tableName);
@@ -375,36 +356,27 @@ create table {2}(
             return table;
         }
 
-        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
+        public override string MakeCreateRelationshipScript(Relationship relation)
         {
-            var constraintName = string.Join("_",
-                "FK",
-                tableSchema ?? DefaultSchemaName,
-                tableName,
-                tableColumns.Replace(',', '_'),
-                "to",
-                foreignSchema ?? DefaultSchemaName,
-                foreignName);
-
-            var tableFullName = MakeIdentifier(
-                tableSchema ?? DefaultSchemaName,
-                tableName);
-
-            var foreignFullName = MakeIdentifier(
-                foreignSchema ?? DefaultSchemaName,
-                foreignName);
+            var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
+            var toColumns = string.Join(", ", relation.ToColumns.Select(c => this.MakeIdentifier(c.Name)));
 
             return string.Format(
-@"if not exists(SELECT *  FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME ='{0}')
-    alter table {1} add constraint {2}
-    foreign key({3})
-    references {4}({5});",
-                    constraintName,
-                    tableFullName,
-                    MakeIdentifier(constraintName),
-                    tableColumns,
-                    foreignFullName,
-                    foreignColumns);
+@"alter table {0} add constraint {1}
+    foreign key({2})
+    references {3}({4})",
+                    this.MakeIdentifier(relation.From.Schema, relation.From.Name),
+                    this.MakeIdentifier(relation.Name),
+                    fromColumns,
+                    this.MakeIdentifier(relation.To.Schema, relation.To.Name),
+                    toColumns);
+        }
+
+        public override string MakeDropRelationshipScript(Relationship relation)
+        {
+            return string.Format(@"alter table {0} drop constraint {1}",
+                    this.MakeIdentifier(relation.From.Schema, relation.From.Name),
+                    this.MakeIdentifier(relation.Name));
         }
 
         public override bool ColumnChanged(MappedPropertyAttribute x, MappedPropertyAttribute y)
@@ -426,6 +398,53 @@ create table {2}(
             };
             var final = tests.Aggregate((a, b) => a && b);
             return final;
+
+
+            /*
+                var sizeSet = false;
+                var precisionSet = false;
+                int size = 0;
+                if (column.data_type == "nvarchar"
+                    || column.data_type == "varchar")
+                {
+                    if (column.character_maximum_length != null
+                        && column.character_maximum_length != -1)
+                    {
+                        sizeSet = true;
+                        size = column.character_maximum_length.Value;
+                    }
+                }
+                else
+                {
+                    if (column.numeric_precision != null
+                        && !((column.data_type == "int"
+                                || column.data_type == "integer")
+                            && column.numeric_precision == 10)
+                        && !(column.data_type == "real"
+                            && column.numeric_precision == 24)
+                        && column.numeric_precision != 0)
+                    {
+                        precisionSet = true;
+                    }
+                    if (column.numeric_scale != null
+                            && column.numeric_scale != 0)
+                    {
+                        sizeSet = true;
+                        size = column.numeric_scale.Value;
+                    }
+                }
+
+                var newType = this.MakeSqlTypeString(property);
+
+                var changed = (column.is_nullable.ToLower() == "yes") != property.IsOptional
+                    || column.data_type != newType
+                    || sizeSet != property.IsSizeSet
+                    || size != property.Size
+                    || precisionSet != property.IsPrecisionSet
+                    || column.numeric_precision.Value != property.Precision;
+
+                return changed;
+            */
         }
 
         public override bool DescribesIdentity(ref string defaultValue)
@@ -510,53 +529,6 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
                     bulkCopy.WriteToServer(tableData);
                 }
             }
-        }
-
-        protected override bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
-        {
-            var sizeSet = false;
-            var precisionSet = false;
-            int size = 0;
-            if (column.data_type == "nvarchar"
-                || column.data_type == "varchar")
-            {
-                if (column.character_maximum_length != null
-                    && column.character_maximum_length != -1)
-                {
-                    sizeSet = true;
-                    size = column.character_maximum_length.Value;
-                }
-            }
-            else
-            {
-                if (column.numeric_precision != null
-                    && !((column.data_type == "int"
-                            || column.data_type == "integer")
-                        && column.numeric_precision == 10)
-                    && !(column.data_type == "real"
-                        && column.numeric_precision == 24)
-                    && column.numeric_precision != 0)
-                {
-                    precisionSet = true;
-                }
-                if (column.numeric_scale != null
-                        && column.numeric_scale != 0)
-                {
-                    sizeSet = true;
-                    size = column.numeric_scale.Value;
-                }
-            }
-
-            var newType = this.MakeSqlTypeString(property);
-
-            var changed = (column.is_nullable.ToLower() == "yes") != property.IsOptional
-                || column.data_type != newType
-                || sizeSet != property.IsSizeSet
-                || size != property.Size
-                || precisionSet != property.IsPrecisionSet
-                || column.numeric_precision.Value != property.Precision;
-
-            return changed;
         }
 
         public override Type GetSystemType(string sqlType)

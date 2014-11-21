@@ -90,8 +90,8 @@ namespace SqlSiphon.Mapping
 
         public MappedMethodAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, ISqlSiphon dal)
         {
-            this.Schema = routine.specific_schema;
-            this.Name = routine.specific_name;
+            this.Schema = routine.routine_schema;
+            this.Name = routine.routine_name;
             this.CommandType = System.Data.CommandType.StoredProcedure;
             this.EnableTransaction = false;
             this.Query = routine.routine_body;

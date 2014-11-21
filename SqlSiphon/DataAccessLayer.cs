@@ -67,6 +67,48 @@ namespace SqlSiphon
             IsOnMonoRuntime = Type.GetType("Mono.Runtime") != null;
         }
 
+        /// <summary>
+        /// copies the values of every field in the row to the field in the object that has the same name. 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="reader"></param>
+        /// <param name="columnNames"></param>
+        /// <param name="props"></param>
+        internal static void DoMapping(object obj, DataReaderT reader, string[] columnNames, List<MappedPropertyAttribute> props)
+        {
+            props.Where(p => columnNames.Contains(p.Name.ToUpper()))
+                .ToList()
+                .ForEach(p => p.SetValue(obj, reader[p.Name.ToUpper()]));
+        }
+
+        protected static bool IsTypePrimitive(Type type)
+        {
+            return type.IsPrimitive
+                || type == typeof(decimal)
+                || type == typeof(string)
+                || type == typeof(DateTime)
+                || type == typeof(Guid)
+                || type == typeof(byte[])
+                || (type.IsGenericType
+                    && IsTypePrimitive(type.GetGenericArguments().First()));
+        }
+
+        protected static List<MappedPropertyAttribute> GetProperties(Type type)
+        {
+            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type)
+                ?? new MappedClassAttribute();
+            attr.InferProperties(type);
+            return attr.Properties;
+        }
+
+        private static void CopyOutputParameters(object[] parameters, DbParameterCollection sqlParameters)
+        {
+            for (int i = 0; sqlParameters != null && i < sqlParameters.Count; ++i)
+                if (sqlParameters[i].Direction == ParameterDirection.InputOutput ||
+                    sqlParameters[i].Direction == ParameterDirection.Output)
+                    parameters[i] = sqlParameters[i].Value;
+        }
+
         private bool isConnectionOwned;
 
         private MappedClassAttribute meta;
@@ -134,6 +176,28 @@ namespace SqlSiphon
                 this.Connection.Dispose();
                 this.Connection = null;
             }
+        }
+
+        private void Open()
+        {
+            try
+            {
+                if (Connection.State == ConnectionState.Closed)
+                    Connection.Open();
+            }
+            catch (Exception exp)
+            {
+                throw new ConnectionFailedException("Could not connect to the database at : " + this.Connection.ConnectionString, exp);
+            }
+        }
+
+        public virtual string MakeIdentifier(params string[] parts)
+        {
+            var identifier = string.Join(IdentifierPartSeperator, parts
+                .Where(p => p != null)
+                .Select(p => string.Format("{0}{1}{2}", IdentifierPartBegin, p, IdentifierPartEnd))
+                .ToArray());
+            return identifier;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -272,15 +336,6 @@ namespace SqlSiphon
             return command;
         }
 
-        public virtual string MakeIdentifier(params string[] parts)
-        {
-            var identifier = string.Join(IdentifierPartSeperator, parts
-                .Where(p => p != null)
-                .Select(p => string.Format("{0}{1}{2}", IdentifierPartBegin, p, IdentifierPartEnd))
-                .ToArray());
-            return identifier;
-        }
-
         protected virtual CommandT BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams)
         {
             // the mapped method must match the name of a stored procedure in the database, or the
@@ -293,6 +348,12 @@ namespace SqlSiphon
             command.CommandText = procName;
             command.Parameters.AddRange(MakeProcedureParameters(methParams));
             return command;
+        }
+
+        protected virtual object PrepareParameter(object val)
+        {
+            //do nothing in the base case
+            return val;
         }
 
         private void CopyParameterValues(CommandT command, object[] parameterValues)
@@ -375,14 +436,6 @@ namespace SqlSiphon
                 Execute(command, parameters);
         }
 
-        private static void CopyOutputParameters(object[] parameters, DbParameterCollection sqlParameters)
-        {
-            for (int i = 0; sqlParameters != null && i < sqlParameters.Count; ++i)
-                if (sqlParameters[i].Direction == ParameterDirection.InputOutput ||
-                    sqlParameters[i].Direction == ParameterDirection.Output)
-                    parameters[i] = sqlParameters[i].Value;
-        }
-
         /// <summary>
         /// Constructs a representation of table data returned from a stored procedure as a List of
         /// objects that represent the individual rows of the table.
@@ -415,19 +468,6 @@ namespace SqlSiphon
         {
             using (var command = ConstructCommand(parameters))
                 return GetDataSet(command, parameters);
-        }
-
-        private void Open()
-        {
-            try
-            {
-                if (Connection.State == ConnectionState.Closed)
-                    Connection.Open();
-            }
-            catch (Exception exp)
-            {
-                throw new ConnectionFailedException("Could not connect to the database at : " + this.Connection.ConnectionString, exp);
-            }
         }
 
         private DataReaderT GetReader(CommandT command, params object[] parameters)
@@ -479,7 +519,9 @@ namespace SqlSiphon
                 var constructor = type.GetConstructor(Type.EmptyTypes);
                 if (constructor == null)
                     throw new Exception("Entity classes need default constructors!");
-                var columnNames = GetColumnNames(reader).Select(c => c.ToUpper()).ToArray();
+                var columnNames = new string[reader.FieldCount];
+                for (int i = 0; i < reader.FieldCount; ++i)
+                    columnNames[i] = reader.GetName(i).ToUpper();
                 var fields = GetProperties(type);
                 getter = delegate()
                 {
@@ -506,48 +548,6 @@ namespace SqlSiphon
             // this is done here to make sure the reader gets disposed first
             if (getter == null)
                 throw new ArgumentException("When retrieving a primitive data type, the first parameter to the procedure must be a string Column Name or an integer Column Index. Given: " + key.GetType().Name);
-        }
-
-        internal static string[] GetColumnNames(DbDataReader reader)
-        {
-            var columnNames = new string[reader.FieldCount];
-            for (int i = 0; i < reader.FieldCount; ++i)
-                columnNames[i] = reader.GetName(i);
-            return columnNames;
-        }
-
-        protected static List<MappedPropertyAttribute> GetProperties(Type type)
-        {
-            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type)
-                ?? new MappedClassAttribute();
-            attr.InferProperties(type);
-            return attr.Properties;
-        }
-
-        /// <summary>
-        /// copies the values of every field in the row to the field in the object that has the same name. 
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="reader"></param>
-        /// <param name="columnNames"></param>
-        /// <param name="props"></param>
-        internal static void DoMapping(object obj, DataReaderT reader, string[] columnNames, List<MappedPropertyAttribute> props)
-        {
-            props.Where(p => columnNames.Contains(p.Name.ToUpper()))
-                .ToList()
-                .ForEach(p => p.SetValue(obj, reader[p.Name.ToUpper()]));
-        }
-
-        static protected bool IsTypePrimitive(Type type)
-        {
-            return type.IsPrimitive
-                || type == typeof(decimal)
-                || type == typeof(string)
-                || type == typeof(DateTime)
-                || type == typeof(Guid)
-                || type == typeof(byte[])
-                || (type.IsGenericType
-                    && IsTypePrimitive(type.GetGenericArguments().First()));
         }
 
 
@@ -645,31 +645,6 @@ AND COLUMN_NAME = @columnName;")]
             return GetList<InformationSchema.ConstraintColumnUsage>(tableSchema, tableName, columnName);
         }
 
-        private MappedClassAttribute GetTableDefinition(Type x)
-        {
-            var y = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(x);
-            if (y != null)
-            {
-                y.InferProperties(x);
-                if (y.Schema == null)
-                    y.Schema = DefaultSchemaName;
-                y.Properties.ForEach(p => p.SqlType = p.SqlType ?? MakeSqlTypeString(p));
-            }
-            return y;
-        }
-
-        private void FilterTypes(Dictionary<string, MappedClassAttribute> tables, IEnumerable<Type> types)
-        {
-            foreach (var t2 in types)
-            {
-                var table = this.GetTableDefinition(t2);
-                if (table != null && table.Include)
-                {
-                    tables.Add(MakeIdentifier(table.Schema, table.Name), table);
-                }
-            }
-        }
-
         protected virtual DatabaseState GetFinalState()
         {
             var final = new DatabaseState(this.GetType().Assembly, this);
@@ -682,65 +657,6 @@ AND COLUMN_NAME = @columnName;")]
             var initial = new DatabaseState(this);
             var final = this.GetFinalState();
             return final.Diff(initial, this);
-        }        
-
-        private enum Change
-        {
-            Old,
-            New,
-            Change
-        }
-
-        public string FK<T, F>()
-        {
-            var f = typeof(F);
-            var foreign = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(f);
-            foreign.InferProperties(f);
-            var foreignColumns = this.ArgumentList(
-                foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
-                prop => prop.Name);
-
-            return FK<T>(foreignColumns, foreign.Schema, foreign.Name, foreignColumns);
-        }
-
-        public string FK<T, F>(string tableColumns)
-        {
-            var f = typeof(F);
-            var foreign = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(f);
-            foreign.InferProperties(f);
-            var foreignColumns = this.ArgumentList(
-                foreign.Properties.Where(prop => prop.IncludeInPrimaryKey),
-                prop => prop.Name);
-
-            return FK<T>(tableColumns, foreign.Schema, foreign.Name, foreignColumns);
-        }
-
-        public string FK<T, F>(string tableColumns, string foreignColumns)
-        {
-            var f = typeof(F);
-            var foreign = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(f);
-            foreign.InferProperties(f);
-
-            return FK<T>(tableColumns, foreign.Schema, foreign.Name, foreignColumns);
-        }
-
-        public string FK<T>(string foreignName, string foreignColumns)
-        {
-            return FK<T>(foreignColumns, null, foreignName, foreignColumns);
-        }
-
-        public string FK<T>(string foreignSchema, string foreignName, string foreignColumns)
-        {
-            return FK<T>(foreignColumns, foreignSchema, foreignName, foreignColumns);
-        }
-
-        public string FK<T>(string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
-        {
-            var t = typeof(T);
-            var table = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
-            table.InferProperties(t);
-
-            return MakeFKScript(table.Schema, table.Name, tableColumns, foreignSchema, foreignName, foreignColumns);
         }
 
         private string BuildIndex<T>(Func<MappedClassAttribute, string[]> getColumns, Func<MappedClassAttribute, string[], string> getIndexName)
@@ -820,24 +736,6 @@ AND COLUMN_NAME = @columnName;")]
             //do nothing in the base case
         }
 
-        protected virtual object PrepareParameter(object val)
-        {
-            //do nothing in the base case
-            return val;
-        }
-
-        protected virtual void ExecuteCreateProcedureScript(string script)
-        {
-            //this allows us to hook in and perhaps modify
-            // the script before executing it.
-            this.ExecuteQuery(script);
-        }
-
-        protected virtual void PreCreateProcedures()
-        {
-            //do nothing in the base case
-        }
-
         protected string MakeSqlTypeString(MappedObjectAttribute p)
         {
             if (p.Include)
@@ -846,9 +744,9 @@ AND COLUMN_NAME = @columnName;")]
                 if (systemType != null && systemType.IsEnum)
                     systemType = typeof(int);
                 return MakeSqlTypeString(
-                    p.SqlType, 
-                    systemType, 
-                    p.IsSizeSet ? new Nullable<int>(p.Size) : null, 
+                    p.SqlType,
+                    systemType,
+                    p.IsSizeSet ? new Nullable<int>(p.Size) : null,
                     p.IsPrecisionSet ? new Nullable<int>(p.Precision) : null);
             }
             else
@@ -857,15 +755,6 @@ AND COLUMN_NAME = @columnName;")]
             }
         }
 
-        protected virtual string[] FKScripts { get { return null; } }
-        protected virtual string[] IndexScripts { get { return null; } }
-        protected virtual string[] InitialScripts { get { return null; } }
-
-        public abstract string DefaultSchemaName { get; }
-        public abstract Type GetSystemType(string sqlType);
-        public abstract bool DescribesIdentity(ref string defaultValue);
-        public abstract bool ColumnChanged(MappedPropertyAttribute a, MappedPropertyAttribute b);
-
         public abstract List<InformationSchema.Columns> GetColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
         public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
@@ -873,20 +762,24 @@ AND COLUMN_NAME = @columnName;")]
         public abstract List<InformationSchema.Parameters> GetParameters();
         public abstract List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints();
 
+        public abstract string DefaultSchemaName { get; }
+        public abstract Type GetSystemType(string sqlType);
+        public abstract bool DescribesIdentity(ref string defaultValue);
+        public abstract bool ColumnChanged(MappedPropertyAttribute a, MappedPropertyAttribute b);
+
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
+        protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
+        protected abstract string MakeColumnString(MappedPropertyAttribute p);
+        protected abstract string MakeParameterString(MappedParameterAttribute p);
+
         public abstract string MakeCreateTableScript(MappedClassAttribute table);
         public abstract string MakeDropTableScript(MappedClassAttribute table);
         public abstract string MakeCreateColumnScript(MappedPropertyAttribute column);
         public abstract string MakeDropColumnScript(MappedPropertyAttribute column);
         public abstract string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial);
-
-        protected abstract string MakeDropProcedureScript(MappedMethodAttribute info);
-        protected abstract string MakeCreateProcedureScript(MappedMethodAttribute info);
-        protected abstract string MakeColumnString(MappedPropertyAttribute p);
-        protected abstract string MakeDefaultConstraintScript(InformationSchema.Columns columnInfo, MappedPropertyAttribute prop);
-        protected abstract string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
-        protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
-        protected abstract string MakeParameterString(MappedParameterAttribute p);
-        protected abstract bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property);
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
+        public abstract string MakeDropRoutineScript(MappedMethodAttribute routine);
+        public abstract string MakeCreateRoutineScript(MappedMethodAttribute routine);
+        public abstract string MakeDropRelationshipScript(Relationship relation);
+        public abstract string MakeCreateRelationshipScript(Relationship relation);
     }
 }

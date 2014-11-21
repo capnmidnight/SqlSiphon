@@ -17,6 +17,29 @@ namespace SqlSiphon
             return clone;
         }
 
+        private static void Traverse<T>(Dictionary<string, T> final, Dictionary<string, T> initial, Action<string, T> remove, Action<string, T> add, Action<string, T, T> change)
+        {
+            var all = initial.Keys
+                .Union(final.Keys)
+                .Distinct()
+                .ToArray();
+            foreach (var key in all)
+            {
+                if (final.ContainsKey(key) && initial.ContainsKey(key))
+                {
+                    change(key, final[key], initial[key]);
+                }
+                else if (final.ContainsKey(key))
+                {
+                    add(key, final[key]);
+                }
+                else
+                {
+                    remove(key, final[key]);
+                }
+            }
+        }
+
         public Dictionary<string, string> CreateTablesScripts { get; private set; }
         public Dictionary<string, string> DropTablesScripts { get; private set; }
         public Dictionary<string, string> UnalteredTablesScripts { get; private set; }
@@ -35,12 +58,13 @@ namespace SqlSiphon
 
         public DatabaseDelta(DatabaseState final, DatabaseState initial, ISqlSiphon dal)
         {
-            var startTables = Clone(initial.Tables);
-            var endTables = Clone(final.Tables);
-            var startRelations = Clone(initial.Relationships);
-            var endRelations = Clone(final.Relationships);
-            var startFunctions = Clone(initial.Functions);
-            var endFunctions = Clone(final.Functions);
+            var finalTables = Clone(final.Tables);
+            var finalRelations = Clone(final.Relationships);
+            var finalRoutines = Clone(final.Functions);
+
+            var initialTables = Clone(initial.Tables);
+            var initialRelations = Clone(initial.Relationships);
+            var initialRoutines = Clone(initial.Functions);
 
             this.CreateTablesScripts = new Dictionary<string, string>();
             this.DropTablesScripts = new Dictionary<string, string>();
@@ -58,72 +82,77 @@ namespace SqlSiphon
             this.UnalteredRoutinesScripts = new Dictionary<string, string>();
             this.OtherScripts = new Dictionary<string, string>();
 
-            var allTables = endTables.Keys
-                .Union(startTables.Keys)
-                .Distinct()
-                .ToArray();
-            foreach (var tableName in allTables)
-            {
-                if (endTables.ContainsKey(tableName) && startTables.ContainsKey(tableName))
+            ProcessTables(finalTables, initialTables, dal);
+            ProcessRelationships(finalRelations, initialRelations, dal);
+            ProcessRoutines(finalRoutines, initialRoutines, dal);
+        }
+
+        private void ProcessRoutines(Dictionary<string, MappedMethodAttribute> finalRoutines, Dictionary<string, MappedMethodAttribute> initialRoutines, ISqlSiphon dal)
+        {
+            Traverse(
+                finalRoutines, 
+                initialRoutines, 
+                (routineName, initialRoutine) => this.DropRoutinesScripts.Add(routineName, dal.MakeDropRoutineScript(initialRoutine)), 
+                (routineName, finalRoutine) => this.CreateRoutinesScripts.Add(routineName, dal.MakeCreateRoutineScript(finalRoutine)),
+                (routineName, finalRoutine, initialRoutine) =>
                 {
-                    var f = endTables[tableName];
-                    var i = startTables[tableName];
-                    endTables.Remove(tableName);
-                    startTables.Remove(tableName);
-                    var fColumns = f.Properties.ToDictionary(p => dal.MakeIdentifier(f.Schema, f.Name, p.Name));
-                    var iColumns = i.Properties.ToDictionary(p => dal.MakeIdentifier(i.Schema, i.Name, p.Name));
-                    var allColumns = fColumns.Keys
-                        .Union(iColumns.Keys)
-                        .Distinct()
-                        .ToArray();
-                    var altered = false;
-                    foreach (var columnName in allColumns)
+                    this.DropRoutinesScripts.Add(routineName, dal.MakeDropRoutineScript(initialRoutine));
+                    this.CreateRoutinesScripts.Add(routineName, dal.MakeCreateRoutineScript(finalRoutine));
+                });
+        }
+
+        private void ProcessRelationships(Dictionary<string, Relationship> finalRelations, Dictionary<string, Relationship> initialRelations, ISqlSiphon dal)
+        {
+            Traverse(
+                finalRelations, 
+                initialRelations,
+                (relationName, initialRelation) => this.DropRelationshipsScripts.Add(relationName, dal.MakeDropRelationshipScript(initialRelation)),
+                (relationName, finalRelation) => this.CreateRelationshipsScripts.Add(relationName, dal.MakeCreateRelationshipScript(finalRelation)), 
+                (relationName, finalRelation, initialRelation) =>
+                {
+                    this.DropRelationshipsScripts.Add(relationName, dal.MakeDropRelationshipScript(initialRelation));
+                    this.CreateRelationshipsScripts.Add(relationName, dal.MakeCreateRelationshipScript(finalRelation));
+                });
+        }
+
+        private void ProcessTables(Dictionary<string, MappedClassAttribute> finalTables, Dictionary<string, MappedClassAttribute> initialTables, ISqlSiphon dal)
+        {
+            Traverse(
+                finalTables, 
+                initialTables, 
+                (tableName, initialTable) => this.DropTablesScripts.Add(tableName, dal.MakeDropTableScript(initialTable)), 
+                (tableName, finalTable) => this.CreateTablesScripts.Add(tableName, dal.MakeCreateTableScript(finalTable)), 
+                (tableName, finalTable, initialTable) =>
+                {
+                    var tableAltered = false;
+                    var finalColumns = finalTable.Properties.ToDictionary(p => dal.MakeIdentifier(finalTable.Schema, finalTable.Name, p.Name));
+                    var initialColumns = initialTable.Properties.ToDictionary(p => dal.MakeIdentifier(initialTable.Schema, initialTable.Name, p.Name));
+
+                    Traverse(finalColumns, initialColumns, (columnName, initialColumn) =>
                     {
-                        if (fColumns.ContainsKey(columnName) && iColumns.ContainsKey(columnName))
+                        this.DropColumnsScripts.Add(columnName, dal.MakeDropColumnScript(initialColumn));
+                        tableAltered = true;
+                    }, (columnName, finalColumn) =>
+                    {
+                        this.CreateColumnsScripts.Add(columnName, dal.MakeCreateColumnScript(finalColumn));
+                        tableAltered = true;
+                    }, (columnName, finalColumn, initialColumn) =>
+                    {
+                        if (dal.ColumnChanged(finalColumn, initialColumn))
                         {
-                            var fc = fColumns[columnName];
-                            var ic = iColumns[columnName];
-                            fColumns.Remove(columnName);
-                            iColumns.Remove(columnName);
-                            if (dal.ColumnChanged(fc, ic))
-                            {
-                                this.AlteredColumnsScripts.Add(columnName, dal.MakeAlterColumnScript(fc, ic));
-                                altered = true;
-                            }
-                            else
-                            {
-                                this.UnalteredColumnsScripts.Add(columnName, "-- no changes");
-                            }
-                        }
-                        else if (fColumns.ContainsKey(columnName))
-                        {
-                            this.CreateColumnsScripts.Add(columnName, dal.MakeCreateColumnScript(fColumns[columnName]));
-                            altered = true;
+                            this.AlteredColumnsScripts.Add(columnName, dal.MakeAlterColumnScript(finalColumn, initialColumn));
+                            tableAltered = true;
                         }
                         else
                         {
-                            this.DropColumnsScripts.Add(columnName, dal.MakeDropColumnScript(iColumns[columnName]));
-                            altered = true;
+                            this.UnalteredColumnsScripts.Add(columnName, "-- no changes");
                         }
-                    }
-                    if (!altered)
+                    });
+                    if (!tableAltered)
                     {
                         this.UnalteredTablesScripts.Add(tableName, "-- no changes");
                     }
-                }
-                else if (endTables.ContainsKey(tableName))
-                {
-                    this.CreateTablesScripts.Add(tableName, dal.MakeCreateTableScript(endTables[tableName]));
-                }
-                else if (startTables.ContainsKey(tableName))
-                {
-                    this.DropTablesScripts.Add(tableName, dal.MakeDropTableScript(startTables[tableName]));
-                }
-                else
-                {
-                    this.UnalteredTablesScripts.Add(tableName, "-- where did this come from?");
-                }
-            }
+                });
         }
     }
 }

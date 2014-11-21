@@ -15,13 +15,6 @@ namespace SqlSiphon
 
         string DefaultSchemaName { get; }
 
-        string FK<T, F>();
-        string FK<T, F>(string tableColumns);
-        string FK<T, F>(string tableColumns, string foreignColumns);
-        string FK<T>(string foreignName, string foreignColumns);
-        string FK<T>(string foreignSchema, string foreignName, string foreignColumns);
-        string FK<T>(string tableColumns, string foreignSchema, string foreignName, string foreignColumns);
-
         List<InformationSchema.Columns> GetColumns();
         List<InformationSchema.Routines> GetRoutines();
         List<InformationSchema.Parameters> GetParameters();
@@ -40,5 +33,9 @@ namespace SqlSiphon
         string MakeCreateColumnScript(Mapping.MappedPropertyAttribute column);
         string MakeDropColumnScript(Mapping.MappedPropertyAttribute column);
         string MakeAlterColumnScript(Mapping.MappedPropertyAttribute final, Mapping.MappedPropertyAttribute initial);
+        string MakeDropRoutineScript(Mapping.MappedMethodAttribute routine);
+        string MakeCreateRoutineScript(Mapping.MappedMethodAttribute routine);
+        string MakeDropRelationshipScript(Mapping.Relationship relation);
+        string MakeCreateRelationshipScript(Mapping.Relationship relation);
     }
 }

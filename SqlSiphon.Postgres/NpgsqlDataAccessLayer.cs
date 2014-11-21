@@ -176,6 +176,11 @@ namespace SqlSiphon.Postgres
         protected override string IdentifierPartEnd { get { return "\""; } }
         public override string DefaultSchemaName { get { return "public"; } }
 
+        public override string MakeIdentifier(params string[] parts)
+        {
+            return base.MakeIdentifier(parts).ToLower();
+        }
+
         protected override void ModifyQuery(MappedMethodAttribute info)
         {
             base.ModifyQuery(info);
@@ -186,6 +191,11 @@ namespace SqlSiphon.Postgres
                 .Reverse();
             foreach (var param in parameters)
                 info.Query = info.Query.Replace("@" + param.Name, ":" + param.Name);
+        }
+
+        public override Type GetSystemType(string sqlType)
+        {
+            return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
         }
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
@@ -206,11 +216,11 @@ namespace SqlSiphon.Postgres
                 if (typeName == null)
                 {
                     typeName = MakeComplexSqlTypeString(systemType);
-                }
 
-                if (typeName == null && systemType.Name != "Void")
-                {
-                    throw new Exception("Couldn't find type description!");
+                    if (typeName == null && systemType.Name != "Void")
+                    {
+                        throw new Exception("Couldn't find type description!");
+                    }
                 }
             }
 
@@ -255,20 +265,38 @@ namespace SqlSiphon.Postgres
 
         private string MakeComplexSqlTypeString(Type systemType)
         {
-            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(systemType);
+            string sqlType = null;
+            var isRef = systemType.Name.Last() == '&';
+            var elemType = systemType.IsArray || isRef ? systemType.GetElementType() : systemType;
+            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(elemType);
             if (attr != null)
             {
-                attr.InferProperties(systemType);
-                var columns = this.MakeColumnSection(attr);
-                var sqlType = string.Format("TABLE ({0})", columns);
-                return sqlType;
+                attr.InferProperties(elemType);
+                if(systemType.IsArray)
+                {
+                    sqlType = attr.Name + "[]";
+                }
+                else
+                {
+                    sqlType = string.Format("TABLE ({0})", this.MakeColumnSection(attr));
+                }
             }
-            return null;
-        }
-
-        public override string MakeIdentifier(params string[] parts)
-        {
-            return base.MakeIdentifier(parts).ToLower();
+            else if(reverseTypeMapping.ContainsKey(elemType))
+            {
+                sqlType = reverseTypeMapping[elemType];
+                if (systemType.IsArray)
+                {
+                    sqlType += "[]";
+                }
+                else if (isRef)
+                {
+                    //sqlType = attr.Name;
+                }
+                else
+                {
+                }
+            }
+            return sqlType;
         }
 
         public override bool DescribesIdentity(ref string defaultValue)
@@ -479,7 +507,7 @@ namespace SqlSiphon.Postgres
                 defaultString);
         }
 
-        protected override string MakeDropProcedureScript(MappedMethodAttribute info)
+        public override string MakeDropRoutineScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema, info.Name);
             var parameterSection = string.Join(", ", info.Parameters.Select(p => p.SqlType));
@@ -488,7 +516,7 @@ namespace SqlSiphon.Postgres
                 parameterSection);
         }
 
-        protected override string MakeCreateProcedureScript(MappedMethodAttribute info)
+        public override string MakeCreateRoutineScript(MappedMethodAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
@@ -499,7 +527,7 @@ namespace SqlSiphon.Postgres
 $$ language 'sql'",
                 identifier,
                 parameterSection,
-                info.SqlType,
+                info.SqlType ?? "void",
                 info.Query);
         }
 
@@ -532,96 +560,27 @@ $$ language 'sql'",
             return "drop table if exists " + identifier;
         }
 
-        protected override string MakeDefaultConstraintScript(InformationSchema.Columns c, MappedPropertyAttribute prop)
+        public override string MakeCreateRelationshipScript(Relationship relation)
         {
-            var col = string.Format("alter table {0} alter column {1};",
-                MakeIdentifier(c.table_schema ?? DefaultSchemaName, c.table_name),
-                MakeColumnString(prop));
-            return col;
-        }
-
-        protected override bool IsTypeChanged(InformationSchema.Columns column, MappedPropertyAttribute property)
-        {
-            var sizeSet = false;
-            var precisionSet = false;
-            int size = 0, precision = 0;
-            if (column.udt_name == "varchar")
-            {
-                if (column.character_maximum_length != null
-                    && column.character_maximum_length != -1)
-                {
-                    sizeSet = true;
-                    size = column.character_maximum_length.Value;
-                }
-            }
-            else
-            {
-                if (column.numeric_precision != null
-                    && !(column.udt_name == "int4"
-                        && column.numeric_precision == 32)
-                    && !(column.udt_name == "double precision"
-                        && column.numeric_precision == 53)
-                    && column.numeric_precision != 0)
-                {
-                    precisionSet = true;
-                    precision = column.numeric_precision.Value;
-                }
-                if (column.numeric_scale != null
-                        && column.numeric_scale != 0)
-                {
-                    sizeSet = true;
-                    size = column.numeric_scale.Value;
-                }
-            }
-
-            var newType = this.MakeSqlTypeString(property);
-
-            var changed = (column.is_nullable.ToLower() == "yes") != property.IsOptional
-                || !typeMapping.ContainsKey(column.udt_name)
-                || !typeMapping.ContainsKey(property.SqlType)
-                || typeMapping[column.udt_name] != typeMapping[newType]
-                || sizeSet != property.IsSizeSet
-                || size != property.Size
-                || precisionSet != property.IsPrecisionSet
-                || precision != property.Precision;
-
-            return changed;
-        }
-
-        protected override string MakeFKScript(string tableSchema, string tableName, string tableColumns, string foreignSchema, string foreignName, string foreignColumns)
-        {
-            var constraintName = string.Join("_",
-                "FK",
-                tableSchema ?? DefaultSchemaName,
-                tableName,
-                tableColumns.Replace(',', '_'),
-                "to",
-                foreignSchema ?? DefaultSchemaName,
-                foreignName);
-
-            var tableFullName = MakeIdentifier(
-                tableSchema ?? DefaultSchemaName,
-                tableName);
-
-            var foreignFullName = MakeIdentifier(
-                foreignSchema ?? DefaultSchemaName,
-                foreignName);
+            var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
+            var toColumns = string.Join(", ", relation.ToColumns.Select(c => this.MakeIdentifier(c.Name)));
 
             return string.Format(
-@"alter table {0} drop constraint if exists {1};
-alter table {0} add constraint {1}
+@"alter table {0} add constraint {1}
     foreign key({2})
-    references {3}({4});",
-                    tableFullName,
-                    MakeIdentifier(constraintName),
-                    tableColumns,
-                    foreignFullName,
-                    foreignColumns);
+    references {3}({4})",
+                    this.MakeIdentifier(relation.From.Schema, relation.From.Name),
+                    this.MakeIdentifier(relation.Name),
+                    fromColumns,
+                    this.MakeIdentifier(relation.To.Schema, relation.To.Name),
+                    toColumns);
         }
 
-        public override Type GetSystemType(string sqlType)
+        public override string MakeDropRelationshipScript(Relationship relation)
         {
-            return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
+            return string.Format(@"alter table {0} drop constraint {1}",
+                    this.MakeIdentifier(relation.From.Schema, relation.From.Name),
+                    this.MakeIdentifier(relation.Name));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

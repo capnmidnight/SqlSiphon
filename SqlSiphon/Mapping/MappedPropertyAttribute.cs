@@ -91,17 +91,19 @@ namespace SqlSiphon.Mapping
             {
                 this.IsOptional = true;
             }
-
+            // TODO: move all of this type conversion stuff to the DAL vendor implementation.
             this.SqlType = column.udt_name ?? column.data_type;
             if (this.SqlType[0] == '_')
             {
                 this.SqlType = this.SqlType.Substring(1);
             }
+
             this.SystemType = dal.GetSystemType(this.SqlType);
             if (this.SystemType == null)
             {
                 throw new Exception("Couldn't find a matching type for " + this.SqlType ?? "<NULL TYPE>");
             }
+
             var systemSize = 0;
             if (this.SystemType.IsPrimitive)
             {
