@@ -68,6 +68,16 @@ namespace SqlSiphon.InformationSchema
 
         public int? interval_precision { get; set; }
         public int? maximum_cardinality { get; set; }
+        public int? is_self_referencing { get; set; }
+        public int? is_identity { get; set; }
+        public int? is_generated { get; set; }
+        public int? is_updatable { get; set; }
+        public string identity_generation { get; set; }
+        public int? identity_start { get; set; }
+        public int? identity_increment { get; set; }
+        public int? identity_maximum { get; set; }
+        public int? identity_minimum { get; set; }
+        public string identity_cycle { get; set; }
         public string interval_type { get; set; }
         public string udt_catalog { get; set; }
         public string udt_schema { get; set; }
@@ -76,16 +86,6 @@ namespace SqlSiphon.InformationSchema
         public string scope_schema { get; set; }
         public string scope_name { get; set; }
         public string dtd_identifier { get; set; }
-        public string is_self_referencing { get; set; }
-        public string is_identity { get; set; }
-        public string identity_generation { get; set; }
-        public string identity_start { get; set; }
-        public string identity_increment { get; set; }
-        public string identity_maximum { get; set; }
-        public string identity_minimum { get; set; }
-        public string identity_cycle { get; set; }
-        public string is_generated { get; set; }
         public string generation_expression { get; set; }
-        public string is_updatable { get; set; }
     }
 }

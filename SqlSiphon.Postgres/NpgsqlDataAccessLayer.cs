@@ -263,6 +263,36 @@ namespace SqlSiphon.Postgres
             }
         }
 
+        public override bool DescribesIdentity(InformationSchema.Columns column)
+        {
+            if (column.column_default != null && column.column_default.IndexOf("nextval") == 0)
+            {
+                column.column_default = null;
+                return true;
+            }
+            return false;
+        }
+
+        protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
+        {
+            return string.Format("alter table if exists {0} add column {1} {2};",
+                this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
+                prop.Name,
+                this.MakeSqlTypeString(prop));
+        }
+
+        public override string MakeDropColumnScript(MappedPropertyAttribute prop)
+        {
+            return string.Format("alter table if exists {0} drop column if exists {1};",
+                this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
+                this.MakeIdentifier(prop.Name));
+        }
+
         private string MakeComplexSqlTypeString(Type systemType)
         {
             string name = systemType != null ? systemType.FullName : null;
@@ -303,36 +333,6 @@ namespace SqlSiphon.Postgres
             return sqlType;
         }
 
-        public override bool DescribesIdentity(ref string defaultValue)
-        {
-            if (defaultValue != null && defaultValue.IndexOf("nextval") == 0)
-            {
-                defaultValue = null;
-                return true;
-            }
-            return false;
-        }
-
-        protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
-        {
-            return string.Format("alter table if exists {0} add column {1} {2};",
-                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
-                prop.Name,
-                this.MakeSqlTypeString(prop));
-        }
-
-        public override string MakeDropColumnScript(MappedPropertyAttribute prop)
-        {
-            return string.Format("alter table if exists {0} drop column if exists {1};",
-                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
-                this.MakeIdentifier(prop.Name));
-        }
-
         public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
         {
             var preamble = string.Format(
@@ -348,18 +348,6 @@ namespace SqlSiphon.Postgres
                     this.MakeIdentifier(final.Name),
                     final.Include ? this.MakeSqlTypeString(final) : "")
                     .Trim();
-            }
-            else if (final.Name.ToLower() != initial.Name.ToLower())
-            {
-                // this shouldn't happen, but maybe some day we will develop a way to keep track
-                // of a column changing its name over time. Maybe we can generate some kind of
-                // unique id for a column, and then always know what that column refers to, even
-                // if the name changes, but for now, we can't.
-                return string.Format(
-                    "{0} rename column {1} to {2};",
-                    preamble,
-                    this.MakeIdentifier(initial.Name),
-                    this.MakeIdentifier(final.Name));
             }
             else if (final.DefaultValue != initial.DefaultValue)
             {
@@ -381,7 +369,8 @@ namespace SqlSiphon.Postgres
             }
             else if (final.SystemType != initial.SystemType
                 || final.Size != initial.Size
-                || final.Precision != initial.Precision)
+                || final.Precision != initial.Precision
+                || final.IsIdentity != initial.IsIdentity)
             {
                 return string.Format(
                     "{0} alter column {1} set data type {2};",
@@ -465,10 +454,6 @@ namespace SqlSiphon.Postgres
                         unchanged = false;
                     }
                 }
-
-                if (final.Precision != initial.Precision)
-                {
-                }
             }
             return !unchanged;
         }
@@ -530,8 +515,8 @@ namespace SqlSiphon.Postgres
 
         public override string MakeDropRoutineScript(MappedMethodAttribute routine)
         {
-            var identifier = this.MakeIdentifier(routine.Schema, routine.Name);
-            var parameterSection = string.Join(", ", routine.Parameters.Select(p => p.SqlType));
+            var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
+            var parameterSection = string.Join(", ", routine.Parameters.Select(this.MakeSqlTypeString));
             return string.Format(@"drop function if exists {0}({1}) cascade;",
                 identifier,
                 parameterSection);
@@ -540,14 +525,6 @@ namespace SqlSiphon.Postgres
         public override string MakeCreateRoutineScript(MappedMethodAttribute routine)
         {
             var query = routine.Query;
-            //var parameters = routine.Parameters
-            //    .Select((p, i) => new { i = i, name = p.Name })
-            //    .OrderBy(p => p.name.Length)
-            //    .Reverse();
-            //foreach (var param in parameters)
-            //{
-            //    query = query.Replace("@" + param.name, "$" + (param.i + 1).ToString());
-            //}
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine);
             query = this.MakeDropRoutineScript(routine) + string.Format(
@@ -561,7 +538,7 @@ end;
 $$ language plpgsql;",
                 identifier,
                 parameterSection,
-                routine.SqlType,
+                this.MakeSqlTypeString(routine),
                 query);
             query = query.Replace("@", "P_");
             return query;
@@ -620,7 +597,7 @@ $$ language plpgsql;",
         public override string MakeDropRelationshipScript(Relationship relation)
         {
             return string.Format(@"alter table {0} drop constraint {1};",
-                    this.MakeIdentifier(relation.From.Schema, relation.From.Name),
+                    this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
                     this.MakeIdentifier(relation.Name));
         }
 

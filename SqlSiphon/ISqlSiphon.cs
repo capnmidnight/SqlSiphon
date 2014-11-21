@@ -24,7 +24,7 @@ namespace SqlSiphon
         List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
 
         string MakeIdentifier(params string[] parts);
-        bool DescribesIdentity(ref string defaultValue);
+        bool DescribesIdentity(InformationSchema.Columns column);
         bool ColumnChanged(Mapping.MappedPropertyAttribute final, Mapping.MappedPropertyAttribute initial);
         bool RoutineChanged(Mapping.MappedMethodAttribute final, Mapping.MappedMethodAttribute initial);
         Mapping.MappedMethodAttribute GetCommandDescription(System.Reflection.MethodInfo method);

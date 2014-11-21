@@ -45,7 +45,7 @@ namespace SqlSiphon
                 table.Schema = table.Schema ?? dal.DefaultSchemaName;
                 if (table.Include)
                 {
-                    this.Tables.Add(dal.MakeIdentifier(table.Schema, table.Name), table);
+                    this.Tables.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name), table);
                 }
             }
 
@@ -59,7 +59,7 @@ namespace SqlSiphon
                     {
                         if (function.CommandType == System.Data.CommandType.StoredProcedure)
                         {
-                            this.Functions.Add(dal.MakeIdentifier(function.Schema, function.Name), function);
+                            this.Functions.Add(dal.MakeIdentifier(function.Schema ?? dal.DefaultSchemaName, function.Name), function);
                         }
                     }
                 }
@@ -71,8 +71,7 @@ namespace SqlSiphon
                     if (field.FieldType == rt)
                     {
                         var r = (Relationship)field.GetValue(null);
-                        r.Schema = r.Schema ?? dal.DefaultSchemaName;
-                        this.Relationships.Add(dal.MakeIdentifier(r.Schema, r.Name), r);
+                        this.Relationships.Add(dal.MakeIdentifier(r.Schema ?? dal.DefaultSchemaName, r.Name), r);
                     }
                 }
             }

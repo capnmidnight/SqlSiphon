@@ -82,7 +82,7 @@ namespace SqlSiphon.Mapping
             this.Table = table;
             this.Name = column.column_name;
             var defVal = column.column_default;
-            this.IsIdentity = dal.DescribesIdentity(ref defVal);
+            this.IsIdentity = dal.DescribesIdentity(column);
             this.DefaultValue = defVal;
             this.IncludeInPrimaryKey = includeInPK;
             this.Include = true;

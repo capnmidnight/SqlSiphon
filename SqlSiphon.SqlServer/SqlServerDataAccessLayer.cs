@@ -252,27 +252,140 @@ create table {2}(
         public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
         {
             return string.Format("alter table {0} add {1} {2};",
-                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
+                this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
                 this.MakeIdentifier(prop.Name),
-                prop.SqlType);
+                this.MakeSqlTypeString(prop));
         }
 
         public override string MakeDropColumnScript(MappedPropertyAttribute prop)
         {
             return string.Format("alter table {0} drop column {1};",
-                this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
+                this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
                 this.MakeIdentifier(prop.Name));
         }
-        
+
+        public override bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial)
+        {
+            var tests = new bool[]{
+                final.Include == initial.Include,
+                final.IsOptional == initial.IsOptional,
+                final.Name.ToLower() == initial.Name.ToLower(),
+                final.SystemType == initial.SystemType,
+                final.Table != null,
+                initial.Table != null,
+                final.Table.Schema.ToLower() == initial.Table.Schema.ToLower(),
+                final.Table.Name.ToLower() == initial.Table.Name.ToLower()
+            };
+            var unchanged = tests.Aggregate((a, b) => a && b);
+            if (final.SystemType == initial.SystemType)
+            {
+                if (final.DefaultValue != null
+                    && initial.DefaultValue != null
+                    && final.DefaultValue != initial.DefaultValue)
+                {
+                    bool valuesMatch = true;
+                    if (final.SystemType == typeof(bool))
+                    {
+                        var xb = final.DefaultValue.Replace("'", "").ToLower();
+                        var xbb = xb == "true" || xb == "1";
+                        var yb = initial.DefaultValue
+                            .Replace("'", "")
+                            .Replace("((", "")
+                            .Replace("))", "")
+                            .ToLower();
+                        var ybb = yb == "true" || yb == "1";
+                        valuesMatch = xbb == ybb;
+                    }
+                    else if (final.SystemType == typeof(DateTime)
+                        || final.SystemType == typeof(double)
+                        || final.SystemType == typeof(int))
+                    {
+                        valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
+                            || initial.DefaultValue == "(" + final.DefaultValue + ")"
+                            || final.DefaultValue == "((" + initial.DefaultValue + "))"
+                            || initial.DefaultValue == "((" + final.DefaultValue + "))"; ;
+                    }
+                    else
+                    {
+                    }
+
+                    if (valuesMatch)
+                    {
+                        initial.DefaultValue = final.DefaultValue;
+                    }
+                    unchanged = unchanged && valuesMatch;
+                }
+
+                if (final.Size != initial.Size)
+                {
+                    if ((final.SystemType != typeof(int) || final.IsSizeSet || initial.Size != 10)
+                        && (final.SystemType != typeof(double) || final.IsSizeSet || initial.Size != 24)
+                        && (final.SystemType != typeof(byte[]) || final.IsSizeSet || initial.Size != -1)
+                        && (final.SystemType != typeof(string) || final.IsSizeSet || initial.Size != -1))
+                    {
+                        unchanged = false;
+                    }
+                    else
+                    {
+                        initial.Size = final.Size;
+                    }
+                }
+            }
+            if (!unchanged)
+            {
+            }
+            return !unchanged;
+        }
+
         public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
         {
-            var temp = final.DefaultValue;
-            final.DefaultValue = null;
-            var col = string.Format("alter table {0} alter column {1};",
-                this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name),
-                this.MakeColumnString(final, false));
-            final.DefaultValue = temp;
-            return col;
+            var preamble = string.Format(
+                "alter table {0}",
+                this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name));
+
+            if (final.Include != initial.Include)
+            {
+                return string.Format(
+                    "{0} {1} {2} {3};",
+                    preamble,
+                    final.Include ? "add" : "drop column",
+                    this.MakeIdentifier(final.Name),
+                    final.Include ? this.MakeSqlTypeString(final) : "")
+                    .Trim();
+            }
+            else if (final.DefaultValue != initial.DefaultValue)
+            {
+                return string.Format(
+                    "{0} alter column {1} {2} default {3};",
+                    preamble,
+                    this.MakeIdentifier(final.Name),
+                    this.MakeSqlTypeString(final),
+                    final.DefaultValue ?? "")
+                    .Trim();
+            }
+            else if (final.IsOptional != initial.IsOptional)
+            {
+                return string.Format(
+                    "{0} alter column {1} {2} not null;",
+                    preamble,
+                    this.MakeIdentifier(final.Name),
+                    final.IsOptional ? "drop" : "set");
+            }
+            else if (final.SystemType != initial.SystemType
+                || final.Size != initial.Size
+                || final.Precision != initial.Precision)
+            {
+                return string.Format(
+                    "{0} alter column {1} set data type {2};",
+                    preamble,
+                    this.MakeIdentifier(final.Name),
+                    this.MakeSqlTypeString(final));
+            }
+            else
+            {
+                // by this point, the columns should be identical, but we still need a base case
+                return null;
+            }
         }
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
@@ -373,110 +486,41 @@ create table {2}(
 @"alter table {0} add constraint {1}
     foreign key({2})
     references {3}({4})",
-                    this.MakeIdentifier(relation.From.Schema, relation.From.Name),
+                    this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
                     this.MakeIdentifier(relation.Name),
                     fromColumns,
-                    this.MakeIdentifier(relation.To.Schema, relation.To.Name),
+                    this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
                     toColumns);
         }
 
         public override string MakeDropRelationshipScript(Relationship relation)
         {
             return string.Format(@"alter table {0} drop constraint {1}",
-                    this.MakeIdentifier(relation.From.Schema, relation.From.Name),
+                    this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
                     this.MakeIdentifier(relation.Name));
         }
 
 
         public override bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
         {
-            return this.MakeCreateRoutineScript(a) != this.MakeCreateRoutineScript(b);
+            return this.MakeCreateRoutineScript(a).ToLower() != this.MakeCreateRoutineScript(b).ToLower();
         }
 
         public override bool RelationshipChanged(Relationship a, Relationship b)
         {
-            return this.MakeCreateRelationshipScript(a) != this.MakeCreateRelationshipScript(b);
+            return this.MakeCreateRelationshipScript(a).ToLower() != this.MakeCreateRelationshipScript(b).ToLower();
         }
 
-        public override bool ColumnChanged(MappedPropertyAttribute x, MappedPropertyAttribute y)
+        public override bool DescribesIdentity(InformationSchema.Columns column)
         {
-            var tests = new bool[]{
-                x.DefaultValue == y.DefaultValue,
-                x.Include == y.Include,
-                x.IncludeInPrimaryKey == y.IncludeInPrimaryKey,
-                x.IsIdentity == y.IsIdentity,
-                x.IsOptional == y.IsOptional,
-                x.Name.ToLower() == y.Name.ToLower(),
-                x.Precision == y.Precision,
-                x.Size == y.Size,
-                x.SystemType == y.SystemType,
-                x.Table != null,
-                y.Table != null,
-                x.Table.Schema.ToLower() == y.Table.Schema.ToLower(),
-                x.Table.Name.ToLower() == y.Table.Name.ToLower()
-            };
-            var final = tests.Aggregate((a, b) => a && b);
-            return final;
-
-
-            /*
-                var sizeSet = false;
-                var precisionSet = false;
-                int size = 0;
-                if (column.data_type == "nvarchar"
-                    || column.data_type == "varchar")
-                {
-                    if (column.character_maximum_length != null
-                        && column.character_maximum_length != -1)
-                    {
-                        sizeSet = true;
-                        size = column.character_maximum_length.Value;
-                    }
-                }
-                else
-                {
-                    if (column.numeric_precision != null
-                        && !((column.data_type == "int"
-                                || column.data_type == "integer")
-                            && column.numeric_precision == 10)
-                        && !(column.data_type == "real"
-                            && column.numeric_precision == 24)
-                        && column.numeric_precision != 0)
-                    {
-                        precisionSet = true;
-                    }
-                    if (column.numeric_scale != null
-                            && column.numeric_scale != 0)
-                    {
-                        sizeSet = true;
-                        size = column.numeric_scale.Value;
-                    }
-                }
-
-                var newType = this.MakeSqlTypeString(property);
-
-                var changed = (column.is_nullable.ToLower() == "yes") != property.IsOptional
-                    || column.data_type != newType
-                    || sizeSet != property.IsSizeSet
-                    || size != property.Size
-                    || precisionSet != property.IsPrecisionSet
-                    || column.numeric_precision.Value != property.Precision;
-
-                return changed;
-            */
-        }
-
-        public override bool DescribesIdentity(ref string defaultValue)
-        {
-            throw new NotImplementedException();
+            return column.is_identity == 1;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [MappedMethod(CommandType = CommandType.Text, Query =
-@"select *
+@"select *, COLUMNPROPERTY(object_id(TABLE_NAME), COLUMN_NAME, 'IsIdentity') as is_identity
 from information_schema.columns
 where table_schema != 'information_schema'
-    and table_schema != 'pg_catalog'
 order by table_catalog, table_schema, table_name, ordinal_position;")]
         public override List<InformationSchema.Columns> GetColumns()
         {
@@ -488,7 +532,6 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
 @"select *
 from information_schema.table_constraints
 where table_schema != 'information_schema'
-    and table_schema != 'pg_catalog'
 order by table_catalog, table_schema, table_name;")]
         public override List<InformationSchema.TableConstraints> GetTableConstraints()
         {
@@ -500,7 +543,6 @@ order by table_catalog, table_schema, table_name;")]
 @"select *
 from information_schema.referential_constraints
 where constraint_schema != 'information_schema'
-    and constraint_schema != 'pg_catalog'
 order by constraint_catalog, constraint_schema, constraint_name;")]
         public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
         {
@@ -513,7 +555,6 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
 @"select *
 from information_schema.routines
 where specific_schema != 'information_schema'
-    and specific_schema != 'pg_catalog'
 order by specific_catalog, specific_schema, specific_name;")]
         public override List<InformationSchema.Routines> GetRoutines()
         {
@@ -526,7 +567,6 @@ order by specific_catalog, specific_schema, specific_name;")]
 @"select *
 from information_schema.parameters
 where specific_schema != 'information_schema'
-    and specific_schema != 'pg_catalog'
 order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         public override List<InformationSchema.Parameters> GetParameters()
         {
@@ -537,8 +577,7 @@ order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         [MappedMethod(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.constraint_column_usage
-where constraint_schema != 'information_schema'
-    and constraint_schema != 'pg_catalog';")]
+where constraint_schema != 'information_schema';")]
         public override List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns()
         {
             return GetList<InformationSchema.ConstraintColumnUsage>();
@@ -548,8 +587,7 @@ where constraint_schema != 'information_schema'
         [MappedMethod(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.key_column_usage
-where constraint_schema != 'information_schema'
-    and constraint_schema != 'pg_catalog';")]
+where constraint_schema != 'information_schema';")]
         public override List<InformationSchema.KeyColumnUsage> GetKeyColumns()
         {
             return GetList<InformationSchema.KeyColumnUsage>();

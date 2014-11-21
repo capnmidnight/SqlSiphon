@@ -7,12 +7,12 @@ namespace SqlSiphon
 {
     public class DatabaseDelta
     {
-        private static Dictionary<T, U> Clone<T, U>(Dictionary<T, U> dict)
+        private static Dictionary<string, U> Clone<U>(Dictionary<string, U> dict)
         {
-            var clone = new Dictionary<T, U>();
+            var clone = new Dictionary<string, U>();
             foreach (var p in dict)
             {
-                clone.Add(p.Key, p.Value);
+                clone.Add(p.Key.ToLower(), p.Value);
             }
             return clone;
         }
@@ -55,6 +55,9 @@ namespace SqlSiphon
         public Dictionary<string, string> AlteredRoutinesScripts { get; private set; }
         public Dictionary<string, string> UnalteredRoutinesScripts { get; private set; }
         public Dictionary<string, string> OtherScripts { get; private set; }
+        public Dictionary<string, string> CreateIndexScripts { get; private set; }
+        public Dictionary<string, string> DropIndexScripts { get; private set; }
+        public Dictionary<string, string> UnalteredIndexScripts { get; private set; }
 
         public DatabaseDelta(DatabaseState final, DatabaseState initial, ISqlSiphon dal)
         {
@@ -81,6 +84,9 @@ namespace SqlSiphon
             this.AlteredRoutinesScripts = new Dictionary<string, string>();
             this.UnalteredRoutinesScripts = new Dictionary<string, string>();
             this.OtherScripts = new Dictionary<string, string>();
+            this.CreateIndexScripts = new Dictionary<string, string>();
+            this.DropIndexScripts = new Dictionary<string, string>();
+            this.UnalteredIndexScripts = new Dictionary<string, string>();
 
             ProcessTables(finalTables, initialTables, dal);
             ProcessRelationships(finalRelations, initialRelations, dal);
@@ -139,8 +145,8 @@ namespace SqlSiphon
                 (tableName, finalTable, initialTable) =>
                 {
                     var tableAltered = false;
-                    var finalColumns = finalTable.Properties.ToDictionary(p => dal.MakeIdentifier(finalTable.Schema, finalTable.Name, p.Name));
-                    var initialColumns = initialTable.Properties.ToDictionary(p => dal.MakeIdentifier(initialTable.Schema, initialTable.Name, p.Name));
+                    var finalColumns = finalTable.Properties.ToDictionary(p => dal.MakeIdentifier(finalTable.Schema ?? dal.DefaultSchemaName, finalTable.Name, p.Name).ToLower());
+                    var initialColumns = initialTable.Properties.ToDictionary(p => dal.MakeIdentifier(initialTable.Schema ?? dal.DefaultSchemaName, initialTable.Name, p.Name).ToLower());
 
                     Traverse(finalColumns, initialColumns, (columnName, initialColumn) =>
                     {

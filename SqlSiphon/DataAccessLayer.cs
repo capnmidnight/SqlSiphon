@@ -262,7 +262,7 @@ namespace SqlSiphon
                 var parameterNames = columnNames.Select(c => "@" + c);
 
                 string query = string.Format("insert into {0}({1}) values({2})",
-                    this.MakeIdentifier(attr.Schema, attr.Name),
+                    this.MakeIdentifier(attr.Schema ?? DefaultSchemaName, attr.Name),
                     string.Join(", ", columnNames),
                     string.Join(", ", parameterNames));
 
@@ -325,8 +325,7 @@ namespace SqlSiphon
                     throw new Exception("Fewer parameters were passed to the processing method than were specified in the mapped method signature.");
             }
 
-            // To support calling stored procedures from non-default schemas:
-            var procName = MakeIdentifier(meta.Schema, meta.Name);
+            var procName = MakeIdentifier(meta.Schema ?? DefaultSchemaName, meta.Name);
             var methParams = meta.Parameters.ToArray();
             var command = BuildCommand(meta.CommandType == CommandType.Text ? meta.Query : procName, meta.CommandType, methParams);
             this.CopyParameterValues(command, parameterValues);
@@ -611,13 +610,6 @@ namespace SqlSiphon
 
                 if (meta.Schema == null)
                     meta.Schema = DefaultSchemaName;
-
-                if (meta.SqlType == null)
-                    meta.SqlType = this.MakeSqlTypeString(meta);
-
-                foreach (var parameter in meta.Parameters)
-                    if (parameter.SqlType == null)
-                        parameter.SqlType = this.MakeSqlTypeString(parameter);
             }
             return meta;
         }
@@ -759,7 +751,7 @@ AND COLUMN_NAME = @columnName;")]
 
         public abstract string DefaultSchemaName { get; }
         public abstract Type GetSystemType(string sqlType);
-        public abstract bool DescribesIdentity(ref string defaultValue);
+        public abstract bool DescribesIdentity(InformationSchema.Columns column);
         public abstract bool ColumnChanged(MappedPropertyAttribute a, MappedPropertyAttribute b);
         public abstract bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b);
         public abstract bool RelationshipChanged(Relationship a, Relationship b);
