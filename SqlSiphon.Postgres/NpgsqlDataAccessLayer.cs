@@ -81,6 +81,8 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("cidr", typeof(System.Net.IPAddress));
 
             typeMapping.Add("date", typeof(DateTime));
+            typeMapping.Add("datetime", typeof(DateTime)); // included for tranlating T-SQL to PG/PSQL
+            typeMapping.Add("datetime2", typeof(DateTime)); // included for tranlating T-SQL to PG/PSQL
 
             typeMapping.Add("double precision", typeof(double));
             typeMapping.Add("float8", typeof(double));
@@ -110,6 +112,7 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("timestamp with time zone", typeof(DateTime));
 
             typeMapping.Add("uuid", typeof(Guid));
+            typeMapping.Add("uniqueidentifier", typeof(Guid)); // included for tranlating T-SQL to PG/PSQL
 
             //typeMapping.Add("box", typeof());
             //typeMapping.Add("circle", typeof());
@@ -269,6 +272,7 @@ namespace SqlSiphon.Postgres
             if (column.column_default != null && column.column_default.IndexOf("nextval") == 0)
             {
                 column.column_default = null;
+                column.udt_name = "integer";
                 return true;
             }
             return false;
@@ -508,6 +512,7 @@ namespace SqlSiphon.Postgres
         }
 
         private static Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex IffPattern = new Regex(@"if.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
         public override string MakeCreateRoutineScript(MappedMethodAttribute routine)
         {
@@ -534,23 +539,19 @@ namespace SqlSiphon.Postgres
                     .Select(p => p.Trim())
                     .Where(p => p.Length > 0)
                     .ToArray();
-                if (parts.Length == 2)
+                parts[1] = parts[1].ToLower();
+                if (typeMapping.ContainsKey(parts[1]) && reverseTypeMapping.ContainsKey(typeMapping[parts[1]]))
                 {
-                    if (parts[1] == "uniqueidentifier")
-                    {
-                        parts[1] = "uuid";
-                    }
+                    parts[1] = reverseTypeMapping[typeMapping[parts[1]]];
                 }
-                else
-                {
-                }
-                declarations[i] = "\n\t" + string.Join(" ", parts) + ";";
+                declarations[i] = "\r\n\t" + string.Join(" ", parts) + ";";
             }
             var declarationString = "";
             if (declarations.Count > 0)
             {
                 declarationString = "declare " + string.Join("", declarations);
             }
+            query = IffPattern.Replace(query, new MatchEvaluator(m => string.Format("if({0}) then\r\n", m.Value.Trim().Substring(3).Trim())));
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine);
             query = this.MakeDropRoutineScript(routine) + string.Format(
