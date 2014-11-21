@@ -121,10 +121,10 @@ namespace SqlSiphon
                     {
                         foreach (var constraint in tableConstraints)
                         {
+                            var constraintName = dal.MakeIdentifier(constraint.constraint_schema, constraint.constraint_name);
+                            var constraintColumns = keyColumnsByName[constraintName];
                             if (constraint.constraint_type == "FOREIGN KEY")
                             {
-                                var constraintName = dal.MakeIdentifier(constraint.constraint_schema, constraint.constraint_name);
-                                var constraintColumns = keyColumnsByName[constraintName];
                                 var uniqueConstraintName = xref[constraintName];
                                 var uniqueConstraint = constraintsByName[uniqueConstraintName];
                                 var uniqueConstraintColumns = constraintsColumnsByName[uniqueConstraintName];
@@ -133,6 +133,12 @@ namespace SqlSiphon
                                     constraint, constraintColumns, tableColumns,
                                     uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns,
                                     dal));
+                            }
+                            else if (constraint.constraint_type == "PRIMARY KEY")
+                            {
+                            }
+                            else
+                            {
                             }
                         }
                     }
