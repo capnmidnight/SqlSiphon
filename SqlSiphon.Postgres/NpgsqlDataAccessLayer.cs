@@ -512,7 +512,6 @@ namespace SqlSiphon.Postgres
         }
 
         private static Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static Regex IffPattern = new Regex(@"if.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
         public override string MakeCreateRoutineScript(MappedMethodAttribute routine)
         {
@@ -551,7 +550,7 @@ namespace SqlSiphon.Postgres
             {
                 declarationString = "declare " + string.Join("", declarations);
             }
-            query = IffPattern.Replace(query, new MatchEvaluator(m => string.Format("if({0}) then\r\n", m.Value.Trim().Substring(3).Trim())));
+            
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine);
             query = this.MakeDropRoutineScript(routine) + string.Format(
