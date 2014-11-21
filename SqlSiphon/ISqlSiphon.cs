@@ -25,6 +25,7 @@ namespace SqlSiphon
         string MakeIdentifier(params string[] parts);
         bool DescribesIdentity(ref string defaultValue);
         bool ColumnChanged(Mapping.MappedPropertyAttribute fc, Mapping.MappedPropertyAttribute ic);
+        Mapping.MappedMethodAttribute GetCommandDescription(System.Reflection.MethodInfo method);
 
         Type GetSystemType(string sqlType);
 

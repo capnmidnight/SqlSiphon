@@ -600,7 +600,7 @@ namespace SqlSiphon
             return results;
         }
 
-        private MappedMethodAttribute GetCommandDescription(MethodInfo method)
+        public MappedMethodAttribute GetCommandDescription(MethodInfo method)
         {
             var meta = MappedObjectAttribute.GetAttribute<MappedMethodAttribute>(method);
             if (meta != null)
@@ -618,7 +618,6 @@ namespace SqlSiphon
                 foreach (var parameter in meta.Parameters)
                     if (parameter.SqlType == null)
                         parameter.SqlType = this.MakeSqlTypeString(parameter);
-                this.ModifyQuery(meta);
             }
             return meta;
         }
@@ -726,14 +725,9 @@ AND COLUMN_NAME = @columnName;")]
             return ArgumentList(info.Parameters, this.MakeParameterString);
         }
 
-        protected string MakeColumnSection(MappedClassAttribute info)
+        protected string MakeColumnSection(MappedClassAttribute info, bool isReturnType)
         {
-            return ArgumentList(info.Properties.Where(p => p.Include), this.MakeColumnString);
-        }
-
-        protected virtual void ModifyQuery(MappedMethodAttribute info)
-        {
-            //do nothing in the base case
+            return ArgumentList(info.Properties.Where(p => p.Include), p => this.MakeColumnString(p, isReturnType));
         }
 
         protected string MakeSqlTypeString(MappedObjectAttribute p)
@@ -769,7 +763,7 @@ AND COLUMN_NAME = @columnName;")]
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
         protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
-        protected abstract string MakeColumnString(MappedPropertyAttribute p);
+        protected abstract string MakeColumnString(MappedPropertyAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(MappedParameterAttribute p);
 
         public abstract string MakeCreateTableScript(MappedClassAttribute table);

@@ -54,11 +54,9 @@ namespace SqlSiphon
                 var methods = type.GetMethods();
                 foreach (var method in methods)
                 {
-                    var function = MappedObjectAttribute.GetAttribute<MappedMethodAttribute>(method);
+                    var function = dal.GetCommandDescription(method);
                     if (function != null)
                     {
-                        function.InferProperties(method);
-                        function.Schema = function.Schema ?? dal.DefaultSchemaName;
                         if (function.CommandType == System.Data.CommandType.StoredProcedure)
                         {
                             this.Functions.Add(dal.MakeIdentifier(function.Schema, function.Name), function);

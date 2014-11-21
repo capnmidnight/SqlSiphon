@@ -181,18 +181,6 @@ namespace SqlSiphon.Postgres
             return base.MakeIdentifier(parts).ToLower();
         }
 
-        protected override void ModifyQuery(MappedMethodAttribute info)
-        {
-            base.ModifyQuery(info);
-            //convert a parameterized query likely written for SQL Server 
-            // or MySQL to a format useable on Postgres
-            var parameters = info.Parameters
-                .OrderBy(p => p.Name.Length)
-                .Reverse();
-            foreach (var param in parameters)
-                info.Query = info.Query.Replace("@" + param.Name, ":" + param.Name);
-        }
-
         public override Type GetSystemType(string sqlType)
         {
             return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
@@ -200,10 +188,6 @@ namespace SqlSiphon.Postgres
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision)
         {
-            if (systemType.BaseType == typeof(SqlSiphon.InformationSchema.Columns))
-            {
-                systemType = typeof(NpgsqlDataAccessLayer).BaseType.GetGenericArguments()[systemType.GenericParameterPosition];
-            }
             string typeName = null;
 
             if (sqlType != null)
@@ -219,12 +203,12 @@ namespace SqlSiphon.Postgres
 
                     if (typeName == null && systemType.Name != "Void")
                     {
-                        throw new Exception("Couldn't find type description!");
+                        throw new Exception(string.Format("Couldn't find type description for type: {0}", systemType != null ? systemType.FullName : "N/A"));
                     }
                 }
             }
 
-            if (size.HasValue && typeName.IndexOf("[") == -1)
+            if (size.HasValue && typeName.IndexOf("(") == -1)
             {
                 if (typeName == "text")
                 {
@@ -265,6 +249,7 @@ namespace SqlSiphon.Postgres
 
         private string MakeComplexSqlTypeString(Type systemType)
         {
+            string name = systemType != null ? systemType.FullName : null;
             string sqlType = null;
             var isRef = systemType.Name.Last() == '&';
             var elemType = systemType.IsArray || isRef ? systemType.GetElementType() : systemType;
@@ -272,29 +257,32 @@ namespace SqlSiphon.Postgres
             if (attr != null)
             {
                 attr.InferProperties(elemType);
-                if(systemType.IsArray)
+                if (systemType.IsArray)
                 {
                     sqlType = attr.Name + "[]";
                 }
                 else
                 {
-                    sqlType = string.Format("TABLE ({0})", this.MakeColumnSection(attr));
+                    sqlType = string.Format("TABLE ({0})", this.MakeColumnSection(attr, true));
                 }
             }
-            else if(reverseTypeMapping.ContainsKey(elemType))
+            else if (reverseTypeMapping.ContainsKey(elemType))
             {
                 sqlType = reverseTypeMapping[elemType];
                 if (systemType.IsArray)
                 {
                     sqlType += "[]";
                 }
-                else if (isRef)
-                {
-                    //sqlType = attr.Name;
-                }
-                else
-                {
-                }
+            }
+            else if (systemType != typeof(void))
+            {
+                attr = new MappedClassAttribute();
+                attr.InferProperties(systemType);
+                sqlType = string.Format("TABLE ({0})", this.MakeColumnSection(attr, true));
+            }
+            else
+            {
+                sqlType = "void";
             }
             return sqlType;
         }
@@ -407,9 +395,10 @@ namespace SqlSiphon.Postgres
                 final.Table.Name.ToLower() == intial.Table.Name.ToLower()
             };
             var unchanged = tests.Aggregate((a, b) => a && b);
-            if (final.SystemType == intial.SystemType){
-                if(final.DefaultValue != null 
-                    && intial.DefaultValue != null 
+            if (final.SystemType == intial.SystemType)
+            {
+                if (final.DefaultValue != null
+                    && intial.DefaultValue != null
                     && final.DefaultValue != intial.DefaultValue)
                 {
                     bool valuesMatch;
@@ -428,7 +417,7 @@ namespace SqlSiphon.Postgres
                     }
                     else if (final.SystemType == typeof(double))
                     {
-                        valuesMatch = final.DefaultValue == "(" + intial.DefaultValue + ")" 
+                        valuesMatch = final.DefaultValue == "(" + intial.DefaultValue + ")"
                             || intial.DefaultValue == "(" + final.DefaultValue + ")";
                     }
                     else
@@ -442,7 +431,7 @@ namespace SqlSiphon.Postgres
                     }
                     unchanged = unchanged && valuesMatch;
                 }
-                
+
                 if (final.Size != intial.Size)
                 {
                     if (final.SystemType != typeof(double) || final.IsSizeSet || intial.Size != 53)
@@ -458,15 +447,12 @@ namespace SqlSiphon.Postgres
             return !unchanged;
         }
 
-        protected override string MakeParameterString(MappedParameterAttribute p)
+        protected override string MakeParameterString(MappedParameterAttribute param)
         {
             var dirString = "";
-            var typeStr = MakeSqlTypeString(p);
-            switch (p.Direction)
+            var typeStr = MakeSqlTypeString(param);
+            switch (param.Direction)
             {
-                case ParameterDirection.Input:
-                    dirString = "IN";
-                    break;
                 case ParameterDirection.InputOutput:
                     dirString = "INOUT";
                     break;
@@ -476,50 +462,63 @@ namespace SqlSiphon.Postgres
             }
 
             var defaultString = "";
-            if (p.DefaultValue != null)
-                defaultString = " DEFAULT = " + p.DefaultValue.ToString();
+            if (param.DefaultValue != null)
+                defaultString = " DEFAULT = " + param.DefaultValue.ToString();
 
-            return string.Format("{0} {1} {2}{3}", dirString, p.Name, typeStr, defaultString);
+            return string.Format("{0} {1} {2}{3}", dirString, param.Name, typeStr, defaultString);
         }
 
-        protected override string MakeColumnString(MappedPropertyAttribute p)
+        protected override string MakeColumnString(MappedPropertyAttribute column, bool isReturnType)
         {
-            var typeStr = MakeSqlTypeString(p);
+            var typeStr = MakeSqlTypeString(column);
+            var nullString = "";
             var defaultString = "";
-            if (p.DefaultValue != null)
+            if (!isReturnType)
             {
-                var val = p.DefaultValue.ToString();
-                if (val.ToLower() == "getdate()")
+                nullString = column.IsOptional ? "NULL" : "NOT NULL";
+                if (column.DefaultValue != null)
                 {
-                    val = "current_date";
+                    var val = column.DefaultValue.ToString();
+                    if (val.ToLower() == "getdate()")
+                    {
+                        val = "current_date";
+                    }
+                    defaultString = "DEFAULT " + val;
                 }
-                defaultString = "DEFAULT " + val;
-            }
-            else if (p.IsIdentity)
-            {
-                typeStr = typeStr.Replace("integer", "serial");
+                else if (column.IsIdentity)
+                {
+                    typeStr = typeStr.Replace("integer", "serial");
+                }
             }
 
             return string.Format("{0} {1} {2} {3}",
-                p.Name,
+                column.Name,
                 typeStr,
-                p.IsOptional ? "NULL" : "NOT NULL",
-                defaultString);
+                nullString,
+                defaultString).Trim();
         }
 
-        public override string MakeDropRoutineScript(MappedMethodAttribute info)
+        public override string MakeDropRoutineScript(MappedMethodAttribute routine)
         {
-            var identifier = this.MakeIdentifier(info.Schema, info.Name);
-            var parameterSection = string.Join(", ", info.Parameters.Select(p => p.SqlType));
+            var identifier = this.MakeIdentifier(routine.Schema, routine.Name);
+            var parameterSection = string.Join(", ", routine.Parameters.Select(p => p.SqlType));
             return string.Format(@"drop function if exists {0}({1}) cascade;",
                 identifier,
                 parameterSection);
         }
 
-        public override string MakeCreateRoutineScript(MappedMethodAttribute info)
+        public override string MakeCreateRoutineScript(MappedMethodAttribute routine)
         {
-            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
-            var parameterSection = this.MakeParameterSection(info);
+            var query = routine.Query;
+            var parameters = routine.Parameters
+                .OrderBy(p => p.Name.Length)
+                .Reverse();
+            foreach (var param in parameters)
+            {
+                query = query.Replace("@" + param.Name, param.Name);
+            }
+            var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
+            var parameterSection = this.MakeParameterSection(routine);
             return string.Format(
 @"create or replace function {0}({1})
     returns {2} as $$
@@ -527,15 +526,15 @@ namespace SqlSiphon.Postgres
 $$ language 'sql'",
                 identifier,
                 parameterSection,
-                info.SqlType ?? "void",
-                info.Query);
+                routine.SqlType,
+                query);
         }
 
         public override string MakeCreateTableScript(MappedClassAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
-            var columnSection = this.MakeColumnSection(info);
+            var columnSection = this.MakeColumnSection(info, false);
             var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
             var pkString = "";
             if (pk.Length > 0)

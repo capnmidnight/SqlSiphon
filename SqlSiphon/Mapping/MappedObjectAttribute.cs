@@ -232,10 +232,7 @@ namespace SqlSiphon.Mapping
         public virtual void InferProperties(MethodInfo obj)
         {
             this.SetName(obj.Name);
-            var type = obj.ReturnType;
-            if (type.IsArray)
-                type = type.GetElementType();
-            this.SetSystemType(type);
+            this.SetSystemType(obj.ReturnType);
         }
 
         /// <summary>

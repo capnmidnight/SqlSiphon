@@ -137,8 +137,14 @@ namespace SqlSiphon.SqlServer
             reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
         }
 
-        protected override void ModifyQuery(MappedMethodAttribute info)
+        public override string MakeDropRoutineScript(MappedMethodAttribute info)
         {
+            return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
+        }
+
+        public override string MakeCreateRoutineScript(MappedMethodAttribute info)
+        {
+            var query = info.Query;
             if (info.EnableTransaction)
             {
                 string transactionName = string.Format("TRANS{0}", Guid.NewGuid().ToString().Replace("-", "")).Substring(0, 32);
@@ -152,17 +158,8 @@ begin catch
     rollback transaction {0};
     raiserror(@msg, @lvl, @stt);
 end catch;", transactionName);
-                info.Query = string.Format("{0}\r\n{1}\r\n{2}", transactionBegin, info.Query, transactionEnd);
+                query = string.Format("{0}\r\n{1}\r\n{2}", transactionBegin, query, transactionEnd);
             }
-        }
-
-        public override string MakeDropRoutineScript(MappedMethodAttribute info)
-        {
-            return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
-        }
-
-        public override string MakeCreateRoutineScript(MappedMethodAttribute info)
-        {
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
             return string.Format(
@@ -174,14 +171,14 @@ as begin
 end",
                 identifier,
                 parameterSection,
-                info.Query);
+                query);
         }
 
         public override string MakeCreateTableScript(MappedClassAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
-            var columnSection = this.MakeColumnSection(info);
+            var columnSection = this.MakeColumnSection(info, false);
             var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
             var pkString = "";
             if (pk.Length > 0)
@@ -225,7 +222,7 @@ create table {2}(
                 p.DefaultValue ?? "").Trim();
         }
 
-        protected override string MakeColumnString(MappedPropertyAttribute p)
+        protected override string MakeColumnString(MappedPropertyAttribute p, bool isReturnType)
         {
             var typeStr = MakeSqlTypeString(p);
             var defaultString = "";
@@ -262,7 +259,7 @@ create table {2}(
             final.DefaultValue = null;
             var col = string.Format("alter table {0} alter column {1};",
                 this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name),
-                this.MakeColumnString(final));
+                this.MakeColumnString(final, false));
             final.DefaultValue = temp;
             return col;
         }
