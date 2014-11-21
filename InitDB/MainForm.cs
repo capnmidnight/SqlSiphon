@@ -529,7 +529,7 @@ namespace InitDB
 
                         if (succeeded && chkCreateFKs.Checked)
                         {
-                            succeeded &= RunScripts("Creating foreign keys:", delta.CreateRelationshipsScripts, db);
+                            succeeded &= RunScripts("Creating foreign keys:", delta.CreateRelationshipsScripts.Reverse(), db);
                         }
 
                         if (succeeded && chkCreateIndices.Checked)
@@ -572,14 +572,14 @@ namespace InitDB
         }
 
 
-        private bool RunScripts(string feature, Dictionary<string, string> scripts, ISqlSiphon db)
+        private bool RunScripts(string feature, IEnumerable<KeyValuePair<string, string>> scripts, ISqlSiphon db)
         {
-            foreach (var scriptName in scripts.Keys)
+            foreach (var script in scripts)
             {
                 try
                 {
-                    this.ToOutput(string.Format("{0} {1}.", feature, scriptName));
-                    db.AlterDatabase(scripts[scriptName]);
+                    this.ToOutput(string.Format("{0} {1}.", feature, script.Key));
+                    db.AlterDatabase(script.Value);
                 }
                 catch (Exception exp)
                 {
@@ -630,7 +630,7 @@ namespace InitDB
                 FillGV(this.dropColumnsGV, delta.DropColumnsScripts);
                 FillGV(this.alteredColumnsGV, delta.AlteredColumnsScripts);
                 FillGV(this.unalteredColumnsGV, delta.UnalteredColumnsScripts);
-                FillGV(this.createRelationshipsGV, delta.CreateRelationshipsScripts);
+                FillGV(this.createRelationshipsGV, delta.CreateRelationshipsScripts.Reverse());
                 FillGV(this.dropRelationshipsGV, delta.DropRelationshipsScripts);
                 FillGV(this.unalteredRelationshipsGV, delta.UnalteredRelationshipsScripts);
                 FillGV(this.createRoutinesGV, delta.CreateRoutinesScripts);
