@@ -65,12 +65,12 @@ namespace SqlSiphon
                 }
 
                 var rt = typeof(Relationship);
-                var props = type.GetProperties(BindingFlags.Static);
-                foreach (var prop in props)
+                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+                foreach (var field in fields)
                 {
-                    if (prop.PropertyType == rt)
+                    if (field.FieldType == rt)
                     {
-                        var r = (Relationship)prop.GetValue(null, null);
+                        var r = (Relationship)field.GetValue(null);
                         r.Schema = r.Schema ?? dal.DefaultSchemaName;
                         this.Relationships.Add(dal.MakeIdentifier(r.Schema, r.Name), r);
                     }
@@ -94,20 +94,30 @@ namespace SqlSiphon
                 var constraintsByTable = constraints.GroupBy(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name))
                     .ToDictionary(g => g.Key, g => g.ToArray());
                 var constraintsByName = constraints.ToDictionary(cst => dal.MakeIdentifier(cst.constraint_schema, cst.constraint_name));
-                var constraintsColumns = dal.GetColumnConstraints();
+
+                var keyColumns = dal.GetKeyColumns();
+                var keyColumnsByTable = keyColumns.GroupBy(col => dal.MakeIdentifier(col.table_schema, col.table_name))
+                    .ToDictionary(g => g.Key, g => g.ToArray());
+                var keyColumnsByName = keyColumns.GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
+                    .ToDictionary(g => g.Key, g => g.ToArray());
+
+                var xref = dal.GetReferentialConstraints()
+                    .GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
+                    .ToDictionary(g => g.Key, g => g.Select(q => dal.MakeIdentifier(q.unique_constraint_schema, q.unique_constraint_name)).First());
+
+                var constraintsColumns = dal.GetConstraintColumns();
                 var constraintsColumnsByTable = constraintsColumns.GroupBy(col => dal.MakeIdentifier(col.table_schema, col.table_name))
                     .ToDictionary(g => g.Key, g => g.ToArray());
                 var constraintsColumnsByName = constraintsColumns.GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
                     .ToDictionary(g => g.Key, g => g.ToArray());
-                var xref = dal.GetReferentialConstraints()
-                    .GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
-                    .ToDictionary(g => g.Key, g => g.Select(q => dal.MakeIdentifier(q.unique_constraint_schema, q.unique_constraint_name)).First());
+
                 foreach (var tableName in columns.Keys)
                 {
                     var tableColumns = columns[tableName];
                     var tableConstraints = constraintsByTable.ContainsKey(tableName) ? constraintsByTable[tableName] : new InformationSchema.TableConstraints[] { };
+                    var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : new InformationSchema.KeyColumnUsage[] { };
                     var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : new InformationSchema.ConstraintColumnUsage[] { };
-                    this.Tables.Add(tableName, new MappedClassAttribute(tableColumns, tableConstraints, tableConstraintColumns, dal));
+                    this.Tables.Add(tableName, new MappedClassAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, dal));
                     if (tableConstraints != null)
                     {
                         foreach (var constraint in tableConstraints)
@@ -115,7 +125,7 @@ namespace SqlSiphon
                             if (constraint.constraint_type == "FOREIGN KEY")
                             {
                                 var constraintName = dal.MakeIdentifier(constraint.constraint_schema, constraint.constraint_name);
-                                var constraintColumns = constraintsColumnsByName[constraintName];
+                                var constraintColumns = keyColumnsByName[constraintName];
                                 var uniqueConstraintName = xref[constraintName];
                                 var uniqueConstraint = constraintsByName[uniqueConstraintName];
                                 var uniqueConstraintColumns = constraintsColumnsByName[uniqueConstraintName];

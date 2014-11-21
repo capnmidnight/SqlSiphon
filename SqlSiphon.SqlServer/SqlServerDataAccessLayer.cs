@@ -393,6 +393,11 @@ create table {2}(
             return this.MakeCreateRoutineScript(a) != this.MakeCreateRoutineScript(b);
         }
 
+        public override bool RelationshipChanged(Relationship a, Relationship b)
+        {
+            return this.MakeCreateRelationshipScript(a) != this.MakeCreateRelationshipScript(b);
+        }
+
         public override bool ColumnChanged(MappedPropertyAttribute x, MappedPropertyAttribute y)
         {
             var tests = new bool[]{
@@ -466,7 +471,12 @@ create table {2}(
             throw new NotImplementedException();
         }
 
-        public override List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints()
+        public override List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<InformationSchema.KeyColumnUsage> GetKeyColumns()
         {
             throw new NotImplementedException();
         }

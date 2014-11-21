@@ -18,7 +18,8 @@ namespace SqlSiphon
         List<InformationSchema.Columns> GetColumns();
         List<InformationSchema.Routines> GetRoutines();
         List<InformationSchema.Parameters> GetParameters();
-        List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints();
+        List<InformationSchema.KeyColumnUsage> GetKeyColumns();
+        List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns();
         List<InformationSchema.TableConstraints> GetTableConstraints();
         List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
 
@@ -43,5 +44,7 @@ namespace SqlSiphon
 
         string MakeDropRelationshipScript(Mapping.Relationship relation);
         string MakeCreateRelationshipScript(Mapping.Relationship relation);
+
+        bool RelationshipChanged(Mapping.Relationship finalRelation, Mapping.Relationship initialRelation);
     }
 }

@@ -116,8 +116,16 @@ namespace SqlSiphon
                 (relationName, finalRelation) => this.CreateRelationshipsScripts.Add(relationName, dal.MakeCreateRelationshipScript(finalRelation)), 
                 (relationName, finalRelation, initialRelation) =>
                 {
-                    this.DropRelationshipsScripts.Add(relationName, dal.MakeDropRelationshipScript(initialRelation));
-                    this.CreateRelationshipsScripts.Add(relationName, dal.MakeCreateRelationshipScript(finalRelation));
+                    if (dal.RelationshipChanged(finalRelation, initialRelation))
+                    {
+                        this.CreateRelationshipsScripts.Add(relationName, 
+                            dal.MakeDropRelationshipScript(initialRelation)
+                            + dal.MakeCreateRelationshipScript(finalRelation));
+                    }
+                    else
+                    {
+                        this.UnalteredRelationshipsScripts.Add(relationName, "-- no changes");
+                    }
                 });
         }
 

@@ -754,13 +754,15 @@ AND COLUMN_NAME = @columnName;")]
         public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
         public abstract List<InformationSchema.Routines> GetRoutines();
         public abstract List<InformationSchema.Parameters> GetParameters();
-        public abstract List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints();
+        public abstract List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns();
+        public abstract List<InformationSchema.KeyColumnUsage> GetKeyColumns();
 
         public abstract string DefaultSchemaName { get; }
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(ref string defaultValue);
         public abstract bool ColumnChanged(MappedPropertyAttribute a, MappedPropertyAttribute b);
         public abstract bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b);
+        public abstract bool RelationshipChanged(Relationship a, Relationship b);
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
         protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);

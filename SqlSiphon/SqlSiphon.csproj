@@ -59,6 +59,7 @@
     <Compile Include="InformationSchema\Columns.cs" />
     <Compile Include="DataAccessLayer.cs" />
     <Compile Include="DataProgressEventArgs.cs" />
+    <Compile Include="InformationSchema\KeyColumnUsage.cs" />
     <Compile Include="InformationSchema\Routines.cs" />
     <Compile Include="InformationSchema\ReferentialConstriants.cs" />
     <Compile Include="InformationSchema\TableConstraints.cs" />

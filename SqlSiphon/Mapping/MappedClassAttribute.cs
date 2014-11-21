@@ -56,9 +56,10 @@ namespace SqlSiphon.Mapping
         }
 
         public MappedClassAttribute(
-            InformationSchema.Columns[] columns, 
-            InformationSchema.TableConstraints[] constraints, 
-            InformationSchema.ConstraintColumnUsage[] constraintColumns, 
+            InformationSchema.Columns[] columns,
+            InformationSchema.TableConstraints[] constraints,
+            InformationSchema.KeyColumnUsage[] keyColumns,
+            InformationSchema.ConstraintColumnUsage[] constraintColumns,
             ISqlSiphon dal)
             : this()
         {
@@ -66,14 +67,40 @@ namespace SqlSiphon.Mapping
             this.Schema = testColumn.table_schema;
             this.Name = testColumn.table_name;
             this.Include = true;
-            var columnConstraints = constraintColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name), c => dal.MakeIdentifier(c.constraint_schema, c.constraint_name));
+            var columnConstraints = new Dictionary<string, List<string>>();
+            if (keyColumns != null)
+            {
+                foreach (var c in keyColumns)
+                {
+                    var columnKey = dal.MakeIdentifier(c.column_name);
+                    if (!columnConstraints.ContainsKey(columnKey))
+                    {
+                        columnConstraints.Add(columnKey, new List<string>());
+                    }
+                    columnConstraints[columnKey].Add(dal.MakeIdentifier(c.constraint_schema, c.constraint_name));
+                }
+            }
+            else if (constraintColumns != null)
+            {
+                foreach (var c in constraintColumns)
+                {
+                    var columnKey = dal.MakeIdentifier(c.column_name);
+                    if (!columnConstraints.ContainsKey(columnKey))
+                    {
+                        columnConstraints.Add(columnKey, new List<string>());
+                    }
+                    columnConstraints[columnKey].Add(dal.MakeIdentifier(c.constraint_schema, c.constraint_name));
+                }
+            }
             var constraintTypes = constraints.ToDictionary(c => dal.MakeIdentifier(c.constraint_schema, c.constraint_name), c => c.constraint_type);
             foreach (var column in columns)
             {
                 var key = dal.MakeIdentifier(column.column_name);
-                var constraintName = columnConstraints.ContainsKey(key) ? columnConstraints[key] : null;
-                var constraintType = constraintName != null && constraintTypes.ContainsKey(constraintName) ? constraintTypes[constraintName] : null;
-                this.Properties.Add(new MappedPropertyAttribute(this, column, constraintType == "PRIMARY KEY", dal));
+                var isIncludedInPK = columnConstraints.ContainsKey(key)
+                    && columnConstraints[key].Any(constraintName =>
+                        constraintTypes.ContainsKey(constraintName)
+                        && constraintTypes[constraintName] == "PRIMARY KEY");
+                this.Properties.Add(new MappedPropertyAttribute(this, column, isIncludedInPK, dal));
             }
         }
 

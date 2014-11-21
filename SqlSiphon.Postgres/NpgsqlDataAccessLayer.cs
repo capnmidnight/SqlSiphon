@@ -178,7 +178,17 @@ namespace SqlSiphon.Postgres
 
         public override string MakeIdentifier(params string[] parts)
         {
-            return base.MakeIdentifier(parts).ToLower();
+            var goodParts = parts.Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
+            for (int i = 0; i < goodParts.Length; ++i)
+            {
+                if (goodParts[i].Length > 63)
+                {
+                    var len = goodParts[i].Length.ToString();
+                    var lengthLength = len.Length;
+                    goodParts[i] = goodParts[i].Substring(0, 63 - lengthLength) + len;
+                }
+            }
+            return base.MakeIdentifier(goodParts).ToLower();
         }
 
         public override Type GetSystemType(string sqlType)
@@ -310,7 +320,7 @@ namespace SqlSiphon.Postgres
 
         public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
         {
-            return string.Format("alter table if exists {0} add column {1} {2}",
+            return string.Format("alter table if exists {0} add column {1} {2};",
                 this.MakeIdentifier(prop.Table.Schema, prop.Table.Name),
                 prop.Name,
                 this.MakeSqlTypeString(prop));
@@ -326,13 +336,13 @@ namespace SqlSiphon.Postgres
         public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
         {
             var preamble = string.Format(
-                "alter table if exists {0}",
+                "alter table if exists {0};",
                 this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name));
 
             if (final.Include != initial.Include)
             {
                 return string.Format(
-                    "{0} {1} column {2} {3}",
+                    "{0} {1} column {2} {3};",
                     preamble,
                     final.Include ? "add" : "drop",
                     this.MakeIdentifier(final.Name),
@@ -346,7 +356,7 @@ namespace SqlSiphon.Postgres
                 // unique id for a column, and then always know what that column refers to, even
                 // if the name changes, but for now, we can't.
                 return string.Format(
-                    "{0} rename column {1} to {2}",
+                    "{0} rename column {1} to {2};",
                     preamble,
                     this.MakeIdentifier(initial.Name),
                     this.MakeIdentifier(final.Name));
@@ -354,7 +364,7 @@ namespace SqlSiphon.Postgres
             else if (final.DefaultValue != initial.DefaultValue)
             {
                 return string.Format(
-                    "{0} alter column {1} {2} default {3}",
+                    "{0} alter column {1} {2} default {3};",
                     preamble,
                     this.MakeIdentifier(final.Name),
                     final.DefaultValue == null ? "drop" : "set",
@@ -364,7 +374,7 @@ namespace SqlSiphon.Postgres
             else if (final.IsOptional != initial.IsOptional)
             {
                 return string.Format(
-                    "{0} alter column {1} {2} not null",
+                    "{0} alter column {1} {2} not null;",
                     preamble,
                     this.MakeIdentifier(final.Name),
                     final.IsOptional ? "drop" : "set");
@@ -374,7 +384,7 @@ namespace SqlSiphon.Postgres
                 || final.Precision != initial.Precision)
             {
                 return string.Format(
-                    "{0} alter column {1} set data type {2}",
+                    "{0} alter column {1} set data type {2};",
                     preamble,
                     this.MakeIdentifier(final.Name),
                     this.MakeSqlTypeString(final));
@@ -389,6 +399,11 @@ namespace SqlSiphon.Postgres
         public override bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
         {
             return this.MakeCreateRoutineScript(a) != this.MakeCreateRoutineScript(b);
+        }
+
+        public override bool RelationshipChanged(Relationship a, Relationship b)
+        {
+            return this.MakeCreateRelationshipScript(a) != this.MakeCreateRelationshipScript(b);
         }
 
         public override bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial)
@@ -541,17 +556,19 @@ namespace SqlSiphon.Postgres
                 .Reverse();
             foreach (var param in parameters)
             {
-                query = query.Replace("@" + param.name, "$" + param.i.ToString());
+                query = query.Replace("@" + param.name, "$" + (param.i + 1).ToString());
             }
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine);
             return string.Format(
-@"create or replace function {0}({1})
+@"create or replace function {0}(
+{1}
+)
     returns {2} as $$
 begin
 {3}
 end;
-$$ language plpgsql",
+$$ language plpgsql;",
                 identifier,
                 parameterSection,
                 routine.SqlType,
@@ -574,7 +591,7 @@ $$ language plpgsql",
                     string.Join(",", pk.Select(c => c.Name)));
             }
             return string.Format(@"create table if not exists {0} (
-    {1}{2})",
+    {1}{2});",
                 identifier,
                 columnSection,
                 pkString);
@@ -584,7 +601,7 @@ $$ language plpgsql",
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
-            return "drop table if exists " + identifier;
+            return string.Format("drop table if exists {0};", identifier);
         }
 
         public override string MakeCreateRelationshipScript(Relationship relation)
@@ -595,17 +612,17 @@ $$ language plpgsql",
             return string.Format(
 @"alter table {0} add constraint {1}
     foreign key({2})
-    references {3}({4})",
-                    this.MakeIdentifier(relation.From.Schema, relation.From.Name),
+    references {3}({4});",
+                    this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
                     this.MakeIdentifier(relation.Name),
                     fromColumns,
-                    this.MakeIdentifier(relation.To.Schema, relation.To.Name),
+                    this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
                     toColumns);
         }
 
         public override string MakeDropRelationshipScript(Relationship relation)
         {
-            return string.Format(@"alter table {0} drop constraint {1}",
+            return string.Format(@"alter table {0} drop constraint {1};",
                     this.MakeIdentifier(relation.From.Schema, relation.From.Name),
                     this.MakeIdentifier(relation.Name));
         }
@@ -616,7 +633,7 @@ $$ language plpgsql",
 from information_schema.columns
 where table_schema != 'information_schema'
     and table_schema != 'pg_catalog'
-order by table_catalog, table_schema, table_name, ordinal_position")]
+order by table_catalog, table_schema, table_name, ordinal_position;")]
         public override List<InformationSchema.Columns> GetColumns()
         {
             return GetList<InformationSchema.Columns>();
@@ -628,7 +645,7 @@ order by table_catalog, table_schema, table_name, ordinal_position")]
 from information_schema.table_constraints
 where table_schema != 'information_schema'
     and table_schema != 'pg_catalog'
-order by table_catalog, table_schema, table_name")]
+order by table_catalog, table_schema, table_name;")]
         public override List<InformationSchema.TableConstraints> GetTableConstraints()
         {
             return GetList<InformationSchema.TableConstraints>();
@@ -640,7 +657,7 @@ order by table_catalog, table_schema, table_name")]
 from information_schema.referential_constraints
 where constraint_schema != 'information_schema'
     and constraint_schema != 'pg_catalog'
-order by constraint_catalog, constraint_schema, constraint_name")]
+order by constraint_catalog, constraint_schema, constraint_name;")]
         public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
         {
             return GetList<InformationSchema.ReferentialConstraints>();
@@ -653,7 +670,7 @@ order by constraint_catalog, constraint_schema, constraint_name")]
 from information_schema.routines
 where specific_schema != 'information_schema'
     and specific_schema != 'pg_catalog'
-order by specific_catalog, specific_schema, specific_name")]
+order by specific_catalog, specific_schema, specific_name;")]
         public override List<InformationSchema.Routines> GetRoutines()
         {
             return GetList<InformationSchema.Routines>();
@@ -666,7 +683,7 @@ order by specific_catalog, specific_schema, specific_name")]
 from information_schema.parameters
 where specific_schema != 'information_schema'
     and specific_schema != 'pg_catalog'
-order by specific_catalog, specific_schema, specific_name, ordinal_position")]
+order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         public override List<InformationSchema.Parameters> GetParameters()
         {
             return GetList<InformationSchema.Parameters>();
@@ -677,10 +694,21 @@ order by specific_catalog, specific_schema, specific_name, ordinal_position")]
 @"select * 
 from information_schema.constraint_column_usage
 where constraint_schema != 'information_schema'
-    and constraint_schema != 'pg_catalog'")]
-        public override List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints()
+    and constraint_schema != 'pg_catalog';")]
+        public override List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns()
         {
             return GetList<InformationSchema.ConstraintColumnUsage>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select * 
+from information_schema.key_column_usage
+where constraint_schema != 'information_schema'
+    and constraint_schema != 'pg_catalog';")]
+        public override List<InformationSchema.KeyColumnUsage> GetKeyColumns()
+        {
+            return GetList<InformationSchema.KeyColumnUsage>();
         }
     }
 }

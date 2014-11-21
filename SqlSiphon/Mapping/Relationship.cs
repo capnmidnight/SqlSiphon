@@ -25,7 +25,7 @@ namespace SqlSiphon.Mapping
 
         public Relationship(
             InformationSchema.TableConstraints constraint,
-            InformationSchema.ConstraintColumnUsage[] constraintColumns,
+            InformationSchema.KeyColumnUsage[] constraintColumns,
             InformationSchema.Columns[] tableColumns,
             InformationSchema.TableConstraints uniqueConstraint,
             InformationSchema.ConstraintColumnUsage[] uniqueConstraintColumns,
@@ -34,12 +34,12 @@ namespace SqlSiphon.Mapping
         {
             this.Schema = constraint.constraint_schema;
             this.Name = constraint.constraint_name;
-            this.To = new MappedClassAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, uniqueConstraintColumns, dal);
-            this.From = new MappedClassAttribute(tableColumns, new InformationSchema.TableConstraints[] { constraint }, constraintColumns, dal);
+            this.From = new MappedClassAttribute(tableColumns, new InformationSchema.TableConstraints[] { constraint }, constraintColumns, null, dal);
+            this.To = new MappedClassAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, null, uniqueConstraintColumns, dal);
             var columns = tableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
             var uniqueColumns = uniqueTableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
-            this.ToColumns = uniqueConstraintColumns.Select(c => new MappedPropertyAttribute(this.To, uniqueColumns[c.column_name], true, dal)).ToArray();
-            this.FromColumns = constraintColumns.Select(c => new MappedPropertyAttribute(this.From, columns[c.column_name], false, dal)).ToArray();
+            this.FromColumns = constraintColumns.Select(c => new MappedPropertyAttribute(this.From, columns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
+            this.ToColumns = uniqueConstraintColumns.Select(c => new MappedPropertyAttribute(this.To, uniqueColumns[dal.MakeIdentifier(c.column_name)], true, dal)).ToArray();
         }
 
         public Relationship(Type fromType, Type toType)
