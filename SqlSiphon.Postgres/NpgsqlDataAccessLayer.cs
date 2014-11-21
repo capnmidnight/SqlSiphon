@@ -491,7 +491,7 @@ namespace SqlSiphon.Postgres
             if (param.DefaultValue != null)
                 defaultString = " DEFAULT = " + param.DefaultValue.ToString();
 
-            return string.Format("{0} {1} {2}{3}", dirString, param.Name, typeStr, defaultString);
+            return string.Format("{0} @{1} {2}{3}", dirString, param.Name, typeStr, defaultString);
         }
 
         protected override string MakeColumnString(MappedPropertyAttribute column, bool isReturnType)
@@ -537,30 +537,20 @@ namespace SqlSiphon.Postgres
                 parameterSection);
         }
 
-        public override string MakeCreateRoutineScript(MappedMethodAttribute info)
-        {
-            return this.MakeRoutineScript(info);
-        }
-
-        public override string MakeAlterRoutineScript(MappedMethodAttribute info)
-        {
-            return this.MakeRoutineScript(info);
-        }
-
-        private string MakeRoutineScript(MappedMethodAttribute routine)
+        public override string MakeCreateRoutineScript(MappedMethodAttribute routine)
         {
             var query = routine.Query;
-            var parameters = routine.Parameters
-                .Select((p, i) => new { i = i, name = p.Name })
-                .OrderBy(p => p.name.Length)
-                .Reverse();
-            foreach (var param in parameters)
-            {
-                query = query.Replace("@" + param.name, "$" + (param.i + 1).ToString());
-            }
+            //var parameters = routine.Parameters
+            //    .Select((p, i) => new { i = i, name = p.Name })
+            //    .OrderBy(p => p.name.Length)
+            //    .Reverse();
+            //foreach (var param in parameters)
+            //{
+            //    query = query.Replace("@" + param.name, "$" + (param.i + 1).ToString());
+            //}
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine);
-            return string.Format(
+            query = this.MakeDropRoutineScript(routine) + string.Format(
 @"create or replace function {0}(
 {1}
 )
@@ -573,6 +563,13 @@ $$ language plpgsql;",
                 parameterSection,
                 routine.SqlType,
                 query);
+            query = query.Replace("@", "P_");
+            return query;
+        }
+
+        public override string MakeAlterRoutineScript(MappedMethodAttribute routine)
+        {
+            return this.MakeDropRoutineScript(routine) + "\n" + this.MakeCreateRoutineScript(routine);
         }
 
         public override string MakeCreateTableScript(MappedClassAttribute info)
