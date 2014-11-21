@@ -64,10 +64,12 @@ namespace SqlSiphon
             var finalTables = Clone(final.Tables);
             var finalRelations = Clone(final.Relationships);
             var finalRoutines = Clone(final.Functions);
+            var finalKeys = Clone(final.PrimaryKeys);
 
             var initialTables = Clone(initial.Tables);
             var initialRelations = Clone(initial.Relationships);
             var initialRoutines = Clone(initial.Functions);
+            var initialKeys = Clone(initial.PrimaryKeys);
 
             this.CreateTablesScripts = new Dictionary<string, string>();
             this.DropTablesScripts = new Dictionary<string, string>();
@@ -90,6 +92,7 @@ namespace SqlSiphon
 
             ProcessTables(finalTables, initialTables, dal);
             ProcessRelationships(finalRelations, initialRelations, dal);
+            ProcessKeys(finalKeys, initialKeys, dal);
             ProcessRoutines(finalRoutines, initialRoutines, dal);
         }
 
@@ -109,6 +112,28 @@ namespace SqlSiphon
                     else
                     {
                         this.UnalteredRoutinesScripts.Add(routineName, "-- no changes");
+                    }
+                });
+        }
+
+        private void ProcessKeys(Dictionary<string, PrimaryKey> finalKeys, Dictionary<string, PrimaryKey> initialKeys, ISqlSiphon dal)
+        {
+            Traverse(
+                finalKeys,
+                initialKeys,
+                (keyName, initialKey) => this.DropRelationshipsScripts.Add(keyName, dal.MakeDropPrimaryKeyScript(initialKey)),
+                (keyName, finalKey) => this.CreateRelationshipsScripts.Add(keyName, dal.MakeCreatePrimaryKeyScript(finalKey)),
+                (keyName, finalKey, initialKey) =>
+                {
+                    if (dal.KeyChanged(finalKey, initialKey))
+                    {
+                        this.CreateRelationshipsScripts.Add(keyName,
+                            dal.MakeDropPrimaryKeyScript(initialKey)
+                            + dal.MakeCreatePrimaryKeyScript(finalKey));
+                    }
+                    else
+                    {
+                        this.UnalteredRelationshipsScripts.Add(keyName, "-- no changes");
                     }
                 });
         }

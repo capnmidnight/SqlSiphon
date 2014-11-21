@@ -27,6 +27,8 @@ namespace SqlSiphon
         bool DescribesIdentity(InformationSchema.Columns column);
         bool ColumnChanged(Mapping.MappedPropertyAttribute final, Mapping.MappedPropertyAttribute initial);
         bool RoutineChanged(Mapping.MappedMethodAttribute final, Mapping.MappedMethodAttribute initial);
+        bool KeyChanged(Mapping.PrimaryKey final, Mapping.PrimaryKey initial);
+
         Mapping.MappedMethodAttribute GetCommandDescription(System.Reflection.MethodInfo method);
 
         Type GetSystemType(string sqlType);
@@ -44,6 +46,9 @@ namespace SqlSiphon
 
         string MakeDropRelationshipScript(Mapping.Relationship relation);
         string MakeCreateRelationshipScript(Mapping.Relationship relation);
+
+        string MakeDropPrimaryKeyScript(Mapping.PrimaryKey key);
+        string MakeCreatePrimaryKeyScript(Mapping.PrimaryKey key);
 
         bool RelationshipChanged(Mapping.Relationship finalRelation, Mapping.Relationship initialRelation);
     }

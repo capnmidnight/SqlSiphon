@@ -657,7 +657,7 @@ AND COLUMN_NAME = @columnName;")]
             table.InferProperties(t);
             var columns = getColumns(table);
             var indexName = getIndexName(table, columns);
-            return this.MakeIndexScript(indexName, table.Schema ?? DefaultSchemaName, table.Name, columns);
+            return this.MakeCreateIndexScript(indexName, table.Schema ?? DefaultSchemaName, table.Name, columns);
         }
 
         protected string NamedIndex<T>(string indexName)
@@ -741,6 +741,21 @@ AND COLUMN_NAME = @columnName;")]
             }
         }
 
+        public virtual bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
+        {
+            return this.MakeCreateRoutineScript(a).ToLower() != this.MakeCreateRoutineScript(b).ToLower();
+        }
+
+        public virtual bool RelationshipChanged(Relationship a, Relationship b)
+        {
+            return this.MakeCreateRelationshipScript(a).ToLower() != this.MakeCreateRelationshipScript(b).ToLower();
+        }
+
+        public virtual bool KeyChanged(PrimaryKey final, PrimaryKey initial)
+        {
+            return this.MakeCreatePrimaryKeyScript(final).ToLower() != this.MakeCreatePrimaryKeyScript(initial).ToLower();
+        }
+
         public abstract List<InformationSchema.Columns> GetColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
         public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
@@ -752,12 +767,10 @@ AND COLUMN_NAME = @columnName;")]
         public abstract string DefaultSchemaName { get; }
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
-        public abstract bool ColumnChanged(MappedPropertyAttribute a, MappedPropertyAttribute b);
-        public abstract bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b);
-        public abstract bool RelationshipChanged(Relationship a, Relationship b);
+        public abstract bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial);
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision);
-        protected abstract string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
+        protected abstract string MakeCreateIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
         protected abstract string MakeColumnString(MappedPropertyAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(MappedParameterAttribute p);
 
@@ -774,5 +787,8 @@ AND COLUMN_NAME = @columnName;")]
 
         public abstract string MakeDropRelationshipScript(Relationship relation);
         public abstract string MakeCreateRelationshipScript(Relationship relation);
+
+        public abstract string MakeDropPrimaryKeyScript(PrimaryKey key);
+        public abstract string MakeCreatePrimaryKeyScript(PrimaryKey key);
     }
 }

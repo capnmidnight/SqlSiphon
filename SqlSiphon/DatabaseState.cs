@@ -13,12 +13,14 @@ namespace SqlSiphon
         public Dictionary<string, MappedClassAttribute> Tables { get; private set; }
         public Dictionary<string, MappedMethodAttribute> Functions { get; private set; }
         public Dictionary<string, Relationship> Relationships { get; private set; }
+        public Dictionary<string, PrimaryKey> PrimaryKeys { get; private set; }
 
         private DatabaseState()
         {
             this.Tables = new Dictionary<string, MappedClassAttribute>();
             this.Functions = new Dictionary<string, MappedMethodAttribute>();
             this.Relationships = new Dictionary<string, Relationship>();
+            this.PrimaryKeys = new Dictionary<string, PrimaryKey>();
         }
 
         /// <summary>
@@ -46,6 +48,11 @@ namespace SqlSiphon
                 if (table.Include)
                 {
                     this.Tables.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name), table);
+                    if (table.Properties.Any(p => p.IncludeInPrimaryKey))
+                    {
+                        var key = new PrimaryKey(type);
+                        this.PrimaryKeys.Add(dal.MakeIdentifier(key.Schema ?? dal.DefaultSchemaName, key.GetName(dal)), key);
+                    }
                 }
             }
 
@@ -71,7 +78,8 @@ namespace SqlSiphon
                     if (field.FieldType == rt)
                     {
                         var r = (Relationship)field.GetValue(null);
-                        this.Relationships.Add(dal.MakeIdentifier(r.Schema ?? dal.DefaultSchemaName, r.Name), r);
+                        var id = dal.MakeIdentifier(r.Schema ?? dal.DefaultSchemaName, r.GetName(dal));
+                        this.Relationships.Add(id, r);
                     }
                 }
             }
@@ -122,20 +130,27 @@ namespace SqlSiphon
                         foreach (var constraint in tableConstraints)
                         {
                             var constraintName = dal.MakeIdentifier(constraint.constraint_schema, constraint.constraint_name);
-                            var constraintColumns = keyColumnsByName[constraintName];
-                            if (constraint.constraint_type == "FOREIGN KEY")
+                            if (keyColumnsByName.ContainsKey(constraintName))
                             {
-                                var uniqueConstraintName = xref[constraintName];
+                                var constraintColumns = keyColumnsByName[constraintName];
+                                var uniqueConstraintName = constraint.constraint_type == "FOREIGN KEY" ? xref[constraintName] : constraintName;
                                 var uniqueConstraint = constraintsByName[uniqueConstraintName];
                                 var uniqueConstraintColumns = constraintsColumnsByName[uniqueConstraintName];
                                 var uniqueTableColumns = columns[dal.MakeIdentifier(uniqueConstraint.table_schema, uniqueConstraint.table_name)];
-                                this.Relationships.Add(constraintName, new Relationship(
-                                    constraint, constraintColumns, tableColumns,
-                                    uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns,
-                                    dal));
-                            }
-                            else if (constraint.constraint_type == "PRIMARY KEY")
-                            {
+                                if (constraint.constraint_type == "FOREIGN KEY")
+                                {
+                                    this.Relationships.Add(constraintName, new Relationship(
+                                        constraint, constraintColumns, tableColumns,
+                                        uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns,
+                                        dal));
+                                }
+                                else if (constraint.constraint_type == "PRIMARY KEY")
+                                {
+                                    this.PrimaryKeys.Add(constraintName, new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal));
+                                }
+                                else
+                                {
+                                }
                             }
                             else
                             {

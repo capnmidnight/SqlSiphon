@@ -56,36 +56,10 @@ namespace SqlSiphon.InformationSchema
         public string column_default { get; set; }
         public string is_nullable { get; set; }
         public string data_type { get; set; }
-        public string character_set_catalog { get; set; }
-        public string character_set_schema { get; set; }
-        public string character_set_name { get; set; }
-        public string collation_catalog { get; set; }
-        public string collation_schema { get; set; }
-        public string collation_name { get; set; }
-        public string domain_catalog { get; set; }
-        public string domain_schema { get; set; }
-        public string domain_name { get; set; }
-
-        public int? interval_precision { get; set; }
-        public int? maximum_cardinality { get; set; }
-        public int? is_self_referencing { get; set; }
+        
         public int? is_identity { get; set; }
-        public int? is_generated { get; set; }
-        public int? is_updatable { get; set; }
-        public string identity_generation { get; set; }
-        public int? identity_start { get; set; }
-        public int? identity_increment { get; set; }
-        public int? identity_maximum { get; set; }
-        public int? identity_minimum { get; set; }
-        public string identity_cycle { get; set; }
-        public string interval_type { get; set; }
         public string udt_catalog { get; set; }
         public string udt_schema { get; set; }
         public string udt_name { get; set; }
-        public string scope_catalog { get; set; }
-        public string scope_schema { get; set; }
-        public string scope_name { get; set; }
-        public string dtd_identifier { get; set; }
-        public string generation_expression { get; set; }
     }
 }

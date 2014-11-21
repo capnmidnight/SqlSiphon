@@ -18,10 +18,11 @@ namespace SqlSiphon.Mapping
             return attr;
         }
 
-        public MappedClassAttribute To { get; private set; }
+        public PrimaryKey To { get; private set; }
         public MappedClassAttribute From { get; private set; }
-        public MappedPropertyAttribute[] ToColumns { get; private set; }
         public MappedPropertyAttribute[] FromColumns { get; private set; }
+        
+        public string Prefix { get; private set; }
 
         public Relationship(
             InformationSchema.TableConstraints constraint,
@@ -34,12 +35,11 @@ namespace SqlSiphon.Mapping
         {
             this.Schema = constraint.constraint_schema;
             this.Name = constraint.constraint_name;
+            this.To = new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal);
             this.From = new MappedClassAttribute(tableColumns, new InformationSchema.TableConstraints[] { constraint }, constraintColumns, null, dal);
-            this.To = new MappedClassAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, null, uniqueConstraintColumns, dal);
             var columns = tableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
             var uniqueColumns = uniqueTableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
             this.FromColumns = constraintColumns.Select(c => new MappedPropertyAttribute(this.From, columns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
-            this.ToColumns = uniqueConstraintColumns.Select(c => new MappedPropertyAttribute(this.To, uniqueColumns[dal.MakeIdentifier(c.column_name)], true, dal)).ToArray();
         }
 
         public Relationship(Type fromType, Type toType)
@@ -59,27 +59,13 @@ namespace SqlSiphon.Mapping
 
         public Relationship(string prefix, Type fromType, Type toType, params string[] fromColumns)
         {
-            this.To = GetAttribute(toType);
+            this.To = new PrimaryKey(toType);
             this.From = GetAttribute(fromType);
-
-            this.Schema = this.From.Schema;
-            this.Name = string.Format(
-                "fk_{0}_to_{1}_{2}_from_{3}_{4}",
-                prefix,
-                this.To.Schema,
-                this.To.Name,
-                this.From.Schema,
-                this.From.Name)
-                .Replace("__", "_");
-
-            this.ToColumns = this.To.Properties
-                .Where(p => p.IncludeInPrimaryKey)
-                .ToArray();
-
+            this.Prefix = prefix;
 
             if (fromColumns == null)
             {
-                var pk = this.ToColumns.ToDictionary(p => (prefix + p.Name).ToLower());
+                var pk = this.To.KeyColumns.ToDictionary(p => (prefix + p.Name).ToLower());
                 this.FromColumns = this.From.Properties
                     .Where(p => pk.ContainsKey(p.Name.ToLower()))
                     .ToArray();
@@ -95,29 +81,40 @@ namespace SqlSiphon.Mapping
                     .ToArray();
             }
 
-            if (this.ToColumns.Length != this.FromColumns.Length)
+            if (this.To.KeyColumns.Length != this.FromColumns.Length)
             {
                 var availableColumns = this.FromColumns.Select(p => p.Name).ToList();
                 throw new Exception(string.Format(
                     "Table {0}.{1} does not satisfy the constraints to relate to table {2}.{3}. Missing columns: {4}",
                     this.From.Schema, this.From.Name,
-                    this.To.Schema, this.To.Name,
-                    string.Join(", ", this.ToColumns.Where(p => !availableColumns.Contains(prefix + p.Name)))));
+                    this.To.Table.Schema, this.To.Table.Name,
+                    string.Join(", ", this.To.KeyColumns.Where(p => !availableColumns.Contains(prefix + p.Name)))));
             }
 
-            for (int i = 0; i < this.ToColumns.Length; ++i)
+            for (int i = 0; i < this.To.KeyColumns.Length; ++i)
             {
-                var a = this.ToColumns[i];
+                var a = this.To.KeyColumns[i];
                 var b = this.FromColumns[i];
                 if (a.SystemType != b.SystemType)
                 {
                     throw new Exception(string.Format(
                         "FK column {0} in {1}.{2} does not match column {3} in {4}.{5}. Expected: {6}. Received: {7}.",
                         b.Name, this.From.Schema, this.From.Name,
-                        a.Name, this.To.Schema, this.To.Name,
+                        a.Name, this.To.Table.Schema, this.To.Table.Name,
                         a.SystemType.Name, b.SystemType.Name));
                 }
             }
+        }
+
+        public string GetName(ISqlSiphon dal)
+        {
+            return this.Name ?? string.Format(
+                "fk_{0}_from_{1}_{2}_{3}",
+                this.Prefix,
+                this.From.Schema ?? dal.DefaultSchemaName,
+                this.From.Name,
+                this.To.GetName(dal))
+                .Replace("__", "_");
         }
     }
 }

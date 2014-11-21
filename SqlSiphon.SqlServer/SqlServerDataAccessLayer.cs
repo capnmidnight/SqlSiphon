@@ -480,16 +480,16 @@ create table {2}(
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
             var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
-            var toColumns = string.Join(", ", relation.ToColumns.Select(c => this.MakeIdentifier(c.Name)));
+            var toColumns = string.Join(", ", relation.To.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
 
             return string.Format(
 @"alter table {0} add constraint {1}
     foreign key({2})
     references {3}({4})",
                     this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    this.MakeIdentifier(relation.Name),
+                    this.MakeIdentifier(relation.GetName(this)),
                     fromColumns,
-                    this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
+                    this.MakeIdentifier(relation.To.Table.Schema ?? DefaultSchemaName, relation.To.Table.Name),
                     toColumns);
         }
 
@@ -497,19 +497,25 @@ create table {2}(
         {
             return string.Format(@"alter table {0} drop constraint {1}",
                     this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    this.MakeIdentifier(relation.Name));
+                    this.MakeIdentifier(relation.GetName(this)));
         }
 
-
-        public override bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
+        public override string MakeDropPrimaryKeyScript(PrimaryKey key)
         {
-            return this.MakeCreateRoutineScript(a).ToLower() != this.MakeCreateRoutineScript(b).ToLower();
+            return string.Format(@"alter table {0} drop constraint {1};",
+                this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
+                this.MakeIdentifier(key.GetName(this)));
         }
 
-        public override bool RelationshipChanged(Relationship a, Relationship b)
+        public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
         {
-            return this.MakeCreateRelationshipScript(a).ToLower() != this.MakeCreateRelationshipScript(b).ToLower();
+            var keys = string.Join(", ", key.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
+            return string.Format(@"alter table {0} add constraint {1} primary key({2});",
+                this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
+                this.MakeIdentifier(key.GetName(this)),
+                keys);
         }
+
 
         public override bool DescribesIdentity(InformationSchema.Columns column)
         {
@@ -593,7 +599,7 @@ where constraint_schema != 'information_schema';")]
             return GetList<InformationSchema.KeyColumnUsage>();
         }
 
-        protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
+        protected override string MakeCreateIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
         {
             var columnSection = string.Join(",", tableColumns.Select(c => c + " ASC"));
             var identifier = MakeIdentifier(tableSchema ?? DefaultSchemaName, tableName);

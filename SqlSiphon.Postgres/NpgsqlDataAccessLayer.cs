@@ -273,11 +273,6 @@ namespace SqlSiphon.Postgres
             return false;
         }
 
-        protected override string MakeIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
-        {
-            throw new NotImplementedException();
-        }
-
         public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
         {
             return string.Format("alter table if exists {0} add column {1} {2};",
@@ -383,16 +378,6 @@ namespace SqlSiphon.Postgres
                 // by this point, the columns should be identical, but we still need a base case
                 return null;
             }
-        }
-
-        public override bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
-        {
-            return this.MakeCreateRoutineScript(a) != this.MakeCreateRoutineScript(b);
-        }
-
-        public override bool RelationshipChanged(Relationship a, Relationship b)
-        {
-            return this.MakeCreateRelationshipScript(a) != this.MakeCreateRelationshipScript(b);
         }
 
         public override bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial)
@@ -581,29 +566,72 @@ $$ language plpgsql;",
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
             var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
-            var toColumns = string.Join(", ", relation.ToColumns.Select(c => this.MakeIdentifier(c.Name)));
-
+            var toColumns = string.Join(", ", relation.To.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
             return string.Format(
 @"alter table {0} add constraint {1}
     foreign key({2})
     references {3}({4});",
                     this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    this.MakeIdentifier(relation.Name),
+                    this.MakeIdentifier(relation.GetName(this)),
                     fromColumns,
-                    this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
+                    this.MakeIdentifier(relation.To.Table.Schema ?? DefaultSchemaName, relation.To.Table.Name),
                     toColumns);
         }
 
         public override string MakeDropRelationshipScript(Relationship relation)
         {
-            return string.Format(@"alter table {0} drop constraint {1};",
-                    this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    this.MakeIdentifier(relation.Name));
+            return string.Format(@"alter table if exists {0} drop constraint if exists {1};",
+                this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
+                this.MakeIdentifier(relation.GetName(this)));
+        }
+
+        public override string MakeDropPrimaryKeyScript(PrimaryKey key)
+        {
+            return string.Format(@"alter table if exists {0} drop constraint if exists {1};
+drop index if exists {2};",
+                this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
+                this.MakeIdentifier(key.GetName(this)),
+                this.MakeIdentifier("idx_" + key.GetName(this)));
+        }
+
+        public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
+        {
+            var keys = string.Join(", ", key.KeyColumns.Select(c=>this.MakeIdentifier(c.Name)));
+            return string.Format(
+@"create unique index {0} on {1} ({2});
+alter table {1} add constraint {3} primary key using index {0};",
+                this.MakeIdentifier("idx_" + key.GetName(this)),
+                this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
+                keys,
+                this.MakeIdentifier(key.GetName(this)));
+        }
+
+        protected override string MakeCreateIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
+        {
+            throw new NotImplementedException();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [MappedMethod(CommandType = CommandType.Text, Query =
-@"select *
+@"select         
+    ordinal_position,
+    character_maximum_length,
+    character_octet_length,
+    numeric_precision,
+    numeric_precision_radix,
+    numeric_scale,
+    datetime_precision,
+    table_catalog,
+    table_schema,
+    table_name,
+    column_name,
+    column_default,
+    is_nullable,
+    data_type,
+    udt_catalog,
+    udt_schema,
+    udt_name,
+    case is_identity when 'YES' then 1 when 'NO' then 0 end as is_identity
 from information_schema.columns
 where table_schema != 'information_schema'
     and table_schema != 'pg_catalog'
