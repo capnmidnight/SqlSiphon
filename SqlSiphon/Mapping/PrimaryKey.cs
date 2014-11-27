@@ -38,7 +38,6 @@ namespace SqlSiphon.Mapping
         public PrimaryKey(Type toType)
         {
             this.Table = GetAttribute(toType);
-            this.Schema = this.Table.Schema;
             this.KeyColumns = this.Table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();

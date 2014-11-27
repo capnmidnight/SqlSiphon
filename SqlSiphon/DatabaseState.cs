@@ -11,6 +11,7 @@ namespace SqlSiphon
     public class DatabaseState
     {
         public Dictionary<string, MappedClassAttribute> Tables { get; private set; }
+        public Dictionary<string, Index> Indices { get; private set; }
         public Dictionary<string, MappedMethodAttribute> Functions { get; private set; }
         public Dictionary<string, Relationship> Relationships { get; private set; }
         public Dictionary<string, PrimaryKey> PrimaryKeys { get; private set; }
@@ -19,6 +20,7 @@ namespace SqlSiphon
         private DatabaseState()
         {
             this.Tables = new Dictionary<string, MappedClassAttribute>();
+            this.Indices = new Dictionary<string, Index>();
             this.Functions = new Dictionary<string, MappedMethodAttribute>();
             this.Relationships = new Dictionary<string, Relationship>();
             this.PrimaryKeys = new Dictionary<string, PrimaryKey>();
@@ -53,6 +55,14 @@ namespace SqlSiphon
                     {
                         var key = new PrimaryKey(type);
                         this.PrimaryKeys.Add(dal.MakeIdentifier(key.Schema ?? dal.DefaultSchemaName, key.GetName(dal)), key);
+                    }
+                    if (table.Properties.Any(p => p.IncludeInIndex != null))
+                    {
+                        var indices = table.Properties.SelectMany(p => p.IncludeInIndex).Distinct();
+                        foreach (var index in indices)
+                        {
+                            this.Indices.Add(index, new Index(type, index));
+                        }
                     }
                 }
             }

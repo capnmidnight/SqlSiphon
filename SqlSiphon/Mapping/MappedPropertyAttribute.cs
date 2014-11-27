@@ -60,6 +60,12 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public bool IncludeInPrimaryKey { get; set; }
 
+        /// <summary>
+        /// Get or set a value indicating that the column
+        /// is used as part of various indices for the table
+        /// </summary>
+        public string[] IncludeInIndex { get; set; }
+
         public MappedClassAttribute Table { get; set; }
 
         /// <summary>
