@@ -485,12 +485,16 @@ namespace InitDB
                     dbName = dbName.ToLower();
                 }
 
-                if (chkCreateDatabase.Checked)
+                if (createDatabaseChk.Checked)
                 {
-                    succeeded = runQuery(string.Format("CREATE DATABASE {0};", dbName), null, false)
-                        && (!this.IsPostgres() || runQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", dbName, false));
+                    succeeded = runQuery(string.Format("CREATE DATABASE {0};", dbName), null, false);
                 }
-                if (succeeded && chkCreateLogin.Checked)
+                if (this.IsPostgres() && succeeded && installExtensionsChk.Checked)
+                {
+                    succeeded &= runQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", dbName, false)
+                        && runQuery("CREATE EXTENSION \\\"postgis\\\";", dbName, false);
+                }
+                if (succeeded && createLoginChk.Checked)
                 {
                     if (this.IsPostgres())
                     {
@@ -505,7 +509,7 @@ namespace InitDB
                     }
                 }
 
-                if (succeeded && !this.IsPostgres() && chkRegSql.Checked)
+                if (succeeded && !this.IsPostgres() && regSqlChk.Checked)
                 {
                     succeeded = RunASPNET_REGSQL();
                 }
@@ -519,29 +523,29 @@ namespace InitDB
                         DisplayDelta(delta);
                         var t = db.GetType();
                         this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
-                        if (succeeded && chkCreateTables.Checked)
+                        if (succeeded && createTablesChk.Checked)
                         {
                             succeeded &= RunScripts("Creating table:", delta.CreateTablesScripts, db);
                             succeeded &= RunScripts("Creating columns:", delta.CreateColumnsScripts, db);
                         }
 
-                        if (succeeded && chkCreateFKs.Checked)
+                        if (succeeded && createFKsChk.Checked)
                         {
                             succeeded &= RunScripts("Creating foreign keys:", delta.CreateRelationshipsScripts.Reverse(), db);
                         }
 
-                        if (succeeded && chkCreateIndices.Checked)
+                        if (succeeded && createIndicesChk.Checked)
                         {
                             succeeded &= RunScripts("Creating indexes:", delta.CreateIndexScripts, db);
                         }
 
-                        if (succeeded && chkSyncProcedures.Checked)
+                        if (succeeded && syncProceduresChk.Checked)
                         {
                             succeeded &= RunScripts("Creating stored procedures:", delta.CreateRoutinesScripts, db);
                             succeeded &= RunScripts("Creating stored procedures:", delta.AlteredRoutinesScripts, db);
                         }
 
-                        if (succeeded && chkInitializeData.Checked)
+                        if (succeeded && initializeDataChk.Checked)
                         {
                             succeeded &= RunScripts("Syncing data:", delta.OtherScripts, db);
                         }
@@ -568,7 +572,6 @@ namespace InitDB
                 this.SyncUI(() => runButton.Enabled = true);
             }
         }
-
 
         private bool RunScripts(string feature, IEnumerable<KeyValuePair<string, string>> scripts, ISqlSiphon db)
         {
@@ -687,14 +690,15 @@ namespace InitDB
                 this.sqlUserTB.Text,
                 this.sqlPassTB.Text,
                 this.assemblyTB.Text,
-                this.chkCreateDatabase.Checked,
-                this.chkCreateLogin.Checked,
-                this.chkRegSql.Checked,
-                this.chkCreateTables.Checked,
-                this.chkInitializeData.Checked,
-                this.chkSyncProcedures.Checked,
-                this.chkCreateFKs.Checked,
-                this.chkCreateIndices.Checked);
+                this.createDatabaseChk.Checked,
+                this.createLoginChk.Checked,
+                this.regSqlChk.Checked,
+                this.createTablesChk.Checked,
+                this.initializeDataChk.Checked,
+                this.syncProceduresChk.Checked,
+                this.createFKsChk.Checked,
+                this.createIndicesChk.Checked,
+                this.installExtensionsChk.Checked);
 
             if (this.sessions.ContainsKey(sesh.Name))
                 this.sessions[sesh.Name] = sesh;
@@ -756,14 +760,15 @@ namespace InitDB
                     this.sqlUserTB.Text = this.CurrentSession.LoginName;
                     this.sqlPassTB.Text = this.CurrentSession.LoginPassword;
                     this.assemblyTB.Text = this.CurrentSession.AssemblyFile;
-                    this.chkCreateDatabase.Checked = this.CurrentSession.CreateDatabase;
-                    this.chkCreateLogin.Checked = this.CurrentSession.CreateLogin;
-                    this.chkRegSql.Checked = this.CurrentSession.RegisterASPNETMembership;
-                    this.chkCreateTables.Checked = this.CurrentSession.CreateSchemaObjects;
-                    this.chkInitializeData.Checked = this.CurrentSession.InitializeData;
-                    this.chkSyncProcedures.Checked = this.CurrentSession.SyncStoredProcedures;
-                    this.chkCreateFKs.Checked = this.CurrentSession.CreateFKs;
-                    this.chkCreateIndices.Checked = this.CurrentSession.CreateIndices;
+                    this.createDatabaseChk.Checked = this.CurrentSession.CreateDatabase;
+                    this.createLoginChk.Checked = this.CurrentSession.CreateLogin;
+                    this.regSqlChk.Checked = this.CurrentSession.RegisterASPNETMembership;
+                    this.createTablesChk.Checked = this.CurrentSession.CreateSchemaObjects;
+                    this.initializeDataChk.Checked = this.CurrentSession.InitializeData;
+                    this.syncProceduresChk.Checked = this.CurrentSession.SyncStoredProcedures;
+                    this.createFKsChk.Checked = this.CurrentSession.CreateFKs;
+                    this.createIndicesChk.Checked = this.CurrentSession.CreateIndices;
+                    this.installExtensionsChk.Checked = this.CurrentSession.InstallExtensions;
                     try
                     {
                         this.txtStdOut.Text = "";
@@ -794,6 +799,7 @@ namespace InitDB
                 this.dropIndicesGV.Rows.Clear();
                 this.unalteredIndicesGV.Rows.Clear();
                 this.othersGV.Rows.Clear();
+                this.installExtensionsChk.Visible = this.IsPostgres();
             }
         }
 

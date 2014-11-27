@@ -73,6 +73,7 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("tsquery", typeof(string));
             typeMapping.Add("xml", typeof(string));
             typeMapping.Add("json", typeof(string));
+            typeMapping.Add("name", typeof(string));
 
             typeMapping.Add("character", typeof(char[]));
             typeMapping.Add("char", typeof(char[]));
@@ -114,16 +115,19 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("uuid", typeof(Guid));
             typeMapping.Add("uniqueidentifier", typeof(Guid)); // included for tranlating T-SQL to PG/PSQL
 
-            //typeMapping.Add("box", typeof());
-            //typeMapping.Add("circle", typeof());
-            //typeMapping.Add("line", typeof());
-            //typeMapping.Add("lseg", typeof());
-            //typeMapping.Add("macaddr", typeof());
-            //typeMapping.Add("path", typeof(decimal));
-            //typeMapping.Add("point", typeof(decimal));
-            //typeMapping.Add("polygon", typeof(decimal));
-            //typeMapping.Add("tsvector", typeof());
-            //typeMapping.Add("txid_snapshot", typeof());
+            typeMapping.Add("box", typeof(string));
+            typeMapping.Add("circle", typeof(string));
+            typeMapping.Add("line", typeof(string));
+            typeMapping.Add("lseg", typeof(string));
+            typeMapping.Add("macaddr", typeof(string));
+            typeMapping.Add("path", typeof(string));
+            typeMapping.Add("point", typeof(string));
+            typeMapping.Add("polygon", typeof(string));
+            typeMapping.Add("geometry", typeof(string));
+            typeMapping.Add("geography", typeof(string));
+            typeMapping.Add("tsvector", typeof(string));
+
+            //typeMapping.Add("txid_snapshot", typeof(string));
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)

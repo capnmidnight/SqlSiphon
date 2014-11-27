@@ -25,20 +25,21 @@ namespace InitDB
         public bool SyncStoredProcedures { get { return Get<bool>(); } set { Set(value); } }
         public bool CreateFKs { get { return Get<bool>(); } set { Set(value); } }
         public bool CreateIndices { get { return Get<bool>(); } set { Set(value); } }
+        public bool InstallExtensions { get { return Get<bool>(); } set { Set(value); } }
 
         public static char PAIR_SEPARATOR = ';';
         public static char KEY_VALUE_SEPARATOR = ':';
 
 
         public Session()
-            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "", "localhost\\SQLEXPRESS", "", "", "", "", "", "", false, false, false, false, false, true, false, false)
+            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "", "localhost\\SQLEXPRESS", "", "", "", "", "", "", false, false, false, false, false, true, false, false, false)
         {
         }
 
         public Session(string name, string databaseType, string server, string dbname, string adminName, string adminPassword,
             string loginName, string loginPassword, string assemblyFile,
             bool createDatabase, bool createLogin, bool registerASPNET, bool createSchemaObj, bool initData, bool syncProcs,
-            bool createFKs, bool createIndices)
+            bool createFKs, bool createIndices, bool installExtensions)
         {
             this.Name = name;
             this.DatabaseType = databaseType;
@@ -57,6 +58,7 @@ namespace InitDB
             this.SyncStoredProcedures = syncProcs;
             this.CreateFKs = createFKs;
             this.CreateIndices = createIndices;
+            this.InstallExtensions = installExtensions;
         }
 
         public Session(string line)
