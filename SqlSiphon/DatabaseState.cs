@@ -14,6 +14,7 @@ namespace SqlSiphon
         public Dictionary<string, MappedMethodAttribute> Functions { get; private set; }
         public Dictionary<string, Relationship> Relationships { get; private set; }
         public Dictionary<string, PrimaryKey> PrimaryKeys { get; private set; }
+        public List<string> Schemata { get; private set; }
 
         private DatabaseState()
         {
@@ -21,6 +22,7 @@ namespace SqlSiphon
             this.Functions = new Dictionary<string, MappedMethodAttribute>();
             this.Relationships = new Dictionary<string, Relationship>();
             this.PrimaryKeys = new Dictionary<string, PrimaryKey>();
+            this.Schemata = new List<string>();
         }
 
         /// <summary>
@@ -82,6 +84,13 @@ namespace SqlSiphon
                     }
                 }
             }
+
+            this.Schemata.AddRange(this.Tables.Values.Select(t => t.Schema)
+                .Union(this.Functions.Values.Select(f => f.Schema))
+                .Union(this.Relationships.Values.Select(r => r.Schema))
+                .Union(this.PrimaryKeys.Values.Select(r => r.Schema))
+                .Where(s => !string.IsNullOrWhiteSpace(s) && !this.Schemata.Contains(s))
+                .Distinct());
         }
 
         /// <summary>
@@ -93,6 +102,7 @@ namespace SqlSiphon
         {
             try
             {
+                this.Schemata.AddRange(dal.GetSchemata());
                 var columns = dal.GetColumns()
                     .GroupBy(col => dal.MakeIdentifier(col.table_schema, col.table_name))
                     .ToDictionary(g => g.Key, g => g.ToArray());

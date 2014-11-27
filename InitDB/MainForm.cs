@@ -525,13 +525,13 @@ namespace InitDB
                         this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
                         if (succeeded && createTablesChk.Checked)
                         {
-                            succeeded &= RunScripts("Creating table:", delta.CreateTablesScripts, db);
-                            succeeded &= RunScripts("Creating columns:", delta.CreateColumnsScripts, db);
+                            succeeded &= RunScripts("Creating table:", delta.CreateTableScripts, db);
+                            succeeded &= RunScripts("Creating columns:", delta.CreateColumnScripts, db);
                         }
 
                         if (succeeded && createFKsChk.Checked)
                         {
-                            succeeded &= RunScripts("Creating foreign keys:", delta.CreateRelationshipsScripts.Reverse(), db);
+                            succeeded &= RunScripts("Creating foreign keys:", delta.CreateRelationshipScripts.Reverse(), db);
                         }
 
                         if (succeeded && createIndicesChk.Checked)
@@ -541,8 +541,8 @@ namespace InitDB
 
                         if (succeeded && syncProceduresChk.Checked)
                         {
-                            succeeded &= RunScripts("Creating stored procedures:", delta.CreateRoutinesScripts, db);
-                            succeeded &= RunScripts("Creating stored procedures:", delta.AlteredRoutinesScripts, db);
+                            succeeded &= RunScripts("Creating stored procedures:", delta.CreateRoutineScripts, db);
+                            succeeded &= RunScripts("Creating stored procedures:", delta.AlteredRoutineScripts, db);
                         }
 
                         if (succeeded && initializeDataChk.Checked)
@@ -623,20 +623,20 @@ namespace InitDB
         {
             this.SyncUI(() =>
             {
-                FillGV(this.createTablesGV, delta.CreateTablesScripts);
-                FillGV(this.dropTablesGV, delta.DropTablesScripts);
-                FillGV(this.unalteredTablesGV, delta.UnalteredTablesScripts);
-                FillGV(this.createColumnsGV, delta.CreateColumnsScripts);
-                FillGV(this.dropColumnsGV, delta.DropColumnsScripts);
-                FillGV(this.alteredColumnsGV, delta.AlteredColumnsScripts);
-                FillGV(this.unalteredColumnsGV, delta.UnalteredColumnsScripts);
-                FillGV(this.createRelationshipsGV, delta.CreateRelationshipsScripts.Reverse());
-                FillGV(this.dropRelationshipsGV, delta.DropRelationshipsScripts);
-                FillGV(this.unalteredRelationshipsGV, delta.UnalteredRelationshipsScripts);
-                FillGV(this.createRoutinesGV, delta.CreateRoutinesScripts);
-                FillGV(this.dropRoutinesGV, delta.DropRoutinesScripts);
-                FillGV(this.alteredRoutinesGV, delta.AlteredRoutinesScripts);
-                FillGV(this.unalteredRoutinesGV, delta.UnalteredRoutinesScripts);
+                FillGV(this.createTablesGV, delta.CreateTableScripts);
+                FillGV(this.dropTablesGV, delta.DropTableScripts);
+                FillGV(this.unalteredTablesGV, delta.UnalteredTableScripts);
+                FillGV(this.createColumnsGV, delta.CreateColumnScripts);
+                FillGV(this.dropColumnsGV, delta.DropColumnScripts);
+                FillGV(this.alteredColumnsGV, delta.AlteredColumnScripts);
+                FillGV(this.unalteredColumnsGV, delta.UnalteredColumnScripts);
+                FillGV(this.createRelationshipsGV, delta.CreateRelationshipScripts.Reverse());
+                FillGV(this.dropRelationshipsGV, delta.DropRelationshipScripts);
+                FillGV(this.unalteredRelationshipsGV, delta.UnalteredRelationshipScripts);
+                FillGV(this.createRoutinesGV, delta.CreateRoutineScripts);
+                FillGV(this.dropRoutinesGV, delta.DropRoutineScripts);
+                FillGV(this.alteredRoutinesGV, delta.AlteredRoutineScripts);
+                FillGV(this.unalteredRoutinesGV, delta.UnalteredRoutineScripts);
                 FillGV(this.createIndicesGV, delta.CreateIndexScripts);
                 FillGV(this.dropIndicesGV, delta.DropIndexScripts);
                 FillGV(this.unalteredIndicesGV, delta.UnalteredIndexScripts);

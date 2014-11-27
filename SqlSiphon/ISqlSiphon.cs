@@ -15,6 +15,7 @@ namespace SqlSiphon
 
         string DefaultSchemaName { get; }
 
+        List<string> GetSchemata();
         List<InformationSchema.Columns> GetColumns();
         List<InformationSchema.Routines> GetRoutines();
         List<InformationSchema.Parameters> GetParameters();
@@ -32,6 +33,9 @@ namespace SqlSiphon
         Mapping.MappedMethodAttribute GetCommandDescription(System.Reflection.MethodInfo method);
 
         Type GetSystemType(string sqlType);
+
+        string MakeCreateSchemaScript(string schemaName);
+        string MakeDropSchemaScript(string schemaName);
 
         string MakeCreateTableScript(Mapping.MappedClassAttribute table);
         string MakeDropTableScript(Mapping.MappedClassAttribute table);

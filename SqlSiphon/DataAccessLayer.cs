@@ -760,6 +760,28 @@ AND COLUMN_NAME = @columnName;")]
             return this.MakeCreatePrimaryKeyScript(final).ToLower() != this.MakeCreatePrimaryKeyScript(initial).ToLower();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [MappedMethod(CommandType = CommandType.Text, Query =
+@"select schema_name from information_schema.schemata;")]
+        public virtual List<string> GetSchemata()
+        {
+            return this.GetList<string>("schema_name");
+        }
+
+        private string MakeSchemaScript(string op, string schemaName){
+            return string.Format("{0} schema {1};", op, schemaName);
+        }
+
+        public virtual string MakeCreateSchemaScript(string schemaName)
+        {
+            return MakeSchemaScript("create", schemaName);
+        }
+
+        public virtual string MakeDropSchemaScript(string schemaName)
+        {
+            return MakeSchemaScript("drop", schemaName);
+        }
+
         public abstract List<InformationSchema.Columns> GetColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
         public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
