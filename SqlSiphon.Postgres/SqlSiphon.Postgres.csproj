@@ -84,7 +84,6 @@
     <Compile Include="Memberships\aspnet_Users.cs" />
     <Compile Include="Memberships\aspnet_UsersInRoles.cs" />
     <Compile Include="NpgsqlDataAccessLayer.cs" />
-    <Compile Include="NpgsqlDataAccessLayerMemberships.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -46,7 +46,6 @@
     <Compile Include="Memberships\aspnet_SchemaVersions.cs" />
     <Compile Include="Memberships\aspnet_Users.cs" />
     <Compile Include="Memberships\aspnet_UsersInRoles.cs" />
-    <Compile Include="SqlServerDataAccessLayerMemberships.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlServerDataAccessLayer.cs" />
     <Compile Include="SqlServerMappedClassAttribute.cs" />

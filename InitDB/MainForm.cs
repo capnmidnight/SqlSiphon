@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace InitDB
@@ -19,11 +20,13 @@ namespace InitDB
         private static string OPTIONS_FILENAME = "options.dat";
         private static string SQLCMD_PATH_KEY = "SQLCMDPATH";
         private static string PSQL_PATH_KEY = "PGSQLPATH";
+        private static string OBJECT_FILTER_KEY = "OBJECTFILTER";
         private static string REG_ASPNET_PATH_KEY = "REGASPNETPATH";
         private static string HORIZONTAL_LINE = "================================================================================";
         private static string DEFAULT_REG_ASPNET_PATH = @"C:\Windows\Microsoft.NET\Framework\v4.0.30319\aspnet_regsql.exe";
         private static string DEFAULT_SQLCMD_PATH = @"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\sqlcmd.exe";
         private static string DEFAULT_PSQL_PATH = @"C:\Program Files\PostgreSQL\9.3\bin\psql.exe";
+        private static string DEFAULT_OBJECT_FILTER = @"^(vw_)?aspnet_";
 
         static string UnrollStackTrace(Exception e)
         {
@@ -198,32 +201,42 @@ namespace InitDB
         private void LoadOptions()
         {
             if (File.Exists(OPTIONS_FILENAME))
+            {
                 this.options = File.ReadAllLines(OPTIONS_FILENAME)
                     .Select(l => l.Trim())
                     .Where(l => l.Length > 0)
                     .Select(l => l.Split('='))
                     .Where(p => p.Length == 2)
                     .ToDictionary(p => p[0], p => p[1]);
+            }
             else
+            {
                 this.options = new Dictionary<string, string>();
+            }
 
-            if (!this.options.ContainsKey(SQLCMD_PATH_KEY))
-                this.options.Add(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH);
-
-            if (!this.options.ContainsKey(PSQL_PATH_KEY))
-                this.options.Add(PSQL_PATH_KEY, DEFAULT_PSQL_PATH);
-
-            if (!this.options.ContainsKey(REG_ASPNET_PATH_KEY))
-                this.options.Add(REG_ASPNET_PATH_KEY, DEFAULT_REG_ASPNET_PATH);
-
-            DisplayOptions();
+            this.DisplayOptions();
         }
 
+        private void CoalesceOption(string key, string value, TextBox output)
+        {
+            if (!this.options.ContainsKey(key))
+            {
+                this.cancelOptionsButton.Enabled = true;
+                this.options.Add(key, value);   
+            }
+            output.Text = this.options[key];
+        }
+
+        private bool lockOptions = false;
         private void DisplayOptions()
         {
-            this.sqlcmdTB.Text = this.options[SQLCMD_PATH_KEY];
-            this.regsqlTB.Text = this.options[REG_ASPNET_PATH_KEY];
-            this.psqlTB.Text = this.options[PSQL_PATH_KEY];
+            lockOptions = true;
+            this.CoalesceOption(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH, this.sqlcmdTB);
+            this.CoalesceOption(PSQL_PATH_KEY, DEFAULT_PSQL_PATH, this.psqlTB);
+            this.CoalesceOption(REG_ASPNET_PATH_KEY, DEFAULT_REG_ASPNET_PATH, this.regsqlTB);
+            this.CoalesceOption(OBJECT_FILTER_KEY, DEFAULT_OBJECT_FILTER, this.defaultObjFilterTB);
+            lockOptions = false;
+            this.EnableSaveOption();
         }
 
         private void LoadSessions()
@@ -519,7 +532,7 @@ namespace InitDB
                     using (var db = this.MakeDatabaseConnection())
                     {
                         db.Progress += db_Progress;
-                        var delta = db.Analyze();
+                        var delta = db.Analyze(ObjectFilter);
                         DisplayDelta(delta);
                         var t = db.GetType();
                         this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
@@ -549,7 +562,7 @@ namespace InitDB
                         {
                             succeeded &= RunScripts("Syncing data:", delta.OtherScripts, db);
                         }
-                        delta = db.Analyze();
+                        delta = db.Analyze(ObjectFilter);
                         DisplayDelta(delta);
                     }
                 }
@@ -595,6 +608,8 @@ namespace InitDB
             this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow + 1, e.RowCount, e.Message));
         }
 
+        private Regex ObjectFilter { get { return new Regex(this.objFilterTB.Text, RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled); } }
+
         private void analyzeButton_Click(object sender, EventArgs e)
         {
             analyzeButton.Enabled = false;
@@ -607,7 +622,7 @@ namespace InitDB
                         this.ToOutput("Synchronizing schema.");
                         using (var db = this.MakeDatabaseConnection())
                         {
-                            DisplayDelta(db.Analyze());
+                            DisplayDelta(db.Analyze(ObjectFilter));
                         }
                         this.ToOutput("Schema synched.");
                     }
@@ -690,6 +705,7 @@ namespace InitDB
                 this.sqlUserTB.Text,
                 this.sqlPassTB.Text,
                 this.assemblyTB.Text,
+                this.objFilterTB.Text,
                 this.createDatabaseChk.Checked,
                 this.createLoginChk.Checked,
                 this.regSqlChk.Checked,
@@ -760,6 +776,7 @@ namespace InitDB
                     this.sqlUserTB.Text = this.CurrentSession.LoginName;
                     this.sqlPassTB.Text = this.CurrentSession.LoginPassword;
                     this.assemblyTB.Text = this.CurrentSession.AssemblyFile;
+                    this.objFilterTB.Text = this.CurrentSession.ObjectFilter ?? this.defaultObjFilterTB.Text;
                     this.createDatabaseChk.Checked = this.CurrentSession.CreateDatabase;
                     this.createLoginChk.Checked = this.CurrentSession.CreateLogin;
                     this.regSqlChk.Checked = this.CurrentSession.RegisterASPNETMembership;
@@ -818,7 +835,10 @@ namespace InitDB
 
         private void enableSaveCancelButtons(object sender, EventArgs e)
         {
-            EnableSaveCancelOptions();
+            if (!lockOptions)
+            {
+                EnableSaveCancelOptions();
+            }
         }
 
         private void EnableSaveCancelOptions()
@@ -826,7 +846,13 @@ namespace InitDB
             cancelOptionsButton.Enabled =
                 this.options[REG_ASPNET_PATH_KEY] != this.regsqlTB.Text
                 || this.options[SQLCMD_PATH_KEY] != this.sqlcmdTB.Text
-                || this.options[PSQL_PATH_KEY] != this.psqlTB.Text;
+                || this.options[PSQL_PATH_KEY] != this.psqlTB.Text
+                || this.options[OBJECT_FILTER_KEY] != this.defaultObjFilterTB.Text;
+            EnableSaveOption();
+        }
+
+        private void EnableSaveOption()
+        {
             saveOptionsButton.Enabled
                 = File.Exists(sqlcmdTB.Text)
                     && File.Exists(regsqlTB.Text)

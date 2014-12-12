@@ -282,6 +282,17 @@ namespace SqlSiphon.Postgres
             return false;
         }
 
+        private static Regex queryExtractor = new Regex(@"^\s*begin\s+(.*?)(?:end;?\s*)?$",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        public override void AnalyzeQuery(string routineText, MappedMethodAttribute routine)
+        {
+            var match = queryExtractor.Match(routineText);
+            if (match.Groups.Count == 2)
+            {
+                routine.Query = match.Groups[1].Value.Trim();
+            }
+        }
+
         public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
         {
             return string.Format("alter table if exists {0} add column {1} {2};",

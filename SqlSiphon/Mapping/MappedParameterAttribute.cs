@@ -71,6 +71,7 @@ namespace SqlSiphon.Mapping
         {
             this.Include = true;
 
+            this.Name = parameter.parameter_name.Substring(1);
             if (parameter.numeric_precision.HasValue)
             {
                 this.Precision = parameter.numeric_precision.Value;
@@ -80,7 +81,7 @@ namespace SqlSiphon.Mapping
             {
                 this.Size = parameter.numeric_scale.Value;
             }
-            else if (parameter.character_maximum_length.HasValue)
+            else if (parameter.character_maximum_length.HasValue && parameter.character_maximum_length.Value > -1)
             {
                 this.Size = parameter.character_maximum_length.Value;
             }

@@ -17,6 +17,7 @@ namespace InitDB
         public string LoginName { get { return Get<string>(); } set { Set(value); } }
         public string LoginPassword { get { return Get<string>(); } set { Set(value); } }
         public string AssemblyFile { get { return Get<string>(); } set { Set(value); } }
+        public string ObjectFilter { get { return Get<string>(); } set { Set(value); } }
         public bool CreateDatabase { get { return Get<bool>(); } set { Set(value); } }
         public bool CreateLogin { get { return Get<bool>(); } set { Set(value); } }
         public bool RegisterASPNETMembership { get { return Get<bool>(); } set { Set(value); } }
@@ -32,12 +33,12 @@ namespace InitDB
 
 
         public Session()
-            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "", "localhost\\SQLEXPRESS", "", "", "", "", "", "", false, false, false, false, false, true, false, false, false)
+            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "", "localhost\\SQLEXPRESS", "", "", "", "", "", "", "", false, false, false, false, false, true, false, false, false)
         {
         }
 
         public Session(string name, string databaseType, string server, string dbname, string adminName, string adminPassword,
-            string loginName, string loginPassword, string assemblyFile,
+            string loginName, string loginPassword, string assemblyFile, string objectFilter,
             bool createDatabase, bool createLogin, bool registerASPNET, bool createSchemaObj, bool initData, bool syncProcs,
             bool createFKs, bool createIndices, bool installExtensions)
         {
@@ -50,6 +51,7 @@ namespace InitDB
             this.LoginName = loginName;
             this.LoginPassword = loginPassword;
             this.AssemblyFile = assemblyFile;
+            this.ObjectFilter = objectFilter;
             this.CreateDatabase = createDatabase;
             this.CreateLogin = createLogin;
             this.RegisterASPNETMembership = registerASPNET;

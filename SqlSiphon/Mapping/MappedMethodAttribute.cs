@@ -93,9 +93,12 @@ namespace SqlSiphon.Mapping
             this.Schema = routine.routine_schema;
             this.Name = routine.routine_name;
             this.CommandType = System.Data.CommandType.StoredProcedure;
-            this.EnableTransaction = false;
-            this.Query = routine.routine_body;
             this.Parameters = new List<MappedParameterAttribute>();
+            int begin = routine.routine_definition
+                .ToLower()
+                .IndexOf("set nocount on;");
+
+            dal.AnalyzeQuery(routine.routine_definition, this);
             if (parameters != null)
             {
                 foreach (var p in parameters)

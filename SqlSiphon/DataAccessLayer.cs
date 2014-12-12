@@ -135,7 +135,7 @@ namespace SqlSiphon
         private DataAccessLayer(ConnectionT connection, bool isConnectionOwned)
         {
             this.FKNameRegex = new Regex(
-                string.Format("add constraint \\{0}([\\w_]+)\\{1}", IdentifierPartBegin, IdentifierPartEnd),
+                string.Format(@"add constraint \{0}([\w_]+)\{1}", IdentifierPartBegin, IdentifierPartEnd),
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
             this.Connection = connection;
             this.isConnectionOwned = isConnectionOwned;
@@ -645,11 +645,11 @@ AND COLUMN_NAME = @columnName;")]
             return final;
         }
 
-        public DatabaseDelta Analyze()
+        public DatabaseDelta Analyze(Regex filter)
         {
-            var initial = new DatabaseState(this);
+            var initial = new DatabaseState(filter, this);
             var final = this.GetFinalState();
-            return final.Diff(initial, this);
+            return new DatabaseDelta(final, initial, this);
         }
 
         private string BuildIndex<T>(Func<MappedClassAttribute, string[]> getColumns, Func<MappedClassAttribute, string[], string> getIndexName)
@@ -747,7 +747,9 @@ AND COLUMN_NAME = @columnName;")]
 
         public virtual bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
         {
-            return this.MakeCreateRoutineScript(a).ToLower() != this.MakeCreateRoutineScript(b).ToLower();
+            var s1 = this.MakeCreateRoutineScript(a);
+            var s2 = this.MakeCreateRoutineScript(b);
+            return s1.ToLower() != s2.ToLower();
         }
 
         public virtual bool RelationshipChanged(Relationship a, Relationship b)
@@ -794,6 +796,7 @@ AND COLUMN_NAME = @columnName;")]
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         public abstract bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial);
+        public abstract void AnalyzeQuery(string routineText, MappedMethodAttribute routine);
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
         protected abstract string MakeCreateIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);

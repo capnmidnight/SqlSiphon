@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SqlSiphon
 {
     public interface ISqlSiphon : IDisposable
     {
-        DatabaseDelta Analyze();
+        DatabaseDelta Analyze(Regex filter);
         void AlterDatabase(string script);
         void MarkScriptAsRan(string script);
 
@@ -29,6 +30,7 @@ namespace SqlSiphon
         bool ColumnChanged(Mapping.MappedPropertyAttribute final, Mapping.MappedPropertyAttribute initial);
         bool RoutineChanged(Mapping.MappedMethodAttribute final, Mapping.MappedMethodAttribute initial);
         bool KeyChanged(Mapping.PrimaryKey final, Mapping.PrimaryKey initial);
+        void AnalyzeQuery(string routineText, Mapping.MappedMethodAttribute routine);
 
         Mapping.MappedMethodAttribute GetCommandDescription(System.Reflection.MethodInfo method);
 
