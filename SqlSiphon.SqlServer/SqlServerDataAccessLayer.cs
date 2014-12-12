@@ -426,7 +426,7 @@ create table {2}(
                 else
                 {
                     var typeStr = new StringBuilder(sqlType);
-                    if (size.HasValue)
+                    if (size.HasValue && (systemType != typeof(int) || size.Value > 0))
                     {
                         typeStr.AppendFormat("({0}", size);
                         if (precision.HasValue)
@@ -582,7 +582,14 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [MappedMethod(CommandType = CommandType.Text, Query =
-@"select *
+@"select
+specific_catalog,
+specific_schema,
+specific_name,
+routine_catalog,
+routine_schema,
+routine_name,
+object_definition(object_id(routine_schema + '.' + routine_name)) as routine_definition
 from information_schema.routines
 where specific_schema != 'information_schema'
 order by specific_catalog, specific_schema, specific_name;")]

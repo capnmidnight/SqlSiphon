@@ -16,6 +16,9 @@ namespace SqlSiphon.InformationSchema
         public string routine_catalog { get; set; }
         public string routine_schema { get; set; }
         public string routine_name { get; set; }
+        public string routine_definition { get; set; }
+        /*
+        public string routine_body { get; set; }
         public string routine_type { get; set; }
         public string module_catalog { get; set; }
         public string module_schema { get; set; }
@@ -48,8 +51,6 @@ namespace SqlSiphon.InformationSchema
 
         public long maximum_cardinality { get; set; }
         public string dtd_identifier { get; set; }
-        public string routine_body { get; set; }
-        public string routine_definition { get; set; }
 
         public string external_name { get; set; }
         public string external_language { get; set; }
@@ -64,6 +65,6 @@ namespace SqlSiphon.InformationSchema
         public string is_implicitly_invocable { get; set; }
         public DateTime created { get; set; }
         public DateTime last_altered { get; set; }
-
+*/
     }
 }
