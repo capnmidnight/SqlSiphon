@@ -148,7 +148,7 @@ namespace SqlSiphon.SqlServer
             return this.MakeRoutineScript(info, "create");
         }
 
-        public override string MakeAlterRoutineScript(MappedMethodAttribute info)
+        public override string MakeAlterRoutineScript(MappedMethodAttribute info, MappedMethodAttribute initial)
         {
             return this.MakeRoutineScript(info, "alter");
         }
@@ -198,7 +198,13 @@ end catch;";
             var query = info.Query;
             if (info.EnableTransaction)
             {
-                string transactionName = string.Format("TRANS{0}", Guid.NewGuid().ToString().Replace("-", "")).Substring(0, 32);
+                string transactionName = string.Format("TRANS{0}{1}", info.Schema ?? DefaultSchemaName, info.Name);
+                int len = transactionName.Length;
+                if (len > 32)
+                {
+                    var lenlen = (int)Math.Ceiling(Math.Log10(len));
+                    transactionName = transactionName.Substring(0, 32 - lenlen) + lenlen.ToString();
+                }
                 string transactionBegin = string.Format(beginRoutineTemplate, transactionName);
                 string transactionEnd = string.Format(endRoutineTemplate, transactionName);
                 query = string.Join(Environment.NewLine, transactionBegin, query, transactionEnd);

@@ -204,17 +204,17 @@ namespace SqlSiphon.Postgres
             return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
         }
 
-        protected override DatabaseState GetFinalState()
-        {
-            var state = base.GetFinalState();
-            state.AddType(typeof(Memberships.aspnet_Applications), this);
-            state.AddType(typeof(Memberships.aspnet_Membership), this);
-            state.AddType(typeof(Memberships.aspnet_Roles), this);
-            state.AddType(typeof(Memberships.aspnet_SchemaVersions), this);
-            state.AddType(typeof(Memberships.aspnet_Users), this);
-            state.AddType(typeof(Memberships.aspnet_UsersInRoles), this);
-            return state;
-        }
+        //protected override DatabaseState GetFinalState()
+        //{
+        //    var state = base.GetFinalState();
+        //    state.AddType(typeof(Memberships.aspnet_Applications), this);
+        //    state.AddType(typeof(Memberships.aspnet_Membership), this);
+        //    state.AddType(typeof(Memberships.aspnet_Roles), this);
+        //    state.AddType(typeof(Memberships.aspnet_SchemaVersions), this);
+        //    state.AddType(typeof(Memberships.aspnet_Users), this);
+        //    state.AddType(typeof(Memberships.aspnet_UsersInRoles), this);
+        //    return state;
+        //}
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
         {
@@ -282,14 +282,22 @@ namespace SqlSiphon.Postgres
             return false;
         }
 
-        private static Regex queryExtractor = new Regex(@"^\s*begin\s+(.*?)(?:end;?\s*)?$",
+        private static Regex queryExtractor = new Regex(@"^\s*(declare\s+.*?)?begin\s+(.*?)(?:end;?\s*)?$",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        private static Regex parameterReverter = new Regex(@"\b_",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
         public override void AnalyzeQuery(string routineText, MappedMethodAttribute routine)
         {
             var match = queryExtractor.Match(routineText);
-            if (match.Groups.Count == 2)
+            if (match.Groups.Count == 3)
             {
-                routine.Query = match.Groups[1].Value.Trim();
+                var declString = match.Groups[1].Value
+                    .Replace(";", ",")
+                    .Replace("uuid", "uniqueidentifier");
+                
+                routine.Query += parameterReverter.Replace(declString, "@")
+                    + Environment.NewLine 
+                    + parameterReverter.Replace(match.Groups[2].Value.Trim(), "@");
             }
         }
 
@@ -565,10 +573,10 @@ namespace SqlSiphon.Postgres
             {
                 declarationString = "declare " + string.Join("", declarations);
             }
-            
+
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine);
-            query = this.MakeDropRoutineScript(routine) + string.Format(
+            query = string.Format(
 @"create or replace function {0}(
 {1}
 )
@@ -583,13 +591,13 @@ $$ language plpgsql;",
                 this.MakeSqlTypeString(routine),
                 declarationString,
                 query);
-            query = query.Replace("@", "P_");
+            query = query.Replace("@", "_");
             return query;
         }
 
-        public override string MakeAlterRoutineScript(MappedMethodAttribute routine)
+        public override string MakeAlterRoutineScript(MappedMethodAttribute final, MappedMethodAttribute initial)
         {
-            return this.MakeDropRoutineScript(routine) + "\n" + this.MakeCreateRoutineScript(routine);
+            return this.MakeDropRoutineScript(initial) + Environment.NewLine + this.MakeCreateRoutineScript(final);
         }
 
         public override string MakeCreateTableScript(MappedClassAttribute table)

@@ -28,23 +28,25 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle33 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle34 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle35 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle36 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle37 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle38 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle39 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle40 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle41 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle42 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle43 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle44 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle45 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle46 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle47 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle48 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.objFilterTB = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
             this.installExtensionsChk = new System.Windows.Forms.CheckBox();
             this.dbTypeList = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
@@ -151,6 +153,8 @@
             this.dataGridViewTextBoxColumn27 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabOptions = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+            this.defaultObjFilterTB = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
             this.browseRegSqlButton = new System.Windows.Forms.Button();
             this.browseSqlCmdButton = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
@@ -192,10 +196,6 @@
             this.initializeDataChk = new System.Windows.Forms.CheckBox();
             this.createFKsChk = new System.Windows.Forms.CheckBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.label13 = new System.Windows.Forms.Label();
-            this.defaultObjFilterTB = new System.Windows.Forms.TextBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.objFilterTB = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabStdOut.SuspendLayout();
@@ -315,6 +315,25 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(918, 782);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
+            // objFilterTB
+            // 
+            this.objFilterTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanel1.SetColumnSpan(this.objFilterTB, 4);
+            this.objFilterTB.Location = new System.Drawing.Point(189, 193);
+            this.objFilterTB.Name = "objFilterTB";
+            this.objFilterTB.Size = new System.Drawing.Size(638, 20);
+            this.objFilterTB.TabIndex = 35;
+            // 
+            // label14
+            // 
+            this.label14.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(120, 196);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(63, 13);
+            this.label14.TabIndex = 34;
+            this.label14.Text = "Object filter:";
+            // 
             // installExtensionsChk
             // 
             this.installExtensionsChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
@@ -374,7 +393,7 @@
             this.tabStdOut.Controls.Add(this.txtStdOut);
             this.tabStdOut.Location = new System.Drawing.Point(4, 22);
             this.tabStdOut.Name = "tabStdOut";
-            this.tabStdOut.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabStdOut.Padding = new System.Windows.Forms.Padding(3);
             this.tabStdOut.Size = new System.Drawing.Size(904, 432);
             this.tabStdOut.TabIndex = 0;
             this.tabStdOut.Text = "Standard output";
@@ -401,8 +420,8 @@
             this.tabStdErr.Controls.Add(this.txtStdErr);
             this.tabStdErr.Location = new System.Drawing.Point(4, 22);
             this.tabStdErr.Name = "tabStdErr";
-            this.tabStdErr.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabStdErr.Size = new System.Drawing.Size(904, 460);
+            this.tabStdErr.Padding = new System.Windows.Forms.Padding(3);
+            this.tabStdErr.Size = new System.Drawing.Size(904, 432);
             this.tabStdErr.TabIndex = 1;
             this.tabStdErr.Text = "Standard error";
             this.tabStdErr.UseVisualStyleBackColor = true;
@@ -418,7 +437,7 @@
             this.txtStdErr.Name = "txtStdErr";
             this.txtStdErr.ReadOnly = true;
             this.txtStdErr.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdErr.Size = new System.Drawing.Size(898, 454);
+            this.txtStdErr.Size = new System.Drawing.Size(898, 426);
             this.txtStdErr.TabIndex = 0;
             this.txtStdErr.TabStop = false;
             this.txtStdErr.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -428,7 +447,7 @@
             this.tabTables.Controls.Add(this.tabControl2);
             this.tabTables.Location = new System.Drawing.Point(4, 22);
             this.tabTables.Name = "tabTables";
-            this.tabTables.Size = new System.Drawing.Size(904, 460);
+            this.tabTables.Size = new System.Drawing.Size(904, 432);
             this.tabTables.TabIndex = 5;
             this.tabTables.Text = "Tables";
             this.tabTables.UseVisualStyleBackColor = true;
@@ -442,7 +461,7 @@
             this.tabControl2.Location = new System.Drawing.Point(0, 0);
             this.tabControl2.Name = "tabControl2";
             this.tabControl2.SelectedIndex = 0;
-            this.tabControl2.Size = new System.Drawing.Size(904, 460);
+            this.tabControl2.Size = new System.Drawing.Size(904, 432);
             this.tabControl2.TabIndex = 4;
             // 
             // tabTableCreate
@@ -450,8 +469,8 @@
             this.tabTableCreate.Controls.Add(this.createTablesGV);
             this.tabTableCreate.Location = new System.Drawing.Point(4, 22);
             this.tabTableCreate.Name = "tabTableCreate";
-            this.tabTableCreate.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabTableCreate.Size = new System.Drawing.Size(896, 434);
+            this.tabTableCreate.Padding = new System.Windows.Forms.Padding(3);
+            this.tabTableCreate.Size = new System.Drawing.Size(896, 406);
             this.tabTableCreate.TabIndex = 0;
             this.tabTableCreate.Text = "Create";
             this.tabTableCreate.UseVisualStyleBackColor = true;
@@ -469,15 +488,15 @@
             this.createTablesGV.Location = new System.Drawing.Point(3, 3);
             this.createTablesGV.Name = "createTablesGV";
             this.createTablesGV.ReadOnly = true;
-            this.createTablesGV.Size = new System.Drawing.Size(890, 428);
+            this.createTablesGV.Size = new System.Drawing.Size(890, 400);
             this.createTablesGV.TabIndex = 3;
             this.createTablesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // createsGVName
             // 
             this.createsGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle33.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.createsGVName.DefaultCellStyle = dataGridViewCellStyle33;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.createsGVName.DefaultCellStyle = dataGridViewCellStyle1;
             this.createsGVName.HeaderText = "name";
             this.createsGVName.Name = "createsGVName";
             this.createsGVName.ReadOnly = true;
@@ -506,8 +525,8 @@
             this.tabTableDrop.Controls.Add(this.dropTablesGV);
             this.tabTableDrop.Location = new System.Drawing.Point(4, 22);
             this.tabTableDrop.Name = "tabTableDrop";
-            this.tabTableDrop.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabTableDrop.Size = new System.Drawing.Size(898, 436);
+            this.tabTableDrop.Padding = new System.Windows.Forms.Padding(3);
+            this.tabTableDrop.Size = new System.Drawing.Size(896, 434);
             this.tabTableDrop.TabIndex = 1;
             this.tabTableDrop.Text = "Drop";
             this.tabTableDrop.UseVisualStyleBackColor = true;
@@ -525,15 +544,15 @@
             this.dropTablesGV.Location = new System.Drawing.Point(3, 3);
             this.dropTablesGV.Name = "dropTablesGV";
             this.dropTablesGV.ReadOnly = true;
-            this.dropTablesGV.Size = new System.Drawing.Size(892, 430);
+            this.dropTablesGV.Size = new System.Drawing.Size(890, 428);
             this.dropTablesGV.TabIndex = 4;
             this.dropTablesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn1
             // 
             this.dataGridViewTextBoxColumn1.DataPropertyName = "Key";
-            dataGridViewCellStyle34.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle34;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewTextBoxColumn1.HeaderText = "name";
             this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             this.dataGridViewTextBoxColumn1.ReadOnly = true;
@@ -562,7 +581,7 @@
             this.tabTableUnaltered.Controls.Add(this.unalteredTablesGV);
             this.tabTableUnaltered.Location = new System.Drawing.Point(4, 22);
             this.tabTableUnaltered.Name = "tabTableUnaltered";
-            this.tabTableUnaltered.Size = new System.Drawing.Size(898, 436);
+            this.tabTableUnaltered.Size = new System.Drawing.Size(896, 434);
             this.tabTableUnaltered.TabIndex = 2;
             this.tabTableUnaltered.Text = "Unaltered";
             this.tabTableUnaltered.UseVisualStyleBackColor = true;
@@ -579,7 +598,7 @@
             this.unalteredTablesGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredTablesGV.Name = "unalteredTablesGV";
             this.unalteredTablesGV.ReadOnly = true;
-            this.unalteredTablesGV.Size = new System.Drawing.Size(898, 436);
+            this.unalteredTablesGV.Size = new System.Drawing.Size(896, 434);
             this.unalteredTablesGV.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn3
@@ -603,7 +622,7 @@
             this.tabColumns.Controls.Add(this.columnsTabs);
             this.tabColumns.Location = new System.Drawing.Point(4, 22);
             this.tabColumns.Name = "tabColumns";
-            this.tabColumns.Size = new System.Drawing.Size(904, 460);
+            this.tabColumns.Size = new System.Drawing.Size(904, 432);
             this.tabColumns.TabIndex = 2;
             this.tabColumns.Text = "Columns";
             this.tabColumns.UseVisualStyleBackColor = true;
@@ -618,7 +637,7 @@
             this.columnsTabs.Location = new System.Drawing.Point(0, 0);
             this.columnsTabs.Name = "columnsTabs";
             this.columnsTabs.SelectedIndex = 0;
-            this.columnsTabs.Size = new System.Drawing.Size(904, 460);
+            this.columnsTabs.Size = new System.Drawing.Size(904, 432);
             this.columnsTabs.TabIndex = 5;
             // 
             // tabPage1
@@ -626,8 +645,8 @@
             this.tabPage1.Controls.Add(this.createColumnsGV);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage1.Size = new System.Drawing.Size(896, 434);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(896, 406);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Create";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -645,15 +664,15 @@
             this.createColumnsGV.Location = new System.Drawing.Point(3, 3);
             this.createColumnsGV.Name = "createColumnsGV";
             this.createColumnsGV.ReadOnly = true;
-            this.createColumnsGV.Size = new System.Drawing.Size(890, 428);
+            this.createColumnsGV.Size = new System.Drawing.Size(890, 400);
             this.createColumnsGV.TabIndex = 2;
             this.createColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dropsGVName
             // 
             this.dropsGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle35.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dropsGVName.DefaultCellStyle = dataGridViewCellStyle35;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dropsGVName.DefaultCellStyle = dataGridViewCellStyle3;
             this.dropsGVName.HeaderText = "name";
             this.dropsGVName.Name = "dropsGVName";
             this.dropsGVName.ReadOnly = true;
@@ -682,8 +701,8 @@
             this.tabPage2.Controls.Add(this.dropColumnsGV);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage2.Size = new System.Drawing.Size(898, 436);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(896, 434);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Drop";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -701,15 +720,15 @@
             this.dropColumnsGV.Location = new System.Drawing.Point(3, 3);
             this.dropColumnsGV.Name = "dropColumnsGV";
             this.dropColumnsGV.ReadOnly = true;
-            this.dropColumnsGV.Size = new System.Drawing.Size(892, 430);
+            this.dropColumnsGV.Size = new System.Drawing.Size(890, 428);
             this.dropColumnsGV.TabIndex = 4;
             this.dropColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn7
             // 
             this.dataGridViewTextBoxColumn7.DataPropertyName = "Key";
-            dataGridViewCellStyle36.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn7.DefaultCellStyle = dataGridViewCellStyle36;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn7.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewTextBoxColumn7.HeaderText = "name";
             this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             this.dataGridViewTextBoxColumn7.ReadOnly = true;
@@ -738,7 +757,7 @@
             this.tabPage4.Controls.Add(this.alteredColumnsGV);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(898, 436);
+            this.tabPage4.Size = new System.Drawing.Size(896, 434);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Altered";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -756,15 +775,15 @@
             this.alteredColumnsGV.Location = new System.Drawing.Point(0, 0);
             this.alteredColumnsGV.Name = "alteredColumnsGV";
             this.alteredColumnsGV.ReadOnly = true;
-            this.alteredColumnsGV.Size = new System.Drawing.Size(898, 436);
+            this.alteredColumnsGV.Size = new System.Drawing.Size(896, 434);
             this.alteredColumnsGV.TabIndex = 5;
             this.alteredColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn5
             // 
             this.dataGridViewTextBoxColumn5.DataPropertyName = "Key";
-            dataGridViewCellStyle37.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle37;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridViewTextBoxColumn5.HeaderText = "name";
             this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
             this.dataGridViewTextBoxColumn5.ReadOnly = true;
@@ -793,7 +812,7 @@
             this.tabPage3.Controls.Add(this.unalteredColumnsGV);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(898, 436);
+            this.tabPage3.Size = new System.Drawing.Size(896, 434);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Unaltered";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -810,7 +829,7 @@
             this.unalteredColumnsGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredColumnsGV.Name = "unalteredColumnsGV";
             this.unalteredColumnsGV.ReadOnly = true;
-            this.unalteredColumnsGV.Size = new System.Drawing.Size(898, 436);
+            this.unalteredColumnsGV.Size = new System.Drawing.Size(896, 434);
             this.unalteredColumnsGV.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn9
@@ -834,7 +853,7 @@
             this.tabRoutines.Controls.Add(this.tabControl5);
             this.tabRoutines.Location = new System.Drawing.Point(4, 22);
             this.tabRoutines.Name = "tabRoutines";
-            this.tabRoutines.Size = new System.Drawing.Size(904, 460);
+            this.tabRoutines.Size = new System.Drawing.Size(904, 432);
             this.tabRoutines.TabIndex = 7;
             this.tabRoutines.Text = "Routines";
             this.tabRoutines.UseVisualStyleBackColor = true;
@@ -849,7 +868,7 @@
             this.tabControl5.Location = new System.Drawing.Point(0, 0);
             this.tabControl5.Name = "tabControl5";
             this.tabControl5.SelectedIndex = 0;
-            this.tabControl5.Size = new System.Drawing.Size(904, 460);
+            this.tabControl5.Size = new System.Drawing.Size(904, 432);
             this.tabControl5.TabIndex = 6;
             // 
             // tabPage8
@@ -857,8 +876,8 @@
             this.tabPage8.Controls.Add(this.createRoutinesGV);
             this.tabPage8.Location = new System.Drawing.Point(4, 22);
             this.tabPage8.Name = "tabPage8";
-            this.tabPage8.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage8.Size = new System.Drawing.Size(896, 434);
+            this.tabPage8.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage8.Size = new System.Drawing.Size(896, 406);
             this.tabPage8.TabIndex = 0;
             this.tabPage8.Text = "Create";
             this.tabPage8.UseVisualStyleBackColor = true;
@@ -876,15 +895,15 @@
             this.createRoutinesGV.Location = new System.Drawing.Point(3, 3);
             this.createRoutinesGV.Name = "createRoutinesGV";
             this.createRoutinesGV.ReadOnly = true;
-            this.createRoutinesGV.Size = new System.Drawing.Size(890, 428);
+            this.createRoutinesGV.Size = new System.Drawing.Size(890, 400);
             this.createRoutinesGV.TabIndex = 2;
             this.createRoutinesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn17
             // 
             this.dataGridViewTextBoxColumn17.DataPropertyName = "Key";
-            dataGridViewCellStyle38.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn17.DefaultCellStyle = dataGridViewCellStyle38;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn17.DefaultCellStyle = dataGridViewCellStyle6;
             this.dataGridViewTextBoxColumn17.HeaderText = "name";
             this.dataGridViewTextBoxColumn17.Name = "dataGridViewTextBoxColumn17";
             this.dataGridViewTextBoxColumn17.ReadOnly = true;
@@ -913,8 +932,8 @@
             this.tabPage9.Controls.Add(this.dropRoutinesGV);
             this.tabPage9.Location = new System.Drawing.Point(4, 22);
             this.tabPage9.Name = "tabPage9";
-            this.tabPage9.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage9.Size = new System.Drawing.Size(898, 436);
+            this.tabPage9.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage9.Size = new System.Drawing.Size(896, 434);
             this.tabPage9.TabIndex = 1;
             this.tabPage9.Text = "Drop";
             this.tabPage9.UseVisualStyleBackColor = true;
@@ -932,15 +951,15 @@
             this.dropRoutinesGV.Location = new System.Drawing.Point(3, 3);
             this.dropRoutinesGV.Name = "dropRoutinesGV";
             this.dropRoutinesGV.ReadOnly = true;
-            this.dropRoutinesGV.Size = new System.Drawing.Size(892, 430);
+            this.dropRoutinesGV.Size = new System.Drawing.Size(890, 428);
             this.dropRoutinesGV.TabIndex = 4;
             this.dropRoutinesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn19
             // 
             this.dataGridViewTextBoxColumn19.DataPropertyName = "Key";
-            dataGridViewCellStyle39.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn19.DefaultCellStyle = dataGridViewCellStyle39;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn19.DefaultCellStyle = dataGridViewCellStyle7;
             this.dataGridViewTextBoxColumn19.HeaderText = "name";
             this.dataGridViewTextBoxColumn19.Name = "dataGridViewTextBoxColumn19";
             this.dataGridViewTextBoxColumn19.ReadOnly = true;
@@ -969,7 +988,7 @@
             this.tabPage10.Controls.Add(this.alteredRoutinesGV);
             this.tabPage10.Location = new System.Drawing.Point(4, 22);
             this.tabPage10.Name = "tabPage10";
-            this.tabPage10.Size = new System.Drawing.Size(898, 436);
+            this.tabPage10.Size = new System.Drawing.Size(896, 434);
             this.tabPage10.TabIndex = 3;
             this.tabPage10.Text = "Altered";
             this.tabPage10.UseVisualStyleBackColor = true;
@@ -987,15 +1006,15 @@
             this.alteredRoutinesGV.Location = new System.Drawing.Point(0, 0);
             this.alteredRoutinesGV.Name = "alteredRoutinesGV";
             this.alteredRoutinesGV.ReadOnly = true;
-            this.alteredRoutinesGV.Size = new System.Drawing.Size(898, 436);
+            this.alteredRoutinesGV.Size = new System.Drawing.Size(896, 434);
             this.alteredRoutinesGV.TabIndex = 5;
             this.alteredRoutinesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn21
             // 
             this.dataGridViewTextBoxColumn21.DataPropertyName = "Key";
-            dataGridViewCellStyle40.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn21.DefaultCellStyle = dataGridViewCellStyle40;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn21.DefaultCellStyle = dataGridViewCellStyle8;
             this.dataGridViewTextBoxColumn21.HeaderText = "name";
             this.dataGridViewTextBoxColumn21.Name = "dataGridViewTextBoxColumn21";
             this.dataGridViewTextBoxColumn21.ReadOnly = true;
@@ -1024,7 +1043,7 @@
             this.tabPage11.Controls.Add(this.unalteredRoutinesGV);
             this.tabPage11.Location = new System.Drawing.Point(4, 22);
             this.tabPage11.Name = "tabPage11";
-            this.tabPage11.Size = new System.Drawing.Size(898, 436);
+            this.tabPage11.Size = new System.Drawing.Size(896, 434);
             this.tabPage11.TabIndex = 2;
             this.tabPage11.Text = "Unaltered";
             this.tabPage11.UseVisualStyleBackColor = true;
@@ -1041,14 +1060,14 @@
             this.unalteredRoutinesGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredRoutinesGV.Name = "unalteredRoutinesGV";
             this.unalteredRoutinesGV.ReadOnly = true;
-            this.unalteredRoutinesGV.Size = new System.Drawing.Size(898, 436);
+            this.unalteredRoutinesGV.Size = new System.Drawing.Size(896, 434);
             this.unalteredRoutinesGV.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn23
             // 
             this.dataGridViewTextBoxColumn23.DataPropertyName = "Key";
-            dataGridViewCellStyle41.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn23.DefaultCellStyle = dataGridViewCellStyle41;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn23.DefaultCellStyle = dataGridViewCellStyle9;
             this.dataGridViewTextBoxColumn23.HeaderText = "name";
             this.dataGridViewTextBoxColumn23.Name = "dataGridViewTextBoxColumn23";
             this.dataGridViewTextBoxColumn23.ReadOnly = true;
@@ -1069,7 +1088,7 @@
             this.tabOther.Controls.Add(this.othersGV);
             this.tabOther.Location = new System.Drawing.Point(4, 22);
             this.tabOther.Name = "tabOther";
-            this.tabOther.Size = new System.Drawing.Size(904, 460);
+            this.tabOther.Size = new System.Drawing.Size(904, 432);
             this.tabOther.TabIndex = 6;
             this.tabOther.Text = "Data and Init";
             this.tabOther.UseVisualStyleBackColor = true;
@@ -1088,15 +1107,15 @@
             this.othersGV.Location = new System.Drawing.Point(0, 0);
             this.othersGV.Name = "othersGV";
             this.othersGV.ReadOnly = true;
-            this.othersGV.Size = new System.Drawing.Size(904, 460);
+            this.othersGV.Size = new System.Drawing.Size(904, 432);
             this.othersGV.TabIndex = 6;
             this.othersGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // othersGVName
             // 
             this.othersGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle42.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.othersGVName.DefaultCellStyle = dataGridViewCellStyle42;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.othersGVName.DefaultCellStyle = dataGridViewCellStyle10;
             this.othersGVName.HeaderText = "name";
             this.othersGVName.Name = "othersGVName";
             this.othersGVName.ReadOnly = true;
@@ -1135,7 +1154,7 @@
             this.tabRelationships.Controls.Add(this.tabControl3);
             this.tabRelationships.Location = new System.Drawing.Point(4, 22);
             this.tabRelationships.Name = "tabRelationships";
-            this.tabRelationships.Size = new System.Drawing.Size(904, 460);
+            this.tabRelationships.Size = new System.Drawing.Size(904, 432);
             this.tabRelationships.TabIndex = 3;
             this.tabRelationships.Text = "Constraints";
             this.tabRelationships.UseVisualStyleBackColor = true;
@@ -1149,7 +1168,7 @@
             this.tabControl3.Location = new System.Drawing.Point(0, 0);
             this.tabControl3.Name = "tabControl3";
             this.tabControl3.SelectedIndex = 0;
-            this.tabControl3.Size = new System.Drawing.Size(904, 460);
+            this.tabControl3.Size = new System.Drawing.Size(904, 432);
             this.tabControl3.TabIndex = 5;
             // 
             // tabPage5
@@ -1157,8 +1176,8 @@
             this.tabPage5.Controls.Add(this.createRelationshipsGV);
             this.tabPage5.Location = new System.Drawing.Point(4, 22);
             this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage5.Size = new System.Drawing.Size(896, 434);
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(896, 406);
             this.tabPage5.TabIndex = 0;
             this.tabPage5.Text = "Create";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -1176,15 +1195,15 @@
             this.createRelationshipsGV.Location = new System.Drawing.Point(3, 3);
             this.createRelationshipsGV.Name = "createRelationshipsGV";
             this.createRelationshipsGV.ReadOnly = true;
-            this.createRelationshipsGV.Size = new System.Drawing.Size(890, 428);
+            this.createRelationshipsGV.Size = new System.Drawing.Size(890, 400);
             this.createRelationshipsGV.TabIndex = 3;
             this.createRelationshipsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn11
             // 
             this.dataGridViewTextBoxColumn11.DataPropertyName = "Key";
-            dataGridViewCellStyle43.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn11.DefaultCellStyle = dataGridViewCellStyle43;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn11.DefaultCellStyle = dataGridViewCellStyle11;
             this.dataGridViewTextBoxColumn11.HeaderText = "name";
             this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
             this.dataGridViewTextBoxColumn11.ReadOnly = true;
@@ -1213,8 +1232,8 @@
             this.tabPage6.Controls.Add(this.dropRelationshipsGV);
             this.tabPage6.Location = new System.Drawing.Point(4, 22);
             this.tabPage6.Name = "tabPage6";
-            this.tabPage6.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage6.Size = new System.Drawing.Size(898, 436);
+            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage6.Size = new System.Drawing.Size(896, 434);
             this.tabPage6.TabIndex = 1;
             this.tabPage6.Text = "Drop";
             this.tabPage6.UseVisualStyleBackColor = true;
@@ -1232,15 +1251,15 @@
             this.dropRelationshipsGV.Location = new System.Drawing.Point(3, 3);
             this.dropRelationshipsGV.Name = "dropRelationshipsGV";
             this.dropRelationshipsGV.ReadOnly = true;
-            this.dropRelationshipsGV.Size = new System.Drawing.Size(892, 430);
+            this.dropRelationshipsGV.Size = new System.Drawing.Size(890, 428);
             this.dropRelationshipsGV.TabIndex = 4;
             this.dropRelationshipsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn13
             // 
             this.dataGridViewTextBoxColumn13.DataPropertyName = "Key";
-            dataGridViewCellStyle44.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn13.DefaultCellStyle = dataGridViewCellStyle44;
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn13.DefaultCellStyle = dataGridViewCellStyle12;
             this.dataGridViewTextBoxColumn13.HeaderText = "name";
             this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
             this.dataGridViewTextBoxColumn13.ReadOnly = true;
@@ -1269,7 +1288,7 @@
             this.tabPage7.Controls.Add(this.unalteredRelationshipsGV);
             this.tabPage7.Location = new System.Drawing.Point(4, 22);
             this.tabPage7.Name = "tabPage7";
-            this.tabPage7.Size = new System.Drawing.Size(898, 436);
+            this.tabPage7.Size = new System.Drawing.Size(896, 434);
             this.tabPage7.TabIndex = 2;
             this.tabPage7.Text = "Unaltered";
             this.tabPage7.UseVisualStyleBackColor = true;
@@ -1286,14 +1305,14 @@
             this.unalteredRelationshipsGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredRelationshipsGV.Name = "unalteredRelationshipsGV";
             this.unalteredRelationshipsGV.ReadOnly = true;
-            this.unalteredRelationshipsGV.Size = new System.Drawing.Size(898, 436);
+            this.unalteredRelationshipsGV.Size = new System.Drawing.Size(896, 434);
             this.unalteredRelationshipsGV.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn15
             // 
             this.dataGridViewTextBoxColumn15.DataPropertyName = "Key";
-            dataGridViewCellStyle45.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn15.DefaultCellStyle = dataGridViewCellStyle45;
+            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn15.DefaultCellStyle = dataGridViewCellStyle13;
             this.dataGridViewTextBoxColumn15.HeaderText = "name";
             this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
             this.dataGridViewTextBoxColumn15.ReadOnly = true;
@@ -1314,7 +1333,7 @@
             this.tabIndices.Controls.Add(this.tabControl4);
             this.tabIndices.Location = new System.Drawing.Point(4, 22);
             this.tabIndices.Name = "tabIndices";
-            this.tabIndices.Size = new System.Drawing.Size(904, 460);
+            this.tabIndices.Size = new System.Drawing.Size(904, 432);
             this.tabIndices.TabIndex = 8;
             this.tabIndices.Text = "Indices";
             this.tabIndices.UseVisualStyleBackColor = true;
@@ -1328,7 +1347,7 @@
             this.tabControl4.Location = new System.Drawing.Point(0, 0);
             this.tabControl4.Name = "tabControl4";
             this.tabControl4.SelectedIndex = 0;
-            this.tabControl4.Size = new System.Drawing.Size(904, 460);
+            this.tabControl4.Size = new System.Drawing.Size(904, 432);
             this.tabControl4.TabIndex = 6;
             // 
             // tabPage12
@@ -1336,8 +1355,8 @@
             this.tabPage12.Controls.Add(this.createIndicesGV);
             this.tabPage12.Location = new System.Drawing.Point(4, 22);
             this.tabPage12.Name = "tabPage12";
-            this.tabPage12.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage12.Size = new System.Drawing.Size(896, 434);
+            this.tabPage12.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage12.Size = new System.Drawing.Size(896, 406);
             this.tabPage12.TabIndex = 0;
             this.tabPage12.Text = "Create";
             this.tabPage12.UseVisualStyleBackColor = true;
@@ -1355,15 +1374,15 @@
             this.createIndicesGV.Location = new System.Drawing.Point(3, 3);
             this.createIndicesGV.Name = "createIndicesGV";
             this.createIndicesGV.ReadOnly = true;
-            this.createIndicesGV.Size = new System.Drawing.Size(890, 428);
+            this.createIndicesGV.Size = new System.Drawing.Size(890, 400);
             this.createIndicesGV.TabIndex = 3;
             this.createIndicesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewButtonColumn2
             // 
             this.dataGridViewButtonColumn2.DataPropertyName = "Key";
-            dataGridViewCellStyle46.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle46;
+            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle14;
             this.dataGridViewButtonColumn2.HeaderText = "name";
             this.dataGridViewButtonColumn2.Name = "dataGridViewButtonColumn2";
             this.dataGridViewButtonColumn2.ReadOnly = true;
@@ -1392,8 +1411,8 @@
             this.tabPage13.Controls.Add(this.dropIndicesGV);
             this.tabPage13.Location = new System.Drawing.Point(4, 22);
             this.tabPage13.Name = "tabPage13";
-            this.tabPage13.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage13.Size = new System.Drawing.Size(898, 436);
+            this.tabPage13.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage13.Size = new System.Drawing.Size(896, 434);
             this.tabPage13.TabIndex = 1;
             this.tabPage13.Text = "Drop";
             this.tabPage13.UseVisualStyleBackColor = true;
@@ -1411,15 +1430,15 @@
             this.dropIndicesGV.Location = new System.Drawing.Point(3, 3);
             this.dropIndicesGV.Name = "dropIndicesGV";
             this.dropIndicesGV.ReadOnly = true;
-            this.dropIndicesGV.Size = new System.Drawing.Size(892, 430);
+            this.dropIndicesGV.Size = new System.Drawing.Size(890, 428);
             this.dropIndicesGV.TabIndex = 4;
             this.dropIndicesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewButtonColumn8
             // 
             this.dataGridViewButtonColumn8.DataPropertyName = "Key";
-            dataGridViewCellStyle47.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn8.DefaultCellStyle = dataGridViewCellStyle47;
+            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn8.DefaultCellStyle = dataGridViewCellStyle15;
             this.dataGridViewButtonColumn8.HeaderText = "name";
             this.dataGridViewButtonColumn8.Name = "dataGridViewButtonColumn8";
             this.dataGridViewButtonColumn8.ReadOnly = true;
@@ -1448,7 +1467,7 @@
             this.tabPage14.Controls.Add(this.unalteredIndicesGV);
             this.tabPage14.Location = new System.Drawing.Point(4, 22);
             this.tabPage14.Name = "tabPage14";
-            this.tabPage14.Size = new System.Drawing.Size(898, 436);
+            this.tabPage14.Size = new System.Drawing.Size(896, 434);
             this.tabPage14.TabIndex = 2;
             this.tabPage14.Text = "Unaltered";
             this.tabPage14.UseVisualStyleBackColor = true;
@@ -1465,14 +1484,14 @@
             this.unalteredIndicesGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredIndicesGV.Name = "unalteredIndicesGV";
             this.unalteredIndicesGV.ReadOnly = true;
-            this.unalteredIndicesGV.Size = new System.Drawing.Size(898, 436);
+            this.unalteredIndicesGV.Size = new System.Drawing.Size(896, 434);
             this.unalteredIndicesGV.TabIndex = 4;
             // 
             // dataGridViewButtonColumn13
             // 
             this.dataGridViewButtonColumn13.DataPropertyName = "Key";
-            dataGridViewCellStyle48.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn13.DefaultCellStyle = dataGridViewCellStyle48;
+            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn13.DefaultCellStyle = dataGridViewCellStyle16;
             this.dataGridViewButtonColumn13.HeaderText = "name";
             this.dataGridViewButtonColumn13.Name = "dataGridViewButtonColumn13";
             this.dataGridViewButtonColumn13.ReadOnly = true;
@@ -1493,7 +1512,7 @@
             this.tabOptions.Controls.Add(this.tableLayoutPanel4);
             this.tabOptions.Location = new System.Drawing.Point(4, 22);
             this.tabOptions.Name = "tabOptions";
-            this.tabOptions.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabOptions.Padding = new System.Windows.Forms.Padding(3);
             this.tabOptions.Size = new System.Drawing.Size(904, 432);
             this.tabOptions.TabIndex = 4;
             this.tabOptions.Text = "Options";
@@ -1530,6 +1549,25 @@
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel4.Size = new System.Drawing.Size(898, 426);
             this.tableLayoutPanel4.TabIndex = 0;
+            // 
+            // defaultObjFilterTB
+            // 
+            this.defaultObjFilterTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.defaultObjFilterTB.Location = new System.Drawing.Point(192, 95);
+            this.defaultObjFilterTB.Name = "defaultObjFilterTB";
+            this.defaultObjFilterTB.Size = new System.Drawing.Size(617, 20);
+            this.defaultObjFilterTB.TabIndex = 19;
+            this.defaultObjFilterTB.TextChanged += new System.EventHandler(this.enableSaveCancelButtons);
+            // 
+            // label13
+            // 
+            this.label13.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(88, 98);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(98, 13);
+            this.label13.TabIndex = 18;
+            this.label13.Text = "Default object filter:";
             // 
             // browseRegSqlButton
             // 
@@ -1744,7 +1782,7 @@
             this.adminPassTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.adminPassTB, 2);
             this.adminPassTB.Location = new System.Drawing.Point(580, 103);
-            this.adminPassTB.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.adminPassTB.Margin = new System.Windows.Forms.Padding(2);
             this.adminPassTB.Name = "adminPassTB";
             this.adminPassTB.Size = new System.Drawing.Size(248, 20);
             this.adminPassTB.TabIndex = 4;
@@ -1764,7 +1802,7 @@
             // 
             this.adminUserTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.adminUserTB.Location = new System.Drawing.Point(188, 103);
-            this.adminUserTB.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.adminUserTB.Margin = new System.Windows.Forms.Padding(2);
             this.adminUserTB.Name = "adminUserTB";
             this.adminUserTB.Size = new System.Drawing.Size(241, 20);
             this.adminUserTB.TabIndex = 3;
@@ -1955,44 +1993,6 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
-            // 
-            // label13
-            // 
-            this.label13.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(88, 98);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(98, 13);
-            this.label13.TabIndex = 18;
-            this.label13.Text = "Default object filter:";
-            // 
-            // defaultObjFilterTB
-            // 
-            this.defaultObjFilterTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.defaultObjFilterTB.Location = new System.Drawing.Point(192, 95);
-            this.defaultObjFilterTB.Name = "defaultObjFilterTB";
-            this.defaultObjFilterTB.Size = new System.Drawing.Size(617, 20);
-            this.defaultObjFilterTB.TabIndex = 19;
-            this.defaultObjFilterTB.TextChanged += new System.EventHandler(this.enableSaveCancelButtons);
-            // 
-            // label14
-            // 
-            this.label14.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(120, 196);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(63, 13);
-            this.label14.TabIndex = 34;
-            this.label14.Text = "Object filter:";
-            // 
-            // objFilterTB
-            // 
-            this.objFilterTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.objFilterTB, 4);
-            this.objFilterTB.Location = new System.Drawing.Point(189, 193);
-            this.objFilterTB.Name = "objFilterTB";
-            this.objFilterTB.Size = new System.Drawing.Size(638, 20);
-            this.objFilterTB.TabIndex = 35;
             // 
             // MainForm
             // 

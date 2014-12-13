@@ -104,7 +104,7 @@ namespace SqlSiphon
                 {
                     if (dal.RoutineChanged(finalRoutine, initialRoutine))
                     {
-                        this.AlteredRoutineScripts.Add(routineName, dal.MakeAlterRoutineScript(finalRoutine));
+                        this.AlteredRoutineScripts.Add(routineName, dal.MakeAlterRoutineScript(finalRoutine, initialRoutine));
                     }
                     else
                     {

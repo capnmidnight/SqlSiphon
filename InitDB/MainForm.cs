@@ -555,7 +555,7 @@ namespace InitDB
                         if (succeeded && syncProceduresChk.Checked)
                         {
                             succeeded &= RunScripts("Creating stored procedures:", delta.CreateRoutineScripts, db);
-                            succeeded &= RunScripts("Creating stored procedures:", delta.AlteredRoutineScripts, db);
+                            succeeded &= RunScripts("Altering stored procedures:", delta.AlteredRoutineScripts, db);
                         }
 
                         if (succeeded && initializeDataChk.Checked)

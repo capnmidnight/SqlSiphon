@@ -747,14 +747,9 @@ AND COLUMN_NAME = @columnName;")]
 
         public virtual bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
         {
-            var p1 = this.MakeParameterSection(a).Trim().ToLower();
-            var p2 = this.MakeParameterSection(b).Trim().ToLower();
-            var s1 = a.Query.Trim().ToLower();
-            var s2 = b.Query.Trim().ToLower();
-            var c1 = p1 != p2;
-            var c2 = s1 != s2;
-            var c3 = a.EnableTransaction != b.EnableTransaction;
-            var changed = c1 || c2 || c3;
+            var q1 = this.MakeCreateRoutineScript(a);
+            var q2 = this.MakeCreateRoutineScript(b);
+            var changed = q1 != q2;
             return changed;
         }
 
@@ -818,7 +813,7 @@ AND COLUMN_NAME = @columnName;")]
 
         public abstract string MakeDropRoutineScript(MappedMethodAttribute routine);
         public abstract string MakeCreateRoutineScript(MappedMethodAttribute routine);
-        public abstract string MakeAlterRoutineScript(MappedMethodAttribute routine);
+        public abstract string MakeAlterRoutineScript(MappedMethodAttribute final, MappedMethodAttribute initial);
 
         public abstract string MakeDropRelationshipScript(Relationship relation);
         public abstract string MakeCreateRelationshipScript(Relationship relation);
