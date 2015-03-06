@@ -928,7 +928,8 @@ namespace InitDB
 
         private void SkipScript(string script)
         {
-            using (var db = this.MakeDatabaseConnector()())
+            var connector = this.MakeDatabaseConnector();
+            using (var db = connector())
                 db.MarkScriptAsRan(script);
         }
 
@@ -936,7 +937,8 @@ namespace InitDB
         {
             this.tabControl1.SelectedTab = this.tabStdOut;
             this.ToOutput(script);
-            using (var db = this.MakeDatabaseConnector()())
+            var connector = this.MakeDatabaseConnector();
+            using (var db = connector())
                 db.AlterDatabase(script);
         }
     }
