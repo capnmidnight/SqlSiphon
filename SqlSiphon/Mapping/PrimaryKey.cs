@@ -5,11 +5,11 @@ using System.Text;
 
 namespace SqlSiphon.Mapping
 {
-    public class PrimaryKey : MappedObjectAttribute
+    public class PrimaryKey : DatabaseObjectAttribute
     {
-        public static MappedClassAttribute GetAttribute(Type type)
+        public static TableAttribute GetAttribute(Type type)
         {
-            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type);
+            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
             if (attr == null)
             {
                 throw new Exception(string.Format("Class {0}.{1} is not mapped to a table", type.Namespace, type.Name));
@@ -18,8 +18,8 @@ namespace SqlSiphon.Mapping
             return attr;
         }
 
-        public MappedClassAttribute Table { get; private set; }
-        public MappedPropertyAttribute[] KeyColumns { get; private set; }
+        public TableAttribute Table { get; private set; }
+        public ColumnAttribute[] KeyColumns { get; private set; }
 
         public PrimaryKey(
             InformationSchema.TableConstraints constraint,
@@ -30,9 +30,9 @@ namespace SqlSiphon.Mapping
         {
             this.Schema = constraint.constraint_schema;
             this.Name = constraint.constraint_name;
-            this.Table = new MappedClassAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, null, uniqueConstraintColumns, dal);
+            this.Table = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, null, uniqueConstraintColumns, null, dal);
             var uniqueColumns = uniqueTableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
-            this.KeyColumns = uniqueConstraintColumns.Select(c => new MappedPropertyAttribute(this.Table, uniqueColumns[dal.MakeIdentifier(c.column_name)], true, dal)).ToArray();
+            this.KeyColumns = uniqueConstraintColumns.Select(c => new ColumnAttribute(this.Table, uniqueColumns[dal.MakeIdentifier(c.column_name)], true, dal)).ToArray();
         }
 
         public PrimaryKey(Type toType)

@@ -9,7 +9,7 @@ namespace SqlSiphon.SqlServer
     /// An attribute to use for tagging methods as being mapped to a stored procedure call.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = false, AllowMultiple = false)]
-    public class SqlServerMappedClassAttribute : SqlSiphon.Mapping.MappedClassAttribute
+    public class SqlServerMappedClassAttribute : SqlSiphon.Mapping.TableAttribute
     {
         public bool IsUploadable { get; set; }
     }

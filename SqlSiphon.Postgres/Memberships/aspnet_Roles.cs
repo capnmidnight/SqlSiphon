@@ -6,7 +6,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Postgres.Memberships
 {
-    [MappedClass]
+    [Table]
     public class aspnet_Roles
     {
         [PK(DefaultValue = "newid()")]
@@ -14,13 +14,13 @@ namespace SqlSiphon.Postgres.Memberships
 
         public Guid ApplicationId { get; set; }
 
-        [MappedProperty(Size = 256)]
+        [Column(Size = 256)]
         public string RoleName { get; set; }
 
-        [MappedProperty(Size = 256)]
+        [Column(Size = 256)]
         public string LoweredRoleName { get; set; }
 
-        [MappedProperty(Size = 256, IsOptional = true)]
+        [Column(Size = 256, IsOptional = true)]
         public string Description { get; set; }
     }
 }

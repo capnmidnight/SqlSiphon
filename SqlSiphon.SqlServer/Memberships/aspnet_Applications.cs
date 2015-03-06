@@ -12,7 +12,7 @@ namespace SqlSiphon.SqlServer.Memberships
         public string ApplicationName { get; set; }
         public string LoweredApplicationName { get; set; }
 
-        [MappedProperty(IsOptional = true)]
+        [Column(IsOptional = true)]
         public string Description { get; set; }
     }
 }

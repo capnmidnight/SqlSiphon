@@ -44,7 +44,7 @@ namespace SqlSiphon.Mapping
     /// any type of thing.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public class MappedPropertyAttribute : MappedObjectAttribute
+    public class ColumnAttribute : DatabaseObjectAttribute
     {
         private PropertyInfo originalProperty;
         /// <summary>
@@ -60,13 +60,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public bool IncludeInPrimaryKey { get; set; }
 
-        /// <summary>
-        /// Get or set a value indicating that the column
-        /// is used as part of various indices for the table
-        /// </summary>
-        public string[] IncludeInIndex { get; set; }
-
-        public MappedClassAttribute Table { get; set; }
+        public TableAttribute Table { get; set; }
 
         /// <summary>
         /// Specifies the property maps to a column in a table that
@@ -77,13 +71,13 @@ namespace SqlSiphon.Mapping
         /// foreign table's primary key column names. These default
         /// settings can be overridden.
         /// </summary>
-        public MappedPropertyAttribute()
+        public ColumnAttribute()
         {
             this.IsIdentity = false;
             this.IncludeInPrimaryKey = false;
         }
 
-        public MappedPropertyAttribute(MappedClassAttribute table, InformationSchema.Columns column, bool includeInPK, ISqlSiphon dal)
+        public ColumnAttribute(TableAttribute table, InformationSchema.Columns column, bool includeInPK, ISqlSiphon dal)
         {
             this.Table = table;
             this.Name = column.column_name;
@@ -133,7 +127,7 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public void InferProperties(MappedClassAttribute table, System.Reflection.PropertyInfo obj)
+        public void InferProperties(TableAttribute table, System.Reflection.PropertyInfo obj)
         {
             this.InferProperties(obj);
             this.Table = table;
@@ -177,9 +171,9 @@ namespace SqlSiphon.Mapping
             return (T)this.originalProperty.GetValue(obj, null);
         }
 
-        public MappedParameterAttribute ToParameter()
+        public ParameterAttribute ToParameter()
         {
-            var p = new MappedParameterAttribute
+            var p = new ParameterAttribute
             {
                 DefaultValue = this.DefaultValue,
                 Direction = System.Data.ParameterDirection.Input,

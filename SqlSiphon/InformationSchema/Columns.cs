@@ -39,7 +39,7 @@ namespace SqlSiphon.InformationSchema
     /// http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt
     /// (text-search "CREATE VIEW COLUMNS")
     /// </summary>
-    [MappedClass(Include = false, Schema = "information_schema")]
+    [Table(Include = false, Schema = "information_schema")]
     public class Columns
     {
         public int? ordinal_position { get; set; }

@@ -22,6 +22,9 @@
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\InitDBLogo.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -93,6 +96,9 @@
       <Project>{136933a4-27e3-4cbf-84f8-8898447a3d8c}</Project>
       <Name>SqlSiphon</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\InitDBLogo.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -16,6 +16,7 @@ namespace InitDB
     {
         public static string DEFAULT_SESSION_NAME = "<none>";
         private static string POSTGRES = "PostgreSQL";
+        private static string SQL_SERVER = "Microsoft SQL Server";
         private static string SESSIONS_FILENAME = "sessions.dat";
         private static string OPTIONS_FILENAME = "options.dat";
         private static string SQLCMD_PATH_KEY = "SQLCMDPATH";
@@ -57,6 +58,7 @@ namespace InitDB
         public MainForm()
         {
             InitializeComponent();
+            this.Icon = Properties.Resources.InitDBLogo;
             this.browseAssemblyBtn.Tag = this.assemblyTB;
             this.browseSqlCmdButton.Tag = this.sqlcmdTB;
             this.browseRegSqlButton.Tag = this.regsqlTB;
@@ -72,28 +74,43 @@ namespace InitDB
 
         public ISqlSiphon MakeDatabaseConnection()
         {
+            ISqlSiphon connection = null;
+            string dbType = "UNKNOWN";
             if (File.Exists(this.assemblyTB.Text))
             {
                 var ss = typeof(ISqlSiphon);
-                var vt = this.IsPostgres()
-                    ? typeof(SqlSiphon.Postgres.NpgsqlDataAccessLayer)
-                    : typeof(SqlSiphon.SqlServer.SqlServerDataAccessLayer);
-                var constructorParams = new[] { typeof(string) };
-                var constructorArgs = new object[] { this.MakeConnectionString() };
                 var assembly = System.Reflection.Assembly.LoadFrom(this.assemblyTB.Text);
-                var constructor = assembly.GetTypes()
+                var candidateTypes = assembly.GetTypes()
                     .Where(t => t.GetInterfaces().Contains(ss)
-                                && t.IsSubclassOf(vt)
                                 && !t.IsAbstract
-                                && !t.IsInterface)
-                    .Select(t => t.GetConstructor(constructorParams))
-                    .FirstOrDefault();
-                if (constructor != null)
+                                && !t.IsInterface).ToArray();
+                var pg = typeof(SqlSiphon.Postgres.NpgsqlDataAccessLayer);
+                var ms = typeof(SqlSiphon.SqlServer.SqlServerDataAccessLayer);
+                foreach (var type in candidateTypes)
                 {
-                    return (ISqlSiphon)constructor.Invoke(constructorArgs);
+                    if (type.IsSubclassOf(pg) || type.IsSubclassOf(ms))
+                    {
+                        var vt = type.IsSubclassOf(pg) ? pg : ms;
+                        dbType = vt == pg ? POSTGRES : SQL_SERVER;
+                        this.IsPostgres = dbType == POSTGRES;
+                        var constructorParams = new[] { typeof(string) };
+                        var constructorArgs = new object[] { this.MakeConnectionString() };
+                        var constructor = type.GetConstructor(constructorParams);
+                        if (constructor != null)
+                        {
+                            connection = (ISqlSiphon)constructor.Invoke(constructorArgs);
+                            break;
+                        }
+                    }
                 }
             }
-            return null;
+
+            this.Invoke(new Action(() =>
+            {
+                this.installExtensionsChk.Visible = this.IsPostgres;
+                this.dbType.Text = dbType;
+            }));
+            return connection;
         }
 
         private string MakeConnectionString()
@@ -104,7 +121,7 @@ namespace InitDB
                 .Where(s => !string.IsNullOrEmpty(s[0]) && !string.IsNullOrEmpty(s[1]))
                 .FirstOrDefault();
             string connStr = null;
-            if (this.IsPostgres())
+            if (this.IsPostgres)
             {
                 var builder = new Npgsql.NpgsqlConnectionStringBuilder
                 {
@@ -222,7 +239,7 @@ namespace InitDB
             if (!this.options.ContainsKey(key))
             {
                 this.cancelOptionsButton.Enabled = true;
-                this.options.Add(key, value);   
+                this.options.Add(key, value);
             }
             output.Text = this.options[key];
         }
@@ -276,22 +293,12 @@ namespace InitDB
                 Task.Run(new Action(SetupDB));
         }
 
-        private bool IsPostgres()
-        {
-            if (this.InvokeRequired)
-            {
-                return (bool)this.Invoke(new Func<bool>(this.IsPostgres));
-            }
-            else
-            {
-                return ((string)dbTypeList.SelectedItem) == POSTGRES;
-            }
-        }
+        private bool IsPostgres;
 
         private bool PathsAreCorrect()
         {
-            var sqlcmdGood = this.IsPostgres() || File.Exists(sqlcmdTB.Text);
-            var psqlGood = !this.IsPostgres() || File.Exists(psqlTB.Text);
+            var sqlcmdGood = this.IsPostgres || File.Exists(sqlcmdTB.Text);
+            var psqlGood = !this.IsPostgres || File.Exists(psqlTB.Text);
             var regsqlGood = File.Exists(regsqlTB.Text);
             var assemblyGood = File.Exists(assemblyTB.Text);
             if (!psqlGood)
@@ -480,7 +487,7 @@ namespace InitDB
         private void SetupDB()
         {
             Func<string, string, bool, bool> runQuery;
-            if (this.IsPostgres())
+            if (this.IsPostgres)
             {
                 runQuery = RunQueryWithPSQL;
             }
@@ -493,7 +500,7 @@ namespace InitDB
             {
                 bool succeeded = true;
                 var dbName = databaseTB.Text;
-                if (this.IsPostgres())
+                if (this.IsPostgres)
                 {
                     dbName = dbName.ToLower();
                 }
@@ -502,14 +509,14 @@ namespace InitDB
                 {
                     succeeded = runQuery(string.Format("CREATE DATABASE {0};", dbName), null, false);
                 }
-                if (this.IsPostgres() && succeeded && installExtensionsChk.Checked)
+                if (this.IsPostgres && succeeded && installExtensionsChk.Checked)
                 {
                     succeeded &= runQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", dbName, false)
                         && runQuery("CREATE EXTENSION \\\"postgis\\\";", dbName, false);
                 }
                 if (succeeded && createLoginChk.Checked)
                 {
-                    if (this.IsPostgres())
+                    if (this.IsPostgres)
                     {
                         succeeded = runQuery(string.Format("CREATE USER {0} WITH PASSWORD '{1}'", sqlUserTB.Text, sqlPassTB.Text), null, false);
                     }
@@ -522,7 +529,7 @@ namespace InitDB
                     }
                 }
 
-                if (succeeded && !this.IsPostgres() && regSqlChk.Checked)
+                if (succeeded && !this.IsPostgres && regSqlChk.Checked)
                 {
                     succeeded = RunASPNET_REGSQL();
                 }
@@ -697,7 +704,6 @@ namespace InitDB
         {
             var sesh = new Session(
                 this.savedSessionList.Text,
-                (string)this.dbTypeList.SelectedItem,
                 this.serverTB.Text,
                 this.databaseTB.Text,
                 this.adminUserTB.Text,
@@ -768,8 +774,8 @@ namespace InitDB
             {
                 if (this.CurrentSession != null)
                 {
+                    this.dbType.Text = "UNKNOWN";
                     this.serverTB.Text = this.CurrentSession.Server;
-                    this.dbTypeList.SelectedItem = this.CurrentSession.DatabaseType;
                     this.databaseTB.Text = this.CurrentSession.DBName;
                     this.adminUserTB.Text = this.CurrentSession.AdminName;
                     this.adminPassTB.Text = this.CurrentSession.AdminPassword;
@@ -786,6 +792,7 @@ namespace InitDB
                     this.createFKsChk.Checked = this.CurrentSession.CreateFKs;
                     this.createIndicesChk.Checked = this.CurrentSession.CreateIndices;
                     this.installExtensionsChk.Checked = this.CurrentSession.InstallExtensions;
+
                     try
                     {
                         this.txtStdOut.Text = "";
@@ -816,7 +823,6 @@ namespace InitDB
                 this.dropIndicesGV.Rows.Clear();
                 this.unalteredIndicesGV.Rows.Clear();
                 this.othersGV.Rows.Clear();
-                this.installExtensionsChk.Visible = this.IsPostgres();
             }
         }
 

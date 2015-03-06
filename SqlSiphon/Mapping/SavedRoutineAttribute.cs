@@ -41,7 +41,7 @@ namespace SqlSiphon.Mapping
     /// An attribute to use for tagging methods as being mapped to a stored procedure call.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public class MappedMethodAttribute : MappedObjectAttribute
+    public class SavedRoutineAttribute : DatabaseObjectAttribute
     {
         /// <summary>
         /// The number of milliseconds before ADO.NET gives up waiting on the command.
@@ -73,27 +73,27 @@ namespace SqlSiphon.Mapping
         /// <summary>
         /// A description of all the parameters that are part of the method.
         /// </summary>
-        public List<MappedParameterAttribute> Parameters { get; private set; }
+        public List<ParameterAttribute> Parameters { get; private set; }
 
         private MethodInfo originalMethod;
 
         /// <summary>
         /// Default constructor to set default values;
         /// </summary>
-        public MappedMethodAttribute()
+        public SavedRoutineAttribute()
         {
-            this.Parameters = new List<MappedParameterAttribute>();
+            this.Parameters = new List<ParameterAttribute>();
             this.Timeout = -1;
             this.CommandType = CommandType.StoredProcedure;
             this.EnableTransaction = false;
         }
 
-        public MappedMethodAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, ISqlSiphon dal)
+        public SavedRoutineAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, ISqlSiphon dal)
         {
             this.Schema = routine.routine_schema;
             this.Name = routine.routine_name;
             this.CommandType = System.Data.CommandType.StoredProcedure;
-            this.Parameters = new List<MappedParameterAttribute>();
+            this.Parameters = new List<ParameterAttribute>();
             int begin = routine.routine_definition
                 .ToLower()
                 .IndexOf("set nocount on;");
@@ -103,7 +103,7 @@ namespace SqlSiphon.Mapping
             {
                 foreach (var p in parameters)
                 {
-                    this.Parameters.Add(new MappedParameterAttribute(p, dal));
+                    this.Parameters.Add(new ParameterAttribute(p, dal));
                 }
             }
         }
@@ -115,10 +115,10 @@ namespace SqlSiphon.Mapping
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns></returns>
-        private MappedParameterAttribute ToMappedParameter(ParameterInfo parameter)
+        private ParameterAttribute ToMappedParameter(ParameterInfo parameter)
         {
-            var attr = GetAttribute<MappedParameterAttribute>(parameter)
-                ?? new MappedParameterAttribute();
+            var attr = GetAttribute<ParameterAttribute>(parameter)
+                ?? new ParameterAttribute();
             attr.InferProperties(parameter);
             return attr;
         }

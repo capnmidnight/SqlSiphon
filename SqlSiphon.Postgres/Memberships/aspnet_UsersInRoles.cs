@@ -6,7 +6,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Postgres.Memberships
 {
-    [MappedClass]
+    [Table]
     class aspnet_UsersInRoles
     {
         [PK]

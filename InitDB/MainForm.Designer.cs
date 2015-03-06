@@ -28,27 +28,26 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle65 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle66 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle67 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle68 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle69 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle70 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle71 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle72 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle73 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle74 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle75 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle76 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle77 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle78 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle79 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle80 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.objFilterTB = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.installExtensionsChk = new System.Windows.Forms.CheckBox();
-            this.dbTypeList = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabStdOut = new System.Windows.Forms.TabPage();
@@ -111,7 +110,7 @@
             this.dataGridViewButtonColumn11 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage11 = new System.Windows.Forms.TabPage();
             this.unalteredRoutinesGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn23 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewTextBoxColumn23 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn24 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabOther = new System.Windows.Forms.TabPage();
             this.othersGV = new System.Windows.Forms.DataGridView();
@@ -133,7 +132,7 @@
             this.dataGridViewButtonColumn7 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.unalteredRelationshipsGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn16 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabIndices = new System.Windows.Forms.TabPage();
             this.tabControl4 = new System.Windows.Forms.TabControl();
@@ -149,7 +148,7 @@
             this.dataGridViewButtonColumn12 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabPage14 = new System.Windows.Forms.TabPage();
             this.unalteredIndicesGV = new System.Windows.Forms.DataGridView();
-            this.dataGridViewButtonColumn13 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewButtonColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn27 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabOptions = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
@@ -196,6 +195,7 @@
             this.initializeDataChk = new System.Windows.Forms.CheckBox();
             this.createFKsChk = new System.Windows.Forms.CheckBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.dbType = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabStdOut.SuspendLayout();
@@ -253,47 +253,47 @@
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 6;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 186F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 245F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 147F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 152F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 279F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 161F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 92F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 88F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 104F));
             this.tableLayoutPanel1.Controls.Add(this.objFilterTB, 1, 7);
             this.tableLayoutPanel1.Controls.Add(this.label14, 0, 7);
             this.tableLayoutPanel1.Controls.Add(this.installExtensionsChk, 3, 8);
-            this.tableLayoutPanel1.Controls.Add(this.dbTypeList, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.label12, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.tabControl1, 0, 12);
             this.tableLayoutPanel1.Controls.Add(this.label7, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.saveSessionButton, 4, 0);
             this.tableLayoutPanel1.Controls.Add(this.savedSessionList, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.deleteSessionButton, 5, 0);
-            this.tableLayoutPanel1.Controls.Add(this.browseAssemblyBtn, 5, 6);
-            this.tableLayoutPanel1.Controls.Add(this.label3, 0, 5);
-            this.tableLayoutPanel1.Controls.Add(this.sqlUserTB, 1, 5);
-            this.tableLayoutPanel1.Controls.Add(this.label4, 2, 5);
-            this.tableLayoutPanel1.Controls.Add(this.sqlPassTB, 3, 5);
-            this.tableLayoutPanel1.Controls.Add(this.adminPassTB, 3, 4);
-            this.tableLayoutPanel1.Controls.Add(this.label10, 2, 4);
-            this.tableLayoutPanel1.Controls.Add(this.adminUserTB, 1, 4);
-            this.tableLayoutPanel1.Controls.Add(this.label9, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.serverTB, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.label2, 2, 3);
-            this.tableLayoutPanel1.Controls.Add(this.databaseTB, 3, 3);
-            this.tableLayoutPanel1.Controls.Add(this.assemblyTB, 1, 6);
-            this.tableLayoutPanel1.Controls.Add(this.label8, 0, 6);
+            this.tableLayoutPanel1.Controls.Add(this.browseAssemblyBtn, 4, 2);
+            this.tableLayoutPanel1.Controls.Add(this.label3, 0, 6);
+            this.tableLayoutPanel1.Controls.Add(this.sqlUserTB, 1, 6);
+            this.tableLayoutPanel1.Controls.Add(this.label4, 2, 6);
+            this.tableLayoutPanel1.Controls.Add(this.sqlPassTB, 3, 6);
+            this.tableLayoutPanel1.Controls.Add(this.adminPassTB, 3, 5);
+            this.tableLayoutPanel1.Controls.Add(this.label10, 2, 5);
+            this.tableLayoutPanel1.Controls.Add(this.adminUserTB, 1, 5);
+            this.tableLayoutPanel1.Controls.Add(this.label9, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.serverTB, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.label2, 2, 4);
+            this.tableLayoutPanel1.Controls.Add(this.databaseTB, 3, 4);
+            this.tableLayoutPanel1.Controls.Add(this.assemblyTB, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.label8, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.createDatabaseChk, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.createLoginChk, 1, 9);
             this.tableLayoutPanel1.Controls.Add(this.regSqlChk, 1, 10);
-            this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 3);
-            this.tableLayoutPanel1.Controls.Add(this.analyzeButton, 5, 4);
+            this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 7);
             this.tableLayoutPanel1.Controls.Add(this.createTablesChk, 1, 11);
             this.tableLayoutPanel1.Controls.Add(this.createIndicesChk, 2, 11);
             this.tableLayoutPanel1.Controls.Add(this.syncProceduresChk, 2, 8);
             this.tableLayoutPanel1.Controls.Add(this.initializeDataChk, 2, 9);
             this.tableLayoutPanel1.Controls.Add(this.createFKsChk, 2, 10);
+            this.tableLayoutPanel1.Controls.Add(this.label12, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this.dbType, 1, 3);
+            this.tableLayoutPanel1.Controls.Add(this.analyzeButton, 5, 2);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -311,7 +311,6 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(918, 782);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
@@ -319,16 +318,16 @@
             // 
             this.objFilterTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.objFilterTB, 4);
-            this.objFilterTB.Location = new System.Drawing.Point(189, 193);
+            this.objFilterTB.Location = new System.Drawing.Point(155, 193);
             this.objFilterTB.Name = "objFilterTB";
-            this.objFilterTB.Size = new System.Drawing.Size(638, 20);
+            this.objFilterTB.Size = new System.Drawing.Size(656, 20);
             this.objFilterTB.TabIndex = 35;
             // 
             // label14
             // 
             this.label14.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(120, 196);
+            this.label14.Location = new System.Drawing.Point(86, 196);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(63, 13);
             this.label14.TabIndex = 34;
@@ -338,32 +337,18 @@
             // 
             this.installExtensionsChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.installExtensionsChk.AutoSize = true;
-            this.installExtensionsChk.Location = new System.Drawing.Point(581, 222);
+            this.installExtensionsChk.Location = new System.Drawing.Point(595, 222);
             this.installExtensionsChk.Name = "installExtensionsChk";
             this.installExtensionsChk.Size = new System.Drawing.Size(106, 17);
             this.installExtensionsChk.TabIndex = 33;
             this.installExtensionsChk.Text = "Install extensions";
             this.installExtensionsChk.UseVisualStyleBackColor = true;
             // 
-            // dbTypeList
-            // 
-            this.dbTypeList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dbTypeList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.dbTypeList.FormattingEnabled = true;
-            this.dbTypeList.Items.AddRange(new object[] {
-            "Microsoft SQL Server",
-            "PostgreSQL"});
-            this.dbTypeList.Location = new System.Drawing.Point(189, 41);
-            this.dbTypeList.Name = "dbTypeList";
-            this.dbTypeList.Size = new System.Drawing.Size(239, 21);
-            this.dbTypeList.Sorted = true;
-            this.dbTypeList.TabIndex = 32;
-            // 
             // label12
             // 
             this.label12.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(104, 46);
+            this.label12.Location = new System.Drawing.Point(70, 76);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(79, 13);
             this.label12.TabIndex = 31;
@@ -495,8 +480,8 @@
             // createsGVName
             // 
             this.createsGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.createsGVName.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle65.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.createsGVName.DefaultCellStyle = dataGridViewCellStyle65;
             this.createsGVName.HeaderText = "name";
             this.createsGVName.Name = "createsGVName";
             this.createsGVName.ReadOnly = true;
@@ -526,7 +511,7 @@
             this.tabTableDrop.Location = new System.Drawing.Point(4, 22);
             this.tabTableDrop.Name = "tabTableDrop";
             this.tabTableDrop.Padding = new System.Windows.Forms.Padding(3);
-            this.tabTableDrop.Size = new System.Drawing.Size(896, 434);
+            this.tabTableDrop.Size = new System.Drawing.Size(896, 406);
             this.tabTableDrop.TabIndex = 1;
             this.tabTableDrop.Text = "Drop";
             this.tabTableDrop.UseVisualStyleBackColor = true;
@@ -544,15 +529,15 @@
             this.dropTablesGV.Location = new System.Drawing.Point(3, 3);
             this.dropTablesGV.Name = "dropTablesGV";
             this.dropTablesGV.ReadOnly = true;
-            this.dropTablesGV.Size = new System.Drawing.Size(890, 428);
+            this.dropTablesGV.Size = new System.Drawing.Size(890, 400);
             this.dropTablesGV.TabIndex = 4;
             this.dropTablesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn1
             // 
             this.dataGridViewTextBoxColumn1.DataPropertyName = "Key";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle66.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle66;
             this.dataGridViewTextBoxColumn1.HeaderText = "name";
             this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             this.dataGridViewTextBoxColumn1.ReadOnly = true;
@@ -581,7 +566,7 @@
             this.tabTableUnaltered.Controls.Add(this.unalteredTablesGV);
             this.tabTableUnaltered.Location = new System.Drawing.Point(4, 22);
             this.tabTableUnaltered.Name = "tabTableUnaltered";
-            this.tabTableUnaltered.Size = new System.Drawing.Size(896, 434);
+            this.tabTableUnaltered.Size = new System.Drawing.Size(896, 406);
             this.tabTableUnaltered.TabIndex = 2;
             this.tabTableUnaltered.Text = "Unaltered";
             this.tabTableUnaltered.UseVisualStyleBackColor = true;
@@ -598,7 +583,7 @@
             this.unalteredTablesGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredTablesGV.Name = "unalteredTablesGV";
             this.unalteredTablesGV.ReadOnly = true;
-            this.unalteredTablesGV.Size = new System.Drawing.Size(896, 434);
+            this.unalteredTablesGV.Size = new System.Drawing.Size(896, 406);
             this.unalteredTablesGV.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn3
@@ -671,8 +656,8 @@
             // dropsGVName
             // 
             this.dropsGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dropsGVName.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle67.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dropsGVName.DefaultCellStyle = dataGridViewCellStyle67;
             this.dropsGVName.HeaderText = "name";
             this.dropsGVName.Name = "dropsGVName";
             this.dropsGVName.ReadOnly = true;
@@ -702,7 +687,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(896, 434);
+            this.tabPage2.Size = new System.Drawing.Size(896, 406);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Drop";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -720,15 +705,15 @@
             this.dropColumnsGV.Location = new System.Drawing.Point(3, 3);
             this.dropColumnsGV.Name = "dropColumnsGV";
             this.dropColumnsGV.ReadOnly = true;
-            this.dropColumnsGV.Size = new System.Drawing.Size(890, 428);
+            this.dropColumnsGV.Size = new System.Drawing.Size(890, 400);
             this.dropColumnsGV.TabIndex = 4;
             this.dropColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn7
             // 
             this.dataGridViewTextBoxColumn7.DataPropertyName = "Key";
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn7.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle68.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn7.DefaultCellStyle = dataGridViewCellStyle68;
             this.dataGridViewTextBoxColumn7.HeaderText = "name";
             this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             this.dataGridViewTextBoxColumn7.ReadOnly = true;
@@ -757,7 +742,7 @@
             this.tabPage4.Controls.Add(this.alteredColumnsGV);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(896, 434);
+            this.tabPage4.Size = new System.Drawing.Size(896, 406);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Altered";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -775,15 +760,15 @@
             this.alteredColumnsGV.Location = new System.Drawing.Point(0, 0);
             this.alteredColumnsGV.Name = "alteredColumnsGV";
             this.alteredColumnsGV.ReadOnly = true;
-            this.alteredColumnsGV.Size = new System.Drawing.Size(896, 434);
+            this.alteredColumnsGV.Size = new System.Drawing.Size(896, 406);
             this.alteredColumnsGV.TabIndex = 5;
             this.alteredColumnsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn5
             // 
             this.dataGridViewTextBoxColumn5.DataPropertyName = "Key";
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle69.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle69;
             this.dataGridViewTextBoxColumn5.HeaderText = "name";
             this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
             this.dataGridViewTextBoxColumn5.ReadOnly = true;
@@ -812,7 +797,7 @@
             this.tabPage3.Controls.Add(this.unalteredColumnsGV);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(896, 434);
+            this.tabPage3.Size = new System.Drawing.Size(896, 406);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Unaltered";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -829,7 +814,7 @@
             this.unalteredColumnsGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredColumnsGV.Name = "unalteredColumnsGV";
             this.unalteredColumnsGV.ReadOnly = true;
-            this.unalteredColumnsGV.Size = new System.Drawing.Size(896, 434);
+            this.unalteredColumnsGV.Size = new System.Drawing.Size(896, 406);
             this.unalteredColumnsGV.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn9
@@ -902,8 +887,8 @@
             // dataGridViewTextBoxColumn17
             // 
             this.dataGridViewTextBoxColumn17.DataPropertyName = "Key";
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn17.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle70.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn17.DefaultCellStyle = dataGridViewCellStyle70;
             this.dataGridViewTextBoxColumn17.HeaderText = "name";
             this.dataGridViewTextBoxColumn17.Name = "dataGridViewTextBoxColumn17";
             this.dataGridViewTextBoxColumn17.ReadOnly = true;
@@ -933,7 +918,7 @@
             this.tabPage9.Location = new System.Drawing.Point(4, 22);
             this.tabPage9.Name = "tabPage9";
             this.tabPage9.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage9.Size = new System.Drawing.Size(896, 434);
+            this.tabPage9.Size = new System.Drawing.Size(896, 406);
             this.tabPage9.TabIndex = 1;
             this.tabPage9.Text = "Drop";
             this.tabPage9.UseVisualStyleBackColor = true;
@@ -951,15 +936,15 @@
             this.dropRoutinesGV.Location = new System.Drawing.Point(3, 3);
             this.dropRoutinesGV.Name = "dropRoutinesGV";
             this.dropRoutinesGV.ReadOnly = true;
-            this.dropRoutinesGV.Size = new System.Drawing.Size(890, 428);
+            this.dropRoutinesGV.Size = new System.Drawing.Size(890, 400);
             this.dropRoutinesGV.TabIndex = 4;
             this.dropRoutinesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn19
             // 
             this.dataGridViewTextBoxColumn19.DataPropertyName = "Key";
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn19.DefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle71.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn19.DefaultCellStyle = dataGridViewCellStyle71;
             this.dataGridViewTextBoxColumn19.HeaderText = "name";
             this.dataGridViewTextBoxColumn19.Name = "dataGridViewTextBoxColumn19";
             this.dataGridViewTextBoxColumn19.ReadOnly = true;
@@ -988,7 +973,7 @@
             this.tabPage10.Controls.Add(this.alteredRoutinesGV);
             this.tabPage10.Location = new System.Drawing.Point(4, 22);
             this.tabPage10.Name = "tabPage10";
-            this.tabPage10.Size = new System.Drawing.Size(896, 434);
+            this.tabPage10.Size = new System.Drawing.Size(896, 406);
             this.tabPage10.TabIndex = 3;
             this.tabPage10.Text = "Altered";
             this.tabPage10.UseVisualStyleBackColor = true;
@@ -1006,15 +991,15 @@
             this.alteredRoutinesGV.Location = new System.Drawing.Point(0, 0);
             this.alteredRoutinesGV.Name = "alteredRoutinesGV";
             this.alteredRoutinesGV.ReadOnly = true;
-            this.alteredRoutinesGV.Size = new System.Drawing.Size(896, 434);
+            this.alteredRoutinesGV.Size = new System.Drawing.Size(896, 406);
             this.alteredRoutinesGV.TabIndex = 5;
             this.alteredRoutinesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn21
             // 
             this.dataGridViewTextBoxColumn21.DataPropertyName = "Key";
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn21.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle72.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn21.DefaultCellStyle = dataGridViewCellStyle72;
             this.dataGridViewTextBoxColumn21.HeaderText = "name";
             this.dataGridViewTextBoxColumn21.Name = "dataGridViewTextBoxColumn21";
             this.dataGridViewTextBoxColumn21.ReadOnly = true;
@@ -1043,7 +1028,7 @@
             this.tabPage11.Controls.Add(this.unalteredRoutinesGV);
             this.tabPage11.Location = new System.Drawing.Point(4, 22);
             this.tabPage11.Name = "tabPage11";
-            this.tabPage11.Size = new System.Drawing.Size(896, 434);
+            this.tabPage11.Size = new System.Drawing.Size(896, 406);
             this.tabPage11.TabIndex = 2;
             this.tabPage11.Text = "Unaltered";
             this.tabPage11.UseVisualStyleBackColor = true;
@@ -1060,19 +1045,18 @@
             this.unalteredRoutinesGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredRoutinesGV.Name = "unalteredRoutinesGV";
             this.unalteredRoutinesGV.ReadOnly = true;
-            this.unalteredRoutinesGV.Size = new System.Drawing.Size(896, 434);
+            this.unalteredRoutinesGV.Size = new System.Drawing.Size(896, 406);
             this.unalteredRoutinesGV.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn23
             // 
             this.dataGridViewTextBoxColumn23.DataPropertyName = "Key";
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn23.DefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle73.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn23.DefaultCellStyle = dataGridViewCellStyle73;
             this.dataGridViewTextBoxColumn23.HeaderText = "name";
             this.dataGridViewTextBoxColumn23.Name = "dataGridViewTextBoxColumn23";
             this.dataGridViewTextBoxColumn23.ReadOnly = true;
             this.dataGridViewTextBoxColumn23.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewTextBoxColumn23.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             this.dataGridViewTextBoxColumn23.Width = 200;
             // 
             // dataGridViewTextBoxColumn24
@@ -1114,8 +1098,8 @@
             // othersGVName
             // 
             this.othersGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.othersGVName.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle74.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.othersGVName.DefaultCellStyle = dataGridViewCellStyle74;
             this.othersGVName.HeaderText = "name";
             this.othersGVName.Name = "othersGVName";
             this.othersGVName.ReadOnly = true;
@@ -1202,8 +1186,8 @@
             // dataGridViewTextBoxColumn11
             // 
             this.dataGridViewTextBoxColumn11.DataPropertyName = "Key";
-            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn11.DefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle75.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn11.DefaultCellStyle = dataGridViewCellStyle75;
             this.dataGridViewTextBoxColumn11.HeaderText = "name";
             this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
             this.dataGridViewTextBoxColumn11.ReadOnly = true;
@@ -1233,7 +1217,7 @@
             this.tabPage6.Location = new System.Drawing.Point(4, 22);
             this.tabPage6.Name = "tabPage6";
             this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage6.Size = new System.Drawing.Size(896, 434);
+            this.tabPage6.Size = new System.Drawing.Size(896, 406);
             this.tabPage6.TabIndex = 1;
             this.tabPage6.Text = "Drop";
             this.tabPage6.UseVisualStyleBackColor = true;
@@ -1251,15 +1235,15 @@
             this.dropRelationshipsGV.Location = new System.Drawing.Point(3, 3);
             this.dropRelationshipsGV.Name = "dropRelationshipsGV";
             this.dropRelationshipsGV.ReadOnly = true;
-            this.dropRelationshipsGV.Size = new System.Drawing.Size(890, 428);
+            this.dropRelationshipsGV.Size = new System.Drawing.Size(890, 400);
             this.dropRelationshipsGV.TabIndex = 4;
             this.dropRelationshipsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewTextBoxColumn13
             // 
             this.dataGridViewTextBoxColumn13.DataPropertyName = "Key";
-            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn13.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle76.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn13.DefaultCellStyle = dataGridViewCellStyle76;
             this.dataGridViewTextBoxColumn13.HeaderText = "name";
             this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
             this.dataGridViewTextBoxColumn13.ReadOnly = true;
@@ -1288,7 +1272,7 @@
             this.tabPage7.Controls.Add(this.unalteredRelationshipsGV);
             this.tabPage7.Location = new System.Drawing.Point(4, 22);
             this.tabPage7.Name = "tabPage7";
-            this.tabPage7.Size = new System.Drawing.Size(896, 434);
+            this.tabPage7.Size = new System.Drawing.Size(896, 406);
             this.tabPage7.TabIndex = 2;
             this.tabPage7.Text = "Unaltered";
             this.tabPage7.UseVisualStyleBackColor = true;
@@ -1305,19 +1289,18 @@
             this.unalteredRelationshipsGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredRelationshipsGV.Name = "unalteredRelationshipsGV";
             this.unalteredRelationshipsGV.ReadOnly = true;
-            this.unalteredRelationshipsGV.Size = new System.Drawing.Size(896, 434);
+            this.unalteredRelationshipsGV.Size = new System.Drawing.Size(896, 406);
             this.unalteredRelationshipsGV.TabIndex = 4;
             // 
             // dataGridViewTextBoxColumn15
             // 
             this.dataGridViewTextBoxColumn15.DataPropertyName = "Key";
-            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn15.DefaultCellStyle = dataGridViewCellStyle13;
+            dataGridViewCellStyle77.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn15.DefaultCellStyle = dataGridViewCellStyle77;
             this.dataGridViewTextBoxColumn15.HeaderText = "name";
             this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
             this.dataGridViewTextBoxColumn15.ReadOnly = true;
             this.dataGridViewTextBoxColumn15.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewTextBoxColumn15.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             this.dataGridViewTextBoxColumn15.Width = 200;
             // 
             // dataGridViewTextBoxColumn16
@@ -1381,8 +1364,8 @@
             // dataGridViewButtonColumn2
             // 
             this.dataGridViewButtonColumn2.DataPropertyName = "Key";
-            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle78.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle78;
             this.dataGridViewButtonColumn2.HeaderText = "name";
             this.dataGridViewButtonColumn2.Name = "dataGridViewButtonColumn2";
             this.dataGridViewButtonColumn2.ReadOnly = true;
@@ -1412,7 +1395,7 @@
             this.tabPage13.Location = new System.Drawing.Point(4, 22);
             this.tabPage13.Name = "tabPage13";
             this.tabPage13.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage13.Size = new System.Drawing.Size(896, 434);
+            this.tabPage13.Size = new System.Drawing.Size(896, 406);
             this.tabPage13.TabIndex = 1;
             this.tabPage13.Text = "Drop";
             this.tabPage13.UseVisualStyleBackColor = true;
@@ -1430,15 +1413,15 @@
             this.dropIndicesGV.Location = new System.Drawing.Point(3, 3);
             this.dropIndicesGV.Name = "dropIndicesGV";
             this.dropIndicesGV.ReadOnly = true;
-            this.dropIndicesGV.Size = new System.Drawing.Size(890, 428);
+            this.dropIndicesGV.Size = new System.Drawing.Size(890, 400);
             this.dropIndicesGV.TabIndex = 4;
             this.dropIndicesGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // dataGridViewButtonColumn8
             // 
             this.dataGridViewButtonColumn8.DataPropertyName = "Key";
-            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn8.DefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle79.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn8.DefaultCellStyle = dataGridViewCellStyle79;
             this.dataGridViewButtonColumn8.HeaderText = "name";
             this.dataGridViewButtonColumn8.Name = "dataGridViewButtonColumn8";
             this.dataGridViewButtonColumn8.ReadOnly = true;
@@ -1467,7 +1450,7 @@
             this.tabPage14.Controls.Add(this.unalteredIndicesGV);
             this.tabPage14.Location = new System.Drawing.Point(4, 22);
             this.tabPage14.Name = "tabPage14";
-            this.tabPage14.Size = new System.Drawing.Size(896, 434);
+            this.tabPage14.Size = new System.Drawing.Size(896, 406);
             this.tabPage14.TabIndex = 2;
             this.tabPage14.Text = "Unaltered";
             this.tabPage14.UseVisualStyleBackColor = true;
@@ -1484,19 +1467,18 @@
             this.unalteredIndicesGV.Location = new System.Drawing.Point(0, 0);
             this.unalteredIndicesGV.Name = "unalteredIndicesGV";
             this.unalteredIndicesGV.ReadOnly = true;
-            this.unalteredIndicesGV.Size = new System.Drawing.Size(896, 434);
+            this.unalteredIndicesGV.Size = new System.Drawing.Size(896, 406);
             this.unalteredIndicesGV.TabIndex = 4;
             // 
             // dataGridViewButtonColumn13
             // 
             this.dataGridViewButtonColumn13.DataPropertyName = "Key";
-            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn13.DefaultCellStyle = dataGridViewCellStyle16;
+            dataGridViewCellStyle80.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn13.DefaultCellStyle = dataGridViewCellStyle80;
             this.dataGridViewButtonColumn13.HeaderText = "name";
             this.dataGridViewButtonColumn13.Name = "dataGridViewButtonColumn13";
             this.dataGridViewButtonColumn13.ReadOnly = true;
             this.dataGridViewButtonColumn13.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewButtonColumn13.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
             this.dataGridViewButtonColumn13.Width = 200;
             // 
             // dataGridViewTextBoxColumn27
@@ -1687,7 +1669,7 @@
             // 
             this.label7.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(99, 8);
+            this.label7.Location = new System.Drawing.Point(65, 8);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(84, 13);
             this.label7.TabIndex = 19;
@@ -1696,9 +1678,9 @@
             // saveSessionButton
             // 
             this.saveSessionButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.saveSessionButton.Location = new System.Drawing.Point(741, 3);
+            this.saveSessionButton.Location = new System.Drawing.Point(717, 3);
             this.saveSessionButton.Name = "saveSessionButton";
-            this.saveSessionButton.Size = new System.Drawing.Size(86, 24);
+            this.saveSessionButton.Size = new System.Drawing.Size(94, 24);
             this.saveSessionButton.TabIndex = 21;
             this.saveSessionButton.Text = "Save";
             this.saveSessionButton.UseVisualStyleBackColor = true;
@@ -1709,9 +1691,9 @@
             this.tableLayoutPanel1.SetColumnSpan(this.savedSessionList, 3);
             this.savedSessionList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.savedSessionList.FormattingEnabled = true;
-            this.savedSessionList.Location = new System.Drawing.Point(189, 3);
+            this.savedSessionList.Location = new System.Drawing.Point(155, 3);
             this.savedSessionList.Name = "savedSessionList";
-            this.savedSessionList.Size = new System.Drawing.Size(546, 21);
+            this.savedSessionList.Size = new System.Drawing.Size(556, 21);
             this.savedSessionList.Sorted = true;
             this.savedSessionList.TabIndex = 1;
             this.savedSessionList.SelectedIndexChanged += new System.EventHandler(this.savedSessionList_SelectedIndexChanged);
@@ -1720,9 +1702,9 @@
             // deleteSessionButton
             // 
             this.deleteSessionButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.deleteSessionButton.Location = new System.Drawing.Point(833, 3);
+            this.deleteSessionButton.Location = new System.Drawing.Point(817, 3);
             this.deleteSessionButton.Name = "deleteSessionButton";
-            this.deleteSessionButton.Size = new System.Drawing.Size(82, 24);
+            this.deleteSessionButton.Size = new System.Drawing.Size(98, 24);
             this.deleteSessionButton.TabIndex = 23;
             this.deleteSessionButton.Text = "Delete";
             this.deleteSessionButton.UseVisualStyleBackColor = true;
@@ -1731,9 +1713,9 @@
             // browseAssemblyBtn
             // 
             this.browseAssemblyBtn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.browseAssemblyBtn.Location = new System.Drawing.Point(833, 161);
+            this.browseAssemblyBtn.Location = new System.Drawing.Point(717, 41);
             this.browseAssemblyBtn.Name = "browseAssemblyBtn";
-            this.browseAssemblyBtn.Size = new System.Drawing.Size(82, 24);
+            this.browseAssemblyBtn.Size = new System.Drawing.Size(94, 24);
             this.browseAssemblyBtn.TabIndex = 14;
             this.browseAssemblyBtn.Text = "Browse...";
             this.browseAssemblyBtn.UseVisualStyleBackColor = true;
@@ -1743,7 +1725,7 @@
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(80, 136);
+            this.label3.Location = new System.Drawing.Point(46, 166);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(103, 13);
             this.label3.TabIndex = 2;
@@ -1752,17 +1734,16 @@
             // sqlUserTB
             // 
             this.sqlUserTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.sqlUserTB.Location = new System.Drawing.Point(189, 133);
+            this.sqlUserTB.Location = new System.Drawing.Point(155, 163);
             this.sqlUserTB.Name = "sqlUserTB";
-            this.sqlUserTB.Size = new System.Drawing.Size(239, 20);
+            this.sqlUserTB.Size = new System.Drawing.Size(273, 20);
             this.sqlUserTB.TabIndex = 6;
-            this.sqlUserTB.Text = "BBICARS";
             // 
             // label4
             // 
             this.label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(473, 136);
+            this.label4.Location = new System.Drawing.Point(487, 166);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(102, 13);
             this.label4.TabIndex = 3;
@@ -1772,26 +1753,26 @@
             // 
             this.sqlPassTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.sqlPassTB, 2);
-            this.sqlPassTB.Location = new System.Drawing.Point(581, 133);
+            this.sqlPassTB.Location = new System.Drawing.Point(595, 163);
             this.sqlPassTB.Name = "sqlPassTB";
-            this.sqlPassTB.Size = new System.Drawing.Size(246, 20);
+            this.sqlPassTB.Size = new System.Drawing.Size(216, 20);
             this.sqlPassTB.TabIndex = 7;
             // 
             // adminPassTB
             // 
             this.adminPassTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.adminPassTB, 2);
-            this.adminPassTB.Location = new System.Drawing.Point(580, 103);
+            this.adminPassTB.Location = new System.Drawing.Point(594, 133);
             this.adminPassTB.Margin = new System.Windows.Forms.Padding(2);
             this.adminPassTB.Name = "adminPassTB";
-            this.adminPassTB.Size = new System.Drawing.Size(248, 20);
+            this.adminPassTB.Size = new System.Drawing.Size(218, 20);
             this.adminPassTB.TabIndex = 4;
             // 
             // label10
             // 
             this.label10.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(441, 106);
+            this.label10.Location = new System.Drawing.Point(455, 136);
             this.label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(135, 13);
@@ -1801,17 +1782,17 @@
             // adminUserTB
             // 
             this.adminUserTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.adminUserTB.Location = new System.Drawing.Point(188, 103);
+            this.adminUserTB.Location = new System.Drawing.Point(154, 133);
             this.adminUserTB.Margin = new System.Windows.Forms.Padding(2);
             this.adminUserTB.Name = "adminUserTB";
-            this.adminUserTB.Size = new System.Drawing.Size(241, 20);
+            this.adminUserTB.Size = new System.Drawing.Size(275, 20);
             this.adminUserTB.TabIndex = 3;
             // 
             // label9
             // 
             this.label9.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(54, 106);
+            this.label9.Location = new System.Drawing.Point(20, 136);
             this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(130, 13);
@@ -1822,7 +1803,7 @@
             // 
             this.label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(142, 76);
+            this.label1.Location = new System.Drawing.Point(108, 106);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(41, 13);
             this.label1.TabIndex = 0;
@@ -1831,9 +1812,9 @@
             // serverTB
             // 
             this.serverTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.serverTB.Location = new System.Drawing.Point(189, 73);
+            this.serverTB.Location = new System.Drawing.Point(155, 103);
             this.serverTB.Name = "serverTB";
-            this.serverTB.Size = new System.Drawing.Size(239, 20);
+            this.serverTB.Size = new System.Drawing.Size(273, 20);
             this.serverTB.TabIndex = 2;
             this.serverTB.Text = "localhost\\SQLEXPRESS";
             // 
@@ -1841,7 +1822,7 @@
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(490, 76);
+            this.label2.Location = new System.Drawing.Point(504, 106);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(85, 13);
             this.label2.TabIndex = 1;
@@ -1851,26 +1832,25 @@
             // 
             this.databaseTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.databaseTB, 2);
-            this.databaseTB.Location = new System.Drawing.Point(581, 73);
+            this.databaseTB.Location = new System.Drawing.Point(595, 103);
             this.databaseTB.Name = "databaseTB";
-            this.databaseTB.Size = new System.Drawing.Size(246, 20);
+            this.databaseTB.Size = new System.Drawing.Size(216, 20);
             this.databaseTB.TabIndex = 5;
-            this.databaseTB.Text = "BBICARS";
             // 
             // assemblyTB
             // 
             this.assemblyTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.assemblyTB, 4);
-            this.assemblyTB.Location = new System.Drawing.Point(189, 163);
+            this.tableLayoutPanel1.SetColumnSpan(this.assemblyTB, 3);
+            this.assemblyTB.Location = new System.Drawing.Point(155, 43);
             this.assemblyTB.Name = "assemblyTB";
-            this.assemblyTB.Size = new System.Drawing.Size(638, 20);
+            this.assemblyTB.Size = new System.Drawing.Size(556, 20);
             this.assemblyTB.TabIndex = 13;
             // 
             // label8
             // 
             this.label8.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(104, 166);
+            this.label8.Location = new System.Drawing.Point(70, 46);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(79, 13);
             this.label8.TabIndex = 23;
@@ -1880,7 +1860,7 @@
             // 
             this.createDatabaseChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.createDatabaseChk.AutoSize = true;
-            this.createDatabaseChk.Location = new System.Drawing.Point(189, 222);
+            this.createDatabaseChk.Location = new System.Drawing.Point(155, 222);
             this.createDatabaseChk.Name = "createDatabaseChk";
             this.createDatabaseChk.Size = new System.Drawing.Size(104, 17);
             this.createDatabaseChk.TabIndex = 15;
@@ -1891,7 +1871,7 @@
             // 
             this.createLoginChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.createLoginChk.AutoSize = true;
-            this.createLoginChk.Location = new System.Drawing.Point(189, 247);
+            this.createLoginChk.Location = new System.Drawing.Point(155, 247);
             this.createLoginChk.Name = "createLoginChk";
             this.createLoginChk.Size = new System.Drawing.Size(129, 17);
             this.createLoginChk.TabIndex = 16;
@@ -1902,7 +1882,7 @@
             // 
             this.regSqlChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.regSqlChk.AutoSize = true;
-            this.regSqlChk.Location = new System.Drawing.Point(189, 272);
+            this.regSqlChk.Location = new System.Drawing.Point(155, 272);
             this.regSqlChk.Name = "regSqlChk";
             this.regSqlChk.Size = new System.Drawing.Size(179, 17);
             this.regSqlChk.TabIndex = 17;
@@ -1912,9 +1892,9 @@
             // runButton
             // 
             this.runButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.runButton.Location = new System.Drawing.Point(833, 71);
+            this.runButton.Location = new System.Drawing.Point(817, 191);
             this.runButton.Name = "runButton";
-            this.runButton.Size = new System.Drawing.Size(82, 24);
+            this.runButton.Size = new System.Drawing.Size(98, 24);
             this.runButton.TabIndex = 22;
             this.runButton.Text = "Run";
             this.runButton.UseVisualStyleBackColor = true;
@@ -1923,9 +1903,9 @@
             // analyzeButton
             // 
             this.analyzeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.analyzeButton.Location = new System.Drawing.Point(833, 101);
+            this.analyzeButton.Location = new System.Drawing.Point(817, 41);
             this.analyzeButton.Name = "analyzeButton";
-            this.analyzeButton.Size = new System.Drawing.Size(82, 23);
+            this.analyzeButton.Size = new System.Drawing.Size(98, 23);
             this.analyzeButton.TabIndex = 30;
             this.analyzeButton.Text = "Analyze";
             this.analyzeButton.UseVisualStyleBackColor = true;
@@ -1935,7 +1915,7 @@
             // 
             this.createTablesChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.createTablesChk.AutoSize = true;
-            this.createTablesChk.Location = new System.Drawing.Point(189, 297);
+            this.createTablesChk.Location = new System.Drawing.Point(155, 297);
             this.createTablesChk.Name = "createTablesChk";
             this.createTablesChk.Size = new System.Drawing.Size(151, 17);
             this.createTablesChk.TabIndex = 18;
@@ -1949,7 +1929,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.createIndicesChk, 2);
             this.createIndicesChk.Location = new System.Drawing.Point(434, 297);
             this.createIndicesChk.Name = "createIndicesChk";
-            this.createIndicesChk.Size = new System.Drawing.Size(300, 17);
+            this.createIndicesChk.Size = new System.Drawing.Size(277, 17);
             this.createIndicesChk.TabIndex = 29;
             this.createIndicesChk.Text = "Create indices (NOT recommended for existing databases)";
             this.createIndicesChk.UseVisualStyleBackColor = true;
@@ -1994,6 +1974,16 @@
             this.openFileDialog1.FileName = "openFileDialog1";
             this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
             // 
+            // dbType
+            // 
+            this.dbType.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.dbType.AutoSize = true;
+            this.dbType.Location = new System.Drawing.Point(155, 76);
+            this.dbType.Name = "dbType";
+            this.dbType.Size = new System.Drawing.Size(65, 13);
+            this.dbType.TabIndex = 36;
+            this.dbType.Text = "UNKNOWN";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2001,7 +1991,7 @@
             this.ClientSize = new System.Drawing.Size(918, 782);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "MainForm";
-            this.Text = "Initialize CARS database";
+            this.Text = "Initialize database";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.tabControl1.ResumeLayout(false);
@@ -2120,7 +2110,6 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Button browsePsqlButton;
         private System.Windows.Forms.TextBox psqlTB;
-        private System.Windows.Forms.ComboBox dbTypeList;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TabControl tabControl2;
         private System.Windows.Forms.TabPage tabTableCreate;
@@ -2178,8 +2167,6 @@
         private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn13;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn14;
         private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn7;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn15;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn16;
         private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn17;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn18;
         private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn9;
@@ -2189,8 +2176,6 @@
         private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn21;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn22;
         private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn11;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewTextBoxColumn23;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn24;
         private System.Windows.Forms.DataGridViewButtonColumn othersGVName;
         private System.Windows.Forms.DataGridViewTextBoxColumn othersGVScript;
         private System.Windows.Forms.DataGridViewButtonColumn othersGVRunButton;
@@ -2209,13 +2194,18 @@
         private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn12;
         private System.Windows.Forms.TabPage tabPage14;
         private System.Windows.Forms.DataGridView unalteredIndicesGV;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn13;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn27;
         private System.Windows.Forms.CheckBox installExtensionsChk;
         private System.Windows.Forms.TextBox defaultObjFilterTB;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.TextBox objFilterTB;
         private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn23;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn24;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn15;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn16;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewButtonColumn13;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn27;
+        private System.Windows.Forms.Label dbType;
     }
 }
 

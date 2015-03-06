@@ -7,7 +7,7 @@ namespace SqlSiphon.InformationSchema
     /// This is an entity object for the SQL standard 
     /// INFORMATION_SCHEMA.PARAMETERS view.
     /// </summary>
-    [MappedClass(Include = false, Schema = "information_schema")]
+    [Table(Include = false, Schema = "information_schema")]
     public class Routines
     {
         public string specific_catalog { get; set; }

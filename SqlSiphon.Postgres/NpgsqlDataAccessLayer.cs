@@ -286,7 +286,7 @@ namespace SqlSiphon.Postgres
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
         private static Regex parameterReverter = new Regex(@"\b_",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        public override void AnalyzeQuery(string routineText, MappedMethodAttribute routine)
+        public override void AnalyzeQuery(string routineText, SavedRoutineAttribute routine)
         {
             var match = queryExtractor.Match(routineText);
             if (match.Groups.Count == 3)
@@ -301,7 +301,7 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
+        public override string MakeCreateColumnScript(ColumnAttribute prop)
         {
             return string.Format("alter table if exists {0} add column {1} {2};",
                 this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
@@ -309,7 +309,7 @@ namespace SqlSiphon.Postgres
                 this.MakeSqlTypeString(prop));
         }
 
-        public override string MakeDropColumnScript(MappedPropertyAttribute prop)
+        public override string MakeDropColumnScript(ColumnAttribute prop)
         {
             return string.Format("alter table if exists {0} drop column if exists {1};",
                 this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
@@ -322,7 +322,7 @@ namespace SqlSiphon.Postgres
             string sqlType = null;
             var isRef = systemType.Name.Last() == '&';
             var elemType = systemType.IsArray || isRef ? systemType.GetElementType() : systemType;
-            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(elemType);
+            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(elemType);
             if (attr != null)
             {
                 attr.InferProperties(elemType);
@@ -345,7 +345,7 @@ namespace SqlSiphon.Postgres
             }
             else if (systemType != typeof(void))
             {
-                attr = new MappedClassAttribute();
+                attr = new TableAttribute();
                 attr.InferProperties(systemType);
                 sqlType = string.Format("TABLE ({0})", this.MakeColumnSection(attr, true));
             }
@@ -356,7 +356,7 @@ namespace SqlSiphon.Postgres
             return sqlType;
         }
 
-        public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
+        public override string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial)
         {
             var preamble = string.Format(
                 "alter table if exists {0}",
@@ -408,7 +408,7 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        public override bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial)
+        public override bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
         {
             var tests = new bool[]{
                 final.Include == initial.Include,
@@ -470,7 +470,7 @@ namespace SqlSiphon.Postgres
             return !unchanged;
         }
 
-        protected override string MakeParameterString(MappedParameterAttribute param)
+        protected override string MakeParameterString(ParameterAttribute param)
         {
             var dirString = "";
             var typeStr = MakeSqlTypeString(param);
@@ -491,7 +491,7 @@ namespace SqlSiphon.Postgres
             return string.Format("{0} @{1} {2}{3}", dirString, param.Name, typeStr, defaultString);
         }
 
-        protected override string MakeColumnString(MappedPropertyAttribute column, bool isReturnType)
+        protected override string MakeColumnString(ColumnAttribute column, bool isReturnType)
         {
             var typeStr = MakeSqlTypeString(column);
             var nullString = "";
@@ -525,7 +525,7 @@ namespace SqlSiphon.Postgres
                 defaultString).Trim();
         }
 
-        public override string MakeDropRoutineScript(MappedMethodAttribute routine)
+        public override string MakeDropRoutineScript(SavedRoutineAttribute routine)
         {
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = string.Join(", ", routine.Parameters.Select(this.MakeSqlTypeString));
@@ -536,7 +536,7 @@ namespace SqlSiphon.Postgres
 
         private static Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public override string MakeCreateRoutineScript(MappedMethodAttribute routine)
+        public override string MakeCreateRoutineScript(SavedRoutineAttribute routine)
         {
             var query = routine.Query;
             var declarations = new List<string>();
@@ -595,16 +595,16 @@ $$ language plpgsql;",
             return query;
         }
 
-        public override string MakeAlterRoutineScript(MappedMethodAttribute final, MappedMethodAttribute initial)
+        public override string MakeAlterRoutineScript(SavedRoutineAttribute final, SavedRoutineAttribute initial)
         {
             return this.MakeDropRoutineScript(initial) + Environment.NewLine + this.MakeCreateRoutineScript(final);
         }
 
-        public override string MakeCreateTableScript(MappedClassAttribute table)
+        public override string MakeCreateTableScript(TableAttribute table)
         {
             var schema = table.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, table.Name);
-            var reset = new List<MappedPropertyAttribute>();
+            var reset = new List<ColumnAttribute>();
             foreach (var column in table.Properties)
             {
                 if (string.IsNullOrWhiteSpace(column.SqlType)
@@ -627,7 +627,7 @@ $$ language plpgsql;",
                 columnSection);
         }
 
-        public override string MakeDropTableScript(MappedClassAttribute info)
+        public override string MakeDropTableScript(TableAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
@@ -677,13 +677,24 @@ alter table {1} add constraint {3} primary key using index {0};",
                 this.MakeIdentifier(key.GetName(this)));
         }
 
-        protected override string MakeCreateIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
+        public override string MakeCreateIndexScript(Index idx)
         {
-            throw new NotImplementedException();
+            var columnSection = string.Join(",", idx.Columns);
+            var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
+            return string.Format(
+@"create index {0} on {1}({2});",
+                idx.Name,
+                tableName,
+                columnSection);
+        }
+
+        public override string MakeDropIndexScript(Index idx)
+        {
+            return string.Format(@"drop index if exists {0};", idx.Name);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select         
     ordinal_position,
     character_maximum_length,
@@ -713,7 +724,32 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
+@"select
+    n.nspname as table_schema,
+    t.relname as table_name,
+    i.relname as index_name,
+    a.attname as column_name
+from
+    pg_class t
+    inner join pg_namespace n on n.oid = t.relnamespace
+    inner join pg_index ix on t.oid = ix.indrelid
+    inner join pg_class i on i.oid = ix.indexrelid
+    inner join pg_attribute a on a.attrelid = t.oid and a.attnum = ANY(ix.indkey)
+where
+	t.relkind = 'r'
+    and t.relname like 'test%'
+order by
+    n.nspname,
+    t.relname,
+    i.relname;")]
+        public override List<InformationSchema.IndexColumnUsage> GetIndexColumns()
+        {
+            return GetList<InformationSchema.IndexColumnUsage>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.table_constraints
 where table_schema != 'information_schema'
@@ -725,7 +761,7 @@ order by table_catalog, table_schema, table_name;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.referential_constraints
 where constraint_schema != 'information_schema'
@@ -738,7 +774,7 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.routines
 where specific_schema != 'information_schema'
@@ -751,7 +787,7 @@ order by specific_catalog, specific_schema, specific_name;")]
 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.parameters
 where specific_schema != 'information_schema'
@@ -763,7 +799,7 @@ order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.constraint_column_usage
 where constraint_schema != 'information_schema'
@@ -774,7 +810,7 @@ where constraint_schema != 'information_schema'
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.key_column_usage
 where constraint_schema != 'information_schema'

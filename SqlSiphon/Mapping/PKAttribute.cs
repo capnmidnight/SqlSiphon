@@ -41,7 +41,7 @@ namespace SqlSiphon.Mapping
     /// any type of thing.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public class PKAttribute : MappedPropertyAttribute
+    public class PKAttribute : ColumnAttribute
     {
         public PKAttribute()
         {

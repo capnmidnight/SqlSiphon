@@ -6,7 +6,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Postgres.Memberships
 {
-    [MappedClass]
+    [Table]
     public class aspnet_Membership
     {
         [PK]
@@ -14,28 +14,28 @@ namespace SqlSiphon.Postgres.Memberships
 
         public Guid ApplicationId { get; set; }
 
-        [MappedProperty(Size = 128)]
+        [Column(Size = 128)]
         public string Password { get; set; }
 
-        [MappedProperty(DefaultValue = "0")]
+        [Column(DefaultValue = "0")]
         public int PasswordFormat { get; set; }
 
-        [MappedProperty(Size = 128)]
+        [Column(Size = 128)]
         public string PasswordSalt { get; set; }
 
-        [MappedProperty(Size = 16)]
+        [Column(Size = 16)]
         public string MobilePIN { get; set; }
 
-        [MappedProperty(Size = 256, IsOptional = true)]
+        [Column(Size = 256, IsOptional = true)]
         public string Email { get; set; }
 
-        [MappedProperty(Size = 256, IsOptional = true)]
+        [Column(Size = 256, IsOptional = true)]
         public string LoweredEmail { get; set; }
 
-        [MappedProperty(Size = 256, IsOptional = true)]
+        [Column(Size = 256, IsOptional = true)]
         public string PasswordQuestion { get; set; }
 
-        [MappedProperty(Size = 128, IsOptional = true)]
+        [Column(Size = 128, IsOptional = true)]
         public string PasswordAnswer { get; set; }
 
         public bool IsApproved { get; set; }
@@ -58,7 +58,7 @@ namespace SqlSiphon.Postgres.Memberships
 
         public DateTime FailedPasswordAnswerAttemptWindowStart { get; set; }
 
-        [MappedProperty(IsOptional = true)]
+        [Column(IsOptional = true)]
         public string Comment { get; set; }
     }
 }

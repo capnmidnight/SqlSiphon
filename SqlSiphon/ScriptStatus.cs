@@ -6,13 +6,13 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon
 {
-    [MappedClass]
+    [Table]
     public class ScriptStatus
     {
         [AutoPK]
         public int ScriptID { get; set; }
         public string Script { get; set; }
-        [MappedProperty(DefaultValue = "getdate()")]
+        [Column(DefaultValue = "getdate()")]
         public DateTime RanOn { get; set; }
     }
 }

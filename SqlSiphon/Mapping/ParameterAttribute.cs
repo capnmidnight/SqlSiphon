@@ -43,7 +43,7 @@ namespace SqlSiphon.Mapping
     /// any type of thing.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
-    public class MappedParameterAttribute : MappedObjectAttribute
+    public class ParameterAttribute : DatabaseObjectAttribute
     {
         private bool directionNotSet = true;
         private ParameterDirection paramDirection;
@@ -65,9 +65,9 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public MappedParameterAttribute() {}
+        public ParameterAttribute() {}
 
-        public MappedParameterAttribute(InformationSchema.Parameters parameter, ISqlSiphon dal)
+        public ParameterAttribute(InformationSchema.Parameters parameter, ISqlSiphon dal)
         {
             this.Include = true;
 

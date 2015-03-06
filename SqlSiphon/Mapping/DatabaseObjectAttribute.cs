@@ -50,7 +50,7 @@ namespace SqlSiphon.Mapping
         | AttributeTargets.Property,
         Inherited = false,
         AllowMultiple = false)]
-    public abstract class MappedObjectAttribute : Attribute
+    public abstract class DatabaseObjectAttribute : Attribute
     {
         /// <summary>
         /// Get or set a schema name for objects in the database. Defaults to
@@ -93,9 +93,24 @@ namespace SqlSiphon.Mapping
         /// <summary>
         /// As this class is abstract, it can't be instantiated.
         /// </summary>
-        public MappedObjectAttribute()
+        public DatabaseObjectAttribute()
         {
             this._include = true;
+        }
+
+        /// <summary>
+        /// Retrieves all attribute of a certain type from an object.
+        /// </summary>
+        /// <typeparam name="T">The type of attribute to find</typeparam>
+        /// <param name="obj">The object on which to find the attribute</param>
+        /// <returns>The attribute instance, or null if no such
+        /// attribute exists</returns>
+        public static System.Collections.Generic.IEnumerable<T> GetAttributes<T>(ICustomAttributeProvider obj)
+            where T : Attribute
+        {
+            return obj
+                .GetCustomAttributes(typeof(T), false)
+                .Cast<T>();
         }
 
         /// <summary>
@@ -106,13 +121,9 @@ namespace SqlSiphon.Mapping
         /// <returns>The attribute instance, or null if no such
         /// attribute exists</returns>
         public static T GetAttribute<T>(ICustomAttributeProvider obj)
-            where T : MappedObjectAttribute, new()
+            where T : DatabaseObjectAttribute, new()
         {
-            var attr = obj
-                .GetCustomAttributes(typeof(T), false)
-                .Cast<T>()
-                .FirstOrDefault();
-            return attr;
+            return GetAttributes<T>(obj).FirstOrDefault();
         }
 
         /// <summary>

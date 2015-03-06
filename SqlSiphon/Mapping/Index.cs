@@ -5,18 +5,16 @@ using System.Text;
 
 namespace SqlSiphon.Mapping
 {
-    public class Index : MappedObjectAttribute
+    public class Index : DatabaseObjectAttribute
     {
-        public MappedClassAttribute Table { get; private set; }
-        public MappedPropertyAttribute[] Columns { get; private set; }
+        public TableAttribute Table { get; private set; }
+        public List<string> Columns { get; private set; }
 
-        public Index(Type toType, string name)
+        internal Index(TableAttribute table, string name)
         {
             this.Name = name;
-            this.Table = PrimaryKey.GetAttribute(toType);
-            this.Columns = this.Table.Properties
-                .Where(p => p.IncludeInIndex.Contains(name))
-                .ToArray();
+            this.Table = table;
+            this.Columns = new List<string>();
         }
     }
 }

@@ -19,6 +19,7 @@ namespace SqlSiphon
 
         List<string> GetSchemata();
         List<InformationSchema.Columns> GetColumns();
+        List<InformationSchema.IndexColumnUsage> GetIndexColumns();
         List<InformationSchema.Routines> GetRoutines();
         List<InformationSchema.Parameters> GetParameters();
         List<InformationSchema.KeyColumnUsage> GetKeyColumns();
@@ -28,28 +29,28 @@ namespace SqlSiphon
 
         string MakeIdentifier(params string[] parts);
         bool DescribesIdentity(InformationSchema.Columns column);
-        bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial);
-        bool RoutineChanged(MappedMethodAttribute final, MappedMethodAttribute initial);
+        bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
+        bool RoutineChanged(SavedRoutineAttribute final, SavedRoutineAttribute initial);
         bool KeyChanged(PrimaryKey final, PrimaryKey initial);
-        void AnalyzeQuery(string routineText, MappedMethodAttribute routine);
+        void AnalyzeQuery(string routineText, SavedRoutineAttribute routine);
 
-        MappedMethodAttribute GetCommandDescription(System.Reflection.MethodInfo method);
+        SavedRoutineAttribute GetCommandDescription(System.Reflection.MethodInfo method);
 
         Type GetSystemType(string sqlType);
 
         string MakeCreateSchemaScript(string schemaName);
         string MakeDropSchemaScript(string schemaName);
 
-        string MakeCreateTableScript(MappedClassAttribute table);
-        string MakeDropTableScript(MappedClassAttribute table);
+        string MakeCreateTableScript(TableAttribute table);
+        string MakeDropTableScript(TableAttribute table);
 
-        string MakeCreateColumnScript(MappedPropertyAttribute column);
-        string MakeDropColumnScript(MappedPropertyAttribute column);
-        string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial);
+        string MakeCreateColumnScript(ColumnAttribute column);
+        string MakeDropColumnScript(ColumnAttribute column);
+        string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);
 
-        string MakeDropRoutineScript(MappedMethodAttribute routine);
-        string MakeCreateRoutineScript(MappedMethodAttribute routine);
-        string MakeAlterRoutineScript(MappedMethodAttribute final, MappedMethodAttribute initial);
+        string MakeDropRoutineScript(SavedRoutineAttribute routine);
+        string MakeCreateRoutineScript(SavedRoutineAttribute routine);
+        string MakeAlterRoutineScript(SavedRoutineAttribute final, SavedRoutineAttribute initial);
 
         string MakeDropRelationshipScript(Relationship relation);
         string MakeCreateRelationshipScript(Relationship relation);
@@ -57,6 +58,10 @@ namespace SqlSiphon
         string MakeDropPrimaryKeyScript(PrimaryKey key);
         string MakeCreatePrimaryKeyScript(PrimaryKey key);
 
+        string MakeDropIndexScript(Index key);
+        string MakeCreateIndexScript(Index key);
+
         bool RelationshipChanged(Relationship finalRelation, Relationship initialRelation);
+        bool IndexChanged(Index finalIndex, Index initialIndex);
     }
 }

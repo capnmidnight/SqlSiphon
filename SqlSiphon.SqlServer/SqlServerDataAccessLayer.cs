@@ -138,17 +138,17 @@ namespace SqlSiphon.SqlServer
             reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
         }
 
-        public override string MakeDropRoutineScript(MappedMethodAttribute info)
+        public override string MakeDropRoutineScript(SavedRoutineAttribute info)
         {
             return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
-        public override string MakeCreateRoutineScript(MappedMethodAttribute info)
+        public override string MakeCreateRoutineScript(SavedRoutineAttribute info)
         {
             return this.MakeRoutineScript(info, "create");
         }
 
-        public override string MakeAlterRoutineScript(MappedMethodAttribute info, MappedMethodAttribute initial)
+        public override string MakeAlterRoutineScript(SavedRoutineAttribute info, SavedRoutineAttribute initial)
         {
             return this.MakeRoutineScript(info, "alter");
         }
@@ -177,7 +177,7 @@ end catch;";
             return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
         }
 
-        public override void AnalyzeQuery(string routineText, MappedMethodAttribute routine)
+        public override void AnalyzeQuery(string routineText, SavedRoutineAttribute routine)
         {
             var match = queryExtractor.Match(routineText);
             if (match.Groups.Count == 2)
@@ -193,7 +193,7 @@ end catch;";
             }
         }
 
-        private string MakeRoutineScript(MappedMethodAttribute info, string operation)
+        private string MakeRoutineScript(SavedRoutineAttribute info, string operation)
         {
             var query = info.Query;
             if (info.EnableTransaction)
@@ -224,7 +224,7 @@ end",
                 query);
         }
 
-        public override string MakeCreateTableScript(MappedClassAttribute info)
+        public override string MakeCreateTableScript(TableAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
@@ -233,14 +233,14 @@ end",
 @"if not exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
 create table {2}(
     {3}
-)",
+);",
                 schema,
                 info.Name,
                 identifier,
                 columnSection);
         }
 
-        public override string MakeDropTableScript(MappedClassAttribute info)
+        public override string MakeDropTableScript(TableAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
@@ -252,7 +252,29 @@ create table {2}(
                 identifier);
         }
 
-        protected override string MakeParameterString(MappedParameterAttribute p)
+        public override string MakeCreateIndexScript(Index idx)
+        {
+            var columnSection = string.Join(",", idx.Columns);
+            var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
+            return string.Format(
+@"if not exists(select * from sys.indexes where name = '{0}')
+CREATE NONCLUSTERED INDEX {0} ON {1}({2});",
+                idx.Name,
+                tableName,
+                columnSection);
+        }
+
+        public override string MakeDropIndexScript(Index idx)
+        {
+            var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
+            return string.Format(
+@"if exists(select * from sys.indexes where name = '{0}')
+DROP INDEX {0} ON {1};",
+                idx.Name,
+                tableName);
+        }
+
+        protected override string MakeParameterString(ParameterAttribute p)
         {
             var typeStr = MakeSqlTypeString(p);
             return string.Join(" ",
@@ -261,7 +283,7 @@ create table {2}(
                 p.DefaultValue ?? "").Trim();
         }
 
-        protected override string MakeColumnString(MappedPropertyAttribute p, bool isReturnType)
+        protected override string MakeColumnString(ColumnAttribute p, bool isReturnType)
         {
             var typeStr = MakeSqlTypeString(p);
             var defaultString = "";
@@ -277,7 +299,7 @@ create table {2}(
                 defaultString);
         }
 
-        public override string MakeCreateColumnScript(MappedPropertyAttribute prop)
+        public override string MakeCreateColumnScript(ColumnAttribute prop)
         {
             return string.Format("alter table {0} add {1} {2};",
                 this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
@@ -285,14 +307,14 @@ create table {2}(
                 this.MakeSqlTypeString(prop));
         }
 
-        public override string MakeDropColumnScript(MappedPropertyAttribute prop)
+        public override string MakeDropColumnScript(ColumnAttribute prop)
         {
             return string.Format("alter table {0} drop column {1};",
                 this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
                 this.MakeIdentifier(prop.Name));
         }
 
-        public override bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial)
+        public override bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
         {
             var tests = new bool[]{
                 final.Include == initial.Include,
@@ -367,7 +389,7 @@ create table {2}(
             return !unchanged;
         }
 
-        public override string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial)
+        public override string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial)
         {
             var preamble = string.Format(
                 "alter table {0}",
@@ -456,7 +478,7 @@ create table {2}(
             }
         }
 
-        private string MaybeMakeColumnTypeString(MappedPropertyAttribute attr, bool skipDefault = false)
+        private string MaybeMakeColumnTypeString(ColumnAttribute attr, bool skipDefault = false)
         {
             if (reverseTypeMapping.ContainsKey(attr.SystemType))
             {
@@ -553,7 +575,7 @@ create table {2}(
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select *, COLUMNPROPERTY(object_id(TABLE_NAME), COLUMN_NAME, 'IsIdentity') as is_identity
 from information_schema.columns
 where table_schema != 'information_schema'
@@ -564,7 +586,31 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
+@"SELECT 
+	s.name as table_schema,
+	t.name as table_name,
+	ind.name as index_name,
+	col.name as column_name
+FROM sys.indexes ind
+INNER JOIN sys.index_columns ic ON ind.object_id = ic.object_id and ind.index_id = ic.index_id 
+INNER JOIN sys.columns col ON ic.object_id = col.object_id and ic.column_id = col.column_id 
+INNER JOIN sys.tables t ON ind.object_id = t.object_id 
+INNER JOIN sys.schemas s on t.schema_id = s.schema_id
+WHERE 
+     ind.is_primary_key = 0 
+     AND ind.is_unique = 0 
+     AND ind.is_unique_constraint = 0 
+     AND t.is_ms_shipped = 0 
+ORDER BY 
+     t.name, ind.name, ind.index_id, ic.index_column_id;")]
+        public override List<InformationSchema.IndexColumnUsage> GetIndexColumns()
+        {
+            return GetList<InformationSchema.IndexColumnUsage>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.table_constraints
 where table_schema != 'information_schema'
@@ -575,7 +621,7 @@ order by table_catalog, table_schema, table_name;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.referential_constraints
 where constraint_schema != 'information_schema'
@@ -587,7 +633,7 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select
 specific_catalog,
 specific_schema,
@@ -606,7 +652,7 @@ order by specific_catalog, specific_schema, specific_name;")]
 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.parameters
 where specific_schema != 'information_schema'
@@ -617,7 +663,7 @@ order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.constraint_column_usage
 where constraint_schema != 'information_schema';")]
@@ -627,7 +673,7 @@ where constraint_schema != 'information_schema';")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.key_column_usage
 where constraint_schema != 'information_schema';")]
@@ -636,24 +682,12 @@ where constraint_schema != 'information_schema';")]
             return GetList<InformationSchema.KeyColumnUsage>();
         }
 
-        protected override string MakeCreateIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns)
-        {
-            var columnSection = string.Join(",", tableColumns.Select(c => c + " ASC"));
-            var identifier = MakeIdentifier(tableSchema ?? DefaultSchemaName, tableName);
-            return string.Format(
-@"if not exists(select * from sys.indexes where name = '{0}')
-CREATE NONCLUSTERED INDEX {0} ON {1}({2})",
-                indexName,
-                identifier,
-                columnSection);
-        }
-
         public override void Insert<T>(IEnumerable<T> data)
         {
             if (data != null)
             {
                 var t = typeof(T);
-                var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
+                var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
                 if (attr == null)
                 {
                     throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));

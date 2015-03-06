@@ -5,11 +5,11 @@ using System.Text;
 
 namespace SqlSiphon.Mapping
 {
-    public class Relationship : MappedObjectAttribute
+    public class Relationship : DatabaseObjectAttribute
     {
-        private static MappedClassAttribute GetAttribute(Type type)
+        private static TableAttribute GetAttribute(Type type)
         {
-            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type);
+            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
             if (attr == null)
             {
                 throw new Exception(string.Format("Class {0}.{1} is not mapped to a table", type.Namespace, type.Name));
@@ -19,8 +19,8 @@ namespace SqlSiphon.Mapping
         }
 
         public PrimaryKey To { get; private set; }
-        public MappedClassAttribute From { get; private set; }
-        public MappedPropertyAttribute[] FromColumns { get; private set; }
+        public TableAttribute From { get; private set; }
+        public ColumnAttribute[] FromColumns { get; private set; }
         
         public string Prefix { get; private set; }
 
@@ -36,10 +36,10 @@ namespace SqlSiphon.Mapping
             this.Schema = constraint.constraint_schema;
             this.Name = constraint.constraint_name;
             this.To = new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal);
-            this.From = new MappedClassAttribute(tableColumns, new InformationSchema.TableConstraints[] { constraint }, constraintColumns, null, dal);
+            this.From = new TableAttribute(tableColumns, new InformationSchema.TableConstraints[] { constraint }, constraintColumns, null, null, dal);
             var columns = tableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
             var uniqueColumns = uniqueTableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
-            this.FromColumns = constraintColumns.Select(c => new MappedPropertyAttribute(this.From, columns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
+            this.FromColumns = constraintColumns.Select(c => new ColumnAttribute(this.From, columns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
         }
 
         public Relationship(Type fromType, Type toType)

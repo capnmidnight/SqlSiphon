@@ -74,7 +74,7 @@ namespace SqlSiphon
         /// <param name="reader"></param>
         /// <param name="columnNames"></param>
         /// <param name="props"></param>
-        internal static void DoMapping(object obj, DataReaderT reader, string[] columnNames, List<MappedPropertyAttribute> props)
+        internal static void DoMapping(object obj, DataReaderT reader, string[] columnNames, List<ColumnAttribute> props)
         {
             props.Where(p => columnNames.Contains(p.Name.ToUpper()))
                 .ToList()
@@ -93,10 +93,10 @@ namespace SqlSiphon
                     && IsTypePrimitive(type.GetGenericArguments().First()));
         }
 
-        protected static List<MappedPropertyAttribute> GetProperties(Type type)
+        protected static List<ColumnAttribute> GetProperties(Type type)
         {
-            var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type)
-                ?? new MappedClassAttribute();
+            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type)
+                ?? new TableAttribute();
             attr.InferProperties(type);
             return attr.Properties;
         }
@@ -111,7 +111,7 @@ namespace SqlSiphon
 
         private bool isConnectionOwned;
 
-        private MappedClassAttribute meta;
+        private TableAttribute meta;
         private Regex FKNameRegex;
 
         protected virtual string IdentifierPartBegin { get { return ""; } }
@@ -140,7 +140,7 @@ namespace SqlSiphon
             this.Connection = connection;
             this.isConnectionOwned = isConnectionOwned;
             var type = this.GetType();
-            this.meta = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type) ?? new MappedClassAttribute();
+            this.meta = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type) ?? new TableAttribute();
             this.meta.InferProperties(type);
         }
 
@@ -201,7 +201,7 @@ namespace SqlSiphon
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text,
+        [SavedRoutine(CommandType = CommandType.Text,
             Query = "select * from ScriptStatus")]
         public List<ScriptStatus> GetScriptStatus()
         {
@@ -209,7 +209,7 @@ namespace SqlSiphon
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text,
+        [SavedRoutine(CommandType = CommandType.Text,
             Query = "select count(*) from ScriptStatus")]
         public int GetDatabaseVersion()
         {
@@ -223,7 +223,7 @@ namespace SqlSiphon
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text,
+        [SavedRoutine(CommandType = CommandType.Text,
             Query = "insert into ScriptStatus(Script) values(@script);")]
         public void MarkScriptAsRan(string script)
         {
@@ -243,7 +243,7 @@ namespace SqlSiphon
             if (data != null)
             {
                 var t = typeof(T);
-                var attr = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
+                var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
                 if (attr == null)
                 {
                     throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
@@ -302,7 +302,7 @@ namespace SqlSiphon
             var method = (from frame in new StackTrace(2, false).GetFrames()
                           let meth = frame.GetMethod()
                           where meth is MethodInfo
-                            && MappedObjectAttribute.GetAttribute<MappedMethodAttribute>(meth) != null
+                            && DatabaseObjectAttribute.GetAttribute<SavedRoutineAttribute>(meth) != null
                           select (MethodInfo)meth).FirstOrDefault();
 
             // We absolutely need to find a method with this attribute, because we won't know where in
@@ -335,7 +335,7 @@ namespace SqlSiphon
             return command;
         }
 
-        protected virtual CommandT BuildCommand(string procName, CommandType commandType, MappedParameterAttribute[] methParams)
+        protected virtual CommandT BuildCommand(string procName, CommandType commandType, ParameterAttribute[] methParams)
         {
             // the mapped method must match the name of a stored procedure in the database, or the
             // query or procedure name must be provided explicitly in the MappedMethodAttribute's
@@ -363,7 +363,7 @@ namespace SqlSiphon
             }
         }
 
-        private ParameterT[] MakeProcedureParameters(MappedParameterAttribute[] methParams)
+        private ParameterT[] MakeProcedureParameters(ParameterAttribute[] methParams)
         {
             List<ParameterT> procedureParams = new List<ParameterT>();
             for (int i = 0; methParams != null && i < methParams.Length; ++i)
@@ -585,11 +585,11 @@ namespace SqlSiphon
             }
         }
 
-        protected List<MappedMethodAttribute> FindProcedureDefinitions()
+        protected List<SavedRoutineAttribute> FindProcedureDefinitions()
         {
             var t = this.GetType();
             var methods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
-            var results = new List<MappedMethodAttribute>();
+            var results = new List<SavedRoutineAttribute>();
             foreach (var method in methods)
             {
                 var info = this.GetCommandDescription(method);
@@ -599,9 +599,9 @@ namespace SqlSiphon
             return results;
         }
 
-        public MappedMethodAttribute GetCommandDescription(MethodInfo method)
+        public SavedRoutineAttribute GetCommandDescription(MethodInfo method)
         {
-            var meta = MappedObjectAttribute.GetAttribute<MappedMethodAttribute>(method);
+            var meta = DatabaseObjectAttribute.GetAttribute<SavedRoutineAttribute>(method);
             if (meta != null)
             {
                 if (meta.CommandType == CommandType.TableDirect)
@@ -625,7 +625,7 @@ namespace SqlSiphon
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"SELECT *
 FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
 WHERE TABLE_SCHEMA = @tableSchema
@@ -652,60 +652,6 @@ AND COLUMN_NAME = @columnName;")]
             return new DatabaseDelta(final, initial, this);
         }
 
-        private string BuildIndex<T>(Func<MappedClassAttribute, string[]> getColumns, Func<MappedClassAttribute, string[], string> getIndexName)
-        {
-            var t = typeof(T);
-            var table = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(t);
-            table.InferProperties(t);
-            var columns = getColumns(table);
-            var indexName = getIndexName(table, columns);
-            return this.MakeCreateIndexScript(indexName, table.Schema ?? DefaultSchemaName, table.Name, columns);
-        }
-
-        protected string NamedIndex<T>(string indexName)
-        {
-            return BuildIndex<T>(
-                table => table.Properties
-                    .Where(c => c.Include
-                        && (c.SystemType != typeof(string)
-                            || c.Size > 0))
-                    .Select(c => c.Name)
-                    .ToArray(),
-                (table, columns) => indexName);
-        }
-
-        protected string NamedIndex<T>(string indexName, params string[] columns)
-        {
-            return BuildIndex<T>(
-                table => columns,
-                (table, cols) => indexName);
-        }
-
-        protected string Index<T>()
-        {
-            return BuildIndex<T>(
-                table => table.Properties
-                    .Where(c => c.Include
-                        && (c.SystemType != typeof(string)
-                            || c.Size > 0))
-                    .Select(c => c.Name)
-                    .ToArray(),
-                (table, columns) => string.Format("IDX_{0}_{1}_{2}",
-                    table.Schema ?? DefaultSchemaName,
-                    table.Name,
-                    string.Join(",", columns).GetHashCode().ToString().Replace('-', 'S')));
-        }
-
-        protected string Index<T>(params string[] columns)
-        {
-            return BuildIndex<T>(
-                table => columns,
-                (table, cols) => string.Format("IDX_{0}_{1}_{2}",
-                    table.Schema ?? DefaultSchemaName,
-                    table.Name,
-                    string.Join(",", columns).GetHashCode().ToString().Replace('-', 'S')));
-        }
-
         private string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
         {
             var arr = collect.ToArray();
@@ -714,21 +660,21 @@ AND COLUMN_NAME = @columnName;")]
             return str;
         }
 
-        protected string MakeParameterSection(MappedMethodAttribute info)
+        protected string MakeParameterSection(SavedRoutineAttribute info)
         {
             return ArgumentList(info.Parameters, this.MakeParameterString);
         }
 
-        protected string MakeColumnSection(MappedClassAttribute info, bool isReturnType)
+        protected string MakeColumnSection(TableAttribute info, bool isReturnType)
         {
             return ArgumentList(info.Properties.Where(p => p.Include), p => this.MakeColumnString(p, isReturnType));
         }
 
-        protected string MakeSqlTypeString(MappedObjectAttribute p)
+        protected string MakeSqlTypeString(DatabaseObjectAttribute p)
         {
             if (p.Include)
             {
-                var isIdentity = p is MappedPropertyAttribute && ((MappedPropertyAttribute)p).IsIdentity;
+                var isIdentity = p is ColumnAttribute && ((ColumnAttribute)p).IsIdentity;
                 var systemType = p.SystemType;
                 if (systemType != null && systemType.IsEnum)
                     systemType = typeof(int);
@@ -745,7 +691,7 @@ AND COLUMN_NAME = @columnName;")]
             }
         }
 
-        public virtual bool RoutineChanged(MappedMethodAttribute a, MappedMethodAttribute b)
+        public virtual bool RoutineChanged(SavedRoutineAttribute a, SavedRoutineAttribute b)
         {
             var q1 = this.MakeCreateRoutineScript(a);
             var q2 = this.MakeCreateRoutineScript(b);
@@ -755,7 +701,29 @@ AND COLUMN_NAME = @columnName;")]
 
         public virtual bool RelationshipChanged(Relationship a, Relationship b)
         {
-            return this.MakeCreateRelationshipScript(a).ToLower() != this.MakeCreateRelationshipScript(b).ToLower();
+            var aFromTableName = this.MakeIdentifier(a.From.Schema, a.From.Name).ToLower();
+            var aFromColumnNames = a.FromColumns.Select(c => c.Name.ToLower());
+            var aToTableName = this.MakeIdentifier(a.To.Schema, a.To.Name).ToLower();
+            var bFromTableName = this.MakeIdentifier(b.From.Schema, b.From.Name).ToLower();
+            var bFromColumnNames = b.FromColumns.Select(c => c.Name.ToLower());
+            var bToTableName = this.MakeIdentifier(b.To.Schema, b.To.Name).ToLower();
+            var changed = aFromTableName != bFromTableName
+                || aToTableName != bToTableName
+                || aFromColumnNames.Any(c => !bFromColumnNames.Contains(c))
+                || bFromColumnNames.Any(c => !aFromColumnNames.Contains(c));
+            return changed;
+        }
+
+        public virtual bool IndexChanged(Index a, Index b)
+        {
+            var aTableName = this.MakeIdentifier(a.Table.Schema, a.Table.Name).ToLower();
+            var bTableName = this.MakeIdentifier(b.Table.Schema, b.Table.Name).ToLower();
+            var aColumnNames = a.Columns.Select(c => c.ToLower());
+            var bColumnNames = b.Columns.Select(c => c.ToLower());
+            var changed = aTableName != bTableName
+                || aColumnNames.Any(c => !bColumnNames.Contains(c))
+                || bColumnNames.Any(c => !aColumnNames.Contains(c));
+            return changed;
         }
 
         public virtual bool KeyChanged(PrimaryKey final, PrimaryKey initial)
@@ -764,7 +732,7 @@ AND COLUMN_NAME = @columnName;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [MappedMethod(CommandType = CommandType.Text, Query =
+        [SavedRoutine(CommandType = CommandType.Text, Query =
 @"select schema_name from information_schema.schemata;")]
         public virtual List<string> GetSchemata()
         {
@@ -786,6 +754,7 @@ AND COLUMN_NAME = @columnName;")]
         }
 
         public abstract List<InformationSchema.Columns> GetColumns();
+        public abstract List<InformationSchema.IndexColumnUsage> GetIndexColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
         public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
         public abstract List<InformationSchema.Routines> GetRoutines();
@@ -796,29 +765,30 @@ AND COLUMN_NAME = @columnName;")]
         public abstract string DefaultSchemaName { get; }
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
-        public abstract bool ColumnChanged(MappedPropertyAttribute final, MappedPropertyAttribute initial);
-        public abstract void AnalyzeQuery(string routineText, MappedMethodAttribute routine);
+        public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
+        public abstract void AnalyzeQuery(string routineText, SavedRoutineAttribute routine);
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
-        protected abstract string MakeCreateIndexScript(string indexName, string tableSchema, string tableName, string[] tableColumns);
-        protected abstract string MakeColumnString(MappedPropertyAttribute p, bool isReturnType);
-        protected abstract string MakeParameterString(MappedParameterAttribute p);
+        protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
+        protected abstract string MakeParameterString(ParameterAttribute p);
 
-        public abstract string MakeCreateTableScript(MappedClassAttribute table);
-        public abstract string MakeDropTableScript(MappedClassAttribute table);
+        public abstract string MakeCreateTableScript(TableAttribute table);
+        public abstract string MakeDropTableScript(TableAttribute table);
 
-        public abstract string MakeCreateColumnScript(MappedPropertyAttribute column);
-        public abstract string MakeDropColumnScript(MappedPropertyAttribute column);
-        public abstract string MakeAlterColumnScript(MappedPropertyAttribute final, MappedPropertyAttribute initial);
+        public abstract string MakeCreateColumnScript(ColumnAttribute column);
+        public abstract string MakeDropColumnScript(ColumnAttribute column);
+        public abstract string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);
 
-        public abstract string MakeDropRoutineScript(MappedMethodAttribute routine);
-        public abstract string MakeCreateRoutineScript(MappedMethodAttribute routine);
-        public abstract string MakeAlterRoutineScript(MappedMethodAttribute final, MappedMethodAttribute initial);
+        public abstract string MakeDropRoutineScript(SavedRoutineAttribute routine);
+        public abstract string MakeCreateRoutineScript(SavedRoutineAttribute routine);
+        public abstract string MakeAlterRoutineScript(SavedRoutineAttribute final, SavedRoutineAttribute initial);
 
         public abstract string MakeDropRelationshipScript(Relationship relation);
         public abstract string MakeCreateRelationshipScript(Relationship relation);
 
         public abstract string MakeDropPrimaryKeyScript(PrimaryKey key);
         public abstract string MakeCreatePrimaryKeyScript(PrimaryKey key);
+        public abstract string MakeDropIndexScript(Index index);
+        public abstract string MakeCreateIndexScript(Index index);
     }
 }

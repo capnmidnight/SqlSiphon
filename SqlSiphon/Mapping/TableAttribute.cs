@@ -44,22 +44,25 @@ namespace SqlSiphon.Mapping
         | AttributeTargets.Enum,
         Inherited = false,
         AllowMultiple = false)]
-    public class MappedClassAttribute : MappedObjectAttribute
+    public class TableAttribute : DatabaseObjectAttribute
     {
-        public List<MappedPropertyAttribute> Properties { get; private set; }
+        public List<ColumnAttribute> Properties { get; private set; }
         public Dictionary<int, string> EnumValues { get; private set; }
-
-        public MappedClassAttribute()
+        public Dictionary<string, Index> Indexes { get; private set; }
+        
+        public TableAttribute()
         {
-            this.Properties = new List<MappedPropertyAttribute>();
+            this.Properties = new List<ColumnAttribute>();
             this.EnumValues = new Dictionary<int, string>();
+            this.Indexes = new Dictionary<string, Index>();
         }
 
-        public MappedClassAttribute(
+        public TableAttribute(
             InformationSchema.Columns[] columns,
             InformationSchema.TableConstraints[] constraints,
             InformationSchema.KeyColumnUsage[] keyColumns,
             InformationSchema.ConstraintColumnUsage[] constraintColumns,
+            InformationSchema.IndexColumnUsage[] indexedColumns,
             ISqlSiphon dal)
             : this()
         {
@@ -100,7 +103,19 @@ namespace SqlSiphon.Mapping
                     && columnConstraints[key].Any(constraintName =>
                         constraintTypes.ContainsKey(constraintName)
                         && constraintTypes[constraintName] == "PRIMARY KEY");
-                this.Properties.Add(new MappedPropertyAttribute(this, column, isIncludedInPK, dal));
+                this.Properties.Add(new ColumnAttribute(this, column, isIncludedInPK, dal));
+            }
+
+            if (indexedColumns != null)
+            {
+                foreach (var idxCol in indexedColumns)
+                {
+                    if (!this.Indexes.ContainsKey(idxCol.index_name))
+                    {
+                        this.Indexes.Add(idxCol.index_name, new Index(this, idxCol.index_name));
+                    }
+                    this.Indexes[idxCol.index_name].Columns.Add(idxCol.column_name);
+                }
             }
         }
 
@@ -112,9 +127,9 @@ namespace SqlSiphon.Mapping
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        private MappedMethodAttribute GetMethodDescriptions(MethodInfo method)
+        private SavedRoutineAttribute GetMethodDescriptions(MethodInfo method)
         {
-            var attr = GetAttribute<MappedMethodAttribute>(method);
+            var attr = GetAttribute<SavedRoutineAttribute>(method);
             if (attr == null || !attr.Include)
                 return null;
             attr.InferProperties(method);
@@ -134,7 +149,7 @@ namespace SqlSiphon.Mapping
             base.InferProperties(obj);
             if (obj.IsEnum)
             {
-                this.Properties.Add(new MappedPropertyAttribute
+                this.Properties.Add(new ColumnAttribute
                 {
                     Table = this,
                     IncludeInPrimaryKey = true,
@@ -142,7 +157,7 @@ namespace SqlSiphon.Mapping
                     SqlType = "int"
                 });
 
-                this.Properties.Add(new MappedPropertyAttribute
+                this.Properties.Add(new ColumnAttribute
                 {
                     Table = this,
                     Name = "Description",
@@ -158,11 +173,21 @@ namespace SqlSiphon.Mapping
                 var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance);
                 for (var i = 0; i < props.Length; ++i)
                 {
-                    var attr = GetAttribute<MappedPropertyAttribute>(props[i]) ?? new MappedPropertyAttribute();
-                    attr.InferProperties(this, props[i]);
-                    if (attr.Include)
+                    var columnDescription = GetAttribute<ColumnAttribute>(props[i]) ?? new ColumnAttribute();
+                    columnDescription.InferProperties(this, props[i]);
+                    if (columnDescription.Include)
                     {
-                        this.Properties.Add(attr);
+                        this.Properties.Add(columnDescription);
+                    }
+
+                    var indexInclusions = GetAttributes<IncludeInIndexAttribute>(props[i]);
+                    foreach (var idxInc in indexInclusions)
+                    {
+                        if (!this.Indexes.ContainsKey(idxInc.Name))
+                        {
+                            this.Indexes.Add(idxInc.Name, new Index(this, idxInc.Name));
+                        }
+                        this.Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
                     }
                 }
             }

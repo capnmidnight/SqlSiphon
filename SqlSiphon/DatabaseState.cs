@@ -11,18 +11,18 @@ namespace SqlSiphon
 {
     public class DatabaseState
     {
-        public Dictionary<string, MappedClassAttribute> Tables { get; private set; }
-        public Dictionary<string, Index> Indices { get; private set; }
-        public Dictionary<string, MappedMethodAttribute> Functions { get; private set; }
+        public Dictionary<string, TableAttribute> Tables { get; private set; }
+        public Dictionary<string, Index> Indexes { get; private set; }
+        public Dictionary<string, SavedRoutineAttribute> Functions { get; private set; }
         public Dictionary<string, Relationship> Relationships { get; private set; }
         public Dictionary<string, PrimaryKey> PrimaryKeys { get; private set; }
         public List<string> Schemata { get; private set; }
 
         private DatabaseState()
         {
-            this.Tables = new Dictionary<string, MappedClassAttribute>();
-            this.Indices = new Dictionary<string, Index>();
-            this.Functions = new Dictionary<string, MappedMethodAttribute>();
+            this.Tables = new Dictionary<string, TableAttribute>();
+            this.Indexes = new Dictionary<string, Index>();
+            this.Functions = new Dictionary<string, SavedRoutineAttribute>();
             this.Relationships = new Dictionary<string, Relationship>();
             this.PrimaryKeys = new Dictionary<string, PrimaryKey>();
             this.Schemata = new List<string>();
@@ -44,7 +44,7 @@ namespace SqlSiphon
 
         public void AddType(Type type, ISqlSiphon dal)
         {
-            var table = MappedObjectAttribute.GetAttribute<MappedClassAttribute>(type);
+            var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
             if (table != null)
             {
                 table.InferProperties(type);
@@ -57,13 +57,9 @@ namespace SqlSiphon
                         var key = new PrimaryKey(type);
                         this.PrimaryKeys.Add(dal.MakeIdentifier(key.Schema ?? dal.DefaultSchemaName, key.GetName(dal)), key);
                     }
-                    if (table.Properties.Any(p => p.IncludeInIndex != null))
+                    foreach (var index in table.Indexes)
                     {
-                        var indices = table.Properties.SelectMany(p => p.IncludeInIndex).Distinct();
-                        foreach (var index in indices)
-                        {
-                            this.Indices.Add(index, new Index(type, index));
-                        }
+                        this.Indexes.Add(index.Key, index.Value);
                     }
                 }
             }
@@ -114,29 +110,26 @@ namespace SqlSiphon
             try
             {
                 this.Schemata.AddRange(dal.GetSchemata());
-                var columns = dal.GetColumns()
-                    .GroupBy(col => dal.MakeIdentifier(col.table_schema, col.table_name))
-                    .ToDictionary(g => g.Key, g => g.ToArray());
+                var columns = dal.GetColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
                 var constraints = dal.GetTableConstraints();
-                var constraintsByTable = constraints.GroupBy(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name))
-                    .ToDictionary(g => g.Key, g => g.ToArray());
+                var constraintsByTable = constraints.ToHash(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name));
                 var constraintsByName = constraints.ToDictionary(cst => dal.MakeIdentifier(cst.constraint_schema, cst.constraint_name));
 
                 var keyColumns = dal.GetKeyColumns();
-                var keyColumnsByTable = keyColumns.GroupBy(col => dal.MakeIdentifier(col.table_schema, col.table_name))
-                    .ToDictionary(g => g.Key, g => g.ToArray());
-                var keyColumnsByName = keyColumns.GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
-                    .ToDictionary(g => g.Key, g => g.ToArray());
+                var keyColumnsByTable = keyColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                var keyColumnsByName = keyColumns.ToHash(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name));
 
                 var xref = dal.GetReferentialConstraints()
                     .GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
                     .ToDictionary(g => g.Key, g => g.Select(q => dal.MakeIdentifier(q.unique_constraint_schema, q.unique_constraint_name)).First());
 
                 var constraintsColumns = dal.GetConstraintColumns();
-                var constraintsColumnsByTable = constraintsColumns.GroupBy(col => dal.MakeIdentifier(col.table_schema, col.table_name))
-                    .ToDictionary(g => g.Key, g => g.ToArray());
-                var constraintsColumnsByName = constraintsColumns.GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
-                    .ToDictionary(g => g.Key, g => g.ToArray());
+                var constraintsColumnsByTable = constraintsColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                var constraintsColumnsByName = constraintsColumns.ToHash(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name));
+
+                var indexedColumns = dal.GetIndexColumns();
+                var indexedColumnsByTable = indexedColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                var indexedColumnsByName = indexedColumns.ToHash(col => col.index_name);
 
                 foreach (var tableName in columns.Keys)
                 {
@@ -146,7 +139,8 @@ namespace SqlSiphon
                         var tableConstraints = constraintsByTable.ContainsKey(tableName) ? constraintsByTable[tableName] : new InformationSchema.TableConstraints[] { };
                         var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : new InformationSchema.KeyColumnUsage[] { };
                         var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : new InformationSchema.ConstraintColumnUsage[] { };
-                        this.Tables.Add(tableName, new MappedClassAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, dal));
+                        var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : new InformationSchema.IndexColumnUsage[] { };
+                        this.Tables.Add(tableName, new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal));
                         if (tableConstraints != null)
                         {
                             foreach (var constraint in tableConstraints)
@@ -187,7 +181,22 @@ namespace SqlSiphon
                     var routine = routines[key];
                     var routineParameters = parameters.ContainsKey(key) ? parameters[key] : null;
                     var ident = dal.MakeIdentifier(routine.routine_schema, routine.routine_name);
-                    this.Functions.Add(ident, new MappedMethodAttribute(routine, routineParameters, dal));
+                    this.Functions.Add(ident, new SavedRoutineAttribute(routine, routineParameters, dal));
+                }
+
+                foreach (var idxName in indexedColumnsByName.Keys)
+                {
+                    var idx = indexedColumnsByName[idxName];
+                    var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name);
+                    if (this.Tables.ContainsKey(tableName))
+                    {
+                        var table = this.Tables[tableName];
+                        this.Indexes.Add(idxName, new Index(table, idxName));
+                        foreach (var idxCol in idx)
+                        {
+                            this.Indexes[idxName].Columns.Add(idxCol.column_name);
+                        }
+                    }
                 }
             }
             catch (ConnectionFailedException)

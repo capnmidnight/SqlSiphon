@@ -6,7 +6,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Postgres.Memberships
 {
-    [MappedClass]
+    [Table]
     public class aspnet_SchemaVersions
     {
         [PK(Size = 128)]

@@ -6,19 +6,19 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Postgres.Memberships
 {
-    [MappedClass]
+    [Table]
     public class aspnet_Applications
     {
         [PK(DefaultValue = "newid()")]
         public Guid ApplicationId { get; set; }
 
-        [MappedProperty(Size = 256)]
+        [Column(Size = 256)]
         public string ApplicationName { get; set; }
 
-        [MappedProperty(Size = 256)]
+        [Column(Size = 256)]
         public string LoweredApplicationName { get; set; }
 
-        [MappedProperty(Size = 256, IsOptional = true)]
+        [Column(Size = 256, IsOptional = true)]
         public string Description { get; set; }
     }
 }

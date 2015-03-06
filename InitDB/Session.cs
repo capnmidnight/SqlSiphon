@@ -9,7 +9,6 @@ namespace InitDB
     class Session : SqlSiphon.BoundObject
     {
         public string Name { get { return Get<string>(); } set { Set(value); } }
-        public string DatabaseType { get { return Get<string>(); } set { Set(value); } }
         public string Server { get { return Get<string>(); } set { Set(value); } }
         public string DBName { get { return Get<string>(); } set { Set(value); } }
         public string AdminName { get { return Get<string>(); } set { Set(value); } }
@@ -33,17 +32,16 @@ namespace InitDB
 
 
         public Session()
-            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "", "localhost\\SQLEXPRESS", "", "", "", "", "", "", "", false, false, false, false, false, true, false, false, false)
+            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", "", "", "", false, false, false, false, false, true, false, false, false)
         {
         }
 
-        public Session(string name, string databaseType, string server, string dbname, string adminName, string adminPassword,
+        public Session(string name, string server, string dbname, string adminName, string adminPassword,
             string loginName, string loginPassword, string assemblyFile, string objectFilter,
             bool createDatabase, bool createLogin, bool registerASPNET, bool createSchemaObj, bool initData, bool syncProcs,
             bool createFKs, bool createIndices, bool installExtensions)
         {
             this.Name = name;
-            this.DatabaseType = databaseType;
             this.Server = server;
             this.DBName = dbname;
             this.AdminName = adminName;

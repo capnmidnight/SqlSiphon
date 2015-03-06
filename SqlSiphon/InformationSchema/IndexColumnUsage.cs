@@ -29,23 +29,22 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
-using System.Reflection;
+using SqlSiphon.Mapping;
 
-namespace SqlSiphon.Mapping
+namespace SqlSiphon.InformationSchema
 {
     /// <summary>
-    /// Shorthand for "Include = false"
-    /// 
-    /// Only one attribute of a given type may be applied to
-    /// any type of thing.
+    /// This is an entity object for the SQL standard 
+    /// INFORMATION_SCHEMA.COLUMNS view.
+    /// http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt
+    /// (text-search "CREATE VIEW COLUMNS")
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public class ExcludeAttribute : ColumnAttribute
+    [Table(Include = false, Schema = "information_schema")]
+    public class IndexColumnUsage
     {
-        public ExcludeAttribute()
-        {
-            this.Include = false;
-        }
+        public string table_schema { get; set; }
+        public string table_name { get; set; }
+        public string index_name { get; set; }
+        public string column_name { get; set; }
     }
 }

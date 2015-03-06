@@ -78,6 +78,7 @@ namespace SqlSiphon
 
             ProcessSchemas(final.Schemata.ToDictionary(k => k), initial.Schemata.ToDictionary(k => k), dal);
             ProcessTables(final.Tables, initial.Tables, dal);
+            ProcessIndexes(final.Indexes, initial.Indexes, dal);
             ProcessRelationships(final.Relationships, initial.Relationships, dal);
             ProcessKeys(final.PrimaryKeys, initial.PrimaryKeys, dal);
             ProcessFunctions(final.Functions, initial.Functions, dal);
@@ -93,7 +94,7 @@ namespace SqlSiphon
                 (schemaName, finalSchema, initialSchema) => this.UnalteredSchemaScripts.Add(schemaName, "-- no change"));
         }
 
-        private void ProcessFunctions(Dictionary<string, MappedMethodAttribute> finalRoutines, Dictionary<string, MappedMethodAttribute> initialRoutines, ISqlSiphon dal)
+        private void ProcessFunctions(Dictionary<string, SavedRoutineAttribute> finalRoutines, Dictionary<string, SavedRoutineAttribute> initialRoutines, ISqlSiphon dal)
         {
             Traverse(
                 finalRoutines, 
@@ -157,7 +158,29 @@ namespace SqlSiphon
                 });
         }
 
-        private void ProcessTables(Dictionary<string, MappedClassAttribute> finalTables, Dictionary<string, MappedClassAttribute> initialTables, ISqlSiphon dal)
+        private void ProcessIndexes(Dictionary<string, Index> finalIndexes, Dictionary<string, Index> initialIndexes, ISqlSiphon dal)
+        {
+            Traverse(
+                finalIndexes,
+                initialIndexes,
+                (indexName, initialIndex) => this.DropIndexScripts.Add(indexName, dal.MakeDropIndexScript(initialIndex)),
+                (indexName, finalIndex) => this.CreateIndexScripts.Add(indexName, dal.MakeCreateIndexScript(finalIndex)),
+                (indexName, finalIndex, initialIndex) =>
+                {
+                    if (dal.IndexChanged(finalIndex, initialIndex))
+                    {
+                        this.CreateIndexScripts.Add(indexName, 
+                            dal.MakeDropIndexScript(initialIndex) 
+                            + dal.MakeCreateIndexScript(finalIndex));
+                    }
+                    else
+                    {
+                        this.UnalteredIndexScripts.Add(indexName, "-- no change");
+                    }
+                });
+        }
+
+        private void ProcessTables(Dictionary<string, TableAttribute> finalTables, Dictionary<string, TableAttribute> initialTables, ISqlSiphon dal)
         {
             Traverse(
                 finalTables, 
