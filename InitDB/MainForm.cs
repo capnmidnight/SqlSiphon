@@ -72,9 +72,9 @@ namespace InitDB
             LoadOptions();
         }
 
-        public ISqlSiphon MakeDatabaseConnection()
+        public Func<ISqlSiphon> MakeDatabaseConnector()
         {
-            ISqlSiphon connection = null;
+            Func<ISqlSiphon> connector = null;
             string dbType = "UNKNOWN";
             if (File.Exists(this.assemblyTB.Text))
             {
@@ -98,7 +98,7 @@ namespace InitDB
                         var constructor = type.GetConstructor(constructorParams);
                         if (constructor != null)
                         {
-                            connection = (ISqlSiphon)constructor.Invoke(constructorArgs);
+                            connector = () => (ISqlSiphon)constructor.Invoke(constructorArgs);
                             break;
                         }
                     }
@@ -110,7 +110,7 @@ namespace InitDB
                 this.installExtensionsChk.Visible = this.IsPostgres;
                 this.dbType.Text = dbType;
             }));
-            return connection;
+            return connector;
         }
 
         private string MakeConnectionString()
@@ -486,6 +486,7 @@ namespace InitDB
 
         private void SetupDB()
         {
+            var connector = this.MakeDatabaseConnector();
             Func<string, string, bool, bool> runQuery;
             if (this.IsPostgres)
             {
@@ -536,7 +537,7 @@ namespace InitDB
 
                 if (succeeded)
                 {
-                    using (var db = this.MakeDatabaseConnection())
+                    using (var db = connector())
                     {
                         db.Progress += db_Progress;
                         var delta = db.Analyze(ObjectFilter);
@@ -619,6 +620,7 @@ namespace InitDB
 
         private void analyzeButton_Click(object sender, EventArgs e)
         {
+            var connector = this.MakeDatabaseConnector();
             analyzeButton.Enabled = false;
             if (PathsAreCorrect())
             {
@@ -627,7 +629,7 @@ namespace InitDB
                     try
                     {
                         this.ToOutput("Synchronizing schema.");
-                        using (var db = this.MakeDatabaseConnection())
+                        using (var db = connector())
                         {
                             DisplayDelta(db.Analyze(ObjectFilter));
                         }
@@ -926,7 +928,7 @@ namespace InitDB
 
         private void SkipScript(string script)
         {
-            using (var db = this.MakeDatabaseConnection())
+            using (var db = this.MakeDatabaseConnector()())
                 db.MarkScriptAsRan(script);
         }
 
@@ -934,7 +936,7 @@ namespace InitDB
         {
             this.tabControl1.SelectedTab = this.tabStdOut;
             this.ToOutput(script);
-            using (var db = this.MakeDatabaseConnection())
+            using (var db = this.MakeDatabaseConnector()())
                 db.AlterDatabase(script);
         }
     }
