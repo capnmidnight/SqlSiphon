@@ -72,10 +72,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Security">
-      <HintPath>..\..\consulting\Rieker\DOT Total Solutions\Rieker Portal-beta\Third Party Tools\Mono.Security.dll</HintPath>
+      <HintPath>..\Mono.Security.dll</HintPath>
     </Reference>
     <Reference Include="Npgsql">
-      <HintPath>..\..\consulting\Rieker\DOT Total Solutions\Rieker Portal-beta\Third Party Tools\Npgsql.dll</HintPath>
+      <HintPath>..\Npgsql.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

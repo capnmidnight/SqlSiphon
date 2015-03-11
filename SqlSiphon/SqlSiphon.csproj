@@ -71,7 +71,7 @@
     <Compile Include="DatabaseState.cs" />
     <Compile Include="Mapping\IncludeInIndexAttribute.cs" />
     <Compile Include="Mapping\TableAttribute.cs" />
-    <Compile Include="Mapping\SavedRoutineAttribute.cs" />
+    <Compile Include="Mapping\RoutineAttribute.cs" />
     <Compile Include="Mapping\DatabaseObjectAttribute.cs" />
     <Compile Include="Mapping\ParameterAttribute.cs" />
     <Compile Include="Mapping\ColumnAttribute.cs" />

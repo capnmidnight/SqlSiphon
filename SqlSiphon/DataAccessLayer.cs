@@ -201,7 +201,7 @@ namespace SqlSiphon
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text,
+        [Routine(CommandType = CommandType.Text,
             Query = "select * from ScriptStatus")]
         public List<ScriptStatus> GetScriptStatus()
         {
@@ -209,7 +209,7 @@ namespace SqlSiphon
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text,
+        [Routine(CommandType = CommandType.Text,
             Query = "select count(*) from ScriptStatus")]
         public int GetDatabaseVersion()
         {
@@ -223,7 +223,7 @@ namespace SqlSiphon
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text,
+        [Routine(CommandType = CommandType.Text,
             Query = "insert into ScriptStatus(Script) values(@script);")]
         public void MarkScriptAsRan(string script)
         {
@@ -285,7 +285,7 @@ namespace SqlSiphon
         /// <summary>
         /// Creates a stored procedure command call from a variable array of parameters. The stored
         /// procedure to call is determined by walking the Stack Trace to find a method with the
-        /// MappedMethodAttribute attribute applied to it. This method, once found, must have the same
+        /// RoutineAttribute attribute applied to it. This method, once found, must have the same
         /// name as a stored procedure in the database.
         /// </summary>
         /// <param name="isPrimitive">If the query routine returns a single value, the method will generate
@@ -297,12 +297,12 @@ namespace SqlSiphon
         private CommandT ConstructCommand(bool isPrimitive, params object[] parameterValues)
         {
             // because this method is private, it will never be called directly by a method tagged
-            // with MappedMethodAttribute. Therefore, we can skip two methods in the stack trace to
+            // with RoutineAttribute. Therefore, we can skip two methods in the stack trace to
             // try to get to the one we're interested in--this one and the caller of this one.
             var method = (from frame in new StackTrace(2, false).GetFrames()
                           let meth = frame.GetMethod()
                           where meth is MethodInfo
-                            && DatabaseObjectAttribute.GetAttribute<SavedRoutineAttribute>(meth) != null
+                            && DatabaseObjectAttribute.GetAttribute<RoutineAttribute>(meth) != null
                           select (MethodInfo)meth).FirstOrDefault();
 
             // We absolutely need to find a method with this attribute, because we won't know where in
@@ -338,7 +338,7 @@ namespace SqlSiphon
         protected virtual CommandT BuildCommand(string procName, CommandType commandType, ParameterAttribute[] methParams)
         {
             // the mapped method must match the name of a stored procedure in the database, or the
-            // query or procedure name must be provided explicitly in the MappedMethodAttribute's
+            // query or procedure name must be provided explicitly in the RoutineAttribute's
             // Query property.
             var command = new CommandT();
             command.Connection = Connection;
@@ -585,11 +585,11 @@ namespace SqlSiphon
             }
         }
 
-        protected List<SavedRoutineAttribute> FindProcedureDefinitions()
+        protected List<RoutineAttribute> FindProcedureDefinitions()
         {
             var t = this.GetType();
             var methods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
-            var results = new List<SavedRoutineAttribute>();
+            var results = new List<RoutineAttribute>();
             foreach (var method in methods)
             {
                 var info = this.GetCommandDescription(method);
@@ -599,9 +599,9 @@ namespace SqlSiphon
             return results;
         }
 
-        public SavedRoutineAttribute GetCommandDescription(MethodInfo method)
+        public RoutineAttribute GetCommandDescription(MethodInfo method)
         {
-            var meta = DatabaseObjectAttribute.GetAttribute<SavedRoutineAttribute>(method);
+            var meta = DatabaseObjectAttribute.GetAttribute<RoutineAttribute>(method);
             if (meta != null)
             {
                 if (meta.CommandType == CommandType.TableDirect)
@@ -625,7 +625,7 @@ namespace SqlSiphon
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"SELECT *
 FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
 WHERE TABLE_SCHEMA = @tableSchema
@@ -660,7 +660,7 @@ AND COLUMN_NAME = @columnName;")]
             return str;
         }
 
-        protected string MakeParameterSection(SavedRoutineAttribute info)
+        protected string MakeParameterSection(RoutineAttribute info)
         {
             return ArgumentList(info.Parameters, this.MakeParameterString);
         }
@@ -691,7 +691,7 @@ AND COLUMN_NAME = @columnName;")]
             }
         }
 
-        public virtual bool RoutineChanged(SavedRoutineAttribute a, SavedRoutineAttribute b)
+        public virtual bool RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
             var q1 = this.MakeCreateRoutineScript(a);
             var q2 = this.MakeCreateRoutineScript(b);
@@ -732,7 +732,7 @@ AND COLUMN_NAME = @columnName;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select schema_name from information_schema.schemata;")]
         public virtual List<string> GetSchemata()
         {
@@ -766,7 +766,7 @@ AND COLUMN_NAME = @columnName;")]
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
-        public abstract void AnalyzeQuery(string routineText, SavedRoutineAttribute routine);
+        public abstract void AnalyzeQuery(string routineText, RoutineAttribute routine);
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
@@ -779,9 +779,9 @@ AND COLUMN_NAME = @columnName;")]
         public abstract string MakeDropColumnScript(ColumnAttribute column);
         public abstract string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);
 
-        public abstract string MakeDropRoutineScript(SavedRoutineAttribute routine);
-        public abstract string MakeCreateRoutineScript(SavedRoutineAttribute routine);
-        public abstract string MakeAlterRoutineScript(SavedRoutineAttribute final, SavedRoutineAttribute initial);
+        public abstract string MakeDropRoutineScript(RoutineAttribute routine);
+        public abstract string MakeCreateRoutineScript(RoutineAttribute routine);
+        public abstract string MakeAlterRoutineScript(RoutineAttribute final, RoutineAttribute initial);
 
         public abstract string MakeDropRelationshipScript(Relationship relation);
         public abstract string MakeCreateRelationshipScript(Relationship relation);

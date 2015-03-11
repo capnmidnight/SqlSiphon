@@ -30,11 +30,11 @@ namespace SqlSiphon
         string MakeIdentifier(params string[] parts);
         bool DescribesIdentity(InformationSchema.Columns column);
         bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
-        bool RoutineChanged(SavedRoutineAttribute final, SavedRoutineAttribute initial);
+        bool RoutineChanged(RoutineAttribute final, RoutineAttribute initial);
         bool KeyChanged(PrimaryKey final, PrimaryKey initial);
-        void AnalyzeQuery(string routineText, SavedRoutineAttribute routine);
+        void AnalyzeQuery(string routineText, RoutineAttribute routine);
 
-        SavedRoutineAttribute GetCommandDescription(System.Reflection.MethodInfo method);
+        RoutineAttribute GetCommandDescription(System.Reflection.MethodInfo method);
 
         Type GetSystemType(string sqlType);
 
@@ -48,9 +48,9 @@ namespace SqlSiphon
         string MakeDropColumnScript(ColumnAttribute column);
         string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);
 
-        string MakeDropRoutineScript(SavedRoutineAttribute routine);
-        string MakeCreateRoutineScript(SavedRoutineAttribute routine);
-        string MakeAlterRoutineScript(SavedRoutineAttribute final, SavedRoutineAttribute initial);
+        string MakeDropRoutineScript(RoutineAttribute routine);
+        string MakeCreateRoutineScript(RoutineAttribute routine);
+        string MakeAlterRoutineScript(RoutineAttribute final, RoutineAttribute initial);
 
         string MakeDropRelationshipScript(Relationship relation);
         string MakeCreateRelationshipScript(Relationship relation);

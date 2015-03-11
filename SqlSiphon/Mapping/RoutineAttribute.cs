@@ -41,7 +41,7 @@ namespace SqlSiphon.Mapping
     /// An attribute to use for tagging methods as being mapped to a stored procedure call.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public class SavedRoutineAttribute : DatabaseObjectAttribute
+    public class RoutineAttribute : DatabaseObjectAttribute
     {
         /// <summary>
         /// The number of milliseconds before ADO.NET gives up waiting on the command.
@@ -80,7 +80,7 @@ namespace SqlSiphon.Mapping
         /// <summary>
         /// Default constructor to set default values;
         /// </summary>
-        public SavedRoutineAttribute()
+        public RoutineAttribute()
         {
             this.Parameters = new List<ParameterAttribute>();
             this.Timeout = -1;
@@ -88,7 +88,7 @@ namespace SqlSiphon.Mapping
             this.EnableTransaction = false;
         }
 
-        public SavedRoutineAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, ISqlSiphon dal)
+        public RoutineAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, ISqlSiphon dal)
         {
             this.Schema = routine.routine_schema;
             this.Name = routine.routine_name;

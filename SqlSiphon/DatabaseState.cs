@@ -13,7 +13,7 @@ namespace SqlSiphon
     {
         public Dictionary<string, TableAttribute> Tables { get; private set; }
         public Dictionary<string, Index> Indexes { get; private set; }
-        public Dictionary<string, SavedRoutineAttribute> Functions { get; private set; }
+        public Dictionary<string, RoutineAttribute> Functions { get; private set; }
         public Dictionary<string, Relationship> Relationships { get; private set; }
         public Dictionary<string, PrimaryKey> PrimaryKeys { get; private set; }
         public List<string> Schemata { get; private set; }
@@ -22,7 +22,7 @@ namespace SqlSiphon
         {
             this.Tables = new Dictionary<string, TableAttribute>();
             this.Indexes = new Dictionary<string, Index>();
-            this.Functions = new Dictionary<string, SavedRoutineAttribute>();
+            this.Functions = new Dictionary<string, RoutineAttribute>();
             this.Relationships = new Dictionary<string, Relationship>();
             this.PrimaryKeys = new Dictionary<string, PrimaryKey>();
             this.Schemata = new List<string>();
@@ -181,7 +181,7 @@ namespace SqlSiphon
                     var routine = routines[key];
                     var routineParameters = parameters.ContainsKey(key) ? parameters[key] : null;
                     var ident = dal.MakeIdentifier(routine.routine_schema, routine.routine_name);
-                    this.Functions.Add(ident, new SavedRoutineAttribute(routine, routineParameters, dal));
+                    this.Functions.Add(ident, new RoutineAttribute(routine, routineParameters, dal));
                 }
 
                 foreach (var idxName in indexedColumnsByName.Keys)

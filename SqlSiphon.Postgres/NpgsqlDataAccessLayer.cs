@@ -286,7 +286,7 @@ namespace SqlSiphon.Postgres
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
         private static Regex parameterReverter = new Regex(@"\b_",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        public override void AnalyzeQuery(string routineText, SavedRoutineAttribute routine)
+        public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {
             var match = queryExtractor.Match(routineText);
             if (match.Groups.Count == 3)
@@ -525,7 +525,7 @@ namespace SqlSiphon.Postgres
                 defaultString).Trim();
         }
 
-        public override string MakeDropRoutineScript(SavedRoutineAttribute routine)
+        public override string MakeDropRoutineScript(RoutineAttribute routine)
         {
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = string.Join(", ", routine.Parameters.Select(this.MakeSqlTypeString));
@@ -536,7 +536,7 @@ namespace SqlSiphon.Postgres
 
         private static Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public override string MakeCreateRoutineScript(SavedRoutineAttribute routine)
+        public override string MakeCreateRoutineScript(RoutineAttribute routine)
         {
             var query = routine.Query;
             var declarations = new List<string>();
@@ -595,7 +595,7 @@ $$ language plpgsql;",
             return query;
         }
 
-        public override string MakeAlterRoutineScript(SavedRoutineAttribute final, SavedRoutineAttribute initial)
+        public override string MakeAlterRoutineScript(RoutineAttribute final, RoutineAttribute initial)
         {
             return this.MakeDropRoutineScript(initial) + Environment.NewLine + this.MakeCreateRoutineScript(final);
         }
@@ -694,7 +694,7 @@ alter table {1} add constraint {3} primary key using index {0};",
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select         
     ordinal_position,
     character_maximum_length,
@@ -724,7 +724,7 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select
     n.nspname as table_schema,
     t.relname as table_name,
@@ -749,7 +749,7 @@ order by
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.table_constraints
 where table_schema != 'information_schema'
@@ -761,7 +761,7 @@ order by table_catalog, table_schema, table_name;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.referential_constraints
 where constraint_schema != 'information_schema'
@@ -774,7 +774,7 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.routines
 where specific_schema != 'information_schema'
@@ -787,7 +787,7 @@ order by specific_catalog, specific_schema, specific_name;")]
 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.parameters
 where specific_schema != 'information_schema'
@@ -799,7 +799,7 @@ order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.constraint_column_usage
 where constraint_schema != 'information_schema'
@@ -810,7 +810,7 @@ where constraint_schema != 'information_schema'
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.key_column_usage
 where constraint_schema != 'information_schema'

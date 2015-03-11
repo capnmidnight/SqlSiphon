@@ -138,17 +138,17 @@ namespace SqlSiphon.SqlServer
             reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
         }
 
-        public override string MakeDropRoutineScript(SavedRoutineAttribute info)
+        public override string MakeDropRoutineScript(RoutineAttribute info)
         {
             return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
-        public override string MakeCreateRoutineScript(SavedRoutineAttribute info)
+        public override string MakeCreateRoutineScript(RoutineAttribute info)
         {
             return this.MakeRoutineScript(info, "create");
         }
 
-        public override string MakeAlterRoutineScript(SavedRoutineAttribute info, SavedRoutineAttribute initial)
+        public override string MakeAlterRoutineScript(RoutineAttribute info, RoutineAttribute initial)
         {
             return this.MakeRoutineScript(info, "alter");
         }
@@ -177,7 +177,7 @@ end catch;";
             return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
         }
 
-        public override void AnalyzeQuery(string routineText, SavedRoutineAttribute routine)
+        public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {
             var match = queryExtractor.Match(routineText);
             if (match.Groups.Count == 2)
@@ -193,7 +193,7 @@ end catch;";
             }
         }
 
-        private string MakeRoutineScript(SavedRoutineAttribute info, string operation)
+        private string MakeRoutineScript(RoutineAttribute info, string operation)
         {
             var query = info.Query;
             if (info.EnableTransaction)
@@ -575,7 +575,7 @@ DROP INDEX {0} ON {1};",
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *, COLUMNPROPERTY(object_id(TABLE_NAME), COLUMN_NAME, 'IsIdentity') as is_identity
 from information_schema.columns
 where table_schema != 'information_schema'
@@ -586,7 +586,7 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"SELECT 
 	s.name as table_schema,
 	t.name as table_name,
@@ -610,7 +610,7 @@ ORDER BY
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.table_constraints
 where table_schema != 'information_schema'
@@ -621,7 +621,7 @@ order by table_catalog, table_schema, table_name;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.referential_constraints
 where constraint_schema != 'information_schema'
@@ -633,7 +633,7 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select
 specific_catalog,
 specific_schema,
@@ -652,7 +652,7 @@ order by specific_catalog, specific_schema, specific_name;")]
 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *
 from information_schema.parameters
 where specific_schema != 'information_schema'
@@ -663,7 +663,7 @@ order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.constraint_column_usage
 where constraint_schema != 'information_schema';")]
@@ -673,7 +673,7 @@ where constraint_schema != 'information_schema';")]
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [SavedRoutine(CommandType = CommandType.Text, Query =
+        [Routine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.key_column_usage
 where constraint_schema != 'information_schema';")]

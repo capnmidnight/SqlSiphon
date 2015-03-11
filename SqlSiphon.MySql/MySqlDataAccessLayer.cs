@@ -60,12 +60,12 @@ namespace SqlSiphon.MySql
         protected override string IdentifierPartBegin { get { return "`"; } }
         protected override string IdentifierPartEnd { get { return "`"; } }
 
-        protected override string MakeDropProcedureScript(MappedMethodAttribute info)
+        public override string MakeDropRoutineScript(RoutineAttribute info)
         {
             return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
         }
 
-        protected override string MakeCreateProcedureScript(MappedMethodAttribute info)
+        public override string MakeCreateRoutineScript(RoutineAttribute info)
         {
             var identifier = this.MakeIdentifier(info.Schema, info.Name);
             var parameterSection = this.MakeParameterSection(info);
@@ -80,11 +80,18 @@ end//",
                 info.Query);
         }
 
-        protected override void ExecuteCreateProcedureScript(string script)
+        protected override void ExecuteQuery(string query)
         {
-            var withDelim = new MySqlScript(this.Connection, script);
-            withDelim.Delimiter = "//";
-            withDelim.Execute();
+            if (query.ToLower().StartsWith("create procedure"))
+            {
+                var withDelim = new MySqlScript(this.Connection, query);
+                withDelim.Delimiter = "//";
+                withDelim.Execute();
+            }
+            else 
+            {
+                base.ExecuteQuery(query);
+            }
         }
     }
 }

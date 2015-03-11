@@ -122,14 +122,14 @@ namespace SqlSiphon.Mapping
         /// <summary>
         /// For a reflected method, determine the mapping parameters.
         /// Methods do not get mapped by default, so if the method
-        /// doesn't have a MappedMethodAttribute, then none will be
+        /// doesn't have a RoutineAttribute, then none will be
         /// returned.
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        private SavedRoutineAttribute GetMethodDescriptions(MethodInfo method)
+        private RoutineAttribute GetMethodDescriptions(MethodInfo method)
         {
-            var attr = GetAttribute<SavedRoutineAttribute>(method);
+            var attr = GetAttribute<RoutineAttribute>(method);
             if (attr == null || !attr.Include)
                 return null;
             attr.InferProperties(method);

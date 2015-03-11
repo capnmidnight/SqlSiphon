@@ -94,7 +94,7 @@ namespace SqlSiphon
                 (schemaName, finalSchema, initialSchema) => this.UnalteredSchemaScripts.Add(schemaName, "-- no change"));
         }
 
-        private void ProcessFunctions(Dictionary<string, SavedRoutineAttribute> finalRoutines, Dictionary<string, SavedRoutineAttribute> initialRoutines, ISqlSiphon dal)
+        private void ProcessFunctions(Dictionary<string, RoutineAttribute> finalRoutines, Dictionary<string, RoutineAttribute> initialRoutines, ISqlSiphon dal)
         {
             Traverse(
                 finalRoutines, 
