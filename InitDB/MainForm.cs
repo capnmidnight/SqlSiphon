@@ -22,9 +22,7 @@ namespace InitDB
         private static string SQLCMD_PATH_KEY = "SQLCMDPATH";
         private static string PSQL_PATH_KEY = "PGSQLPATH";
         private static string OBJECT_FILTER_KEY = "OBJECTFILTER";
-        private static string REG_ASPNET_PATH_KEY = "REGASPNETPATH";
         private static string HORIZONTAL_LINE = "================================================================================";
-        private static string DEFAULT_REG_ASPNET_PATH = @"C:\Windows\Microsoft.NET\Framework\v4.0.30319\aspnet_regsql.exe";
         private static string DEFAULT_SQLCMD_PATH = @"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\sqlcmd.exe";
         private static string DEFAULT_PSQL_PATH = @"C:\Program Files\PostgreSQL\9.3\bin\psql.exe";
         private static string DEFAULT_OBJECT_FILTER = @"^(vw_)?aspnet_";
@@ -61,7 +59,6 @@ namespace InitDB
             this.Icon = Properties.Resources.InitDBLogo;
             this.browseAssemblyBtn.Tag = this.assemblyTB;
             this.browseSqlCmdButton.Tag = this.sqlcmdTB;
-            this.browseRegSqlButton.Tag = this.regsqlTB;
             this.browsePsqlButton.Tag = this.psqlTB;
             this.txtStdOut.Text = string.Empty;
             this.txtStdErr.Text = string.Empty;
@@ -250,7 +247,6 @@ namespace InitDB
             lockOptions = true;
             this.CoalesceOption(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH, this.sqlcmdTB);
             this.CoalesceOption(PSQL_PATH_KEY, DEFAULT_PSQL_PATH, this.psqlTB);
-            this.CoalesceOption(REG_ASPNET_PATH_KEY, DEFAULT_REG_ASPNET_PATH, this.regsqlTB);
             this.CoalesceOption(OBJECT_FILTER_KEY, DEFAULT_OBJECT_FILTER, this.defaultObjFilterTB);
             lockOptions = false;
             this.EnableSaveOption();
@@ -299,17 +295,14 @@ namespace InitDB
         {
             var sqlcmdGood = this.IsPostgres || File.Exists(sqlcmdTB.Text);
             var psqlGood = !this.IsPostgres || File.Exists(psqlTB.Text);
-            var regsqlGood = File.Exists(regsqlTB.Text);
             var assemblyGood = File.Exists(assemblyTB.Text);
             if (!psqlGood)
                 this.ToError("Can't find PSQL");
             if (!sqlcmdGood)
                 this.ToError("Can't find SQLCMD");
-            if (!regsqlGood)
-                this.ToError("Can't find ASPNET_REGSQL");
             if (!assemblyGood)
                 this.ToError("Can't find Assembly");
-            return psqlGood && sqlcmdGood && regsqlGood && assemblyGood;
+            return psqlGood && sqlcmdGood && assemblyGood;
         }
 
         private bool RunProcess(string name, params string[] args)
@@ -472,18 +465,6 @@ namespace InitDB
             return success;
         }
 
-        private bool RunASPNET_REGSQL()
-        {
-            return RunProcess(
-                regsqlTB.Text,
-                "-S " + serverTB.Text,
-                adminUserTB.Text != string.Empty ? "-U " + adminUserTB.Text : null,
-                adminPassTB.Text != string.Empty ? "-P " + adminPassTB.Text : null,
-                adminUserTB.Text == string.Empty ? "-E " : null,
-                "-A mr",
-                "-d " + databaseTB.Text);
-        }
-
         private void SetupDB()
         {
             var connector = this.MakeDatabaseConnector();
@@ -528,11 +509,6 @@ namespace InitDB
                             && runQuery(string.Format("ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;", sqlUserTB.Text), dbName, false)
                             && runQuery(string.Format("ALTER ROLE db_owner ADD MEMBER {0};", sqlUserTB.Text), dbName, false);
                     }
-                }
-
-                if (succeeded && !this.IsPostgres && regSqlChk.Checked)
-                {
-                    succeeded = RunASPNET_REGSQL();
                 }
 
                 if (succeeded)
@@ -716,7 +692,6 @@ namespace InitDB
                 this.objFilterTB.Text,
                 this.createDatabaseChk.Checked,
                 this.createLoginChk.Checked,
-                this.regSqlChk.Checked,
                 this.createTablesChk.Checked,
                 this.initializeDataChk.Checked,
                 this.syncProceduresChk.Checked,
@@ -787,20 +762,14 @@ namespace InitDB
                     this.objFilterTB.Text = this.CurrentSession.ObjectFilter ?? this.defaultObjFilterTB.Text;
                     this.createDatabaseChk.Checked = this.CurrentSession.CreateDatabase;
                     this.createLoginChk.Checked = this.CurrentSession.CreateLogin;
-                    this.regSqlChk.Checked = this.CurrentSession.RegisterASPNETMembership;
                     this.createTablesChk.Checked = this.CurrentSession.CreateSchemaObjects;
                     this.initializeDataChk.Checked = this.CurrentSession.InitializeData;
                     this.syncProceduresChk.Checked = this.CurrentSession.SyncStoredProcedures;
                     this.createFKsChk.Checked = this.CurrentSession.CreateFKs;
                     this.createIndicesChk.Checked = this.CurrentSession.CreateIndices;
                     this.installExtensionsChk.Checked = this.CurrentSession.InstallExtensions;
-
-                    try
-                    {
-                        this.txtStdOut.Text = "";
-                        this.txtStdErr.Text = "";
-                    }
-                    catch { }
+                    this.txtStdOut.Text = "";
+                    this.txtStdErr.Text = "";
                 }
 
                 saveSessionButton.Enabled
@@ -852,8 +821,7 @@ namespace InitDB
         private void EnableSaveCancelOptions()
         {
             cancelOptionsButton.Enabled =
-                this.options[REG_ASPNET_PATH_KEY] != this.regsqlTB.Text
-                || this.options[SQLCMD_PATH_KEY] != this.sqlcmdTB.Text
+                this.options[SQLCMD_PATH_KEY] != this.sqlcmdTB.Text
                 || this.options[PSQL_PATH_KEY] != this.psqlTB.Text
                 || this.options[OBJECT_FILTER_KEY] != this.defaultObjFilterTB.Text;
             EnableSaveOption();
@@ -863,7 +831,6 @@ namespace InitDB
         {
             saveOptionsButton.Enabled
                 = File.Exists(sqlcmdTB.Text)
-                    && File.Exists(regsqlTB.Text)
                     && File.Exists(psqlTB.Text)
                     && cancelOptionsButton.Enabled;
         }
@@ -871,7 +838,6 @@ namespace InitDB
         private void saveOptionsButton_Click(object sender, EventArgs e)
         {
             this.options[SQLCMD_PATH_KEY] = this.sqlcmdTB.Text;
-            this.options[REG_ASPNET_PATH_KEY] = this.regsqlTB.Text;
             File.WriteAllLines(OPTIONS_FILENAME,
                 this.options.Select(kv => string.Join("=", kv.Key, kv.Value)).ToArray());
             EnableSaveCancelOptions();

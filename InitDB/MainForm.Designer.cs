@@ -28,27 +28,26 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle65 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle66 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle67 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle68 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle69 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle70 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle71 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle72 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle73 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle74 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle75 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle76 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle77 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle78 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle79 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle80 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.objFilterTB = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.installExtensionsChk = new System.Windows.Forms.CheckBox();
-            this.label12 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabStdOut = new System.Windows.Forms.TabPage();
             this.txtStdOut = new System.Windows.Forms.TextBox();
@@ -154,12 +153,10 @@
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.defaultObjFilterTB = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
-            this.browseRegSqlButton = new System.Windows.Forms.Button();
             this.browseSqlCmdButton = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.sqlcmdTB = new System.Windows.Forms.TextBox();
-            this.regsqlTB = new System.Windows.Forms.TextBox();
             this.cancelOptionsButton = new System.Windows.Forms.Button();
             this.saveOptionsButton = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
@@ -186,16 +183,16 @@
             this.label8 = new System.Windows.Forms.Label();
             this.createDatabaseChk = new System.Windows.Forms.CheckBox();
             this.createLoginChk = new System.Windows.Forms.CheckBox();
-            this.regSqlChk = new System.Windows.Forms.CheckBox();
             this.runButton = new System.Windows.Forms.Button();
-            this.analyzeButton = new System.Windows.Forms.Button();
             this.createTablesChk = new System.Windows.Forms.CheckBox();
             this.createIndicesChk = new System.Windows.Forms.CheckBox();
             this.syncProceduresChk = new System.Windows.Forms.CheckBox();
             this.initializeDataChk = new System.Windows.Forms.CheckBox();
             this.createFKsChk = new System.Windows.Forms.CheckBox();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.label12 = new System.Windows.Forms.Label();
             this.dbType = new System.Windows.Forms.Label();
+            this.analyzeButton = new System.Windows.Forms.Button();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabStdOut.SuspendLayout();
@@ -261,7 +258,6 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 104F));
             this.tableLayoutPanel1.Controls.Add(this.objFilterTB, 1, 7);
             this.tableLayoutPanel1.Controls.Add(this.label14, 0, 7);
-            this.tableLayoutPanel1.Controls.Add(this.installExtensionsChk, 3, 8);
             this.tableLayoutPanel1.Controls.Add(this.tabControl1, 0, 12);
             this.tableLayoutPanel1.Controls.Add(this.label7, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.saveSessionButton, 4, 0);
@@ -284,7 +280,6 @@
             this.tableLayoutPanel1.Controls.Add(this.label8, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.createDatabaseChk, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.createLoginChk, 1, 9);
-            this.tableLayoutPanel1.Controls.Add(this.regSqlChk, 1, 10);
             this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 7);
             this.tableLayoutPanel1.Controls.Add(this.createTablesChk, 1, 11);
             this.tableLayoutPanel1.Controls.Add(this.createIndicesChk, 2, 11);
@@ -294,6 +289,7 @@
             this.tableLayoutPanel1.Controls.Add(this.label12, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.dbType, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.analyzeButton, 5, 2);
+            this.tableLayoutPanel1.Controls.Add(this.installExtensionsChk, 1, 10);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -337,22 +333,12 @@
             // 
             this.installExtensionsChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.installExtensionsChk.AutoSize = true;
-            this.installExtensionsChk.Location = new System.Drawing.Point(595, 222);
+            this.installExtensionsChk.Location = new System.Drawing.Point(155, 272);
             this.installExtensionsChk.Name = "installExtensionsChk";
             this.installExtensionsChk.Size = new System.Drawing.Size(106, 17);
             this.installExtensionsChk.TabIndex = 33;
             this.installExtensionsChk.Text = "Install extensions";
             this.installExtensionsChk.UseVisualStyleBackColor = true;
-            // 
-            // label12
-            // 
-            this.label12.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(70, 76);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(79, 13);
-            this.label12.TabIndex = 31;
-            this.label12.Text = "Database type:";
             // 
             // tabControl1
             // 
@@ -480,8 +466,8 @@
             // createsGVName
             // 
             this.createsGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle65.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.createsGVName.DefaultCellStyle = dataGridViewCellStyle65;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.createsGVName.DefaultCellStyle = dataGridViewCellStyle1;
             this.createsGVName.HeaderText = "name";
             this.createsGVName.Name = "createsGVName";
             this.createsGVName.ReadOnly = true;
@@ -536,8 +522,8 @@
             // dataGridViewTextBoxColumn1
             // 
             this.dataGridViewTextBoxColumn1.DataPropertyName = "Key";
-            dataGridViewCellStyle66.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle66;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewTextBoxColumn1.HeaderText = "name";
             this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             this.dataGridViewTextBoxColumn1.ReadOnly = true;
@@ -656,8 +642,8 @@
             // dropsGVName
             // 
             this.dropsGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle67.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dropsGVName.DefaultCellStyle = dataGridViewCellStyle67;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dropsGVName.DefaultCellStyle = dataGridViewCellStyle3;
             this.dropsGVName.HeaderText = "name";
             this.dropsGVName.Name = "dropsGVName";
             this.dropsGVName.ReadOnly = true;
@@ -712,8 +698,8 @@
             // dataGridViewTextBoxColumn7
             // 
             this.dataGridViewTextBoxColumn7.DataPropertyName = "Key";
-            dataGridViewCellStyle68.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn7.DefaultCellStyle = dataGridViewCellStyle68;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn7.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewTextBoxColumn7.HeaderText = "name";
             this.dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             this.dataGridViewTextBoxColumn7.ReadOnly = true;
@@ -767,8 +753,8 @@
             // dataGridViewTextBoxColumn5
             // 
             this.dataGridViewTextBoxColumn5.DataPropertyName = "Key";
-            dataGridViewCellStyle69.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle69;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn5.DefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridViewTextBoxColumn5.HeaderText = "name";
             this.dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
             this.dataGridViewTextBoxColumn5.ReadOnly = true;
@@ -887,8 +873,8 @@
             // dataGridViewTextBoxColumn17
             // 
             this.dataGridViewTextBoxColumn17.DataPropertyName = "Key";
-            dataGridViewCellStyle70.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn17.DefaultCellStyle = dataGridViewCellStyle70;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn17.DefaultCellStyle = dataGridViewCellStyle6;
             this.dataGridViewTextBoxColumn17.HeaderText = "name";
             this.dataGridViewTextBoxColumn17.Name = "dataGridViewTextBoxColumn17";
             this.dataGridViewTextBoxColumn17.ReadOnly = true;
@@ -943,8 +929,8 @@
             // dataGridViewTextBoxColumn19
             // 
             this.dataGridViewTextBoxColumn19.DataPropertyName = "Key";
-            dataGridViewCellStyle71.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn19.DefaultCellStyle = dataGridViewCellStyle71;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn19.DefaultCellStyle = dataGridViewCellStyle7;
             this.dataGridViewTextBoxColumn19.HeaderText = "name";
             this.dataGridViewTextBoxColumn19.Name = "dataGridViewTextBoxColumn19";
             this.dataGridViewTextBoxColumn19.ReadOnly = true;
@@ -998,8 +984,8 @@
             // dataGridViewTextBoxColumn21
             // 
             this.dataGridViewTextBoxColumn21.DataPropertyName = "Key";
-            dataGridViewCellStyle72.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn21.DefaultCellStyle = dataGridViewCellStyle72;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn21.DefaultCellStyle = dataGridViewCellStyle8;
             this.dataGridViewTextBoxColumn21.HeaderText = "name";
             this.dataGridViewTextBoxColumn21.Name = "dataGridViewTextBoxColumn21";
             this.dataGridViewTextBoxColumn21.ReadOnly = true;
@@ -1051,8 +1037,8 @@
             // dataGridViewTextBoxColumn23
             // 
             this.dataGridViewTextBoxColumn23.DataPropertyName = "Key";
-            dataGridViewCellStyle73.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn23.DefaultCellStyle = dataGridViewCellStyle73;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn23.DefaultCellStyle = dataGridViewCellStyle9;
             this.dataGridViewTextBoxColumn23.HeaderText = "name";
             this.dataGridViewTextBoxColumn23.Name = "dataGridViewTextBoxColumn23";
             this.dataGridViewTextBoxColumn23.ReadOnly = true;
@@ -1098,8 +1084,8 @@
             // othersGVName
             // 
             this.othersGVName.DataPropertyName = "Key";
-            dataGridViewCellStyle74.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.othersGVName.DefaultCellStyle = dataGridViewCellStyle74;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.othersGVName.DefaultCellStyle = dataGridViewCellStyle10;
             this.othersGVName.HeaderText = "name";
             this.othersGVName.Name = "othersGVName";
             this.othersGVName.ReadOnly = true;
@@ -1186,8 +1172,8 @@
             // dataGridViewTextBoxColumn11
             // 
             this.dataGridViewTextBoxColumn11.DataPropertyName = "Key";
-            dataGridViewCellStyle75.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn11.DefaultCellStyle = dataGridViewCellStyle75;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn11.DefaultCellStyle = dataGridViewCellStyle11;
             this.dataGridViewTextBoxColumn11.HeaderText = "name";
             this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
             this.dataGridViewTextBoxColumn11.ReadOnly = true;
@@ -1242,8 +1228,8 @@
             // dataGridViewTextBoxColumn13
             // 
             this.dataGridViewTextBoxColumn13.DataPropertyName = "Key";
-            dataGridViewCellStyle76.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn13.DefaultCellStyle = dataGridViewCellStyle76;
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn13.DefaultCellStyle = dataGridViewCellStyle12;
             this.dataGridViewTextBoxColumn13.HeaderText = "name";
             this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
             this.dataGridViewTextBoxColumn13.ReadOnly = true;
@@ -1295,8 +1281,8 @@
             // dataGridViewTextBoxColumn15
             // 
             this.dataGridViewTextBoxColumn15.DataPropertyName = "Key";
-            dataGridViewCellStyle77.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewTextBoxColumn15.DefaultCellStyle = dataGridViewCellStyle77;
+            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewTextBoxColumn15.DefaultCellStyle = dataGridViewCellStyle13;
             this.dataGridViewTextBoxColumn15.HeaderText = "name";
             this.dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
             this.dataGridViewTextBoxColumn15.ReadOnly = true;
@@ -1364,8 +1350,8 @@
             // dataGridViewButtonColumn2
             // 
             this.dataGridViewButtonColumn2.DataPropertyName = "Key";
-            dataGridViewCellStyle78.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle78;
+            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle14;
             this.dataGridViewButtonColumn2.HeaderText = "name";
             this.dataGridViewButtonColumn2.Name = "dataGridViewButtonColumn2";
             this.dataGridViewButtonColumn2.ReadOnly = true;
@@ -1420,8 +1406,8 @@
             // dataGridViewButtonColumn8
             // 
             this.dataGridViewButtonColumn8.DataPropertyName = "Key";
-            dataGridViewCellStyle79.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn8.DefaultCellStyle = dataGridViewCellStyle79;
+            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn8.DefaultCellStyle = dataGridViewCellStyle15;
             this.dataGridViewButtonColumn8.HeaderText = "name";
             this.dataGridViewButtonColumn8.Name = "dataGridViewButtonColumn8";
             this.dataGridViewButtonColumn8.ReadOnly = true;
@@ -1473,8 +1459,8 @@
             // dataGridViewButtonColumn13
             // 
             this.dataGridViewButtonColumn13.DataPropertyName = "Key";
-            dataGridViewCellStyle80.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn13.DefaultCellStyle = dataGridViewCellStyle80;
+            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn13.DefaultCellStyle = dataGridViewCellStyle16;
             this.dataGridViewButtonColumn13.HeaderText = "name";
             this.dataGridViewButtonColumn13.Name = "dataGridViewButtonColumn13";
             this.dataGridViewButtonColumn13.ReadOnly = true;
@@ -1508,12 +1494,10 @@
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 86F));
             this.tableLayoutPanel4.Controls.Add(this.defaultObjFilterTB, 1, 3);
             this.tableLayoutPanel4.Controls.Add(this.label13, 0, 3);
-            this.tableLayoutPanel4.Controls.Add(this.browseRegSqlButton, 2, 1);
             this.tableLayoutPanel4.Controls.Add(this.browseSqlCmdButton, 2, 0);
             this.tableLayoutPanel4.Controls.Add(this.label5, 0, 0);
             this.tableLayoutPanel4.Controls.Add(this.label6, 0, 1);
             this.tableLayoutPanel4.Controls.Add(this.sqlcmdTB, 1, 0);
-            this.tableLayoutPanel4.Controls.Add(this.regsqlTB, 1, 1);
             this.tableLayoutPanel4.Controls.Add(this.cancelOptionsButton, 2, 4);
             this.tableLayoutPanel4.Controls.Add(this.saveOptionsButton, 1, 4);
             this.tableLayoutPanel4.Controls.Add(this.label11, 0, 2);
@@ -1550,17 +1534,6 @@
             this.label13.Size = new System.Drawing.Size(98, 13);
             this.label13.TabIndex = 18;
             this.label13.Text = "Default object filter:";
-            // 
-            // browseRegSqlButton
-            // 
-            this.browseRegSqlButton.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.browseRegSqlButton.Location = new System.Drawing.Point(815, 33);
-            this.browseRegSqlButton.Name = "browseRegSqlButton";
-            this.browseRegSqlButton.Size = new System.Drawing.Size(80, 23);
-            this.browseRegSqlButton.TabIndex = 12;
-            this.browseRegSqlButton.Text = "Browse...";
-            this.browseRegSqlButton.UseVisualStyleBackColor = true;
-            this.browseRegSqlButton.Click += new System.EventHandler(this.browse_Click);
             // 
             // browseSqlCmdButton
             // 
@@ -1601,15 +1574,6 @@
             this.sqlcmdTB.Size = new System.Drawing.Size(617, 20);
             this.sqlcmdTB.TabIndex = 8;
             this.sqlcmdTB.TextChanged += new System.EventHandler(this.enableSaveCancelButtons);
-            // 
-            // regsqlTB
-            // 
-            this.regsqlTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.regsqlTB.Location = new System.Drawing.Point(192, 35);
-            this.regsqlTB.Name = "regsqlTB";
-            this.regsqlTB.Size = new System.Drawing.Size(617, 20);
-            this.regsqlTB.TabIndex = 11;
-            this.regsqlTB.TextChanged += new System.EventHandler(this.enableSaveCancelButtons);
             // 
             // cancelOptionsButton
             // 
@@ -1878,17 +1842,6 @@
             this.createLoginChk.Text = "Create database login";
             this.createLoginChk.UseVisualStyleBackColor = true;
             // 
-            // regSqlChk
-            // 
-            this.regSqlChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.regSqlChk.AutoSize = true;
-            this.regSqlChk.Location = new System.Drawing.Point(155, 272);
-            this.regSqlChk.Name = "regSqlChk";
-            this.regSqlChk.Size = new System.Drawing.Size(179, 17);
-            this.regSqlChk.TabIndex = 17;
-            this.regSqlChk.Text = "Register ASP.NET Memberships";
-            this.regSqlChk.UseVisualStyleBackColor = true;
-            // 
             // runButton
             // 
             this.runButton.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1899,17 +1852,6 @@
             this.runButton.Text = "Run";
             this.runButton.UseVisualStyleBackColor = true;
             this.runButton.Click += new System.EventHandler(this.runButton_Click);
-            // 
-            // analyzeButton
-            // 
-            this.analyzeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.analyzeButton.Location = new System.Drawing.Point(817, 41);
-            this.analyzeButton.Name = "analyzeButton";
-            this.analyzeButton.Size = new System.Drawing.Size(98, 23);
-            this.analyzeButton.TabIndex = 30;
-            this.analyzeButton.Text = "Analyze";
-            this.analyzeButton.UseVisualStyleBackColor = true;
-            this.analyzeButton.Click += new System.EventHandler(this.analyzeButton_Click);
             // 
             // createTablesChk
             // 
@@ -1969,10 +1911,15 @@
             this.createFKsChk.Text = "Create constraints";
             this.createFKsChk.UseVisualStyleBackColor = true;
             // 
-            // openFileDialog1
+            // label12
             // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
+            this.label12.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(70, 76);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(79, 13);
+            this.label12.TabIndex = 31;
+            this.label12.Text = "Database type:";
             // 
             // dbType
             // 
@@ -1983,6 +1930,22 @@
             this.dbType.Size = new System.Drawing.Size(65, 13);
             this.dbType.TabIndex = 36;
             this.dbType.Text = "UNKNOWN";
+            // 
+            // analyzeButton
+            // 
+            this.analyzeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.analyzeButton.Location = new System.Drawing.Point(817, 41);
+            this.analyzeButton.Name = "analyzeButton";
+            this.analyzeButton.Size = new System.Drawing.Size(98, 23);
+            this.analyzeButton.TabIndex = 30;
+            this.analyzeButton.Text = "Analyze";
+            this.analyzeButton.UseVisualStyleBackColor = true;
+            this.analyzeButton.Click += new System.EventHandler(this.analyzeButton_Click);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
             // 
             // MainForm
             // 
@@ -2066,14 +2029,11 @@
         private System.Windows.Forms.TextBox sqlUserTB;
         private System.Windows.Forms.TextBox sqlPassTB;
         private System.Windows.Forms.TextBox sqlcmdTB;
-        private System.Windows.Forms.TextBox regsqlTB;
         private System.Windows.Forms.Button browseSqlCmdButton;
-        private System.Windows.Forms.Button browseRegSqlButton;
         private System.Windows.Forms.Button runButton;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.CheckBox createDatabaseChk;
         private System.Windows.Forms.CheckBox createLoginChk;
-        private System.Windows.Forms.CheckBox regSqlChk;
         private System.Windows.Forms.CheckBox createTablesChk;
         private System.Windows.Forms.CheckBox initializeDataChk;
         private System.Windows.Forms.CheckBox syncProceduresChk;

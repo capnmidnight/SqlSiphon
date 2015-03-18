@@ -109,9 +109,9 @@ namespace SqlSiphon.Mapping
         }
 
         /// <summary>
-        /// Finds the MappedParameterAttribute for the giving ParameterInfo,
+        /// Finds the ParameterAttribute for the giving ParameterInfo,
         /// or makes one up if it can't find one. All parameters in a mapped
-        /// method will eventually have a MappedParameterAttribute represent it.
+        /// method will eventually have a ParameterAttribute represent it.
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns></returns>

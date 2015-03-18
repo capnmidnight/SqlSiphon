@@ -70,8 +70,10 @@ namespace SqlSiphon.Mapping
         public ParameterAttribute(InformationSchema.Parameters parameter, ISqlSiphon dal)
         {
             this.Include = true;
-
-            this.Name = parameter.parameter_name.Substring(1);
+            if (!string.IsNullOrEmpty(parameter.parameter_name))
+            {
+                this.Name = parameter.parameter_name.Substring(1);
+            }
             if (parameter.numeric_precision.HasValue)
             {
                 this.Precision = parameter.numeric_precision.Value;
