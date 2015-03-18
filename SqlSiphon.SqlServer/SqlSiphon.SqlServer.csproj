@@ -40,12 +40,6 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Memberships\aspnet_Applications.cs" />
-    <Compile Include="Memberships\aspnet_Membership.cs" />
-    <Compile Include="Memberships\aspnet_Roles.cs" />
-    <Compile Include="Memberships\aspnet_SchemaVersions.cs" />
-    <Compile Include="Memberships\aspnet_Users.cs" />
-    <Compile Include="Memberships\aspnet_UsersInRoles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlServerDataAccessLayer.cs" />
     <Compile Include="SqlServerMappedClassAttribute.cs" />
