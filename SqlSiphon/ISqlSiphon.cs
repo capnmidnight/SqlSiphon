@@ -32,6 +32,10 @@ namespace SqlSiphon
         bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
         bool RoutineChanged(RoutineAttribute final, RoutineAttribute initial);
         bool KeyChanged(PrimaryKey final, PrimaryKey initial);
+
+        bool RelationshipChanged(Relationship finalRelation, Relationship initialRelation);
+        bool IndexChanged(Index finalIndex, Index initialIndex);
+
         void AnalyzeQuery(string routineText, RoutineAttribute routine);
 
         RoutineAttribute GetCommandDescription(System.Reflection.MethodInfo method);
@@ -50,8 +54,7 @@ namespace SqlSiphon
 
         string MakeDropRoutineScript(RoutineAttribute routine);
         string MakeCreateRoutineScript(RoutineAttribute routine);
-        string MakeAlterRoutineScript(RoutineAttribute final, RoutineAttribute initial);
-
+        
         string MakeDropRelationshipScript(Relationship relation);
         string MakeCreateRelationshipScript(Relationship relation);
 
@@ -60,8 +63,5 @@ namespace SqlSiphon
 
         string MakeDropIndexScript(Index key);
         string MakeCreateIndexScript(Index key);
-
-        bool RelationshipChanged(Relationship finalRelation, Relationship initialRelation);
-        bool IndexChanged(Index finalIndex, Index initialIndex);
     }
 }

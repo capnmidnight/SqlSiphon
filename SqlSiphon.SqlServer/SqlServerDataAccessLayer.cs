@@ -148,13 +148,8 @@ namespace SqlSiphon.SqlServer
             return this.MakeRoutineScript(info, "create");
         }
 
-        public override string MakeAlterRoutineScript(RoutineAttribute info, RoutineAttribute initial)
-        {
-            return this.MakeRoutineScript(info, "alter");
-        }
-
         private static string beginRoutineTemplate = @"begin try
-begin transaction {0};";
+    begin transaction {0};";
         private static string endRoutineTemplate = @"commit transaction {0};
 end try
 begin catch

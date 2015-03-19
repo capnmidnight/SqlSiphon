@@ -595,11 +595,6 @@ $$ language plpgsql;",
             return query;
         }
 
-        public override string MakeAlterRoutineScript(RoutineAttribute final, RoutineAttribute initial)
-        {
-            return this.MakeDropRoutineScript(initial) + Environment.NewLine + this.MakeCreateRoutineScript(final);
-        }
-
         public override string MakeCreateTableScript(TableAttribute table)
         {
             var schema = table.Schema ?? DefaultSchemaName;

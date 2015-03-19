@@ -7,7 +7,12 @@ namespace SqlSiphon
 {
     public class DatabaseDelta
     {
-        private static void Traverse<T>(Dictionary<string, T> final, Dictionary<string, T> initial, Action<string, T> remove, Action<string, T> add, Action<string, T, T> change)
+        private static void Traverse<T>(
+            Dictionary<string, T> final,
+            Dictionary<string, T> initial,
+            Action<string, T> remove,
+            Action<string, T> add,
+            Action<string, T, T> change)
         {
             var all = initial.Keys
                 .Union(final.Keys)
@@ -29,6 +34,49 @@ namespace SqlSiphon
                 }
             }
         }
+
+        private void Traverse<T>(
+            Dictionary<string, T> final,
+            Dictionary<string, T> initial,
+            ScriptType dropType,
+            ScriptType createType,
+            Dictionary<string, string> dropScripts,
+            Dictionary<string, string> createScripts,
+            Dictionary<string, string> noChangeScripts,
+            Func<T, T, bool> isChanged,
+            Func<T, string> makeDropScript,
+            Func<T, string> makeCreateScript)
+        {
+            Traverse(
+                final,
+                initial,
+                (key, i) =>
+                {
+                    this.Scripts.Add(new ScriptStatus(dropType, key, makeDropScript(i)));
+                    dropScripts.Add(key, makeDropScript(i));
+                },
+                (key, f) =>
+                {
+                    this.Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f)));
+                    createScripts.Add(key, makeCreateScript(f));
+                },
+                (key, f, i) =>
+                {
+                    if (isChanged(f, i))
+                    {
+                        this.Scripts.Add(new ScriptStatus(dropType, key, makeDropScript(i)));
+                        this.Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f)));
+                        dropScripts.Add(key, makeDropScript(i));
+                        createScripts.Add(key, makeCreateScript(f));
+                    }
+                    else
+                    {
+                        noChangeScripts.Add(key, "-- no change --");
+                    }
+                });
+        }
+
+        public List<ScriptStatus> Scripts { get; private set; }
 
         public Dictionary<string, string> CreateSchemaScripts { get; private set; }
         public Dictionary<string, string> DropSchemaScripts { get; private set; }
@@ -54,6 +102,8 @@ namespace SqlSiphon
 
         public DatabaseDelta(DatabaseState final, DatabaseState initial, ISqlSiphon dal)
         {
+            this.Scripts = new List<ScriptStatus>();
+
             this.CreateSchemaScripts = new Dictionary<string, string>();
             this.DropSchemaScripts = new Dictionary<string, string>();
             this.UnalteredSchemaScripts = new Dictionary<string, string>();
@@ -89,29 +139,32 @@ namespace SqlSiphon
             Traverse(
                 finalSchemas,
                 initialSchemas,
-                (schemaName, initialSchema) => this.DropSchemaScripts.Add(schemaName, dal.MakeDropSchemaScript(initialSchema)),
-                (schemaName, finalSchema) => this.CreateSchemaScripts.Add(schemaName, dal.MakeCreateSchemaScript(finalSchema)),
+                (schemaName, initialSchema) =>
+                {
+                    this.Scripts.Add(new ScriptStatus(ScriptType.DropSchema, schemaName, dal.MakeDropSchemaScript(initialSchema)));
+                    this.DropSchemaScripts.Add(schemaName, dal.MakeDropSchemaScript(initialSchema));
+                },
+                (schemaName, finalSchema) =>
+                {
+                    this.Scripts.Add(new ScriptStatus(ScriptType.CreateSchema, schemaName, dal.MakeCreateSchemaScript(finalSchema)));
+                    this.CreateSchemaScripts.Add(schemaName, dal.MakeCreateSchemaScript(finalSchema));
+                },
                 (schemaName, finalSchema, initialSchema) => this.UnalteredSchemaScripts.Add(schemaName, "-- no change"));
         }
 
         private void ProcessFunctions(Dictionary<string, RoutineAttribute> finalRoutines, Dictionary<string, RoutineAttribute> initialRoutines, ISqlSiphon dal)
         {
             Traverse(
-                finalRoutines, 
-                initialRoutines, 
-                (routineName, initialRoutine) => this.DropRoutineScripts.Add(routineName, dal.MakeDropRoutineScript(initialRoutine)), 
-                (routineName, finalRoutine) => this.CreateRoutineScripts.Add(routineName, dal.MakeCreateRoutineScript(finalRoutine)),
-                (routineName, finalRoutine, initialRoutine) =>
-                {
-                    if (dal.RoutineChanged(finalRoutine, initialRoutine))
-                    {
-                        this.AlteredRoutineScripts.Add(routineName, dal.MakeAlterRoutineScript(finalRoutine, initialRoutine));
-                    }
-                    else
-                    {
-                        this.UnalteredRoutineScripts.Add(routineName, "-- no changes");
-                    }
-                });
+                finalRoutines,
+                initialRoutines,
+                ScriptType.DropRoutine,
+                ScriptType.CreateRoutine,
+                this.DropRoutineScripts,
+                this.CreateRoutineScripts,
+                this.UnalteredRoutineScripts,
+                dal.RoutineChanged,
+                dal.MakeDropRoutineScript,
+                dal.MakeCreateRoutineScript);
         }
 
         private void ProcessKeys(Dictionary<string, PrimaryKey> finalKeys, Dictionary<string, PrimaryKey> initialKeys, ISqlSiphon dal)
@@ -119,43 +172,29 @@ namespace SqlSiphon
             Traverse(
                 finalKeys,
                 initialKeys,
-                (keyName, initialKey) => this.DropRelationshipScripts.Add(keyName, dal.MakeDropPrimaryKeyScript(initialKey)),
-                (keyName, finalKey) => this.CreateRelationshipScripts.Add(keyName, dal.MakeCreatePrimaryKeyScript(finalKey)),
-                (keyName, finalKey, initialKey) =>
-                {
-                    if (dal.KeyChanged(finalKey, initialKey))
-                    {
-                        this.CreateRelationshipScripts.Add(keyName,
-                            dal.MakeDropPrimaryKeyScript(initialKey)
-                            + dal.MakeCreatePrimaryKeyScript(finalKey));
-                    }
-                    else
-                    {
-                        this.UnalteredRelationshipScripts.Add(keyName, "-- no changes");
-                    }
-                });
+                ScriptType.DropPrimaryKey,
+                ScriptType.CreatePrimaryKey,
+                this.DropRelationshipScripts,
+                this.CreateRelationshipScripts,
+                this.UnalteredRelationshipScripts,
+                dal.KeyChanged,
+                dal.MakeDropPrimaryKeyScript,
+                dal.MakeCreatePrimaryKeyScript);
         }
 
         private void ProcessRelationships(Dictionary<string, Relationship> finalRelations, Dictionary<string, Relationship> initialRelations, ISqlSiphon dal)
         {
             Traverse(
-                finalRelations, 
+                finalRelations,
                 initialRelations,
-                (relationName, initialRelation) => this.DropRelationshipScripts.Add(relationName, dal.MakeDropRelationshipScript(initialRelation)),
-                (relationName, finalRelation) => this.CreateRelationshipScripts.Add(relationName, dal.MakeCreateRelationshipScript(finalRelation)), 
-                (relationName, finalRelation, initialRelation) =>
-                {
-                    if (dal.RelationshipChanged(finalRelation, initialRelation))
-                    {
-                        this.CreateRelationshipScripts.Add(relationName, 
-                            dal.MakeDropRelationshipScript(initialRelation)
-                            + dal.MakeCreateRelationshipScript(finalRelation));
-                    }
-                    else
-                    {
-                        this.UnalteredRelationshipScripts.Add(relationName, "-- no changes");
-                    }
-                });
+                ScriptType.DropRelationship,
+                ScriptType.CreateRelationship,
+                this.DropRelationshipScripts,
+                this.CreateRelationshipScripts,
+                this.UnalteredRelationshipScripts,
+                dal.RelationshipChanged,
+                dal.MakeDropRelationshipScript,
+                dal.MakeCreateRelationshipScript);
         }
 
         private void ProcessIndexes(Dictionary<string, Index> finalIndexes, Dictionary<string, Index> initialIndexes, ISqlSiphon dal)
@@ -163,57 +202,66 @@ namespace SqlSiphon
             Traverse(
                 finalIndexes,
                 initialIndexes,
-                (indexName, initialIndex) => this.DropIndexScripts.Add(indexName, dal.MakeDropIndexScript(initialIndex)),
-                (indexName, finalIndex) => this.CreateIndexScripts.Add(indexName, dal.MakeCreateIndexScript(finalIndex)),
-                (indexName, finalIndex, initialIndex) =>
-                {
-                    if (dal.IndexChanged(finalIndex, initialIndex))
-                    {
-                        this.CreateIndexScripts.Add(indexName, 
-                            dal.MakeDropIndexScript(initialIndex) 
-                            + dal.MakeCreateIndexScript(finalIndex));
-                    }
-                    else
-                    {
-                        this.UnalteredIndexScripts.Add(indexName, "-- no change");
-                    }
-                });
+                ScriptType.DropIndex,
+                ScriptType.CreateIndex,
+                this.DropIndexScripts,
+                this.CreateIndexScripts,
+                this.UnalteredIndexScripts,
+                dal.IndexChanged,
+                dal.MakeDropIndexScript,
+                dal.MakeCreateIndexScript);
         }
 
         private void ProcessTables(Dictionary<string, TableAttribute> finalTables, Dictionary<string, TableAttribute> initialTables, ISqlSiphon dal)
         {
             Traverse(
-                finalTables, 
-                initialTables, 
-                (tableName, initialTable) => this.DropTableScripts.Add(tableName, dal.MakeDropTableScript(initialTable)), 
-                (tableName, finalTable) => this.CreateTableScripts.Add(tableName, dal.MakeCreateTableScript(finalTable)), 
+                finalTables,
+                initialTables,
+                (tableName, initialTable) =>
+                {
+                    this.Scripts.Add(new ScriptStatus(ScriptType.DropTable, tableName, dal.MakeDropTableScript(initialTable)));
+                    this.DropTableScripts.Add(tableName, dal.MakeDropTableScript(initialTable));
+                },
+                (tableName, finalTable) =>
+                {
+                    this.Scripts.Add(new ScriptStatus(ScriptType.CreateTable, tableName, dal.MakeCreateTableScript(finalTable)));
+                    this.CreateTableScripts.Add(tableName, dal.MakeCreateTableScript(finalTable));
+                },
                 (tableName, finalTable, initialTable) =>
                 {
-                    var tableAltered = false;
                     var finalColumns = finalTable.Properties.ToDictionary(p => dal.MakeIdentifier(finalTable.Schema ?? dal.DefaultSchemaName, finalTable.Name, p.Name).ToLower());
                     var initialColumns = initialTable.Properties.ToDictionary(p => dal.MakeIdentifier(initialTable.Schema ?? dal.DefaultSchemaName, initialTable.Name, p.Name).ToLower());
 
-                    Traverse(finalColumns, initialColumns, (columnName, initialColumn) =>
-                    {
-                        this.DropColumnScripts.Add(columnName, dal.MakeDropColumnScript(initialColumn));
-                        tableAltered = true;
-                    }, (columnName, finalColumn) =>
-                    {
-                        this.CreateColumnScripts.Add(columnName, dal.MakeCreateColumnScript(finalColumn));
-                        tableAltered = true;
-                    }, (columnName, finalColumn, initialColumn) =>
-                    {
-                        if (dal.ColumnChanged(finalColumn, initialColumn))
+                    var initialCount = this.DropColumnScripts.Count + this.CreateColumnScripts.Count + this.AlteredColumnScripts.Count;
+
+                    Traverse(
+                        finalColumns,
+                        initialColumns,
+                        (columnName, initialColumn) =>
                         {
-                            this.AlteredColumnScripts.Add(columnName, dal.MakeAlterColumnScript(finalColumn, initialColumn));
-                            tableAltered = true;
-                        }
-                        else
+                            this.Scripts.Add(new ScriptStatus(ScriptType.DropColumn, columnName, dal.MakeDropColumnScript(initialColumn)));
+                            this.DropColumnScripts.Add(columnName, dal.MakeDropColumnScript(initialColumn));
+                        },
+                        (columnName, finalColumn) =>
                         {
-                            this.UnalteredColumnScripts.Add(columnName, "-- no changes");
-                        }
-                    });
-                    if (!tableAltered)
+                            this.Scripts.Add(new ScriptStatus(ScriptType.CreateColumn, columnName, dal.MakeCreateColumnScript(finalColumn)));
+                            this.CreateColumnScripts.Add(columnName, dal.MakeCreateColumnScript(finalColumn));
+                        },
+                        (columnName, finalColumn, initialColumn) =>
+                        {
+                            if (dal.ColumnChanged(finalColumn, initialColumn))
+                            {
+                                this.Scripts.Add(new ScriptStatus(ScriptType.AlterColumn, columnName, dal.MakeAlterColumnScript(finalColumn, initialColumn)));
+                                this.AlteredColumnScripts.Add(columnName, dal.MakeAlterColumnScript(finalColumn, initialColumn));
+                            }
+                            else
+                            {
+                                this.UnalteredColumnScripts.Add(columnName, "-- no changes");
+                            }
+                        });
+
+                    var finalCount = this.DropColumnScripts.Count + this.CreateColumnScripts.Count + this.AlteredColumnScripts.Count;
+                    if (finalCount == initialCount)
                     {
                         this.UnalteredTableScripts.Add(tableName, "-- no changes");
                     }

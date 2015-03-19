@@ -781,7 +781,6 @@ AND COLUMN_NAME = @columnName;")]
 
         public abstract string MakeDropRoutineScript(RoutineAttribute routine);
         public abstract string MakeCreateRoutineScript(RoutineAttribute routine);
-        public abstract string MakeAlterRoutineScript(RoutineAttribute final, RoutineAttribute initial);
 
         public abstract string MakeDropRelationshipScript(Relationship relation);
         public abstract string MakeCreateRelationshipScript(Relationship relation);
