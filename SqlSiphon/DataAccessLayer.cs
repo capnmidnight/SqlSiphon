@@ -216,18 +216,25 @@ namespace SqlSiphon
             return this.Get<int>(0);
         }
 
-        public void AlterDatabase(string script)
+        public void AlterDatabase(ScriptStatus script)
         {
-            this.ExecuteQuery(script);
+            this.ExecuteQuery(script.Script);
             this.MarkScriptAsRan(script);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text,
-            Query = "insert into ScriptStatus(Script) values(@script);")]
-        public void MarkScriptAsRan(string script)
+            Query = @"if exists(select *
+from information_schema.tables 
+where table_name = 'ScriptStatus')
+begin
+    insert into ScriptStatus
+    (Script) values
+    (@script);
+end")]
+        public void MarkScriptAsRan(ScriptStatus script)
         {
-            this.Execute(script);
+            this.Insert(new ScriptStatus[]{script});
         }
 
 
@@ -750,7 +757,18 @@ AND COLUMN_NAME = @columnName;")]
 
         public virtual string MakeDropSchemaScript(string schemaName)
         {
-            return MakeSchemaScript("drop", schemaName);
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                var s = schemaName.ToLower();
+                if (s != "guest"
+                    && s != "sys"
+                    && s != "information_schema"
+                    && s != "dbo")
+                {
+                    return MakeSchemaScript("drop", schemaName);
+                }
+            }
+            return null;
         }
 
         public abstract List<InformationSchema.Columns> GetColumns();

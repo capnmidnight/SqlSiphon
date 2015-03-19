@@ -43,6 +43,9 @@ namespace SqlSiphon
 
         public string Script { get; set; }
 
+        [Exclude]
+        public bool Run { get; set; }
+
         /// <summary>
         /// Default constructor enables automatic construction.
         /// </summary>
@@ -58,8 +61,9 @@ namespace SqlSiphon
         public ScriptStatus(ScriptType type, string name, string script)
         {
             this.ScriptType = type;
-            this.Name = string.Format("{0} {1}", type, name);
+            this.Name = name;
             this.Script = script;
+            this.Run = true;
         }
     }
 }

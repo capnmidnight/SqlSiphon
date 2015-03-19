@@ -57,6 +57,7 @@ namespace InitDB
         public MainForm()
         {
             InitializeComponent();
+            this.pendingScriptsGV.AutoGenerateColumns = false;
             this.Icon = Properties.Resources.InitDBLogo;
             this.txtStdOut.Text = string.Empty;
             this.txtStdErr.Text = string.Empty;
@@ -515,31 +516,9 @@ namespace InitDB
                         DisplayDelta(delta);
                         var t = db.GetType();
                         this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
-                        if (succeeded && createTablesChk.Checked)
+                        if (succeeded)
                         {
-                            succeeded &= RunScripts("Creating table:", delta.CreateTableScripts, db);
-                            succeeded &= RunScripts("Creating columns:", delta.CreateColumnScripts, db);
-                        }
-
-                        if (succeeded && createFKsChk.Checked)
-                        {
-                            succeeded &= RunScripts("Creating foreign keys:", delta.CreateRelationshipScripts.Reverse(), db);
-                        }
-
-                        if (succeeded && createIndicesChk.Checked)
-                        {
-                            succeeded &= RunScripts("Creating indexes:", delta.CreateIndexScripts, db);
-                        }
-
-                        if (succeeded && syncProceduresChk.Checked)
-                        {
-                            succeeded &= RunScripts("Creating stored procedures:", delta.CreateRoutineScripts, db);
-                            succeeded &= RunScripts("Altering stored procedures:", delta.AlteredRoutineScripts, db);
-                        }
-
-                        if (succeeded && initializeDataChk.Checked)
-                        {
-                            succeeded &= RunScripts("Syncing data:", delta.OtherScripts, db);
+                            succeeded = RunScripts(delta.Scripts, db);
                         }
                         delta = db.Analyze(ObjectFilter);
                         DisplayDelta(delta);
@@ -565,21 +544,26 @@ namespace InitDB
             }
         }
 
-        private bool RunScripts(string feature, IEnumerable<KeyValuePair<string, string>> scripts, ISqlSiphon db)
+        private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
         {
+            var success = true;
             foreach (var script in scripts)
             {
-                try
+                if (script.Run)
                 {
-                    this.ToOutput(string.Format("{0} {1}.", feature, script.Key));
-                    db.AlterDatabase(script.Value);
-                }
-                catch (Exception exp)
-                {
-                    this.ToError(exp);
+                    try
+                    {
+                        this.ToOutput(string.Format("{0} {1}.", script.Script, script.Name));
+                        db.AlterDatabase(script);
+                    }
+                    catch (Exception exp)
+                    {
+                        this.ToError(exp);
+                        success = false;
+                    }
                 }
             }
-            return true;
+            return success;
         }
 
         private void db_Progress(object sender, DataProgressEventArgs e)
@@ -618,33 +602,10 @@ namespace InitDB
         {
             this.SyncUI(() =>
             {
-                FillGV(this.createTablesGV, delta.CreateTableScripts);
-                FillGV(this.dropTablesGV, delta.DropTableScripts);
-                FillGV(this.unalteredTablesGV, delta.UnalteredTableScripts);
-                FillGV(this.createColumnsGV, delta.CreateColumnScripts);
-                FillGV(this.dropColumnsGV, delta.DropColumnScripts);
-                FillGV(this.alteredColumnsGV, delta.AlteredColumnScripts);
-                FillGV(this.unalteredColumnsGV, delta.UnalteredColumnScripts);
-                FillGV(this.createRelationshipsGV, delta.CreateRelationshipScripts.Reverse());
-                FillGV(this.dropRelationshipsGV, delta.DropRelationshipScripts);
-                FillGV(this.unalteredRelationshipsGV, delta.UnalteredRelationshipScripts);
-                FillGV(this.createRoutinesGV, delta.CreateRoutineScripts);
-                FillGV(this.dropRoutinesGV, delta.DropRoutineScripts);
-                FillGV(this.alteredRoutinesGV, delta.AlteredRoutineScripts);
-                FillGV(this.unalteredRoutinesGV, delta.UnalteredRoutineScripts);
-                FillGV(this.createIndicesGV, delta.CreateIndexScripts);
-                FillGV(this.dropIndicesGV, delta.DropIndexScripts);
-                FillGV(this.unalteredIndicesGV, delta.UnalteredIndexScripts);
-                FillGV(this.othersGV, delta.OtherScripts);
+                var list = new BindingList<ScriptStatus>(delta.Scripts.OrderBy(s => s.ScriptType).ToList());
+                this.pendingScriptsGV.DataSource = list;
                 this.analyzeButton.Enabled = true;
             });
-        }
-
-        private static void FillGV(DataGridView gv, IEnumerable<KeyValuePair<string, string>> collect)
-        {
-            gv.Rows.Clear();
-            foreach (var entry in collect)
-                gv.Rows.Add(entry.Key, entry.Value);
         }
 
         private string BrowseFrom(string path)
@@ -774,25 +735,6 @@ namespace InitDB
                 saveSessionButton.Enabled
                     = deleteSessionButton.Enabled
                     = (sessionName != DEFAULT_SESSION_NAME);
-
-                this.createTablesGV.Rows.Clear();
-                this.dropTablesGV.Rows.Clear();
-                this.unalteredTablesGV.Rows.Clear();
-                this.createColumnsGV.Rows.Clear();
-                this.dropColumnsGV.Rows.Clear();
-                this.alteredColumnsGV.Rows.Clear();
-                this.unalteredColumnsGV.Rows.Clear();
-                this.createRelationshipsGV.Rows.Clear();
-                this.dropRelationshipsGV.Rows.Clear();
-                this.unalteredRelationshipsGV.Rows.Clear();
-                this.createRoutinesGV.Rows.Clear();
-                this.dropRoutinesGV.Rows.Clear();
-                this.alteredRoutinesGV.Rows.Clear();
-                this.unalteredRoutinesGV.Rows.Clear();
-                this.createIndicesGV.Rows.Clear();
-                this.dropIndicesGV.Rows.Clear();
-                this.unalteredIndicesGV.Rows.Clear();
-                this.othersGV.Rows.Clear();
             }
         }
 
@@ -820,22 +762,20 @@ namespace InitDB
                     {
                         try
                         {
-                            var script = (string)gv.Rows[e.RowIndex].Cells[1].Value;
+                            var col = pendingScriptScriptColumn.Index;
+                            var row = gv.Rows[e.RowIndex];
+                            var scriptCell = row.Cells[col];
+                            var script = (string)scriptCell.Value;
                             gv.Enabled = false;
                             Application.DoEvents();
-                            switch (e.ColumnIndex)
+                            if (e.ColumnIndex == pendingScriptNameColumn.Index)
                             {
-                                case 0:
-                                    gv.Rows[e.RowIndex].Cells[1].Value = viewScript.Prompt(script);
-                                    break;
-                                case 2:
-                                    RunScript(script);
-                                    gv.Rows.RemoveAt(e.RowIndex);
-                                    break;
-                                case 3:
-                                    SkipScript(script);
-                                    gv.Rows.RemoveAt(e.RowIndex);
-                                    break;
+                                scriptCell.Value = viewScript.Prompt(script);
+                            }
+                            else if (e.ColumnIndex == pendingScriptRunButtonColumn.Index)
+                            {
+                                RunScript((ScriptStatus)row.DataBoundItem);
+                                gv.Rows.RemoveAt(e.RowIndex);
                             }
                             this.ToOutput("Success");
                         }
@@ -853,17 +793,10 @@ namespace InitDB
             }
         }
 
-        private void SkipScript(string script)
-        {
-            var connector = this.MakeDatabaseConnector();
-            using (var db = connector())
-                db.MarkScriptAsRan(script);
-        }
-
-        private void RunScript(string script)
+        private void RunScript(ScriptStatus script)
         {
             this.tabControl1.SelectedTab = this.tabStdOut;
-            this.ToOutput(script);
+            this.ToOutput(script.Script);
             var connector = this.MakeDatabaseConnector();
             using (var db = connector())
                 db.AlterDatabase(script);

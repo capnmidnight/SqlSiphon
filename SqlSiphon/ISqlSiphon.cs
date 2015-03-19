@@ -10,8 +10,8 @@ namespace SqlSiphon
     public interface ISqlSiphon : IDisposable
     {
         DatabaseDelta Analyze(Regex filter);
-        void AlterDatabase(string script);
-        void MarkScriptAsRan(string script);
+        void AlterDatabase(ScriptStatus script);
+        void MarkScriptAsRan(ScriptStatus script);
 
         event DataProgressEventHandler Progress;
 
