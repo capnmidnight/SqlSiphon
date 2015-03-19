@@ -52,14 +52,12 @@ namespace InitDB
         private Dictionary<string, string> options;
         private BindingList<string> names;
         private ScriptView viewScript = new ScriptView();
+        private OptionsDialog optionsDialog = new OptionsDialog();
 
         public MainForm()
         {
             InitializeComponent();
             this.Icon = Properties.Resources.InitDBLogo;
-            this.browseAssemblyBtn.Tag = this.assemblyTB;
-            this.browseSqlCmdButton.Tag = this.sqlcmdTB;
-            this.browsePsqlButton.Tag = this.psqlTB;
             this.txtStdOut.Text = string.Empty;
             this.txtStdErr.Text = string.Empty;
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -67,6 +65,8 @@ namespace InitDB
             this.Text += " v" + version.ToString(4);
             LoadSessions();
             LoadOptions();
+            this.optionsDialog.BrowsePSQLPathClick += optionsDialog_BrowsePSQLPathClick;
+            this.optionsDialog.BrowseSQLCMDPathClick += optionsDialog_BrowseSQLCMDPathClick;
         }
 
         public Func<ISqlSiphon> MakeDatabaseConnector()
@@ -231,25 +231,20 @@ namespace InitDB
             this.DisplayOptions();
         }
 
-        private void CoalesceOption(string key, string value, TextBox output)
+        private string CoalesceOption(string key, string defaultValue)
         {
             if (!this.options.ContainsKey(key))
             {
-                this.cancelOptionsButton.Enabled = true;
-                this.options.Add(key, value);
+                this.options.Add(key, defaultValue);
             }
-            output.Text = this.options[key];
+            return this.options[key];
         }
 
-        private bool lockOptions = false;
         private void DisplayOptions()
         {
-            lockOptions = true;
-            this.CoalesceOption(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH, this.sqlcmdTB);
-            this.CoalesceOption(PSQL_PATH_KEY, DEFAULT_PSQL_PATH, this.psqlTB);
-            this.CoalesceOption(OBJECT_FILTER_KEY, DEFAULT_OBJECT_FILTER, this.defaultObjFilterTB);
-            lockOptions = false;
-            this.EnableSaveOption();
+            this.optionsDialog.SQLCMDPath = this.CoalesceOption(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH);
+            this.optionsDialog.PSQLPath = this.CoalesceOption(PSQL_PATH_KEY, DEFAULT_PSQL_PATH);
+            this.optionsDialog.DefaultObjectFilterRegexText = this.CoalesceOption(OBJECT_FILTER_KEY, DEFAULT_OBJECT_FILTER);
         }
 
         private void LoadSessions()
@@ -293,8 +288,8 @@ namespace InitDB
 
         private bool PathsAreCorrect()
         {
-            var sqlcmdGood = this.IsPostgres || File.Exists(sqlcmdTB.Text);
-            var psqlGood = !this.IsPostgres || File.Exists(psqlTB.Text);
+            var sqlcmdGood = this.IsPostgres || File.Exists(this.optionsDialog.SQLCMDPath);
+            var psqlGood = !this.IsPostgres || File.Exists(this.optionsDialog.PSQLPath);
             var assemblyGood = File.Exists(assemblyTB.Text);
             if (!psqlGood)
                 this.ToError("Can't find PSQL");
@@ -414,7 +409,7 @@ namespace InitDB
                 try
                 {
                     success = RunProcess(
-                        psqlTB.Text,
+                        this.optionsDialog.PSQLPath,
                         "-h " + server,
                         string.IsNullOrWhiteSpace(port) ? null : "-p " + port,
                         "-U " + adminUserTB.Text,
@@ -455,7 +450,7 @@ namespace InitDB
             else
             {
                 success = RunProcess(
-                    sqlcmdTB.Text,
+                    this.optionsDialog.SQLCMDPath,
                     "-S " + serverTB.Text,
                     string.IsNullOrWhiteSpace(adminUserTB.Text) ? null : "-U " + adminUserTB.Text,
                     string.IsNullOrWhiteSpace(adminPassTB.Text) ? null : "-P " + adminPassTB.Text,
@@ -652,30 +647,34 @@ namespace InitDB
                 gv.Rows.Add(entry.Key, entry.Value);
         }
 
-        private void BrowseFile(TextBox path)
+        private string BrowseFrom(string path)
         {
-            try
+            if (!string.IsNullOrWhiteSpace(path) && (File.Exists(path) || Directory.Exists(path)))
             {
-                var file = new FileInfo(path.Text);
+                var file = new FileInfo(path);
                 openFileDialog1.InitialDirectory = file.DirectoryName;
                 openFileDialog1.FileName = file.Name;
             }
-            catch
-            {
-                // empty string can make the FileInfo constructor error,
-                // but I don't care, it's just a convenience and the user
-                // will recover it on their own.
-            }
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                path.Text = openFileDialog1.FileName;
+                return openFileDialog1.FileName;
             }
-
+            return null;
         }
 
-        private void browse_Click(object sender, EventArgs e)
+        private void browseAssemblyBtn_Click(object sender, EventArgs e)
         {
-            BrowseFile((TextBox)((Button)sender).Tag);
+            assemblyTB.Text = BrowseFrom(assemblyTB.Text) ?? assemblyTB.Text;
+        }
+
+        void optionsDialog_BrowseSQLCMDPathClick(object sender, EventArgs e)
+        {
+            this.optionsDialog.SQLCMDPath = BrowseFrom(this.optionsDialog.SQLCMDPath) ?? this.optionsDialog.SQLCMDPath;
+        }
+
+        void optionsDialog_BrowsePSQLPathClick(object sender, EventArgs e)
+        {
+            this.optionsDialog.PSQLPath = BrowseFrom(this.optionsDialog.PSQLPath) ?? this.optionsDialog.PSQLPath;
         }
 
         private void saveSessionButton_Click(object sender, EventArgs e)
@@ -759,7 +758,7 @@ namespace InitDB
                     this.sqlUserTB.Text = this.CurrentSession.LoginName;
                     this.sqlPassTB.Text = this.CurrentSession.LoginPassword;
                     this.assemblyTB.Text = this.CurrentSession.AssemblyFile;
-                    this.objFilterTB.Text = this.CurrentSession.ObjectFilter ?? this.defaultObjFilterTB.Text;
+                    this.objFilterTB.Text = this.CurrentSession.ObjectFilter ?? this.optionsDialog.DefaultObjectFilterRegexText;
                     this.createDatabaseChk.Checked = this.CurrentSession.CreateDatabase;
                     this.createLoginChk.Checked = this.CurrentSession.CreateLogin;
                     this.createTablesChk.Checked = this.CurrentSession.CreateSchemaObjects;
@@ -808,44 +807,6 @@ namespace InitDB
 
             if (sessionName == DEFAULT_SESSION_NAME)
                 savedSessionList.SelectedItem = DEFAULT_SESSION_NAME;
-        }
-
-        private void enableSaveCancelButtons(object sender, EventArgs e)
-        {
-            if (!lockOptions)
-            {
-                EnableSaveCancelOptions();
-            }
-        }
-
-        private void EnableSaveCancelOptions()
-        {
-            cancelOptionsButton.Enabled =
-                this.options[SQLCMD_PATH_KEY] != this.sqlcmdTB.Text
-                || this.options[PSQL_PATH_KEY] != this.psqlTB.Text
-                || this.options[OBJECT_FILTER_KEY] != this.defaultObjFilterTB.Text;
-            EnableSaveOption();
-        }
-
-        private void EnableSaveOption()
-        {
-            saveOptionsButton.Enabled
-                = File.Exists(sqlcmdTB.Text)
-                    && File.Exists(psqlTB.Text)
-                    && cancelOptionsButton.Enabled;
-        }
-
-        private void saveOptionsButton_Click(object sender, EventArgs e)
-        {
-            this.options[SQLCMD_PATH_KEY] = this.sqlcmdTB.Text;
-            File.WriteAllLines(OPTIONS_FILENAME,
-                this.options.Select(kv => string.Join("=", kv.Key, kv.Value)).ToArray());
-            EnableSaveCancelOptions();
-        }
-
-        private void cancelOptionsButton_Click(object sender, EventArgs e)
-        {
-            this.DisplayOptions();
         }
 
         private void scriptGV_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -906,6 +867,20 @@ namespace InitDB
             var connector = this.MakeDatabaseConnector();
             using (var db = connector())
                 db.AlterDatabase(script);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (this.optionsDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                this.options[SQLCMD_PATH_KEY] = this.optionsDialog.SQLCMDPath;
+                File.WriteAllLines(OPTIONS_FILENAME,
+                    this.options.Select(kv => string.Join("=", kv.Key, kv.Value)).ToArray());
+            }
+            else
+            {
+                this.DisplayOptions();
+            }
         }
     }
 }
