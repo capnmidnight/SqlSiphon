@@ -410,12 +410,17 @@ namespace SqlSiphon.Postgres
 
         public override bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
         {
+            var finalType = final.SystemType;
+            if (finalType.IsEnum)
+            {
+                finalType = typeof(int);
+            }
             var tests = new bool[]{
                 final.Include == initial.Include,
                 final.IsIdentity == initial.IsIdentity,
                 final.IsOptional == initial.IsOptional,
                 final.Name.ToLower() == initial.Name.ToLower(),
-                final.SystemType == initial.SystemType,
+                finalType == initial.SystemType,
                 final.Table != null,
                 initial.Table != null,
                 final.Table.Schema.ToLower() == initial.Table.Schema.ToLower(),

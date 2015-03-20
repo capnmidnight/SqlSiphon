@@ -311,11 +311,16 @@ DROP INDEX {0} ON {1};",
 
         public override bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
         {
+            var finalType = final.SystemType;
+            if (finalType.IsEnum)
+            {
+                finalType = typeof(int);
+            }
             var tests = new bool[]{
                 final.Include == initial.Include,
                 final.IsOptional == initial.IsOptional,
                 final.Name.ToLower() == initial.Name.ToLower(),
-                final.SystemType == initial.SystemType,
+                finalType == initial.SystemType,
                 final.Table != null,
                 initial.Table != null,
                 final.Table.Schema.ToLower() == initial.Table.Schema.ToLower(),
@@ -402,13 +407,22 @@ DROP INDEX {0} ON {1};",
             }
             else if (final.DefaultValue != initial.DefaultValue)
             {
-                return string.Format(
-                    "{0} alter column {1} {2} default {3};",
-                    preamble,
-                    this.MakeIdentifier(final.Name),
-                    this.MakeSqlTypeString(final),
-                    final.DefaultValue ?? "")
-                    .Trim();
+                if (final.DefaultValue != null)
+                {
+                    return string.Format(
+                        "{0} add constraint {1} default({2}) for {3};",
+                        preamble,
+                        this.MakeIdentifier("DEF_" + final.Name),
+                        final.DefaultValue ?? "",
+                        final.Name);
+                }
+                else
+                {
+                    return string.Format(
+                        "{0} drop constraint {1};",
+                        preamble,
+                        this.MakeIdentifier("DEF_" + final.Name));
+                }
             }
             else if (final.IsOptional != initial.IsOptional)
             {
@@ -577,7 +591,27 @@ where table_schema != 'information_schema'
 order by table_catalog, table_schema, table_name, ordinal_position;")]
         public override List<InformationSchema.Columns> GetColumns()
         {
-            return GetList<InformationSchema.Columns>();
+            var columns = GetList<InformationSchema.Columns>();
+            // SQL Server wraps default values in parens, and it can do this many times, just to vex us!
+            foreach (var column in columns)
+            {
+                if (column.column_default != null)
+                {
+                    while (column.column_default.StartsWith("("))
+                    {
+                        column.column_default = column.column_default.Substring(1);
+                    }
+                    while (column.column_default.EndsWith(")"))
+                    {
+                        column.column_default = column.column_default.Substring(0, column.column_default.Length - 1);
+                    }
+                    if (column.column_default.EndsWith("("))
+                    {
+                        column.column_default += ")";
+                    }
+                }
+            }
+            return columns;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
