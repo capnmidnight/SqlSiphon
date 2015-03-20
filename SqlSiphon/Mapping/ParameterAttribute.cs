@@ -46,7 +46,7 @@ namespace SqlSiphon.Mapping
     public class ParameterAttribute : DatabaseObjectAttribute
     {
         private bool directionNotSet = true;
-        private ParameterDirection paramDirection;
+        private ParameterDirection paramDirection = ParameterDirection.Input;
 
         /// <summary>
         /// Gets or sets the stored procedure parameter's "direction", i.e.
@@ -90,6 +90,16 @@ namespace SqlSiphon.Mapping
 
             this.SqlType = parameter.data_type;
             this.SystemType = dal.GetSystemType(this.SqlType);
+
+            switch (parameter.parameter_mode)
+            {
+                case "OUT":
+                    this.Direction = ParameterDirection.Output;
+                    break;
+                case "INOUT":
+                    this.Direction = ParameterDirection.InputOutput;
+                    break;
+            }
         }
         
         /// <summary>

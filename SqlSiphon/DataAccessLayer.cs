@@ -234,7 +234,7 @@ begin
 end")]
         public void MarkScriptAsRan(ScriptStatus script)
         {
-            this.Insert(new ScriptStatus[]{script});
+            this.Insert(new ScriptStatus[] { script });
         }
 
 
@@ -703,6 +703,36 @@ AND COLUMN_NAME = @columnName;")]
             var q1 = this.MakeCreateRoutineScript(a);
             var q2 = this.MakeCreateRoutineScript(b);
             var changed = q1 != q2;
+            if (changed)
+            {
+                bool changedReturnType = a.SqlType != b.SqlType;
+                bool changedParameters = a.Parameters.Count != b.Parameters.Count;
+                if (!changedParameters)
+                {
+                    var paramChanges = a.Parameters.Select((p1, i) =>
+                    {
+                        var p2 = b.Parameters[i];
+                        var tests = new bool[]{
+                            p1.Name != p2.Name,
+                            p1.DefaultValue != p2.DefaultValue,
+                            p1.Direction != p2.Direction,
+                            p1.IsOptional != p2.IsOptional,
+                            p1.SystemType != p2.SystemType,
+                            p1.IsPrecisionSet != p2.IsPrecisionSet,
+                            p1.IsSizeSet != p2.IsSizeSet,
+                            p1.Size != p2.Size,
+                            p1.Precision != p2.Precision
+                        };
+                        var changed2 = tests.Any(t => t);
+                        return changed2;
+                    }).ToArray();
+                    changedParameters = paramChanges.Any(t => t);
+                }
+                bool changedQuery = a.Query.Trim() != b.Query.Trim();
+                changed = changedReturnType
+                    || changedParameters
+                    || changedQuery;
+            }
             return changed;
         }
 
@@ -735,7 +765,10 @@ AND COLUMN_NAME = @columnName;")]
 
         public virtual bool KeyChanged(PrimaryKey final, PrimaryKey initial)
         {
-            return this.MakeCreatePrimaryKeyScript(final).ToLower() != this.MakeCreatePrimaryKeyScript(initial).ToLower();
+            var f = this.MakeCreatePrimaryKeyScript(final);
+            var i = this.MakeCreatePrimaryKeyScript(initial);
+            var changed = f.ToLower() != i.ToLower();
+            return changed;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -746,7 +779,8 @@ AND COLUMN_NAME = @columnName;")]
             return this.GetList<string>("schema_name");
         }
 
-        private string MakeSchemaScript(string op, string schemaName){
+        private string MakeSchemaScript(string op, string schemaName)
+        {
             return string.Format("{0} schema {1};", op, schemaName);
         }
 
