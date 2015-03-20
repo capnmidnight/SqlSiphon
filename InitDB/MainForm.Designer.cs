@@ -616,6 +616,7 @@
             this.generalScriptTB.Size = new System.Drawing.Size(963, 120);
             this.generalScriptTB.TabIndex = 0;
             this.generalScriptTB.Text = "-- (hit CTRL+Enter to run script)";
+            this.generalScriptTB.KeyDown += new System.Windows.Forms.KeyEventHandler(this.generalScriptTB_KeyDown);
             // 
             // txtStdOut
             // 
