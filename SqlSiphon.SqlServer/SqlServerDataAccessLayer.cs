@@ -188,6 +188,24 @@ end catch;";
             }
         }
 
+        public override string MakeDropSchemaScript(string schemaName)
+        {
+
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                var s = schemaName.ToLower();
+                if (s != "guest"
+                    && s != "sys"
+                    && s != "information_schema"
+                    && s != "dbo"
+                    && !s.StartsWith("db_"))
+                {
+                    return base.MakeDropSchemaScript(schemaName);
+                }
+            }
+            return null;
+        }
+
         private string MakeRoutineScript(RoutineAttribute info, string operation)
         {
             var query = info.Query;

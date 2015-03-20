@@ -791,18 +791,7 @@ AND COLUMN_NAME = @columnName;")]
 
         public virtual string MakeDropSchemaScript(string schemaName)
         {
-            if (!string.IsNullOrWhiteSpace(schemaName))
-            {
-                var s = schemaName.ToLower();
-                if (s != "guest"
-                    && s != "sys"
-                    && s != "information_schema"
-                    && s != "dbo")
-                {
-                    return MakeSchemaScript("drop", schemaName);
-                }
-            }
-            return null;
+            return MakeSchemaScript("drop", schemaName);
         }
 
         public abstract List<InformationSchema.Columns> GetColumns();

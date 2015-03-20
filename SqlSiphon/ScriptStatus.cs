@@ -28,7 +28,7 @@ namespace SqlSiphon
     }
 
     [Table]
-    public class ScriptStatus
+    public class ScriptStatus : BoundObject
     {
         [AutoPK]
         public int ScriptID { get; set; }
@@ -41,10 +41,10 @@ namespace SqlSiphon
         [Column(DefaultValue = "getdate()")]
         public DateTime RanOn { get; set; }
 
-        public string Script { get; set; }
+        public string Script { get { return Get<string>(); } set { Set(value); } }
 
         [Exclude]
-        public bool Run { get; set; }
+        public bool Run { get { return Get<bool>(); } set { Set(value); } }
 
         /// <summary>
         /// Default constructor enables automatic construction.
@@ -63,7 +63,6 @@ namespace SqlSiphon
             this.ScriptType = type;
             this.Name = name;
             this.Script = script;
-            this.Run = true;
         }
     }
 }

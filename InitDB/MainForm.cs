@@ -604,6 +604,7 @@ namespace InitDB
             {
                 var list = new BindingList<ScriptStatus>(delta.Scripts.OrderBy(s => s.ScriptType).ToList());
                 this.pendingScriptsGV.DataSource = list;
+                ApplyFilters();
                 this.analyzeButton.Enabled = true;
             });
         }
@@ -656,7 +657,7 @@ namespace InitDB
                 this.initializeDataChk.Checked,
                 this.syncProceduresChk.Checked,
                 this.createFKsChk.Checked,
-                this.createIndicesChk.Checked,
+                this.createIndexesChk.Checked,
                 this.installExtensionsChk.Checked);
 
             if (this.sessions.ContainsKey(sesh.Name))
@@ -726,7 +727,7 @@ namespace InitDB
                     this.initializeDataChk.Checked = this.CurrentSession.InitializeData;
                     this.syncProceduresChk.Checked = this.CurrentSession.SyncStoredProcedures;
                     this.createFKsChk.Checked = this.CurrentSession.CreateFKs;
-                    this.createIndicesChk.Checked = this.CurrentSession.CreateIndices;
+                    this.createIndexesChk.Checked = this.CurrentSession.CreateIndices;
                     this.installExtensionsChk.Checked = this.CurrentSession.InstallExtensions;
                     this.txtStdOut.Text = "";
                     this.txtStdErr.Text = "";
@@ -802,7 +803,7 @@ namespace InitDB
                 db.AlterDatabase(script);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void optionsBtn_Click(object sender, EventArgs e)
         {
             if (this.optionsDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -813,6 +814,90 @@ namespace InitDB
             else
             {
                 this.DisplayOptions();
+            }
+        }
+
+        private void ApplyFilters()
+        {
+            FilterTables();
+            FilterRoutines();
+            FilterInit();
+            FilterConstraints();
+            FilterIndexes();
+        }
+
+        private void createTablesChk_CheckedChanged(object sender, EventArgs e)
+        {
+            FilterTables();
+        }
+
+        private void syncProceduresChk_CheckedChanged(object sender, EventArgs e)
+        {
+            FilterRoutines();
+        }
+
+        private void initializeDataChk_CheckedChanged(object sender, EventArgs e)
+        {
+            FilterInit();
+        }
+
+        private void createFKsChk_CheckedChanged(object sender, EventArgs e)
+        {
+            FilterConstraints();
+        }
+
+        private void createIndicesChk_CheckedChanged(object sender, EventArgs e)
+        {
+            FilterIndexes();
+        }
+
+        private void FilterIndexes()
+        {
+            FilterScripts(createIndexesChk.Checked,
+                ScriptType.DropIndex,
+                ScriptType.CreateIndex);
+        }
+
+        private void FilterConstraints()
+        {
+            FilterScripts(createFKsChk.Checked,
+                ScriptType.DropRelationship,
+                ScriptType.DropPrimaryKey,
+                ScriptType.CreateRelationship,
+                ScriptType.CreatePrimaryKey);
+        }
+
+        private void FilterInit()
+        {
+            FilterScripts(initializeDataChk.Checked,
+                ScriptType.InitializeData);
+        }
+
+        private void FilterRoutines()
+        {
+            FilterScripts(syncProceduresChk.Checked,
+                ScriptType.DropRoutine,
+                ScriptType.CreateRoutine);
+        }
+
+        private void FilterTables()
+        {
+            FilterScripts(createTablesChk.Checked,
+                ScriptType.DropTable,
+                ScriptType.CreateTable,
+                ScriptType.DropColumn,
+                ScriptType.CreateColumn);
+        }
+
+        private void FilterScripts(bool value, params ScriptType[] types)
+        {
+            foreach (DataGridViewRow row in pendingScriptsGV.Rows)
+            {
+                var script = (ScriptStatus)row.DataBoundItem;
+                if (types.Contains(script.ScriptType))
+                {
+                    script.Run = value;
+                }
             }
         }
     }

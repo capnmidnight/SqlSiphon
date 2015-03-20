@@ -30,6 +30,12 @@
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.pendingScriptsGV = new System.Windows.Forms.DataGridView();
+            this.pendingScriptRunChoiceColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.pendingScriptTypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pendingScriptNameColumn = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.pendingScriptScriptColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pendingScriptRunButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
             this.objFilterTB = new System.Windows.Forms.TextBox();
             this.saveSessionButton = new System.Windows.Forms.Button();
             this.label14 = new System.Windows.Forms.Label();
@@ -52,7 +58,7 @@
             this.createLoginChk = new System.Windows.Forms.CheckBox();
             this.runButton = new System.Windows.Forms.Button();
             this.createTablesChk = new System.Windows.Forms.CheckBox();
-            this.createIndicesChk = new System.Windows.Forms.CheckBox();
+            this.createIndexesChk = new System.Windows.Forms.CheckBox();
             this.syncProceduresChk = new System.Windows.Forms.CheckBox();
             this.initializeDataChk = new System.Windows.Forms.CheckBox();
             this.createFKsChk = new System.Windows.Forms.CheckBox();
@@ -61,7 +67,7 @@
             this.analyzeButton = new System.Windows.Forms.Button();
             this.installExtensionsChk = new System.Windows.Forms.CheckBox();
             this.deleteSessionButton = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.optionsBtn = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabConnectionProperties = new System.Windows.Forms.TabPage();
             this.tabStdOut = new System.Windows.Forms.TabPage();
@@ -71,16 +77,11 @@
             this.tabStdErr = new System.Windows.Forms.TabPage();
             this.txtStdErr = new System.Windows.Forms.TextBox();
             this.tabScripts = new System.Windows.Forms.TabPage();
-            this.pendingScriptsGV = new System.Windows.Forms.DataGridView();
             this.label7 = new System.Windows.Forms.Label();
             this.savedSessionList = new System.Windows.Forms.ComboBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.pendingScriptRunChoiceColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.pendingScriptTypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pendingScriptNameColumn = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.pendingScriptScriptColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pendingScriptRunButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pendingScriptsGV)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabConnectionProperties.SuspendLayout();
             this.tabStdOut.SuspendLayout();
@@ -89,8 +90,6 @@
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.tabStdErr.SuspendLayout();
-            this.tabScripts.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pendingScriptsGV)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -102,6 +101,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 104F));
+            this.tableLayoutPanel1.Controls.Add(this.pendingScriptsGV, 0, 10);
             this.tableLayoutPanel1.Controls.Add(this.objFilterTB, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.saveSessionButton, 4, 11);
             this.tableLayoutPanel1.Controls.Add(this.label14, 0, 5);
@@ -124,7 +124,7 @@
             this.tableLayoutPanel1.Controls.Add(this.createLoginChk, 1, 7);
             this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 5);
             this.tableLayoutPanel1.Controls.Add(this.createTablesChk, 1, 9);
-            this.tableLayoutPanel1.Controls.Add(this.createIndicesChk, 2, 9);
+            this.tableLayoutPanel1.Controls.Add(this.createIndexesChk, 2, 9);
             this.tableLayoutPanel1.Controls.Add(this.syncProceduresChk, 2, 6);
             this.tableLayoutPanel1.Controls.Add(this.initializeDataChk, 2, 7);
             this.tableLayoutPanel1.Controls.Add(this.createFKsChk, 2, 8);
@@ -133,7 +133,6 @@
             this.tableLayoutPanel1.Controls.Add(this.analyzeButton, 5, 0);
             this.tableLayoutPanel1.Controls.Add(this.installExtensionsChk, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.deleteSessionButton, 5, 11);
-            this.tableLayoutPanel1.Controls.Add(this.button1, 3, 11);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -150,8 +149,71 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(963, 391);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(963, 607);
             this.tableLayoutPanel1.TabIndex = 0;
+            // 
+            // pendingScriptsGV
+            // 
+            this.pendingScriptsGV.AllowUserToAddRows = false;
+            this.pendingScriptsGV.AllowUserToDeleteRows = false;
+            this.pendingScriptsGV.AllowUserToResizeRows = false;
+            this.pendingScriptsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.pendingScriptsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.pendingScriptRunChoiceColumn,
+            this.pendingScriptTypeColumn,
+            this.pendingScriptNameColumn,
+            this.pendingScriptScriptColumn,
+            this.pendingScriptRunButtonColumn});
+            this.tableLayoutPanel1.SetColumnSpan(this.pendingScriptsGV, 6);
+            this.pendingScriptsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pendingScriptsGV.Location = new System.Drawing.Point(3, 283);
+            this.pendingScriptsGV.Name = "pendingScriptsGV";
+            this.pendingScriptsGV.ReadOnly = true;
+            this.pendingScriptsGV.Size = new System.Drawing.Size(957, 291);
+            this.pendingScriptsGV.TabIndex = 4;
+            this.pendingScriptsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
+            // 
+            // pendingScriptRunChoiceColumn
+            // 
+            this.pendingScriptRunChoiceColumn.DataPropertyName = "Run";
+            this.pendingScriptRunChoiceColumn.HeaderText = "run";
+            this.pendingScriptRunChoiceColumn.Name = "pendingScriptRunChoiceColumn";
+            this.pendingScriptRunChoiceColumn.ReadOnly = true;
+            // 
+            // pendingScriptTypeColumn
+            // 
+            this.pendingScriptTypeColumn.DataPropertyName = "ScriptType";
+            this.pendingScriptTypeColumn.HeaderText = "type";
+            this.pendingScriptTypeColumn.Name = "pendingScriptTypeColumn";
+            this.pendingScriptTypeColumn.ReadOnly = true;
+            // 
+            // pendingScriptNameColumn
+            // 
+            this.pendingScriptNameColumn.DataPropertyName = "Name";
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            this.pendingScriptNameColumn.HeaderText = "name";
+            this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
+            this.pendingScriptNameColumn.ReadOnly = true;
+            this.pendingScriptNameColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.pendingScriptNameColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.pendingScriptNameColumn.Width = 200;
+            // 
+            // pendingScriptScriptColumn
+            // 
+            this.pendingScriptScriptColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.pendingScriptScriptColumn.DataPropertyName = "Script";
+            this.pendingScriptScriptColumn.HeaderText = "script";
+            this.pendingScriptScriptColumn.Name = "pendingScriptScriptColumn";
+            this.pendingScriptScriptColumn.ReadOnly = true;
+            // 
+            // pendingScriptRunButtonColumn
+            // 
+            this.pendingScriptRunButtonColumn.HeaderText = "";
+            this.pendingScriptRunButtonColumn.Name = "pendingScriptRunButtonColumn";
+            this.pendingScriptRunButtonColumn.ReadOnly = true;
+            this.pendingScriptRunButtonColumn.Text = "run";
+            this.pendingScriptRunButtonColumn.UseColumnTextForButtonValue = true;
             // 
             // objFilterTB
             // 
@@ -164,7 +226,7 @@
             // 
             // saveSessionButton
             // 
-            this.saveSessionButton.Location = new System.Drawing.Point(762, 364);
+            this.saveSessionButton.Location = new System.Drawing.Point(762, 580);
             this.saveSessionButton.Name = "saveSessionButton";
             this.saveSessionButton.Size = new System.Drawing.Size(94, 24);
             this.saveSessionButton.TabIndex = 21;
@@ -371,18 +433,20 @@
             this.createTablesChk.TabIndex = 18;
             this.createTablesChk.Text = "Create tables and columns";
             this.createTablesChk.UseVisualStyleBackColor = true;
+            this.createTablesChk.CheckedChanged += new System.EventHandler(this.createTablesChk_CheckedChanged);
             // 
-            // createIndicesChk
+            // createIndexesChk
             // 
-            this.createIndicesChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.createIndicesChk.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.createIndicesChk, 2);
-            this.createIndicesChk.Location = new System.Drawing.Point(434, 259);
-            this.createIndicesChk.Name = "createIndicesChk";
-            this.createIndicesChk.Size = new System.Drawing.Size(300, 17);
-            this.createIndicesChk.TabIndex = 29;
-            this.createIndicesChk.Text = "Create indices (NOT recommended for existing databases)";
-            this.createIndicesChk.UseVisualStyleBackColor = true;
+            this.createIndexesChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.createIndexesChk.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.createIndexesChk, 2);
+            this.createIndexesChk.Location = new System.Drawing.Point(434, 259);
+            this.createIndexesChk.Name = "createIndexesChk";
+            this.createIndexesChk.Size = new System.Drawing.Size(300, 17);
+            this.createIndexesChk.TabIndex = 29;
+            this.createIndexesChk.Text = "Create indices (NOT recommended for existing databases)";
+            this.createIndexesChk.UseVisualStyleBackColor = true;
+            this.createIndexesChk.CheckedChanged += new System.EventHandler(this.createIndicesChk_CheckedChanged);
             // 
             // syncProceduresChk
             // 
@@ -396,6 +460,7 @@
             this.syncProceduresChk.TabIndex = 20;
             this.syncProceduresChk.Text = "Sync stored procedures";
             this.syncProceduresChk.UseVisualStyleBackColor = true;
+            this.syncProceduresChk.CheckedChanged += new System.EventHandler(this.syncProceduresChk_CheckedChanged);
             // 
             // initializeDataChk
             // 
@@ -407,6 +472,7 @@
             this.initializeDataChk.TabIndex = 19;
             this.initializeDataChk.Text = "Initialize data";
             this.initializeDataChk.UseVisualStyleBackColor = true;
+            this.initializeDataChk.CheckedChanged += new System.EventHandler(this.initializeDataChk_CheckedChanged);
             // 
             // createFKsChk
             // 
@@ -418,6 +484,7 @@
             this.createFKsChk.TabIndex = 28;
             this.createFKsChk.Text = "Create constraints";
             this.createFKsChk.UseVisualStyleBackColor = true;
+            this.createFKsChk.CheckedChanged += new System.EventHandler(this.createFKsChk_CheckedChanged);
             // 
             // label12
             // 
@@ -464,7 +531,7 @@
             // deleteSessionButton
             // 
             this.deleteSessionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.deleteSessionButton.Location = new System.Drawing.Point(862, 364);
+            this.deleteSessionButton.Location = new System.Drawing.Point(862, 580);
             this.deleteSessionButton.Name = "deleteSessionButton";
             this.deleteSessionButton.Size = new System.Drawing.Size(98, 24);
             this.deleteSessionButton.TabIndex = 23;
@@ -472,15 +539,15 @@
             this.deleteSessionButton.UseVisualStyleBackColor = true;
             this.deleteSessionButton.Click += new System.EventHandler(this.deleteSessionButton_Click);
             // 
-            // button1
+            // optionsBtn
             // 
-            this.button1.Location = new System.Drawing.Point(595, 364);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 37;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.optionsBtn.Location = new System.Drawing.Point(914, 7);
+            this.optionsBtn.Name = "optionsBtn";
+            this.optionsBtn.Size = new System.Drawing.Size(75, 23);
+            this.optionsBtn.TabIndex = 37;
+            this.optionsBtn.Text = "Options";
+            this.optionsBtn.UseVisualStyleBackColor = true;
+            this.optionsBtn.Click += new System.EventHandler(this.optionsBtn_Click);
             // 
             // tabControl1
             // 
@@ -494,7 +561,7 @@
             this.tabControl1.Location = new System.Drawing.Point(12, 36);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(977, 423);
+            this.tabControl1.Size = new System.Drawing.Size(977, 639);
             this.tabControl1.TabIndex = 18;
             // 
             // tabConnectionProperties
@@ -503,7 +570,7 @@
             this.tabConnectionProperties.Location = new System.Drawing.Point(4, 22);
             this.tabConnectionProperties.Name = "tabConnectionProperties";
             this.tabConnectionProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConnectionProperties.Size = new System.Drawing.Size(969, 397);
+            this.tabConnectionProperties.Size = new System.Drawing.Size(969, 613);
             this.tabConnectionProperties.TabIndex = 9;
             this.tabConnectionProperties.Text = "Properties";
             this.tabConnectionProperties.UseVisualStyleBackColor = true;
@@ -514,7 +581,7 @@
             this.tabStdOut.Location = new System.Drawing.Point(4, 22);
             this.tabStdOut.Name = "tabStdOut";
             this.tabStdOut.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdOut.Size = new System.Drawing.Size(969, 397);
+            this.tabStdOut.Size = new System.Drawing.Size(969, 613);
             this.tabStdOut.TabIndex = 0;
             this.tabStdOut.Text = "Standard output";
             this.tabStdOut.UseVisualStyleBackColor = true;
@@ -533,8 +600,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.txtStdOut);
-            this.splitContainer1.Size = new System.Drawing.Size(963, 391);
-            this.splitContainer1.SplitterDistance = 79;
+            this.splitContainer1.Size = new System.Drawing.Size(963, 607);
+            this.splitContainer1.SplitterDistance = 120;
             this.splitContainer1.TabIndex = 2;
             // 
             // generalScriptTB
@@ -546,7 +613,7 @@
             this.generalScriptTB.Location = new System.Drawing.Point(0, 0);
             this.generalScriptTB.Multiline = true;
             this.generalScriptTB.Name = "generalScriptTB";
-            this.generalScriptTB.Size = new System.Drawing.Size(963, 79);
+            this.generalScriptTB.Size = new System.Drawing.Size(963, 120);
             this.generalScriptTB.TabIndex = 0;
             this.generalScriptTB.Text = "-- (hit CTRL+Enter to run script)";
             // 
@@ -561,7 +628,7 @@
             this.txtStdOut.Name = "txtStdOut";
             this.txtStdOut.ReadOnly = true;
             this.txtStdOut.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdOut.Size = new System.Drawing.Size(963, 308);
+            this.txtStdOut.Size = new System.Drawing.Size(963, 483);
             this.txtStdOut.TabIndex = 1;
             this.txtStdOut.TabStop = false;
             this.txtStdOut.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -572,7 +639,7 @@
             this.tabStdErr.Location = new System.Drawing.Point(4, 22);
             this.tabStdErr.Name = "tabStdErr";
             this.tabStdErr.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdErr.Size = new System.Drawing.Size(969, 397);
+            this.tabStdErr.Size = new System.Drawing.Size(969, 613);
             this.tabStdErr.TabIndex = 1;
             this.tabStdErr.Text = "Standard error";
             this.tabStdErr.UseVisualStyleBackColor = true;
@@ -588,41 +655,20 @@
             this.txtStdErr.Name = "txtStdErr";
             this.txtStdErr.ReadOnly = true;
             this.txtStdErr.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdErr.Size = new System.Drawing.Size(963, 391);
+            this.txtStdErr.Size = new System.Drawing.Size(963, 607);
             this.txtStdErr.TabIndex = 0;
             this.txtStdErr.TabStop = false;
             this.txtStdErr.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
             // 
             // tabScripts
             // 
-            this.tabScripts.Controls.Add(this.pendingScriptsGV);
             this.tabScripts.Location = new System.Drawing.Point(4, 22);
             this.tabScripts.Name = "tabScripts";
             this.tabScripts.Padding = new System.Windows.Forms.Padding(3);
-            this.tabScripts.Size = new System.Drawing.Size(969, 397);
+            this.tabScripts.Size = new System.Drawing.Size(969, 613);
             this.tabScripts.TabIndex = 10;
             this.tabScripts.Text = "Pending scripts";
             this.tabScripts.UseVisualStyleBackColor = true;
-            // 
-            // pendingScriptsGV
-            // 
-            this.pendingScriptsGV.AllowUserToAddRows = false;
-            this.pendingScriptsGV.AllowUserToDeleteRows = false;
-            this.pendingScriptsGV.AllowUserToResizeRows = false;
-            this.pendingScriptsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.pendingScriptsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.pendingScriptRunChoiceColumn,
-            this.pendingScriptTypeColumn,
-            this.pendingScriptNameColumn,
-            this.pendingScriptScriptColumn,
-            this.pendingScriptRunButtonColumn});
-            this.pendingScriptsGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pendingScriptsGV.Location = new System.Drawing.Point(3, 3);
-            this.pendingScriptsGV.Name = "pendingScriptsGV";
-            this.pendingScriptsGV.ReadOnly = true;
-            this.pendingScriptsGV.Size = new System.Drawing.Size(963, 391);
-            this.pendingScriptsGV.TabIndex = 4;
-            this.pendingScriptsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
             // label7
             // 
@@ -640,7 +686,7 @@
             this.savedSessionList.FormattingEnabled = true;
             this.savedSessionList.Location = new System.Drawing.Point(102, 9);
             this.savedSessionList.Name = "savedSessionList";
-            this.savedSessionList.Size = new System.Drawing.Size(887, 21);
+            this.savedSessionList.Size = new System.Drawing.Size(806, 21);
             this.savedSessionList.Sorted = true;
             this.savedSessionList.TabIndex = 1;
             this.savedSessionList.SelectedIndexChanged += new System.EventHandler(this.savedSessionList_SelectedIndexChanged);
@@ -651,60 +697,20 @@
             this.openFileDialog1.FileName = "openFileDialog1";
             this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
             // 
-            // pendingScriptRunChoiceColumn
-            // 
-            this.pendingScriptRunChoiceColumn.DataPropertyName = "Run";
-            this.pendingScriptRunChoiceColumn.HeaderText = "run";
-            this.pendingScriptRunChoiceColumn.Name = "pendingScriptRunChoiceColumn";
-            this.pendingScriptRunChoiceColumn.ReadOnly = true;
-            // 
-            // pendingScriptTypeColumn
-            // 
-            this.pendingScriptTypeColumn.DataPropertyName = "ScriptType";
-            this.pendingScriptTypeColumn.HeaderText = "type";
-            this.pendingScriptTypeColumn.Name = "pendingScriptTypeColumn";
-            this.pendingScriptTypeColumn.ReadOnly = true;
-            // 
-            // pendingScriptNameColumn
-            // 
-            this.pendingScriptNameColumn.DataPropertyName = "Name";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle1;
-            this.pendingScriptNameColumn.HeaderText = "name";
-            this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
-            this.pendingScriptNameColumn.ReadOnly = true;
-            this.pendingScriptNameColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.pendingScriptNameColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.pendingScriptNameColumn.Width = 200;
-            // 
-            // pendingScriptScriptColumn
-            // 
-            this.pendingScriptScriptColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.pendingScriptScriptColumn.DataPropertyName = "Script";
-            this.pendingScriptScriptColumn.HeaderText = "script";
-            this.pendingScriptScriptColumn.Name = "pendingScriptScriptColumn";
-            this.pendingScriptScriptColumn.ReadOnly = true;
-            // 
-            // pendingScriptRunButtonColumn
-            // 
-            this.pendingScriptRunButtonColumn.HeaderText = "";
-            this.pendingScriptRunButtonColumn.Name = "pendingScriptRunButtonColumn";
-            this.pendingScriptRunButtonColumn.ReadOnly = true;
-            this.pendingScriptRunButtonColumn.Text = "run";
-            this.pendingScriptRunButtonColumn.UseColumnTextForButtonValue = true;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1001, 471);
+            this.ClientSize = new System.Drawing.Size(1001, 687);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.savedSessionList);
+            this.Controls.Add(this.optionsBtn);
             this.Name = "MainForm";
             this.Text = "Initialize database";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pendingScriptsGV)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tabConnectionProperties.ResumeLayout(false);
             this.tabStdOut.ResumeLayout(false);
@@ -716,8 +722,6 @@
             this.splitContainer1.ResumeLayout(false);
             this.tabStdErr.ResumeLayout(false);
             this.tabStdErr.PerformLayout();
-            this.tabScripts.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pendingScriptsGV)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -757,7 +761,7 @@
         private System.Windows.Forms.TextBox adminUserTB;
         private System.Windows.Forms.TextBox adminPassTB;
         private System.Windows.Forms.CheckBox createFKsChk;
-        private System.Windows.Forms.CheckBox createIndicesChk;
+        private System.Windows.Forms.CheckBox createIndexesChk;
         private System.Windows.Forms.Button analyzeButton;
         private System.Windows.Forms.TextBox txtStdOut;
         private System.Windows.Forms.Label label12;
@@ -768,7 +772,7 @@
         private System.Windows.Forms.TabPage tabConnectionProperties;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TextBox generalScriptTB;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button optionsBtn;
         private System.Windows.Forms.TabPage tabScripts;
         private System.Windows.Forms.DataGridView pendingScriptsGV;
         private System.Windows.Forms.DataGridViewCheckBoxColumn pendingScriptRunChoiceColumn;
