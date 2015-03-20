@@ -418,21 +418,21 @@ namespace InitDB
                 }
 
                 RunProcess((b) =>
+                {
+                    // put everything back the way it was
+                    if (lineAdded)
                     {
-                        // put everything back the way it was
-                        if (lineAdded)
+                        if (originalConf == null)
                         {
-                            if (originalConf == null)
-                            {
-                                File.Delete(confPath);
-                            }
-                            else
-                            {
-                                File.WriteAllLines(confPath, originalConf);
-                            }
+                            File.Delete(confPath);
                         }
-                        complete(b);
-                    }, this.optionsDialog.PSQLPath, "-h " + server, string.IsNullOrWhiteSpace(port) ? null : "-p " + port, "-U " + adminUserTB.Text, string.Format(" -{0} \"{1}\"", isFile ? "f" : "c", qry), (database != null) ? "-d " + database : null);
+                        else
+                        {
+                            File.WriteAllLines(confPath, originalConf);
+                        }
+                    }
+                    complete(b);
+                }, this.optionsDialog.PSQLPath, "-h " + server, string.IsNullOrWhiteSpace(port) ? null : "-p " + port, "-U " + adminUserTB.Text, string.Format(" -{0} \"{1}\"", isFile ? "f" : "c", qry), (database != null) ? "-d " + database : null);
             }
         }
 
