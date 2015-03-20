@@ -39,8 +39,7 @@ namespace InitDB
 @"<exception depth=""{0}"" type=""{1}"">
     <source>{2}</source>
     <message>{3}</message>
-    <stackTrace>{4}</stackTrace>
-</exception>
+    <stackTrace>{4}</stackTrace>ception>
 ", i, exp.GetType().FullName, exp.Source, exp.Message, exp.StackTrace);
                 exp = exp.InnerException;
             }
@@ -58,6 +57,13 @@ namespace InitDB
         {
             InitializeComponent();
             this.pendingScriptsGV.AutoGenerateColumns = false;
+            foreach (ScriptType value in Enum.GetValues(typeof(ScriptType)))
+            {
+                if (value != ScriptType.None)
+                {
+                    this.filterTypesCBL.Items.Add(value);
+                }
+            }
             this.Icon = Properties.Resources.InitDBLogo;
             this.txtStdOut.Text = string.Empty;
             this.txtStdErr.Text = string.Empty;
@@ -105,7 +111,7 @@ namespace InitDB
 
             this.Invoke(new Action(() =>
             {
-                this.installExtensionsChk.Visible = this.IsPostgres;
+                this.createExtensionsBtn.Visible = this.IsPostgres;
                 this.dbType.Text = dbType;
             }));
             return connector;
@@ -445,7 +451,6 @@ namespace InitDB
 
         private void RunQuery(string qry, string database, bool isFile, Action<bool> complete)
         {
-
             if (this.IsPostgres)
             {
                 RunQueryWithPSQL(qry, database, isFile, complete);
@@ -456,132 +461,108 @@ namespace InitDB
             }
         }
 
-        private void SetupDB()
-        {
-            var connector = this.MakeDatabaseConnector();
 
-            if (createDatabaseChk.Checked)
+        private void createExtensionsBtn_Click(object sender, EventArgs e)
+        {
+            RunQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", DatabaseName, false, (succeeded) =>
             {
-                RunQuery(string.Format("CREATE DATABASE {0};", DatabaseName), null, false, (succeeded) =>
+                if (succeeded)
                 {
-                    SetupDB2(connector, succeeded);
-                });
-            }
-            else
-            {
-                SetupDB2(connector, true);
-            }
-        }
-
-        private void SetupDB2(Func<ISqlSiphon> connector, bool succeeded)
-        {
-            if (this.IsPostgres && succeeded && installExtensionsChk.Checked)
-            {
-                RunQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", DatabaseName, false, (succeeded2) => SetupDB2_2(connector, succeeded2));
-            }
-            else
-            {
-                SetupDB3(connector, succeeded);
-            }
-        }
-
-        private void SetupDB2_2(Func<ISqlSiphon> connector, bool succeeded)
-        {
-            if (succeeded)
-            {
-                RunQuery("CREATE EXTENSION \\\"postgis\\\";", DatabaseName, false, (succeeded2) => SetupDB3(connector, succeeded2));
-            }
-            else
-            {
-                SetupDB3(connector, succeeded);
-            }
-        }
-
-        private void SetupDB3(Func<ISqlSiphon> connector, bool succeeded)
-        {
-            if (succeeded && createLoginChk.Checked)
-            {
-                if (this.IsPostgres)
-                {
-                    RunQuery(string.Format("CREATE USER {0} WITH PASSWORD '{1}'", sqlUserTB.Text, sqlPassTB.Text), null, false, (succeeded2) => SetupDB5(connector, succeeded2));
+                    RunQuery("CREATE EXTENSION \\\"postgis\\\";", DatabaseName, false, StepsComplete);
                 }
                 else
                 {
-                    RunQuery(string.Format("CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};", sqlUserTB.Text, sqlPassTB.Text, DatabaseName), null, false, (succeeded2) => SetupDB4_2(connector, succeeded2));
+                    StepsComplete(false);
                 }
+            });
+        }
+
+        private void createUserBtn_Click(object sender, EventArgs e)
+        {
+            if (this.IsPostgres)
+            {
+                RunQuery(string.Format("CREATE USER {0} WITH PASSWORD '{1}'", sqlUserTB.Text, sqlPassTB.Text), null, false, StepsComplete);
             }
             else
             {
-                SetupDB5(connector, succeeded);
+                RunQuery(string.Format("CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};", sqlUserTB.Text, sqlPassTB.Text, DatabaseName), null, false, SetupDB4_2);
             }
         }
 
-        private void SetupDB4_2(Func<ISqlSiphon> connector, bool succeeded)
+        private void SetupDB4_2(bool succeeded)
         {
             if (succeeded)
             {
-                RunQuery(string.Format("CREATE USER {0} FOR LOGIN {0};", sqlUserTB.Text), DatabaseName, false, (succeeded2) => SetupDB4_3(connector, succeeded2));
+                RunQuery(string.Format("CREATE USER {0} FOR LOGIN {0};", sqlUserTB.Text), DatabaseName, false, SetupDB4_3);
             }
             else
             {
-                SetupDB4_3(connector, succeeded);
+                StepsComplete(false);
             }
         }
 
-        private void SetupDB4_3(Func<ISqlSiphon> connector, bool succeeded)
+        private void SetupDB4_3(bool succeeded)
         {
             if (succeeded)
             {
-                RunQuery(string.Format("ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;", sqlUserTB.Text), DatabaseName, false, (succeeded2) => SetupDB4_4(connector, succeeded2));
+                RunQuery(string.Format("ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;", sqlUserTB.Text), DatabaseName, false, SetupDB4_4);
             }
             else
             {
-                SetupDB4_4(connector, succeeded);
+                StepsComplete(false);
             }
         }
 
-        private void SetupDB4_4(Func<ISqlSiphon> connector, bool succeeded)
+        private void SetupDB4_4(bool succeeded)
         {
             if (succeeded)
             {
-                RunQuery(string.Format("ALTER ROLE db_owner ADD MEMBER {0};", sqlUserTB.Text), DatabaseName, false, (succeeded2) => SetupDB5(connector, succeeded2));
+                RunQuery(string.Format("ALTER ROLE db_owner ADD MEMBER {0};", sqlUserTB.Text), DatabaseName, false, StepsComplete);
             }
             else
             {
-                SetupDB5(connector, succeeded);
+                StepsComplete(false);
             }
         }
 
-        private void SetupDB5(Func<ISqlSiphon> connector, bool succeeded)
+        private void StepsComplete(bool succeeded)
         {
             if (succeeded)
             {
-                using (var db = connector())
+                this.ToOutput("Succeeded.");
+            }
+            else
+            {
+                this.ToError("Failed.");
+            }
+        }
+
+        private void SetupDB()
+        {
+            var connector = MakeDatabaseConnector();
+            var db = connector();
+            db.Progress += db_Progress;
+            var delta = db.Analyze(this.databaseTB.Text, ObjectFilter);
+            DisplayDelta(delta);
+            var t = db.GetType();
+            this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
+
+            RunScripts(delta.Scripts, db, (succeed) =>
+            {
+                if (succeed)
                 {
-                    db.Progress += db_Progress;
-                    var delta = db.Analyze(ObjectFilter);
-                    DisplayDelta(delta);
-                    var t = db.GetType();
-                    this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
-                    if (succeeded)
-                    {
-                        succeeded = RunScripts(delta.Scripts, db);
-                    }
-                    delta = db.Analyze(ObjectFilter);
-                    DisplayDelta(delta);
+                    this.ToOutput("All done", true);
                 }
-            }
+                else
+                {
+                    this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
+                }
 
-            if (succeeded)
-            {
-                this.ToOutput("All done", true);
-            }
-            else
-            {
-                this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
-            }
-
-            this.SyncUI(() => runButton.Enabled = true);
+                delta = db.Analyze(this.databaseTB.Text, ObjectFilter);
+                DisplayDelta(delta);
+                this.SyncUI(() => runButton.Enabled = true);
+                db.Dispose();
+            });
         }
 
         private string DatabaseName
@@ -597,26 +578,37 @@ namespace InitDB
             }
         }
 
-        private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
+        private void RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db, Action<bool> complete)
         {
-            var success = true;
-            foreach (var script in scripts)
+            bool defered = false;
+            try
             {
-                if (script.Run)
+                foreach (var script in scripts)
                 {
-                    try
+                    if (script.Run)
                     {
                         this.ToOutput(string.Format("{0} {1}.", script.Script, script.Name));
-                        db.AlterDatabase(script);
-                    }
-                    catch (Exception exp)
-                    {
-                        this.ToError(exp);
-                        success = false;
+                        if (script.ScriptType == ScriptType.CreateCatalogue)
+                        {
+                            defered = true;
+                            this.RunQuery(script.Script, null, false, complete);
+                        }
+                        else
+                        {
+                            db.AlterDatabase(script);
+                        }
                     }
                 }
+                if (!defered)
+                {
+                    complete(true);
+                }
             }
-            return success;
+            catch (Exception exp)
+            {
+                this.ToError(exp);
+                complete(false);
+            }
         }
 
         private void db_Progress(object sender, DataProgressEventArgs e)
@@ -624,7 +616,20 @@ namespace InitDB
             this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow + 1, e.RowCount, e.Message));
         }
 
-        private Regex ObjectFilter { get { return new Regex(this.objFilterTB.Text, RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled); } }
+        private Regex ObjectFilter
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(this.objFilterTB.Text))
+                {
+                    return null;
+                }
+                else
+                {
+                    return new Regex(this.objFilterTB.Text, RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                }
+            }
+        }
 
         private void analyzeButton_Click(object sender, EventArgs e)
         {
@@ -639,7 +644,7 @@ namespace InitDB
                         this.ToOutput("Synchronizing schema.");
                         using (var db = connector())
                         {
-                            DisplayDelta(db.Analyze(ObjectFilter));
+                            DisplayDelta(db.Analyze(this.databaseTB.Text, ObjectFilter));
                         }
                         this.ToOutput("Schema synched.");
                     }
@@ -657,7 +662,7 @@ namespace InitDB
             {
                 var list = new BindingList<ScriptStatus>(delta.Scripts.OrderBy(s => s.ScriptType).ToList());
                 this.pendingScriptsGV.DataSource = list;
-                ApplyFilters();
+                FilterScripts();
                 this.analyzeButton.Enabled = true;
             });
         }
@@ -704,17 +709,12 @@ namespace InitDB
                 this.sqlPassTB.Text,
                 this.assemblyTB.Text,
                 this.objFilterTB.Text,
-                this.createDatabaseChk.Checked,
-                this.createLoginChk.Checked,
-                this.createTablesChk.Checked,
-                this.initializeDataChk.Checked,
-                this.syncProceduresChk.Checked,
-                this.createFKsChk.Checked,
-                this.createIndexesChk.Checked,
-                this.installExtensionsChk.Checked);
+                this.filterTypesCBL.CheckedItems.Cast<ScriptType>().ToArray());
 
             if (this.sessions.ContainsKey(sesh.Name))
+            {
                 this.sessions[sesh.Name] = sesh;
+            }
             else
             {
                 this.sessions.Add(sesh.Name, sesh);
@@ -741,7 +741,8 @@ namespace InitDB
 
         private void SaveSessions()
         {
-            File.WriteAllLines(SESSIONS_FILENAME, this.sessions.Values.Select(v => v.ToString()).ToArray());
+            var lines = this.sessions.Values.Select(v => v.ToString()).ToArray();
+            File.WriteAllLines(SESSIONS_FILENAME, lines);
         }
 
         private void deleteSessionButton_Click(object sender, EventArgs e)
@@ -774,14 +775,14 @@ namespace InitDB
                     this.sqlPassTB.Text = this.CurrentSession.LoginPassword;
                     this.assemblyTB.Text = this.CurrentSession.AssemblyFile;
                     this.objFilterTB.Text = this.CurrentSession.ObjectFilter ?? this.optionsDialog.DefaultObjectFilterRegexText;
-                    this.createDatabaseChk.Checked = this.CurrentSession.CreateDatabase;
-                    this.createLoginChk.Checked = this.CurrentSession.CreateLogin;
-                    this.createTablesChk.Checked = this.CurrentSession.CreateSchemaObjects;
-                    this.initializeDataChk.Checked = this.CurrentSession.InitializeData;
-                    this.syncProceduresChk.Checked = this.CurrentSession.SyncStoredProcedures;
-                    this.createFKsChk.Checked = this.CurrentSession.CreateFKs;
-                    this.createIndexesChk.Checked = this.CurrentSession.CreateIndices;
-                    this.installExtensionsChk.Checked = this.CurrentSession.InstallExtensions;
+                    this.createExtensionsBtn.Visible = false;
+                    if (this.CurrentSession.ScriptTypes != null)
+                    {
+                        for (int i = 0; i < this.filterTypesCBL.Items.Count; ++i)
+                        {
+                            this.filterTypesCBL.SetItemChecked(i, this.CurrentSession.ScriptTypes.Contains((ScriptType)this.filterTypesCBL.Items[i]));
+                        }
+                    }
                     this.txtStdOut.Text = "";
                     this.txtStdErr.Text = "";
                 }
@@ -861,87 +862,25 @@ namespace InitDB
             }
         }
 
-        private void ApplyFilters()
-        {
-            FilterTables();
-            FilterRoutines();
-            FilterInit();
-            FilterConstraints();
-            FilterIndexes();
-        }
 
-        private void createTablesChk_CheckedChanged(object sender, EventArgs e)
+        private void FilterScripts(ItemCheckEventArgs e = null)
         {
-            FilterTables();
-        }
-
-        private void syncProceduresChk_CheckedChanged(object sender, EventArgs e)
-        {
-            FilterRoutines();
-        }
-
-        private void initializeDataChk_CheckedChanged(object sender, EventArgs e)
-        {
-            FilterInit();
-        }
-
-        private void createFKsChk_CheckedChanged(object sender, EventArgs e)
-        {
-            FilterConstraints();
-        }
-
-        private void createIndicesChk_CheckedChanged(object sender, EventArgs e)
-        {
-            FilterIndexes();
-        }
-
-        private void FilterIndexes()
-        {
-            FilterScripts(createIndexesChk.Checked,
-                ScriptType.DropIndex,
-                ScriptType.CreateIndex);
-        }
-
-        private void FilterConstraints()
-        {
-            FilterScripts(createFKsChk.Checked,
-                ScriptType.DropRelationship,
-                ScriptType.DropPrimaryKey,
-                ScriptType.CreateRelationship,
-                ScriptType.CreatePrimaryKey);
-        }
-
-        private void FilterInit()
-        {
-            FilterScripts(initializeDataChk.Checked,
-                ScriptType.InitializeData);
-        }
-
-        private void FilterRoutines()
-        {
-            FilterScripts(syncProceduresChk.Checked,
-                ScriptType.DropRoutine,
-                ScriptType.CreateRoutine);
-        }
-
-        private void FilterTables()
-        {
-            FilterScripts(createTablesChk.Checked,
-                ScriptType.DropTable,
-                ScriptType.CreateTable,
-                ScriptType.DropColumn,
-                ScriptType.CreateColumn);
-        }
-
-        private void FilterScripts(bool value, params ScriptType[] types)
-        {
+            var types = this.filterTypesCBL.CheckedItems.Cast<ScriptType>().ToList();
+            if (e != null)
+            {
+                if (e.NewValue == CheckState.Checked)
+                {
+                    types.Add((ScriptType)this.filterTypesCBL.Items[e.Index]);
+                }
+                else
+                {
+                    types.Remove((ScriptType)this.filterTypesCBL.Items[e.Index]);
+                }
+            }
             foreach (DataGridViewRow row in pendingScriptsGV.Rows)
             {
                 var script = (ScriptStatus)row.DataBoundItem;
-                if (types.Contains(script.ScriptType))
-                {
-                    script.Run = value;
-                }
+                script.Run = types.Contains(script.ScriptType);
             }
         }
 
@@ -986,6 +925,11 @@ namespace InitDB
                 this.ToError(errorHandler(exp));
                 return false;
             }
+        }
+
+        private void filterTypesCBL_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            FilterScripts(e);
         }
     }
 }

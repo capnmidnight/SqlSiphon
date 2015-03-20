@@ -74,13 +74,19 @@ namespace SqlSiphon
         public DatabaseDelta(DatabaseState final, DatabaseState initial, ISqlSiphon dal)
         {
             this.Scripts = new List<ScriptStatus>();
-
-            ProcessSchemas(final.Schemata.ToDictionary(k => k), initial.Schemata.ToDictionary(k => k), dal);
-            ProcessTables(final.Tables, initial.Tables, dal);
-            ProcessIndexes(final.Indexes, initial.Indexes, dal);
-            ProcessRelationships(final.Relationships, initial.Relationships, dal);
-            ProcessKeys(final.PrimaryKeys, initial.PrimaryKeys, dal);
-            ProcessFunctions(final.Functions, initial.Functions, dal);
+            if (!initial.CatalogueExists)
+            {
+                this.Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, initial.CatalogueName, dal.MakeCreateCatalogueScript(initial.CatalogueName)));
+            }
+            else
+            {
+                ProcessSchemas(final.Schemata.ToDictionary(k => k), initial.Schemata.ToDictionary(k => k), dal);
+                ProcessTables(final.Tables, initial.Tables, dal);
+                ProcessIndexes(final.Indexes, initial.Indexes, dal);
+                ProcessRelationships(final.Relationships, initial.Relationships, dal);
+                ProcessKeys(final.PrimaryKeys, initial.PrimaryKeys, dal);
+                ProcessFunctions(final.Functions, initial.Functions, dal);
+            }
         }
 
         private void ProcessSchemas(Dictionary<string, string> finalSchemas, Dictionary<string, string> initialSchemas, ISqlSiphon dal)

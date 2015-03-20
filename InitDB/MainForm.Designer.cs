@@ -54,19 +54,15 @@
             this.databaseTB = new System.Windows.Forms.TextBox();
             this.assemblyTB = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.createDatabaseChk = new System.Windows.Forms.CheckBox();
-            this.createLoginChk = new System.Windows.Forms.CheckBox();
             this.runButton = new System.Windows.Forms.Button();
-            this.createTablesChk = new System.Windows.Forms.CheckBox();
-            this.createIndexesChk = new System.Windows.Forms.CheckBox();
-            this.syncProceduresChk = new System.Windows.Forms.CheckBox();
-            this.initializeDataChk = new System.Windows.Forms.CheckBox();
-            this.createFKsChk = new System.Windows.Forms.CheckBox();
             this.label12 = new System.Windows.Forms.Label();
             this.dbType = new System.Windows.Forms.Label();
             this.analyzeButton = new System.Windows.Forms.Button();
-            this.installExtensionsChk = new System.Windows.Forms.CheckBox();
             this.deleteSessionButton = new System.Windows.Forms.Button();
+            this.filterTypesCBL = new System.Windows.Forms.CheckedListBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.createUserBtn = new System.Windows.Forms.Button();
+            this.createExtensionsBtn = new System.Windows.Forms.Button();
             this.optionsBtn = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabConnectionProperties = new System.Windows.Forms.TabPage();
@@ -101,7 +97,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 104F));
-            this.tableLayoutPanel1.Controls.Add(this.pendingScriptsGV, 0, 10);
+            this.tableLayoutPanel1.Controls.Add(this.pendingScriptsGV, 1, 6);
             this.tableLayoutPanel1.Controls.Add(this.objFilterTB, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.saveSessionButton, 4, 11);
             this.tableLayoutPanel1.Controls.Add(this.label14, 0, 5);
@@ -120,19 +116,15 @@
             this.tableLayoutPanel1.Controls.Add(this.databaseTB, 3, 2);
             this.tableLayoutPanel1.Controls.Add(this.assemblyTB, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.label8, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.createDatabaseChk, 1, 6);
-            this.tableLayoutPanel1.Controls.Add(this.createLoginChk, 1, 7);
             this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 5);
-            this.tableLayoutPanel1.Controls.Add(this.createTablesChk, 1, 9);
-            this.tableLayoutPanel1.Controls.Add(this.createIndexesChk, 2, 9);
-            this.tableLayoutPanel1.Controls.Add(this.syncProceduresChk, 2, 6);
-            this.tableLayoutPanel1.Controls.Add(this.initializeDataChk, 2, 7);
-            this.tableLayoutPanel1.Controls.Add(this.createFKsChk, 2, 8);
             this.tableLayoutPanel1.Controls.Add(this.label12, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.dbType, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.analyzeButton, 5, 0);
-            this.tableLayoutPanel1.Controls.Add(this.installExtensionsChk, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.deleteSessionButton, 5, 11);
+            this.tableLayoutPanel1.Controls.Add(this.filterTypesCBL, 0, 7);
+            this.tableLayoutPanel1.Controls.Add(this.label5, 0, 6);
+            this.tableLayoutPanel1.Controls.Add(this.createUserBtn, 5, 4);
+            this.tableLayoutPanel1.Controls.Add(this.createExtensionsBtn, 2, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -164,12 +156,13 @@
             this.pendingScriptNameColumn,
             this.pendingScriptScriptColumn,
             this.pendingScriptRunButtonColumn});
-            this.tableLayoutPanel1.SetColumnSpan(this.pendingScriptsGV, 6);
+            this.tableLayoutPanel1.SetColumnSpan(this.pendingScriptsGV, 5);
             this.pendingScriptsGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pendingScriptsGV.Location = new System.Drawing.Point(3, 283);
+            this.pendingScriptsGV.Location = new System.Drawing.Point(155, 183);
             this.pendingScriptsGV.Name = "pendingScriptsGV";
             this.pendingScriptsGV.ReadOnly = true;
-            this.pendingScriptsGV.Size = new System.Drawing.Size(957, 291);
+            this.tableLayoutPanel1.SetRowSpan(this.pendingScriptsGV, 5);
+            this.pendingScriptsGV.Size = new System.Drawing.Size(805, 391);
             this.pendingScriptsGV.TabIndex = 4;
             this.pendingScriptsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
@@ -390,28 +383,6 @@
             this.label8.TabIndex = 23;
             this.label8.Text = "Data assembly:";
             // 
-            // createDatabaseChk
-            // 
-            this.createDatabaseChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.createDatabaseChk.AutoSize = true;
-            this.createDatabaseChk.Location = new System.Drawing.Point(155, 184);
-            this.createDatabaseChk.Name = "createDatabaseChk";
-            this.createDatabaseChk.Size = new System.Drawing.Size(104, 17);
-            this.createDatabaseChk.TabIndex = 15;
-            this.createDatabaseChk.Text = "Create database";
-            this.createDatabaseChk.UseVisualStyleBackColor = true;
-            // 
-            // createLoginChk
-            // 
-            this.createLoginChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.createLoginChk.AutoSize = true;
-            this.createLoginChk.Location = new System.Drawing.Point(155, 209);
-            this.createLoginChk.Name = "createLoginChk";
-            this.createLoginChk.Size = new System.Drawing.Size(129, 17);
-            this.createLoginChk.TabIndex = 16;
-            this.createLoginChk.Text = "Create database login";
-            this.createLoginChk.UseVisualStyleBackColor = true;
-            // 
             // runButton
             // 
             this.runButton.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -422,69 +393,6 @@
             this.runButton.Text = "Run";
             this.runButton.UseVisualStyleBackColor = true;
             this.runButton.Click += new System.EventHandler(this.runButton_Click);
-            // 
-            // createTablesChk
-            // 
-            this.createTablesChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.createTablesChk.AutoSize = true;
-            this.createTablesChk.Location = new System.Drawing.Point(155, 259);
-            this.createTablesChk.Name = "createTablesChk";
-            this.createTablesChk.Size = new System.Drawing.Size(151, 17);
-            this.createTablesChk.TabIndex = 18;
-            this.createTablesChk.Text = "Create tables and columns";
-            this.createTablesChk.UseVisualStyleBackColor = true;
-            this.createTablesChk.CheckedChanged += new System.EventHandler(this.createTablesChk_CheckedChanged);
-            // 
-            // createIndexesChk
-            // 
-            this.createIndexesChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.createIndexesChk.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.createIndexesChk, 2);
-            this.createIndexesChk.Location = new System.Drawing.Point(434, 259);
-            this.createIndexesChk.Name = "createIndexesChk";
-            this.createIndexesChk.Size = new System.Drawing.Size(300, 17);
-            this.createIndexesChk.TabIndex = 29;
-            this.createIndexesChk.Text = "Create indices (NOT recommended for existing databases)";
-            this.createIndexesChk.UseVisualStyleBackColor = true;
-            this.createIndexesChk.CheckedChanged += new System.EventHandler(this.createIndicesChk_CheckedChanged);
-            // 
-            // syncProceduresChk
-            // 
-            this.syncProceduresChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.syncProceduresChk.AutoSize = true;
-            this.syncProceduresChk.Checked = true;
-            this.syncProceduresChk.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.syncProceduresChk.Location = new System.Drawing.Point(434, 184);
-            this.syncProceduresChk.Name = "syncProceduresChk";
-            this.syncProceduresChk.Size = new System.Drawing.Size(138, 17);
-            this.syncProceduresChk.TabIndex = 20;
-            this.syncProceduresChk.Text = "Sync stored procedures";
-            this.syncProceduresChk.UseVisualStyleBackColor = true;
-            this.syncProceduresChk.CheckedChanged += new System.EventHandler(this.syncProceduresChk_CheckedChanged);
-            // 
-            // initializeDataChk
-            // 
-            this.initializeDataChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.initializeDataChk.AutoSize = true;
-            this.initializeDataChk.Location = new System.Drawing.Point(434, 209);
-            this.initializeDataChk.Name = "initializeDataChk";
-            this.initializeDataChk.Size = new System.Drawing.Size(87, 17);
-            this.initializeDataChk.TabIndex = 19;
-            this.initializeDataChk.Text = "Initialize data";
-            this.initializeDataChk.UseVisualStyleBackColor = true;
-            this.initializeDataChk.CheckedChanged += new System.EventHandler(this.initializeDataChk_CheckedChanged);
-            // 
-            // createFKsChk
-            // 
-            this.createFKsChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.createFKsChk.AutoSize = true;
-            this.createFKsChk.Location = new System.Drawing.Point(434, 234);
-            this.createFKsChk.Name = "createFKsChk";
-            this.createFKsChk.Size = new System.Drawing.Size(111, 17);
-            this.createFKsChk.TabIndex = 28;
-            this.createFKsChk.Text = "Create constraints";
-            this.createFKsChk.UseVisualStyleBackColor = true;
-            this.createFKsChk.CheckedChanged += new System.EventHandler(this.createFKsChk_CheckedChanged);
             // 
             // label12
             // 
@@ -517,17 +425,6 @@
             this.analyzeButton.UseVisualStyleBackColor = true;
             this.analyzeButton.Click += new System.EventHandler(this.analyzeButton_Click);
             // 
-            // installExtensionsChk
-            // 
-            this.installExtensionsChk.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.installExtensionsChk.AutoSize = true;
-            this.installExtensionsChk.Location = new System.Drawing.Point(155, 234);
-            this.installExtensionsChk.Name = "installExtensionsChk";
-            this.installExtensionsChk.Size = new System.Drawing.Size(106, 17);
-            this.installExtensionsChk.TabIndex = 33;
-            this.installExtensionsChk.Text = "Install extensions";
-            this.installExtensionsChk.UseVisualStyleBackColor = true;
-            // 
             // deleteSessionButton
             // 
             this.deleteSessionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -538,6 +435,50 @@
             this.deleteSessionButton.Text = "Delete";
             this.deleteSessionButton.UseVisualStyleBackColor = true;
             this.deleteSessionButton.Click += new System.EventHandler(this.deleteSessionButton_Click);
+            // 
+            // filterTypesCBL
+            // 
+            this.filterTypesCBL.CheckOnClick = true;
+            this.filterTypesCBL.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.filterTypesCBL.FormattingEnabled = true;
+            this.filterTypesCBL.Location = new System.Drawing.Point(3, 208);
+            this.filterTypesCBL.Name = "filterTypesCBL";
+            this.tableLayoutPanel1.SetRowSpan(this.filterTypesCBL, 4);
+            this.filterTypesCBL.Size = new System.Drawing.Size(146, 366);
+            this.filterTypesCBL.TabIndex = 37;
+            this.filterTypesCBL.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.filterTypesCBL_ItemCheck);
+            // 
+            // label5
+            // 
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 192);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(95, 13);
+            this.label5.TabIndex = 38;
+            this.label5.Text = "Script types to run:";
+            // 
+            // createUserBtn
+            // 
+            this.createUserBtn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.createUserBtn.Location = new System.Drawing.Point(862, 123);
+            this.createUserBtn.Name = "createUserBtn";
+            this.createUserBtn.Size = new System.Drawing.Size(98, 24);
+            this.createUserBtn.TabIndex = 39;
+            this.createUserBtn.Text = "Create user";
+            this.createUserBtn.UseVisualStyleBackColor = true;
+            this.createUserBtn.Click += new System.EventHandler(this.createUserBtn_Click);
+            // 
+            // createExtensionsBtn
+            // 
+            this.createExtensionsBtn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.createExtensionsBtn.Location = new System.Drawing.Point(434, 33);
+            this.createExtensionsBtn.Name = "createExtensionsBtn";
+            this.createExtensionsBtn.Size = new System.Drawing.Size(155, 24);
+            this.createExtensionsBtn.TabIndex = 40;
+            this.createExtensionsBtn.Text = "Create extensions";
+            this.createExtensionsBtn.UseVisualStyleBackColor = true;
+            this.createExtensionsBtn.Click += new System.EventHandler(this.createExtensionsBtn_Click);
             // 
             // optionsBtn
             // 
@@ -741,11 +682,6 @@
         private System.Windows.Forms.TextBox sqlPassTB;
         private System.Windows.Forms.Button runButton;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.CheckBox createDatabaseChk;
-        private System.Windows.Forms.CheckBox createLoginChk;
-        private System.Windows.Forms.CheckBox createTablesChk;
-        private System.Windows.Forms.CheckBox initializeDataChk;
-        private System.Windows.Forms.CheckBox syncProceduresChk;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabStdOut;
         private System.Windows.Forms.TabPage tabStdErr;
@@ -761,12 +697,9 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox adminUserTB;
         private System.Windows.Forms.TextBox adminPassTB;
-        private System.Windows.Forms.CheckBox createFKsChk;
-        private System.Windows.Forms.CheckBox createIndexesChk;
         private System.Windows.Forms.Button analyzeButton;
         private System.Windows.Forms.TextBox txtStdOut;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.CheckBox installExtensionsChk;
         private System.Windows.Forms.TextBox objFilterTB;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label dbType;
@@ -781,6 +714,10 @@
         private System.Windows.Forms.DataGridViewButtonColumn pendingScriptNameColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptScriptColumn;
         private System.Windows.Forms.DataGridViewButtonColumn pendingScriptRunButtonColumn;
+        private System.Windows.Forms.CheckedListBox filterTypesCBL;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button createUserBtn;
+        private System.Windows.Forms.Button createExtensionsBtn;
     }
 }
 

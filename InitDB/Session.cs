@@ -17,28 +17,19 @@ namespace InitDB
         public string LoginPassword { get { return Get<string>(); } set { Set(value); } }
         public string AssemblyFile { get { return Get<string>(); } set { Set(value); } }
         public string ObjectFilter { get { return Get<string>(); } set { Set(value); } }
-        public bool CreateDatabase { get { return Get<bool>(); } set { Set(value); } }
-        public bool CreateLogin { get { return Get<bool>(); } set { Set(value); } }
-        public bool CreateSchemaObjects { get { return Get<bool>(); } set { Set(value); } }
-        public bool InitializeData { get { return Get<bool>(); } set { Set(value); } }
-        public bool SyncStoredProcedures { get { return Get<bool>(); } set { Set(value); } }
-        public bool CreateFKs { get { return Get<bool>(); } set { Set(value); } }
-        public bool CreateIndices { get { return Get<bool>(); } set { Set(value); } }
-        public bool InstallExtensions { get { return Get<bool>(); } set { Set(value); } }
+        public ScriptType[] ScriptTypes { get { return Get<ScriptType[]>(); } set { Set(value); } }
 
         public static char PAIR_SEPARATOR = ';';
         public static char KEY_VALUE_SEPARATOR = ':';
-
+        public static char ARRAY_VALUE_SEPARATOR = ',';
 
         public Session()
-            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", "", "", "", false, false, false, false, true, false, false, false)
+            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", "", "", "", new ScriptType[] { })
         {
         }
 
         public Session(string name, string server, string dbname, string adminName, string adminPassword,
-            string loginName, string loginPassword, string assemblyFile, string objectFilter,
-            bool createDatabase, bool createLogin, bool createSchemaObj, bool initData, bool syncProcs,
-            bool createFKs, bool createIndices, bool installExtensions)
+            string loginName, string loginPassword, string assemblyFile, string objectFilter, ScriptType[] filters)
         {
             this.Name = name;
             this.Server = server;
@@ -49,14 +40,7 @@ namespace InitDB
             this.LoginPassword = loginPassword;
             this.AssemblyFile = assemblyFile;
             this.ObjectFilter = objectFilter;
-            this.CreateDatabase = createDatabase;
-            this.CreateLogin = createLogin;
-            this.CreateSchemaObjects = createSchemaObj;
-            this.InitializeData = initData;
-            this.SyncStoredProcedures = syncProcs;
-            this.CreateFKs = createFKs;
-            this.CreateIndices = createIndices;
-            this.InstallExtensions = installExtensions;
+            this.ScriptTypes = filters;
         }
 
         public Session(string line)
@@ -66,12 +50,35 @@ namespace InitDB
                 .Select(pair => pair.Split(KEY_VALUE_SEPARATOR))
                 .ToDictionary(pair => pair.FirstOrDefault(), pair =>
                 {
+                    var k = pair.FirstOrDefault() ?? "";
                     var v = pair.LastOrDefault() ?? "";
-                    var o = v.Equals("True") || v.Equals("False")
-                        ? (object)v.Equals("True")
-                        : (object)v;
+                    object o = null;
+                    if (v.Equals("True") || v.Equals("False"))
+                    {
+                        o = v.Equals("True");
+                    }
+                    else if (k == "ScriptTypes")
+                    {
+                        o = v.Split(ARRAY_VALUE_SEPARATOR).Select(p => (ScriptType)System.Enum.Parse(typeof(ScriptType), p)).ToArray();
+                    }
+                    else
+                    {
+                        o = v;
+                    }
                     return o;
                 });
+        }
+
+        private string Serialize(object obj)
+        {
+            if (obj.GetType().IsArray)
+            {
+                return string.Join(ARRAY_VALUE_SEPARATOR.ToString(), ((System.Collections.IEnumerable)obj).Cast<object>().Select(v => v.ToString()));
+            }
+            else
+            {
+                return obj.ToString();
+            }
         }
 
         public override string ToString()
@@ -79,7 +86,7 @@ namespace InitDB
             return
                 string.Join(PAIR_SEPARATOR.ToString(),
                     this.values.Select(pair =>
-                        string.Join(KEY_VALUE_SEPARATOR.ToString(), pair.Key, pair.Value)));
+                        string.Join(KEY_VALUE_SEPARATOR.ToString(), pair.Key, Serialize(pair.Value))));
         }
     }
 }

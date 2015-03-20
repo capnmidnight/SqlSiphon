@@ -9,7 +9,7 @@ namespace SqlSiphon
 {
     public interface ISqlSiphon : IDisposable
     {
-        DatabaseDelta Analyze(Regex filter);
+        DatabaseDelta Analyze(string catalogueName, Regex filter);
         void AlterDatabase(ScriptStatus script);
         void MarkScriptAsRan(ScriptStatus script);
 
@@ -41,6 +41,8 @@ namespace SqlSiphon
         RoutineAttribute GetCommandDescription(System.Reflection.MethodInfo method);
 
         Type GetSystemType(string sqlType);
+
+        string MakeCreateCatalogueScript(string catalogueName);
 
         string MakeCreateSchemaScript(string schemaName);
         string MakeDropSchemaScript(string schemaName);

@@ -9,21 +9,23 @@ namespace SqlSiphon
     public enum ScriptType
     {
         None,
-        DropRoutine,
-        DropPrimaryKey,
-        DropIndex,
-        DropRelationship,
-        DropColumn,
-        DropTable,
-        DropSchema,
+        CreateCatalogue,
         CreateSchema,
         CreateTable,
         CreateColumn,
+        TranslateData,
+        DropRoutine,
+        DropRelationship,
+        DropPrimaryKey,
         AlterColumn,
+        DropColumn,
+        DropTable,
+        DropSchema,
         CreatePrimaryKey,
         CreateRelationship,
-        CreateIndex,
         CreateRoutine,
+        DropIndex,
+        CreateIndex,
         InitializeData
     }
 

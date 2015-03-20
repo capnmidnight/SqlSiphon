@@ -80,9 +80,15 @@ namespace SqlSiphon
                 propertyName = GetMethodName();
             OnPropertyAccessed(propertyName);
             if (values.ContainsKey(propertyName) && values[propertyName] != null)
-                return (T)values[propertyName];
-            else
-                return default(T);
+            {
+                try
+                {
+                    return (T)values[propertyName];
+                }
+                catch { }
+            }
+
+            return default(T);
         }
 
         protected void Set<T>(T value)

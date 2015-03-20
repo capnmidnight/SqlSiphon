@@ -652,9 +652,9 @@ AND COLUMN_NAME = @columnName;")]
             return final;
         }
 
-        public DatabaseDelta Analyze(Regex filter)
+        public DatabaseDelta Analyze(string catalogueName, Regex filter)
         {
-            var initial = new DatabaseState(filter, this);
+            var initial = new DatabaseState(catalogueName, filter, this);
             var final = this.GetFinalState();
             return new DatabaseDelta(final, initial, this);
         }
@@ -777,6 +777,11 @@ AND COLUMN_NAME = @columnName;")]
         public virtual List<string> GetSchemata()
         {
             return this.GetList<string>("schema_name");
+        }
+
+        public virtual string MakeCreateCatalogueScript(string catalogueName)
+        {
+            return string.Format("create database {0};", catalogueName);
         }
 
         private string MakeSchemaScript(string op, string schemaName)

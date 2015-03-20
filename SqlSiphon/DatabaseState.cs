@@ -11,6 +11,8 @@ namespace SqlSiphon
 {
     public class DatabaseState
     {
+        public bool CatalogueExists { get; private set; }
+        public string CatalogueName { get; private set; }
         public Dictionary<string, TableAttribute> Tables { get; private set; }
         public Dictionary<string, Index> Indexes { get; private set; }
         public Dictionary<string, RoutineAttribute> Functions { get; private set; }
@@ -36,6 +38,7 @@ namespace SqlSiphon
         public DatabaseState(IEnumerable<Type> types, ISqlSiphon dal)
             : this()
         {
+            this.CatalogueExists = true;
             foreach (var type in types)
             {
                 AddType(type, dal);
@@ -104,12 +107,14 @@ namespace SqlSiphon
         /// Scans a database for tables and stored procedures
         /// </summary>
         /// <param name="dal"></param>
-        public DatabaseState(Regex filter, ISqlSiphon dal)
+        public DatabaseState(string catalogueName, Regex filter, ISqlSiphon dal)
             : this()
         {
+            this.CatalogueName = catalogueName;
             try
             {
                 this.Schemata.AddRange(dal.GetSchemata());
+                this.CatalogueExists = true;
                 var columns = dal.GetColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
                 var constraints = dal.GetTableConstraints();
                 var constraintsByTable = constraints.ToHash(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name));
@@ -134,7 +139,7 @@ namespace SqlSiphon
                 foreach (var tableName in columns.Keys)
                 {
                     var tableColumns = columns[tableName];
-                    if (!filter.IsMatch(tableColumns[0].table_name))
+                    if (filter == null || !filter.IsMatch(tableColumns[0].table_name))
                     {
                         var tableConstraints = constraintsByTable.ContainsKey(tableName) ? constraintsByTable[tableName] : new InformationSchema.TableConstraints[] { };
                         var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : new InformationSchema.KeyColumnUsage[] { };
@@ -171,7 +176,7 @@ namespace SqlSiphon
                 }
 
                 var routines = dal.GetRoutines()
-                    .Where(r => !filter.IsMatch(r.routine_name))
+                    .Where(r => filter == null || !filter.IsMatch(r.routine_name))
                     .ToDictionary(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name));
                 var parameters = dal.GetParameters()
                     .GroupBy(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name))
@@ -198,10 +203,11 @@ namespace SqlSiphon
                         }
                     }
                 }
+
             }
-            catch (ConnectionFailedException)
+            catch (ConnectionFailedException exp)
             {
-                // just ignore it, it usually means the catalog hasn't been created yet.
+                this.CatalogueExists = false;
             }
         }
     }
