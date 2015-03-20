@@ -208,7 +208,6 @@ namespace InitDB
                 this.SyncUI(() =>
                 {
                     this.tabControl1.SelectedTab = this.tabStdErr;
-                    this.analyzeButton.Enabled = true;
                     this.runButton.Enabled = true;
                 });
             }
@@ -631,10 +630,9 @@ namespace InitDB
             }
         }
 
-        private void analyzeButton_Click(object sender, EventArgs e)
+        private void Analzye()
         {
             var connector = this.MakeDatabaseConnector();
-            analyzeButton.Enabled = false;
             if (PathsAreCorrect())
             {
                 Task.Run(() =>
@@ -663,7 +661,6 @@ namespace InitDB
                 var list = new BindingList<ScriptStatus>(delta.Scripts.OrderBy(s => s.ScriptType).ToList());
                 this.pendingScriptsGV.DataSource = list;
                 FilterScripts();
-                this.analyzeButton.Enabled = true;
             });
         }
 
@@ -776,15 +773,17 @@ namespace InitDB
                     this.assemblyTB.Text = this.CurrentSession.AssemblyFile;
                     this.objFilterTB.Text = this.CurrentSession.ObjectFilter ?? this.optionsDialog.DefaultObjectFilterRegexText;
                     this.createExtensionsBtn.Visible = false;
-                    if (this.CurrentSession.ScriptTypes != null)
+                    var st = this.CurrentSession.ScriptTypes ?? new ScriptType[] { };
+                    for (int i = 0; i < this.filterTypesCBL.Items.Count; ++i)
                     {
-                        for (int i = 0; i < this.filterTypesCBL.Items.Count; ++i)
-                        {
-                            this.filterTypesCBL.SetItemChecked(i, this.CurrentSession.ScriptTypes.Contains((ScriptType)this.filterTypesCBL.Items[i]));
-                        }
+                        this.filterTypesCBL.SetItemChecked(i, st.Contains((ScriptType)this.filterTypesCBL.Items[i]));
                     }
                     this.txtStdOut.Text = "";
                     this.txtStdErr.Text = "";
+                    if (sessionName != DEFAULT_SESSION_NAME)
+                    {
+                        this.Analzye();
+                    }
                 }
 
                 saveSessionButton.Enabled

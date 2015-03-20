@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.pendingScriptsGV = new System.Windows.Forms.DataGridView();
             this.pendingScriptRunChoiceColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
@@ -57,7 +57,6 @@
             this.runButton = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
             this.dbType = new System.Windows.Forms.Label();
-            this.analyzeButton = new System.Windows.Forms.Button();
             this.deleteSessionButton = new System.Windows.Forms.Button();
             this.filterTypesCBL = new System.Windows.Forms.CheckedListBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -65,31 +64,33 @@
             this.createExtensionsBtn = new System.Windows.Forms.Button();
             this.optionsBtn = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabConnectionProperties = new System.Windows.Forms.TabPage();
             this.tabStdOut = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.generalScriptTB = new System.Windows.Forms.TextBox();
             this.txtStdOut = new System.Windows.Forms.TextBox();
             this.tabStdErr = new System.Windows.Forms.TabPage();
             this.txtStdErr = new System.Windows.Forms.TextBox();
-            this.tabScripts = new System.Windows.Forms.TabPage();
             this.label7 = new System.Windows.Forms.Label();
             this.savedSessionList = new System.Windows.Forms.ComboBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.tabScripts = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pendingScriptsGV)).BeginInit();
             this.tabControl1.SuspendLayout();
-            this.tabConnectionProperties.SuspendLayout();
             this.tabStdOut.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.tabStdErr.SuspendLayout();
+            this.tabScripts.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
             // 
+            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.ColumnCount = 6;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 152F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 279F));
@@ -97,11 +98,11 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 104F));
-            this.tableLayoutPanel1.Controls.Add(this.pendingScriptsGV, 1, 6);
             this.tableLayoutPanel1.Controls.Add(this.objFilterTB, 1, 5);
+            this.tableLayoutPanel1.Controls.Add(this.tabControl1, 1, 6);
             this.tableLayoutPanel1.Controls.Add(this.saveSessionButton, 4, 11);
             this.tableLayoutPanel1.Controls.Add(this.label14, 0, 5);
-            this.tableLayoutPanel1.Controls.Add(this.browseAssemblyBtn, 4, 0);
+            this.tableLayoutPanel1.Controls.Add(this.browseAssemblyBtn, 5, 0);
             this.tableLayoutPanel1.Controls.Add(this.label3, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.sqlUserTB, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.label4, 2, 4);
@@ -119,14 +120,12 @@
             this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 5);
             this.tableLayoutPanel1.Controls.Add(this.label12, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.dbType, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.analyzeButton, 5, 0);
             this.tableLayoutPanel1.Controls.Add(this.deleteSessionButton, 5, 11);
             this.tableLayoutPanel1.Controls.Add(this.filterTypesCBL, 0, 7);
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.createUserBtn, 5, 4);
             this.tableLayoutPanel1.Controls.Add(this.createExtensionsBtn, 2, 1);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 36);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 12;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
@@ -141,7 +140,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(963, 607);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(977, 639);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // pendingScriptsGV
@@ -156,12 +155,10 @@
             this.pendingScriptNameColumn,
             this.pendingScriptScriptColumn,
             this.pendingScriptRunButtonColumn});
-            this.tableLayoutPanel1.SetColumnSpan(this.pendingScriptsGV, 5);
             this.pendingScriptsGV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pendingScriptsGV.Location = new System.Drawing.Point(155, 183);
+            this.pendingScriptsGV.Location = new System.Drawing.Point(3, 3);
             this.pendingScriptsGV.Name = "pendingScriptsGV";
             this.pendingScriptsGV.ReadOnly = true;
-            this.tableLayoutPanel1.SetRowSpan(this.pendingScriptsGV, 5);
             this.pendingScriptsGV.Size = new System.Drawing.Size(805, 391);
             this.pendingScriptsGV.TabIndex = 4;
             this.pendingScriptsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
@@ -183,8 +180,8 @@
             // pendingScriptNameColumn
             // 
             this.pendingScriptNameColumn.DataPropertyName = "Name";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle5;
             this.pendingScriptNameColumn.HeaderText = "name";
             this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
             this.pendingScriptNameColumn.ReadOnly = true;
@@ -214,12 +211,12 @@
             this.tableLayoutPanel1.SetColumnSpan(this.objFilterTB, 4);
             this.objFilterTB.Location = new System.Drawing.Point(155, 155);
             this.objFilterTB.Name = "objFilterTB";
-            this.objFilterTB.Size = new System.Drawing.Size(701, 20);
+            this.objFilterTB.Size = new System.Drawing.Size(715, 20);
             this.objFilterTB.TabIndex = 35;
             // 
             // saveSessionButton
             // 
-            this.saveSessionButton.Location = new System.Drawing.Point(762, 580);
+            this.saveSessionButton.Location = new System.Drawing.Point(776, 612);
             this.saveSessionButton.Name = "saveSessionButton";
             this.saveSessionButton.Size = new System.Drawing.Size(94, 24);
             this.saveSessionButton.TabIndex = 21;
@@ -240,9 +237,9 @@
             // browseAssemblyBtn
             // 
             this.browseAssemblyBtn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.browseAssemblyBtn.Location = new System.Drawing.Point(762, 3);
+            this.browseAssemblyBtn.Location = new System.Drawing.Point(876, 3);
             this.browseAssemblyBtn.Name = "browseAssemblyBtn";
-            this.browseAssemblyBtn.Size = new System.Drawing.Size(94, 24);
+            this.browseAssemblyBtn.Size = new System.Drawing.Size(98, 24);
             this.browseAssemblyBtn.TabIndex = 14;
             this.browseAssemblyBtn.Text = "Browse...";
             this.browseAssemblyBtn.UseVisualStyleBackColor = true;
@@ -282,7 +279,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.sqlPassTB, 2);
             this.sqlPassTB.Location = new System.Drawing.Point(595, 125);
             this.sqlPassTB.Name = "sqlPassTB";
-            this.sqlPassTB.Size = new System.Drawing.Size(261, 20);
+            this.sqlPassTB.Size = new System.Drawing.Size(275, 20);
             this.sqlPassTB.TabIndex = 7;
             // 
             // adminPassTB
@@ -292,7 +289,7 @@
             this.adminPassTB.Location = new System.Drawing.Point(594, 95);
             this.adminPassTB.Margin = new System.Windows.Forms.Padding(2);
             this.adminPassTB.Name = "adminPassTB";
-            this.adminPassTB.Size = new System.Drawing.Size(263, 20);
+            this.adminPassTB.Size = new System.Drawing.Size(277, 20);
             this.adminPassTB.TabIndex = 4;
             // 
             // label10
@@ -361,16 +358,16 @@
             this.tableLayoutPanel1.SetColumnSpan(this.databaseTB, 2);
             this.databaseTB.Location = new System.Drawing.Point(595, 65);
             this.databaseTB.Name = "databaseTB";
-            this.databaseTB.Size = new System.Drawing.Size(261, 20);
+            this.databaseTB.Size = new System.Drawing.Size(275, 20);
             this.databaseTB.TabIndex = 5;
             // 
             // assemblyTB
             // 
             this.assemblyTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.assemblyTB, 3);
+            this.tableLayoutPanel1.SetColumnSpan(this.assemblyTB, 4);
             this.assemblyTB.Location = new System.Drawing.Point(155, 5);
             this.assemblyTB.Name = "assemblyTB";
-            this.assemblyTB.Size = new System.Drawing.Size(601, 20);
+            this.assemblyTB.Size = new System.Drawing.Size(715, 20);
             this.assemblyTB.TabIndex = 13;
             // 
             // label8
@@ -386,7 +383,7 @@
             // runButton
             // 
             this.runButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.runButton.Location = new System.Drawing.Point(862, 153);
+            this.runButton.Location = new System.Drawing.Point(876, 153);
             this.runButton.Name = "runButton";
             this.runButton.Size = new System.Drawing.Size(98, 24);
             this.runButton.TabIndex = 22;
@@ -414,21 +411,10 @@
             this.dbType.TabIndex = 36;
             this.dbType.Text = "UNKNOWN";
             // 
-            // analyzeButton
-            // 
-            this.analyzeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.analyzeButton.Location = new System.Drawing.Point(862, 3);
-            this.analyzeButton.Name = "analyzeButton";
-            this.analyzeButton.Size = new System.Drawing.Size(98, 23);
-            this.analyzeButton.TabIndex = 30;
-            this.analyzeButton.Text = "Analyze";
-            this.analyzeButton.UseVisualStyleBackColor = true;
-            this.analyzeButton.Click += new System.EventHandler(this.analyzeButton_Click);
-            // 
             // deleteSessionButton
             // 
             this.deleteSessionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.deleteSessionButton.Location = new System.Drawing.Point(862, 580);
+            this.deleteSessionButton.Location = new System.Drawing.Point(876, 612);
             this.deleteSessionButton.Name = "deleteSessionButton";
             this.deleteSessionButton.Size = new System.Drawing.Size(98, 24);
             this.deleteSessionButton.TabIndex = 23;
@@ -444,7 +430,7 @@
             this.filterTypesCBL.Location = new System.Drawing.Point(3, 208);
             this.filterTypesCBL.Name = "filterTypesCBL";
             this.tableLayoutPanel1.SetRowSpan(this.filterTypesCBL, 4);
-            this.filterTypesCBL.Size = new System.Drawing.Size(146, 366);
+            this.filterTypesCBL.Size = new System.Drawing.Size(146, 398);
             this.filterTypesCBL.TabIndex = 37;
             this.filterTypesCBL.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.filterTypesCBL_ItemCheck);
             // 
@@ -461,7 +447,7 @@
             // createUserBtn
             // 
             this.createUserBtn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.createUserBtn.Location = new System.Drawing.Point(862, 123);
+            this.createUserBtn.Location = new System.Drawing.Point(876, 123);
             this.createUserBtn.Name = "createUserBtn";
             this.createUserBtn.Size = new System.Drawing.Size(98, 24);
             this.createUserBtn.TabIndex = 39;
@@ -492,29 +478,16 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tabControl1.Controls.Add(this.tabConnectionProperties);
+            this.tableLayoutPanel1.SetColumnSpan(this.tabControl1, 5);
+            this.tabControl1.Controls.Add(this.tabScripts);
             this.tabControl1.Controls.Add(this.tabStdOut);
             this.tabControl1.Controls.Add(this.tabStdErr);
-            this.tabControl1.Controls.Add(this.tabScripts);
-            this.tabControl1.Location = new System.Drawing.Point(12, 36);
+            this.tabControl1.Location = new System.Drawing.Point(155, 183);
             this.tabControl1.Name = "tabControl1";
+            this.tableLayoutPanel1.SetRowSpan(this.tabControl1, 5);
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(977, 639);
+            this.tabControl1.Size = new System.Drawing.Size(819, 423);
             this.tabControl1.TabIndex = 18;
-            // 
-            // tabConnectionProperties
-            // 
-            this.tabConnectionProperties.Controls.Add(this.tableLayoutPanel1);
-            this.tabConnectionProperties.Location = new System.Drawing.Point(4, 22);
-            this.tabConnectionProperties.Name = "tabConnectionProperties";
-            this.tabConnectionProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConnectionProperties.Size = new System.Drawing.Size(969, 613);
-            this.tabConnectionProperties.TabIndex = 9;
-            this.tabConnectionProperties.Text = "Properties";
-            this.tabConnectionProperties.UseVisualStyleBackColor = true;
             // 
             // tabStdOut
             // 
@@ -522,7 +495,7 @@
             this.tabStdOut.Location = new System.Drawing.Point(4, 22);
             this.tabStdOut.Name = "tabStdOut";
             this.tabStdOut.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdOut.Size = new System.Drawing.Size(969, 613);
+            this.tabStdOut.Size = new System.Drawing.Size(811, 372);
             this.tabStdOut.TabIndex = 0;
             this.tabStdOut.Text = "Standard output";
             this.tabStdOut.UseVisualStyleBackColor = true;
@@ -541,8 +514,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.txtStdOut);
-            this.splitContainer1.Size = new System.Drawing.Size(963, 607);
-            this.splitContainer1.SplitterDistance = 120;
+            this.splitContainer1.Size = new System.Drawing.Size(805, 366);
+            this.splitContainer1.SplitterDistance = 72;
             this.splitContainer1.TabIndex = 2;
             // 
             // generalScriptTB
@@ -554,7 +527,7 @@
             this.generalScriptTB.Location = new System.Drawing.Point(0, 0);
             this.generalScriptTB.Multiline = true;
             this.generalScriptTB.Name = "generalScriptTB";
-            this.generalScriptTB.Size = new System.Drawing.Size(963, 120);
+            this.generalScriptTB.Size = new System.Drawing.Size(805, 72);
             this.generalScriptTB.TabIndex = 0;
             this.generalScriptTB.Text = "-- (hit CTRL+Enter to run script)";
             this.generalScriptTB.KeyDown += new System.Windows.Forms.KeyEventHandler(this.generalScriptTB_KeyDown);
@@ -570,7 +543,7 @@
             this.txtStdOut.Name = "txtStdOut";
             this.txtStdOut.ReadOnly = true;
             this.txtStdOut.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdOut.Size = new System.Drawing.Size(963, 483);
+            this.txtStdOut.Size = new System.Drawing.Size(805, 290);
             this.txtStdOut.TabIndex = 1;
             this.txtStdOut.TabStop = false;
             this.txtStdOut.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -581,7 +554,7 @@
             this.tabStdErr.Location = new System.Drawing.Point(4, 22);
             this.tabStdErr.Name = "tabStdErr";
             this.tabStdErr.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdErr.Size = new System.Drawing.Size(969, 613);
+            this.tabStdErr.Size = new System.Drawing.Size(811, 372);
             this.tabStdErr.TabIndex = 1;
             this.tabStdErr.Text = "Standard error";
             this.tabStdErr.UseVisualStyleBackColor = true;
@@ -597,20 +570,10 @@
             this.txtStdErr.Name = "txtStdErr";
             this.txtStdErr.ReadOnly = true;
             this.txtStdErr.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdErr.Size = new System.Drawing.Size(963, 607);
+            this.txtStdErr.Size = new System.Drawing.Size(805, 366);
             this.txtStdErr.TabIndex = 0;
             this.txtStdErr.TabStop = false;
             this.txtStdErr.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
-            // 
-            // tabScripts
-            // 
-            this.tabScripts.Location = new System.Drawing.Point(4, 22);
-            this.tabScripts.Name = "tabScripts";
-            this.tabScripts.Padding = new System.Windows.Forms.Padding(3);
-            this.tabScripts.Size = new System.Drawing.Size(969, 613);
-            this.tabScripts.TabIndex = 10;
-            this.tabScripts.Text = "Pending scripts";
-            this.tabScripts.UseVisualStyleBackColor = true;
             // 
             // label7
             // 
@@ -639,12 +602,23 @@
             this.openFileDialog1.FileName = "openFileDialog1";
             this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
             // 
+            // tabScripts
+            // 
+            this.tabScripts.Controls.Add(this.pendingScriptsGV);
+            this.tabScripts.Location = new System.Drawing.Point(4, 22);
+            this.tabScripts.Name = "tabScripts";
+            this.tabScripts.Padding = new System.Windows.Forms.Padding(3);
+            this.tabScripts.Size = new System.Drawing.Size(811, 397);
+            this.tabScripts.TabIndex = 10;
+            this.tabScripts.Text = "Pending scripts";
+            this.tabScripts.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1001, 687);
-            this.Controls.Add(this.tabControl1);
+            this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.savedSessionList);
             this.Controls.Add(this.optionsBtn);
@@ -654,7 +628,6 @@
             this.tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pendingScriptsGV)).EndInit();
             this.tabControl1.ResumeLayout(false);
-            this.tabConnectionProperties.ResumeLayout(false);
             this.tabStdOut.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
@@ -664,6 +637,7 @@
             this.splitContainer1.ResumeLayout(false);
             this.tabStdErr.ResumeLayout(false);
             this.tabStdErr.PerformLayout();
+            this.tabScripts.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -697,17 +671,14 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox adminUserTB;
         private System.Windows.Forms.TextBox adminPassTB;
-        private System.Windows.Forms.Button analyzeButton;
         private System.Windows.Forms.TextBox txtStdOut;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TextBox objFilterTB;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label dbType;
-        private System.Windows.Forms.TabPage tabConnectionProperties;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TextBox generalScriptTB;
         private System.Windows.Forms.Button optionsBtn;
-        private System.Windows.Forms.TabPage tabScripts;
         private System.Windows.Forms.DataGridView pendingScriptsGV;
         private System.Windows.Forms.DataGridViewCheckBoxColumn pendingScriptRunChoiceColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptTypeColumn;
@@ -718,6 +689,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button createUserBtn;
         private System.Windows.Forms.Button createExtensionsBtn;
+        private System.Windows.Forms.TabPage tabScripts;
     }
 }
 
