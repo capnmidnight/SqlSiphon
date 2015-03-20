@@ -32,7 +32,10 @@ namespace SqlSiphon.Mapping
             this.Name = constraint.constraint_name;
             this.Table = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, null, uniqueConstraintColumns, null, dal);
             var uniqueColumns = uniqueTableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
-            this.KeyColumns = uniqueConstraintColumns.Select(c => new ColumnAttribute(this.Table, uniqueColumns[dal.MakeIdentifier(c.column_name)], true, dal)).ToArray();
+            this.KeyColumns = uniqueConstraintColumns
+                .Select(c => new ColumnAttribute(this.Table, uniqueColumns[dal.MakeIdentifier(c.column_name)], true, dal))
+                .OrderBy(c => c.Name)
+                .ToArray();
         }
 
         public PrimaryKey(Type toType)
@@ -40,6 +43,7 @@ namespace SqlSiphon.Mapping
             this.Table = GetAttribute(toType);
             this.KeyColumns = this.Table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
+                .OrderBy(c => c.Name)
                 .ToArray();
         }
 
