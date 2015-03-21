@@ -294,9 +294,9 @@ namespace SqlSiphon.Postgres
                 var declString = match.Groups[1].Value
                     .Replace(";", ",")
                     .Replace("uuid", "uniqueidentifier");
-                
+
                 routine.Query += parameterReverter.Replace(declString, "@")
-                    + Environment.NewLine 
+                    + Environment.NewLine
                     + parameterReverter.Replace(match.Groups[2].Value.Trim(), "@");
             }
         }
@@ -691,6 +691,18 @@ alter table {1} add constraint {3} primary key using index {0};",
         public override string MakeDropIndexScript(Index idx)
         {
             return string.Format(@"drop index if exists {0};", idx.Name);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query = @"select usename from pg_catalog.pg_user")]
+        public override List<string> GetDatabaseLogins()
+        {
+            return this.GetList<string>("usename");
+        }
+
+        public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
+        {
+            return string.Format("CREATE USER {0} WITH PASSWORD '{1}'", userName, password);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

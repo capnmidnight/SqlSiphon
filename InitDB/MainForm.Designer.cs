@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.objFilterTB = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -66,7 +66,6 @@
             this.dbType = new System.Windows.Forms.Label();
             this.filterTypesCBL = new System.Windows.Forms.CheckedListBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.createUserBtn = new System.Windows.Forms.Button();
             this.createExtensionsBtn = new System.Windows.Forms.Button();
             this.selectAllFiltersCB = new System.Windows.Forms.CheckBox();
             this.optionsBtn = new System.Windows.Forms.Button();
@@ -129,7 +128,6 @@
             this.tableLayoutPanel1.Controls.Add(this.dbType, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.filterTypesCBL, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 6);
-            this.tableLayoutPanel1.Controls.Add(this.createUserBtn, 5, 4);
             this.tableLayoutPanel1.Controls.Add(this.createExtensionsBtn, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.selectAllFiltersCB, 0, 7);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(11, 55);
@@ -222,8 +220,8 @@
             // pendingScriptNameColumn
             // 
             this.pendingScriptNameColumn.DataPropertyName = "Name";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle1;
             this.pendingScriptNameColumn.HeaderText = "name";
             this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
             this.pendingScriptNameColumn.ReadOnly = true;
@@ -253,7 +251,7 @@
             this.tabStdOut.Location = new System.Drawing.Point(4, 22);
             this.tabStdOut.Name = "tabStdOut";
             this.tabStdOut.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdOut.Size = new System.Drawing.Size(811, 378);
+            this.tabStdOut.Size = new System.Drawing.Size(811, 408);
             this.tabStdOut.TabIndex = 0;
             this.tabStdOut.Text = "Standard output";
             this.tabStdOut.UseVisualStyleBackColor = true;
@@ -272,8 +270,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.txtStdOut);
-            this.splitContainer1.Size = new System.Drawing.Size(805, 372);
-            this.splitContainer1.SplitterDistance = 72;
+            this.splitContainer1.Size = new System.Drawing.Size(805, 402);
+            this.splitContainer1.SplitterDistance = 77;
             this.splitContainer1.TabIndex = 2;
             // 
             // generalScriptTB
@@ -285,7 +283,7 @@
             this.generalScriptTB.Location = new System.Drawing.Point(0, 0);
             this.generalScriptTB.Multiline = true;
             this.generalScriptTB.Name = "generalScriptTB";
-            this.generalScriptTB.Size = new System.Drawing.Size(805, 72);
+            this.generalScriptTB.Size = new System.Drawing.Size(805, 77);
             this.generalScriptTB.TabIndex = 0;
             this.generalScriptTB.Text = "-- (hit CTRL+Enter to run script)";
             this.generalScriptTB.KeyDown += new System.Windows.Forms.KeyEventHandler(this.generalScriptTB_KeyDown);
@@ -301,7 +299,7 @@
             this.txtStdOut.Name = "txtStdOut";
             this.txtStdOut.ReadOnly = true;
             this.txtStdOut.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdOut.Size = new System.Drawing.Size(805, 296);
+            this.txtStdOut.Size = new System.Drawing.Size(805, 321);
             this.txtStdOut.TabIndex = 1;
             this.txtStdOut.TabStop = false;
             this.txtStdOut.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -312,7 +310,7 @@
             this.tabStdErr.Location = new System.Drawing.Point(4, 22);
             this.tabStdErr.Name = "tabStdErr";
             this.tabStdErr.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdErr.Size = new System.Drawing.Size(811, 378);
+            this.tabStdErr.Size = new System.Drawing.Size(811, 408);
             this.tabStdErr.TabIndex = 1;
             this.tabStdErr.Text = "Standard error";
             this.tabStdErr.UseVisualStyleBackColor = true;
@@ -328,7 +326,7 @@
             this.txtStdErr.Name = "txtStdErr";
             this.txtStdErr.ReadOnly = true;
             this.txtStdErr.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdErr.Size = new System.Drawing.Size(805, 372);
+            this.txtStdErr.Size = new System.Drawing.Size(805, 402);
             this.txtStdErr.TabIndex = 0;
             this.txtStdErr.TabStop = false;
             this.txtStdErr.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -385,20 +383,20 @@
             // sqlPassTB
             // 
             this.sqlPassTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.sqlPassTB, 2);
+            this.tableLayoutPanel1.SetColumnSpan(this.sqlPassTB, 3);
             this.sqlPassTB.Location = new System.Drawing.Point(595, 125);
             this.sqlPassTB.Name = "sqlPassTB";
-            this.sqlPassTB.Size = new System.Drawing.Size(275, 20);
+            this.sqlPassTB.Size = new System.Drawing.Size(379, 20);
             this.sqlPassTB.TabIndex = 7;
             // 
             // adminPassTB
             // 
             this.adminPassTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.adminPassTB, 2);
+            this.tableLayoutPanel1.SetColumnSpan(this.adminPassTB, 3);
             this.adminPassTB.Location = new System.Drawing.Point(594, 95);
             this.adminPassTB.Margin = new System.Windows.Forms.Padding(2);
             this.adminPassTB.Name = "adminPassTB";
-            this.adminPassTB.Size = new System.Drawing.Size(277, 20);
+            this.adminPassTB.Size = new System.Drawing.Size(381, 20);
             this.adminPassTB.TabIndex = 4;
             // 
             // label10
@@ -464,10 +462,10 @@
             // databaseTB
             // 
             this.databaseTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.databaseTB, 2);
+            this.tableLayoutPanel1.SetColumnSpan(this.databaseTB, 3);
             this.databaseTB.Location = new System.Drawing.Point(595, 65);
             this.databaseTB.Name = "databaseTB";
-            this.databaseTB.Size = new System.Drawing.Size(275, 20);
+            this.databaseTB.Size = new System.Drawing.Size(379, 20);
             this.databaseTB.TabIndex = 5;
             // 
             // assemblyTB
@@ -541,17 +539,6 @@
             this.label5.Size = new System.Drawing.Size(95, 13);
             this.label5.TabIndex = 38;
             this.label5.Text = "Script types to run:";
-            // 
-            // createUserBtn
-            // 
-            this.createUserBtn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.createUserBtn.Location = new System.Drawing.Point(876, 123);
-            this.createUserBtn.Name = "createUserBtn";
-            this.createUserBtn.Size = new System.Drawing.Size(98, 24);
-            this.createUserBtn.TabIndex = 39;
-            this.createUserBtn.Text = "Create user";
-            this.createUserBtn.UseVisualStyleBackColor = true;
-            this.createUserBtn.Click += new System.EventHandler(this.createUserBtn_Click);
             // 
             // createExtensionsBtn
             // 
@@ -638,26 +625,26 @@
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.saveToolStripMenuItem.Text = "&Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.deleteToolStripMenuItem.Text = "&Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(104, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -752,7 +739,6 @@
         private System.Windows.Forms.DataGridViewButtonColumn pendingScriptRunButtonColumn;
         private System.Windows.Forms.CheckedListBox filterTypesCBL;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button createUserBtn;
         private System.Windows.Forms.Button createExtensionsBtn;
         private System.Windows.Forms.TabPage tabScripts;
         private System.Windows.Forms.CheckBox selectAllFiltersCB;

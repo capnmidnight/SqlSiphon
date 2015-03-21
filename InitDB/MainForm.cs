@@ -76,7 +76,7 @@ namespace InitDB
             this.optionsDialog.BrowseSQLCMDPathClick += optionsDialog_BrowseSQLCMDPathClick;
         }
 
-        public Func<ISqlSiphon> MakeDatabaseConnector()
+        public Func<ISqlSiphon> MakeDatabaseConnector(bool skipDBUser)
         {
             Func<ISqlSiphon> connector = null;
             string dbType = "UNKNOWN";
@@ -98,7 +98,7 @@ namespace InitDB
                         dbType = vt == pg ? POSTGRES : SQL_SERVER;
                         this.IsPostgres = dbType == POSTGRES;
                         var constructorParams = new[] { typeof(string) };
-                        var constructorArgs = new object[] { this.MakeConnectionString() };
+                        var constructorArgs = new object[] { this.MakeConnectionString(skipDBUser) };
                         var constructor = type.GetConstructor(constructorParams);
                         if (constructor != null)
                         {
@@ -117,13 +117,19 @@ namespace InitDB
             return connector;
         }
 
-        private string MakeConnectionString()
+        private string MakeConnectionString(bool skipDBUser)
         {
-            var cred = new[] { 
-                new[]{this.adminUserTB.Text, this.adminPassTB.Text}, 
-                new[]{this.sqlUserTB.Text, this.sqlPassTB.Text}}
+            var creds = new List<string[]>();
+            creds.Add(new[] { this.adminUserTB.Text, this.adminPassTB.Text });
+            if (!skipDBUser)
+            {
+                creds.Add(new[] { this.sqlUserTB.Text, this.sqlPassTB.Text });
+            }
+
+            var cred = creds
                 .Where(s => !string.IsNullOrEmpty(s[0]) && !string.IsNullOrEmpty(s[1]))
                 .FirstOrDefault();
+
             string connStr = null;
             if (this.IsPostgres)
             {
@@ -309,7 +315,7 @@ namespace InitDB
             return psqlGood && sqlcmdGood && assemblyGood;
         }
 
-        private void RunProcess(Action<bool> complete, string name, params string[] args)
+        private bool RunProcess(string name, params string[] args)
         {
             var succeeded = true;
             var shortName = new FileInfo(name).Name;
@@ -326,51 +332,41 @@ namespace InitDB
                 CreateNoWindow = true,
                 ErrorDialog = true,
             };
-            var proc = new Process();
-            proc.StartInfo = procInfo;
-            var err = new DataReceivedEventHandler(delegate(object sender, DataReceivedEventArgs e)
+            using (var proc = new Process())
             {
-                if (e.Data != null)
+                proc.StartInfo = procInfo;
+                proc.EnableRaisingEvents = true;
+                proc.Start();
+                proc.WaitForExit();
+                while (proc.StandardOutput.Peek() != -1)
                 {
-                    this.ToError(e.Data);
-                    succeeded = false;
+                    this.ToOutput(proc.StandardOutput.ReadLine());
                 }
-            });
-            proc.EnableRaisingEvents = true;
-            proc.ErrorDataReceived += err;
-            proc.OutputDataReceived += proc_OutputDataReceived;
-            var exit = new EventHandler(delegate(object sender, EventArgs e)
-            {
+                while (proc.StandardError.Peek() != -1)
+                {
+                    succeeded = false;
+                    this.ToError(proc.StandardError.ReadLine());
+                }
                 this.SyncUI(() =>
                 {
                     this.ToOutput(string.Format("finished {0}", shortName));
                     this.ToOutput(HORIZONTAL_LINE);
                 });
-                proc.OutputDataReceived -= proc_OutputDataReceived;
-                proc.ErrorDataReceived -= err;
-                proc.Dispose();
-                complete(succeeded);
-            });
-            proc.Exited += exit;
-            proc.Start();
-            proc.BeginOutputReadLine();
-            proc.BeginErrorReadLine();
+            }
+            return succeeded;
         }
 
-        private void proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            this.ToOutput(e.Data);
-        }
-
-        private void RunQueryWithPSQL(string qry, string database, bool isFile, Action<bool> complete)
+        private bool RunQueryWithPSQL(string qry, string database, bool isFile)
         {
             if (isFile && !File.Exists(qry))
             {
                 this.ToError(string.Format("Tried running script from file \"{0}\", but it doesn't exist!", qry));
+                return false;
             }
             else if (string.IsNullOrWhiteSpace(adminUserTB.Text) || string.IsNullOrWhiteSpace(adminPassTB.Text))
             {
                 this.ToError("PSQL does not support Windows Authentication. Please provide a username and password for the server process.");
+                return false;
             }
             else
             {
@@ -420,111 +416,55 @@ namespace InitDB
                     }
                 }
 
-                RunProcess((b) =>
+                var succeeded = RunProcess(this.optionsDialog.PSQLPath, "-h " + server, string.IsNullOrWhiteSpace(port) ? null : "-p " + port, "-U " + adminUserTB.Text, string.Format(" -{0} \"{1}\"", isFile ? "f" : "c", qry), (database != null) ? "-d " + database : null);
+
+                // put everything back the way it was
+                if (lineAdded)
                 {
-                    // put everything back the way it was
-                    if (lineAdded)
+                    if (originalConf == null)
                     {
-                        if (originalConf == null)
-                        {
-                            File.Delete(confPath);
-                        }
-                        else
-                        {
-                            File.WriteAllLines(confPath, originalConf);
-                        }
+                        File.Delete(confPath);
                     }
-                    complete(b);
-                }, this.optionsDialog.PSQLPath, "-h " + server, string.IsNullOrWhiteSpace(port) ? null : "-p " + port, "-U " + adminUserTB.Text, string.Format(" -{0} \"{1}\"", isFile ? "f" : "c", qry), (database != null) ? "-d " + database : null);
+                    else
+                    {
+                        File.WriteAllLines(confPath, originalConf);
+                    }
+                }
+
+                return succeeded;
             }
         }
 
-        private void RunQueryWithSQLCMD(string qry, string database, bool isFile, Action<bool> complete)
+        private bool RunQueryWithSQLCMD(string qry, string database, bool isFile)
         {
             if (isFile && !File.Exists(qry))
             {
                 this.ToError(string.Format("Tried running script from file \"{0}\", but it doesn't exist!", qry));
+                return false;
             }
             else
             {
-                RunProcess(complete, this.optionsDialog.SQLCMDPath, "-S " + serverTB.Text, string.IsNullOrWhiteSpace(adminUserTB.Text) ? null : "-U " + adminUserTB.Text, string.IsNullOrWhiteSpace(adminPassTB.Text) ? null : "-P " + adminPassTB.Text, (database != null) ? "-d " + database : null, string.Format(" -{0} \"{1}\"", isFile ? "i" : "Q", qry));
+                return RunProcess(this.optionsDialog.SQLCMDPath, "-S " + serverTB.Text, string.IsNullOrWhiteSpace(adminUserTB.Text) ? null : "-U " + adminUserTB.Text, string.IsNullOrWhiteSpace(adminPassTB.Text) ? null : "-P " + adminPassTB.Text, (database != null) ? "-d " + database : null, string.Format(" -{0} \"{1}\"", isFile ? "i" : "Q", qry));
             }
         }
 
-        private void RunQuery(string qry, string database, bool isFile, Action<bool> complete)
+        private bool RunQuery(string qry, string database, bool isFile)
         {
             if (this.IsPostgres)
             {
-                RunQueryWithPSQL(qry, database, isFile, complete);
+                return RunQueryWithPSQL(qry, database, isFile);
             }
             else
             {
-                RunQueryWithSQLCMD(qry, database, isFile, complete);
+                return RunQueryWithSQLCMD(qry, database, isFile);
             }
         }
 
 
         private void createExtensionsBtn_Click(object sender, EventArgs e)
         {
-            RunQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", DatabaseName, false, (succeeded) =>
-            {
-                if (succeeded)
-                {
-                    RunQuery("CREATE EXTENSION \\\"postgis\\\";", DatabaseName, false, StepsComplete);
-                }
-                else
-                {
-                    StepsComplete(false);
-                }
-            });
-        }
-
-        private void createUserBtn_Click(object sender, EventArgs e)
-        {
-            if (this.IsPostgres)
-            {
-                RunQuery(string.Format("CREATE USER {0} WITH PASSWORD '{1}'", sqlUserTB.Text, sqlPassTB.Text), null, false, StepsComplete);
-            }
-            else
-            {
-                RunQuery(string.Format("CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};", sqlUserTB.Text, sqlPassTB.Text, DatabaseName), null, false, SetupDB4_2);
-            }
-        }
-
-        private void SetupDB4_2(bool succeeded)
-        {
-            if (succeeded)
-            {
-                RunQuery(string.Format("CREATE USER {0} FOR LOGIN {0};", sqlUserTB.Text), DatabaseName, false, SetupDB4_3);
-            }
-            else
-            {
-                StepsComplete(false);
-            }
-        }
-
-        private void SetupDB4_3(bool succeeded)
-        {
-            if (succeeded)
-            {
-                RunQuery(string.Format("ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;", sqlUserTB.Text), DatabaseName, false, SetupDB4_4);
-            }
-            else
-            {
-                StepsComplete(false);
-            }
-        }
-
-        private void SetupDB4_4(bool succeeded)
-        {
-            if (succeeded)
-            {
-                RunQuery(string.Format("ALTER ROLE db_owner ADD MEMBER {0};", sqlUserTB.Text), DatabaseName, false, StepsComplete);
-            }
-            else
-            {
-                StepsComplete(false);
-            }
+            StepsComplete(RunQuery("CREATE EXTENSION \\\"uuid-ossp\\\";", DatabaseName, false)
+                && RunQuery("CREATE EXTENSION \\\"postgis\\\";", DatabaseName, false));
         }
 
         private void StepsComplete(bool succeeded)
@@ -541,17 +481,23 @@ namespace InitDB
 
         private DatabaseDelta CreateDelta(ISqlSiphon db)
         {
-            var initial = new DatabaseState(this.databaseTB.Text, ObjectFilter, db);
-            if (initial.SuccessfulLogin == false)
+            var r = ObjectFilter;
+            var initial = new DatabaseState(this.databaseTB.Text, r, db);
+            if (initial.CatalogueExists == false)
             {
+                var makeUserlessConnector = MakeDatabaseConnector(true);
+                using (var db2 = makeUserlessConnector())
+                {
+                    initial.ReadDatabaseState(r, db2);
+                }
             }
-            var final = db.GetFinalState();
+            var final = db.GetFinalState(this.sqlUserTB.Text, this.sqlPassTB.Text);
             return new DatabaseDelta(final, initial, db);
         }
 
         private void SetupDB()
         {
-            var connector = MakeDatabaseConnector();
+            var connector = MakeDatabaseConnector(false);
             var db = connector();
             db.Progress += db_Progress;
             var delta = CreateDelta(db);
@@ -590,9 +536,9 @@ namespace InitDB
             }
         }
 
-        private void RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db, Action<bool> complete)
+        private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db, Action<bool> complete)
         {
-            bool defered = false;
+            bool succeeded = true;
             try
             {
                 foreach (var script in scripts)
@@ -600,27 +546,34 @@ namespace InitDB
                     if (script.Run)
                     {
                         this.ToOutput(string.Format("{0} {1}.", script.Script, script.Name));
-                        if (script.ScriptType == ScriptType.CreateCatalogue)
+                        if (script.ScriptType == ScriptType.CreateCatalogue
+                            || script.ScriptType == ScriptType.CreateDatabaseLogin)
                         {
-                            defered = true;
-                            this.RunQuery(script.Script, null, false, complete);
+                            succeeded = succeeded && this.RunQuery(script.Script, null, false);
+                            if (script.ScriptType == ScriptType.CreateDatabaseLogin && succeeded)
+                            {
+                                // wait a beat for the database to catch up.
+                                System.Threading.Thread.Sleep(5000);
+                            }
                         }
                         else
                         {
                             db.AlterDatabase(script);
                         }
                     }
-                }
-                if (!defered)
-                {
-                    complete(true);
+
+                    if (!succeeded)
+                    {
+                        break;
+                    }
                 }
             }
             catch (Exception exp)
             {
                 this.ToError(exp);
-                complete(false);
+                succeeded = false;
             }
+            return succeeded;
         }
 
         private void db_Progress(object sender, DataProgressEventArgs e)
@@ -645,7 +598,7 @@ namespace InitDB
 
         private void Analzye()
         {
-            var connector = this.MakeDatabaseConnector();
+            var connector = this.MakeDatabaseConnector(false);
             if (PathsAreCorrect())
             {
                 Task.Run(() =>
@@ -793,6 +746,8 @@ namespace InitDB
                     }
                     this.txtStdOut.Text = "";
                     this.txtStdErr.Text = "";
+                    tabControl1.SelectedTab = this.tabScripts;
+                    this.pendingScriptsGV.DataSource = null;
                     if (sessionName != DEFAULT_SESSION_NAME)
                     {
                         this.Analzye();
@@ -855,13 +810,14 @@ namespace InitDB
         {
             this.tabControl1.SelectedTab = this.tabStdOut;
             this.ToOutput(script.Script);
-            if (script.ScriptType == ScriptType.CreateCatalogue)
+            if (script.ScriptType == ScriptType.CreateCatalogue
+                || script.ScriptType == ScriptType.CreateDatabaseLogin)
             {
-                this.RunQuery(script.Script, null, false, (s) => ToOutput(s ? "Success" : "Failure"));
+                StepsComplete(this.RunQuery(script.Script, null, false));
             }
             else
             {
-                var connector = this.MakeDatabaseConnector();
+                var connector = this.MakeDatabaseConnector(false);
                 using (var db = connector())
                 {
                     db.AlterDatabase(script);
@@ -914,17 +870,7 @@ namespace InitDB
                 {
                     script = script.Substring(this.generalScriptTB.SelectionStart, this.generalScriptTB.SelectionLength);
                 }
-                WithErrorCapture(() => this.RunQuery(script, DatabaseName, false, (succeeded) =>
-                {
-                    if (succeeded)
-                    {
-                        this.ToOutput("Success");
-                    }
-                    else
-                    {
-                        this.ToError("Something failed");
-                    }
-                }));
+                WithErrorCapture(() => StepsComplete(this.RunQuery(script, DatabaseName, false)));
                 e.SuppressKeyPress = true;
             }
         }

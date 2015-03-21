@@ -9,7 +9,7 @@ namespace SqlSiphon
 {
     public interface ISqlSiphon : IDisposable
     {
-        DatabaseState GetFinalState();
+        DatabaseState GetFinalState(string userName, string password);
         void AlterDatabase(ScriptStatus script);
         void MarkScriptAsRan(ScriptStatus script);
 
@@ -18,6 +18,7 @@ namespace SqlSiphon
         string DefaultSchemaName { get; }
 
         List<string> GetSchemata();
+        List<string> GetDatabaseLogins();
         List<InformationSchema.Columns> GetColumns();
         List<InformationSchema.IndexColumnUsage> GetIndexColumns();
         List<InformationSchema.Routines> GetRoutines();
@@ -42,6 +43,7 @@ namespace SqlSiphon
 
         Type GetSystemType(string sqlType);
 
+        string MakeCreateDatabaseLoginScript(string userName, string password, string database);
         string MakeCreateCatalogueScript(string catalogueName);
 
         string MakeCreateSchemaScript(string schemaName);

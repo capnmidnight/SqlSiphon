@@ -11,7 +11,7 @@ namespace SqlSiphon
 {
     public class DatabaseState
     {
-        public bool? SuccessfulLogin { get; private set; }
+        public bool? CatalogueExists { get; private set; }
         public string CatalogueName { get; private set; }
         public Dictionary<string, TableAttribute> Tables { get; private set; }
         public Dictionary<string, Index> Indexes { get; private set; }
@@ -19,7 +19,7 @@ namespace SqlSiphon
         public Dictionary<string, Relationship> Relationships { get; private set; }
         public Dictionary<string, PrimaryKey> PrimaryKeys { get; private set; }
         public List<string> Schemata { get; private set; }
-
+        public Dictionary<string, string> DatabaseLogins { get; private set; }
         private DatabaseState()
         {
             this.Tables = new Dictionary<string, TableAttribute>();
@@ -28,6 +28,7 @@ namespace SqlSiphon
             this.Relationships = new Dictionary<string, Relationship>();
             this.PrimaryKeys = new Dictionary<string, PrimaryKey>();
             this.Schemata = new List<string>();
+            this.DatabaseLogins = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -35,9 +36,13 @@ namespace SqlSiphon
         /// mappings to database objects.
         /// </summary>
         /// <param name="asm"></param>
-        public DatabaseState(IEnumerable<Type> types, ISqlSiphon dal)
+        public DatabaseState(IEnumerable<Type> types, ISqlSiphon dal, string userName, string password)
             : this()
         {
+            if (!string.IsNullOrWhiteSpace(userName))
+            {
+                this.DatabaseLogins.Add(userName, password);
+            }
             foreach (var type in types)
             {
                 AddType(type, dal);
@@ -98,7 +103,7 @@ namespace SqlSiphon
                 .Union(this.Functions.Values.Select(f => f.Schema))
                 .Union(this.Relationships.Values.Select(r => r.Schema))
                 .Union(this.PrimaryKeys.Values.Select(r => r.Schema))
-                .Where(s => !string.IsNullOrWhiteSpace(s) && !this.Schemata.Contains(s))
+                .Where(s => !string.IsNullOrWhiteSpace(s) && !this.Schemata.Contains(s) && s != dal.DefaultSchemaName)
                 .Distinct());
         }
 
@@ -110,10 +115,19 @@ namespace SqlSiphon
             : this()
         {
             this.CatalogueName = catalogueName;
+            this.ReadDatabaseState(filter, dal);
+        }
+
+        public void ReadDatabaseState(Regex filter, ISqlSiphon dal)
+        {
             try
             {
+                foreach (var name in dal.GetDatabaseLogins())
+                {
+                    this.DatabaseLogins.Add(name, null);
+                }
+                this.CatalogueExists = true;
                 this.Schemata.AddRange(dal.GetSchemata());
-                this.SuccessfulLogin = true;
                 var columns = dal.GetColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
                 var constraints = dal.GetTableConstraints();
                 var constraintsByTable = constraints.ToHash(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name));
@@ -202,11 +216,10 @@ namespace SqlSiphon
                         }
                     }
                 }
-
             }
-            catch (ConnectionFailedException exp)
+            catch (ConnectionFailedException)
             {
-                this.SuccessfulLogin = false;
+                this.CatalogueExists = false;
             }
         }
     }

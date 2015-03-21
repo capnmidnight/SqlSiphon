@@ -602,6 +602,22 @@ DROP INDEX {0} ON {1};",
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query = @"select name from sys.sysusers")]
+        public override List<string> GetDatabaseLogins()
+        {
+            return this.GetList<string>("name");
+        }
+
+        public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
+        {
+            return string.Format(@"CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};
+USE {2};
+CREATE USER {0} FOR LOGIN {0};
+ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;
+ALTER ROLE db_owner ADD MEMBER {0};", userName, password, database);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
 @"select *, COLUMNPROPERTY(object_id(TABLE_NAME), COLUMN_NAME, 'IsIdentity') as is_identity
 from information_schema.columns

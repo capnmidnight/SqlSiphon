@@ -643,12 +643,12 @@ AND COLUMN_NAME = @columnName;")]
             return GetList<InformationSchema.ConstraintColumnUsage>(tableSchema, tableName, columnName);
         }
 
-        public virtual DatabaseState GetFinalState()
+        public virtual DatabaseState GetFinalState(string userName, string password)
         {
             var asm = this.GetType().Assembly;
             var types = asm.GetTypes().ToList();
             types.Insert(0, typeof(ScriptStatus));
-            var final = new DatabaseState(types, this);
+            var final = new DatabaseState(types, this, userName, password);
             return final;
         }
 
@@ -766,10 +766,15 @@ AND COLUMN_NAME = @columnName;")]
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
-@"select schema_name from information_schema.schemata;")]
+@"select schema_name from information_schema.schemata where schema_name != @defaultSchemaName;")]
+        protected virtual List<string> GetSchemataInternal(string defaultSchemaName)
+        {
+            return this.GetList<string>("schema_name", defaultSchemaName);
+        }
+
         public virtual List<string> GetSchemata()
         {
-            return this.GetList<string>("schema_name");
+            return this.GetSchemataInternal(this.DefaultSchemaName);
         }
 
         public virtual string MakeCreateCatalogueScript(string catalogueName)
@@ -792,6 +797,7 @@ AND COLUMN_NAME = @columnName;")]
             return MakeSchemaScript("drop", schemaName);
         }
 
+        public abstract List<string> GetDatabaseLogins();
         public abstract List<InformationSchema.Columns> GetColumns();
         public abstract List<InformationSchema.IndexColumnUsage> GetIndexColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
@@ -810,6 +816,8 @@ AND COLUMN_NAME = @columnName;")]
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(ParameterAttribute p);
+
+        public abstract string MakeCreateDatabaseLoginScript(string userName, string password, string database);
 
         public abstract string MakeCreateTableScript(TableAttribute table);
         public abstract string MakeDropTableScript(TableAttribute table);

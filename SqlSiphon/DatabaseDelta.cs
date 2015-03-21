@@ -74,28 +74,33 @@ namespace SqlSiphon
         public DatabaseDelta(DatabaseState final, DatabaseState initial, ISqlSiphon dal)
         {
             this.Scripts = new List<ScriptStatus>();
-            if (initial.SuccessfulLogin == false)
+            if (initial.CatalogueExists == false)
             {
                 this.Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, initial.CatalogueName, dal.MakeCreateCatalogueScript(initial.CatalogueName)));
             }
-            else
-            {
-                ProcessSchemas(final.Schemata.ToDictionary(k => k), initial.Schemata.ToDictionary(k => k), dal);
-                ProcessTables(final.Tables, initial.Tables, dal);
-                ProcessIndexes(final.Indexes, initial.Indexes, dal);
-                ProcessRelationships(final.Relationships, initial.Relationships, dal);
-                ProcessKeys(final.PrimaryKeys, initial.PrimaryKeys, dal);
-                ProcessFunctions(final.Functions, initial.Functions, dal);
-            }
+            ProcessDatabaseLogins(final.DatabaseLogins, initial.DatabaseLogins.Keys.ToList(), initial.CatalogueName, dal);
+            ProcessSchemas(final.Schemata.ToDictionary(k => k), initial.Schemata.ToDictionary(k => k), dal);
+            ProcessTables(final.Tables, initial.Tables, dal);
+            ProcessIndexes(final.Indexes, initial.Indexes, dal);
+            ProcessRelationships(final.Relationships, initial.Relationships, dal);
+            ProcessKeys(final.PrimaryKeys, initial.PrimaryKeys, dal);
+            ProcessFunctions(final.Functions, initial.Functions, dal);
+        }
+
+        private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, ISqlSiphon dal)
+        {
+            this.Scripts.AddRange(final
+                .Where(u => !initial.Contains(u.Key))
+                .Select(u => new ScriptStatus(ScriptType.CreateDatabaseLogin, u.Key, dal.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName))));
         }
 
         private void ProcessSchemas(Dictionary<string, string> finalSchemas, Dictionary<string, string> initialSchemas, ISqlSiphon dal)
         {
             Traverse(
-                finalSchemas, 
-                initialSchemas, 
-                ScriptType.DropSchema, 
-                ScriptType.CreateSchema, 
+                finalSchemas,
+                initialSchemas,
+                ScriptType.DropSchema,
+                ScriptType.CreateSchema,
                 (a, b) => false,
                 dal.MakeDropSchemaScript,
                 dal.MakeCreateSchemaScript);
