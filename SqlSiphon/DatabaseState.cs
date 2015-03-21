@@ -11,7 +11,7 @@ namespace SqlSiphon
 {
     public class DatabaseState
     {
-        public bool CatalogueExists { get; private set; }
+        public bool? SuccessfulLogin { get; private set; }
         public string CatalogueName { get; private set; }
         public Dictionary<string, TableAttribute> Tables { get; private set; }
         public Dictionary<string, Index> Indexes { get; private set; }
@@ -38,7 +38,6 @@ namespace SqlSiphon
         public DatabaseState(IEnumerable<Type> types, ISqlSiphon dal)
             : this()
         {
-            this.CatalogueExists = true;
             foreach (var type in types)
             {
                 AddType(type, dal);
@@ -114,7 +113,7 @@ namespace SqlSiphon
             try
             {
                 this.Schemata.AddRange(dal.GetSchemata());
-                this.CatalogueExists = true;
+                this.SuccessfulLogin = true;
                 var columns = dal.GetColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
                 var constraints = dal.GetTableConstraints();
                 var constraintsByTable = constraints.ToHash(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name));
@@ -207,7 +206,7 @@ namespace SqlSiphon
             }
             catch (ConnectionFailedException exp)
             {
-                this.CatalogueExists = false;
+                this.SuccessfulLogin = false;
             }
         }
     }

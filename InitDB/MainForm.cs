@@ -539,12 +539,22 @@ namespace InitDB
             }
         }
 
+        private DatabaseDelta CreateDelta(ISqlSiphon db)
+        {
+            var initial = new DatabaseState(this.databaseTB.Text, ObjectFilter, db);
+            if (initial.SuccessfulLogin == false)
+            {
+            }
+            var final = db.GetFinalState();
+            return new DatabaseDelta(final, initial, db);
+        }
+
         private void SetupDB()
         {
             var connector = MakeDatabaseConnector();
             var db = connector();
             db.Progress += db_Progress;
-            var delta = db.Analyze(this.databaseTB.Text, ObjectFilter);
+            var delta = CreateDelta(db);
             DisplayDelta(delta);
             var t = db.GetType();
             this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
@@ -560,7 +570,7 @@ namespace InitDB
                     this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
                 }
 
-                delta = db.Analyze(this.databaseTB.Text, ObjectFilter);
+                delta = CreateDelta(db);
                 DisplayDelta(delta);
                 this.SyncUI(() => runButton.Enabled = true);
                 db.Dispose();
@@ -645,7 +655,7 @@ namespace InitDB
                         this.ToOutput("Synchronizing schema.");
                         using (var db = connector())
                         {
-                            DisplayDelta(db.Analyze(this.databaseTB.Text, ObjectFilter));
+                            DisplayDelta(CreateDelta(db));
                         }
                         this.ToOutput("Schema synched.");
                     }

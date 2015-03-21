@@ -9,7 +9,7 @@ namespace SqlSiphon
 {
     public interface ISqlSiphon : IDisposable
     {
-        DatabaseDelta Analyze(string catalogueName, Regex filter);
+        DatabaseState GetFinalState();
         void AlterDatabase(ScriptStatus script);
         void MarkScriptAsRan(ScriptStatus script);
 

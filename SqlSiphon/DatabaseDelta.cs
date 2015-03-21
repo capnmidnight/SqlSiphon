@@ -74,7 +74,7 @@ namespace SqlSiphon
         public DatabaseDelta(DatabaseState final, DatabaseState initial, ISqlSiphon dal)
         {
             this.Scripts = new List<ScriptStatus>();
-            if (!initial.CatalogueExists)
+            if (initial.SuccessfulLogin == false)
             {
                 this.Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, initial.CatalogueName, dal.MakeCreateCatalogueScript(initial.CatalogueName)));
             }

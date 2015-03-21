@@ -643,20 +643,13 @@ AND COLUMN_NAME = @columnName;")]
             return GetList<InformationSchema.ConstraintColumnUsage>(tableSchema, tableName, columnName);
         }
 
-        protected virtual DatabaseState GetFinalState()
+        public virtual DatabaseState GetFinalState()
         {
             var asm = this.GetType().Assembly;
             var types = asm.GetTypes().ToList();
             types.Insert(0, typeof(ScriptStatus));
             var final = new DatabaseState(types, this);
             return final;
-        }
-
-        public DatabaseDelta Analyze(string catalogueName, Regex filter)
-        {
-            var initial = new DatabaseState(catalogueName, filter, this);
-            var final = this.GetFinalState();
-            return new DatabaseDelta(final, initial, this);
         }
 
         private string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
