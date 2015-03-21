@@ -697,7 +697,7 @@ namespace InitDB
             this.optionsDialog.PSQLPath = BrowseFrom(this.optionsDialog.PSQLPath) ?? this.optionsDialog.PSQLPath;
         }
 
-        private void saveSessionButton_Click(object sender, EventArgs e)
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var sesh = new Session(
                 this.savedSessionList.Text,
@@ -745,7 +745,7 @@ namespace InitDB
             File.WriteAllLines(SESSIONS_FILENAME, lines);
         }
 
-        private void deleteSessionButton_Click(object sender, EventArgs e)
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var sessionName = savedSessionList.SelectedItem as string;
             if (sessionName != null)
@@ -789,8 +789,8 @@ namespace InitDB
                     }
                 }
 
-                saveSessionButton.Enabled
-                    = deleteSessionButton.Enabled
+                saveToolStripMenuItem.Enabled
+                    = deleteToolStripMenuItem.Enabled
                     = (sessionName != DEFAULT_SESSION_NAME);
             }
         }
@@ -800,8 +800,8 @@ namespace InitDB
             var sessionName = savedSessionList.Text.Trim();
             if (sessionName.Length == 0)
                 sessionName = DEFAULT_SESSION_NAME;
-            saveSessionButton.Enabled
-                = deleteSessionButton.Enabled
+            saveToolStripMenuItem.Enabled
+                = deleteToolStripMenuItem.Enabled
                 = (sessionName != DEFAULT_SESSION_NAME);
 
             if (sessionName == DEFAULT_SESSION_NAME)
@@ -949,6 +949,16 @@ namespace InitDB
             {
                 this.filterTypesCBL.SetItemChecked(i, this.selectAllFiltersCB.Checked);
             }
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("InitDB for SqlSiphon by Sean T. McBeth (sean@seanmcbeth.com)");
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

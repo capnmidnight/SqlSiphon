@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.objFilterTB = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -45,7 +45,6 @@
             this.txtStdOut = new System.Windows.Forms.TextBox();
             this.tabStdErr = new System.Windows.Forms.TabPage();
             this.txtStdErr = new System.Windows.Forms.TextBox();
-            this.saveSessionButton = new System.Windows.Forms.Button();
             this.label14 = new System.Windows.Forms.Label();
             this.browseAssemblyBtn = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
@@ -65,16 +64,23 @@
             this.runButton = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
             this.dbType = new System.Windows.Forms.Label();
-            this.deleteSessionButton = new System.Windows.Forms.Button();
             this.filterTypesCBL = new System.Windows.Forms.CheckedListBox();
             this.label5 = new System.Windows.Forms.Label();
             this.createUserBtn = new System.Windows.Forms.Button();
             this.createExtensionsBtn = new System.Windows.Forms.Button();
+            this.selectAllFiltersCB = new System.Windows.Forms.CheckBox();
             this.optionsBtn = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
             this.savedSessionList = new System.Windows.Forms.ComboBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.selectAllFiltersCB = new System.Windows.Forms.CheckBox();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabScripts.SuspendLayout();
@@ -85,6 +91,7 @@
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.tabStdErr.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -101,7 +108,6 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 104F));
             this.tableLayoutPanel1.Controls.Add(this.objFilterTB, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.tabControl1, 1, 6);
-            this.tableLayoutPanel1.Controls.Add(this.saveSessionButton, 4, 11);
             this.tableLayoutPanel1.Controls.Add(this.label14, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.browseAssemblyBtn, 5, 0);
             this.tableLayoutPanel1.Controls.Add(this.label3, 0, 4);
@@ -121,15 +127,14 @@
             this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 5);
             this.tableLayoutPanel1.Controls.Add(this.label12, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.dbType, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.deleteSessionButton, 5, 11);
             this.tableLayoutPanel1.Controls.Add(this.filterTypesCBL, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.createUserBtn, 5, 4);
             this.tableLayoutPanel1.Controls.Add(this.createExtensionsBtn, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.selectAllFiltersCB, 0, 7);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 36);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(11, 55);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 12;
+            this.tableLayoutPanel1.RowCount = 11;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
@@ -141,10 +146,9 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(977, 639);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(977, 620);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // objFilterTB
@@ -162,11 +166,12 @@
             this.tabControl1.Controls.Add(this.tabScripts);
             this.tabControl1.Controls.Add(this.tabStdOut);
             this.tabControl1.Controls.Add(this.tabStdErr);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(155, 183);
             this.tabControl1.Name = "tabControl1";
             this.tableLayoutPanel1.SetRowSpan(this.tabControl1, 5);
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(819, 423);
+            this.tabControl1.Size = new System.Drawing.Size(819, 434);
             this.tabControl1.TabIndex = 18;
             // 
             // tabScripts
@@ -175,7 +180,7 @@
             this.tabScripts.Location = new System.Drawing.Point(4, 22);
             this.tabScripts.Name = "tabScripts";
             this.tabScripts.Padding = new System.Windows.Forms.Padding(3);
-            this.tabScripts.Size = new System.Drawing.Size(811, 397);
+            this.tabScripts.Size = new System.Drawing.Size(811, 408);
             this.tabScripts.TabIndex = 10;
             this.tabScripts.Text = "Pending scripts";
             this.tabScripts.UseVisualStyleBackColor = true;
@@ -196,7 +201,7 @@
             this.pendingScriptsGV.Location = new System.Drawing.Point(3, 3);
             this.pendingScriptsGV.Name = "pendingScriptsGV";
             this.pendingScriptsGV.ReadOnly = true;
-            this.pendingScriptsGV.Size = new System.Drawing.Size(805, 391);
+            this.pendingScriptsGV.Size = new System.Drawing.Size(805, 402);
             this.pendingScriptsGV.TabIndex = 4;
             this.pendingScriptsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
             // 
@@ -217,8 +222,8 @@
             // pendingScriptNameColumn
             // 
             this.pendingScriptNameColumn.DataPropertyName = "Name";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle2;
             this.pendingScriptNameColumn.HeaderText = "name";
             this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
             this.pendingScriptNameColumn.ReadOnly = true;
@@ -248,7 +253,7 @@
             this.tabStdOut.Location = new System.Drawing.Point(4, 22);
             this.tabStdOut.Name = "tabStdOut";
             this.tabStdOut.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdOut.Size = new System.Drawing.Size(811, 397);
+            this.tabStdOut.Size = new System.Drawing.Size(811, 378);
             this.tabStdOut.TabIndex = 0;
             this.tabStdOut.Text = "Standard output";
             this.tabStdOut.UseVisualStyleBackColor = true;
@@ -267,8 +272,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.txtStdOut);
-            this.splitContainer1.Size = new System.Drawing.Size(805, 391);
-            this.splitContainer1.SplitterDistance = 76;
+            this.splitContainer1.Size = new System.Drawing.Size(805, 372);
+            this.splitContainer1.SplitterDistance = 72;
             this.splitContainer1.TabIndex = 2;
             // 
             // generalScriptTB
@@ -280,7 +285,7 @@
             this.generalScriptTB.Location = new System.Drawing.Point(0, 0);
             this.generalScriptTB.Multiline = true;
             this.generalScriptTB.Name = "generalScriptTB";
-            this.generalScriptTB.Size = new System.Drawing.Size(805, 76);
+            this.generalScriptTB.Size = new System.Drawing.Size(805, 72);
             this.generalScriptTB.TabIndex = 0;
             this.generalScriptTB.Text = "-- (hit CTRL+Enter to run script)";
             this.generalScriptTB.KeyDown += new System.Windows.Forms.KeyEventHandler(this.generalScriptTB_KeyDown);
@@ -296,7 +301,7 @@
             this.txtStdOut.Name = "txtStdOut";
             this.txtStdOut.ReadOnly = true;
             this.txtStdOut.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdOut.Size = new System.Drawing.Size(805, 311);
+            this.txtStdOut.Size = new System.Drawing.Size(805, 296);
             this.txtStdOut.TabIndex = 1;
             this.txtStdOut.TabStop = false;
             this.txtStdOut.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -307,7 +312,7 @@
             this.tabStdErr.Location = new System.Drawing.Point(4, 22);
             this.tabStdErr.Name = "tabStdErr";
             this.tabStdErr.Padding = new System.Windows.Forms.Padding(3);
-            this.tabStdErr.Size = new System.Drawing.Size(811, 397);
+            this.tabStdErr.Size = new System.Drawing.Size(811, 378);
             this.tabStdErr.TabIndex = 1;
             this.tabStdErr.Text = "Standard error";
             this.tabStdErr.UseVisualStyleBackColor = true;
@@ -323,20 +328,10 @@
             this.txtStdErr.Name = "txtStdErr";
             this.txtStdErr.ReadOnly = true;
             this.txtStdErr.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtStdErr.Size = new System.Drawing.Size(805, 391);
+            this.txtStdErr.Size = new System.Drawing.Size(805, 372);
             this.txtStdErr.TabIndex = 0;
             this.txtStdErr.TabStop = false;
             this.txtStdErr.Text = "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
-            // 
-            // saveSessionButton
-            // 
-            this.saveSessionButton.Location = new System.Drawing.Point(776, 612);
-            this.saveSessionButton.Name = "saveSessionButton";
-            this.saveSessionButton.Size = new System.Drawing.Size(94, 24);
-            this.saveSessionButton.TabIndex = 21;
-            this.saveSessionButton.Text = "Save";
-            this.saveSessionButton.UseVisualStyleBackColor = true;
-            this.saveSessionButton.Click += new System.EventHandler(this.saveSessionButton_Click);
             // 
             // label14
             // 
@@ -525,17 +520,6 @@
             this.dbType.TabIndex = 36;
             this.dbType.Text = "UNKNOWN";
             // 
-            // deleteSessionButton
-            // 
-            this.deleteSessionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.deleteSessionButton.Location = new System.Drawing.Point(876, 612);
-            this.deleteSessionButton.Name = "deleteSessionButton";
-            this.deleteSessionButton.Size = new System.Drawing.Size(98, 24);
-            this.deleteSessionButton.TabIndex = 23;
-            this.deleteSessionButton.Text = "Delete";
-            this.deleteSessionButton.UseVisualStyleBackColor = true;
-            this.deleteSessionButton.Click += new System.EventHandler(this.deleteSessionButton_Click);
-            // 
             // filterTypesCBL
             // 
             this.filterTypesCBL.CheckOnClick = true;
@@ -544,7 +528,7 @@
             this.filterTypesCBL.Location = new System.Drawing.Point(3, 233);
             this.filterTypesCBL.Name = "filterTypesCBL";
             this.tableLayoutPanel1.SetRowSpan(this.filterTypesCBL, 3);
-            this.filterTypesCBL.Size = new System.Drawing.Size(146, 373);
+            this.filterTypesCBL.Size = new System.Drawing.Size(146, 384);
             this.filterTypesCBL.TabIndex = 37;
             this.filterTypesCBL.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.filterTypesCBL_ItemCheck);
             // 
@@ -580,43 +564,6 @@
             this.createExtensionsBtn.UseVisualStyleBackColor = true;
             this.createExtensionsBtn.Click += new System.EventHandler(this.createExtensionsBtn_Click);
             // 
-            // optionsBtn
-            // 
-            this.optionsBtn.Location = new System.Drawing.Point(914, 7);
-            this.optionsBtn.Name = "optionsBtn";
-            this.optionsBtn.Size = new System.Drawing.Size(75, 23);
-            this.optionsBtn.TabIndex = 37;
-            this.optionsBtn.Text = "Options";
-            this.optionsBtn.UseVisualStyleBackColor = true;
-            this.optionsBtn.Click += new System.EventHandler(this.optionsBtn_Click);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(16, 13);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(84, 13);
-            this.label7.TabIndex = 19;
-            this.label7.Text = "Saved sessions:";
-            // 
-            // savedSessionList
-            // 
-            this.savedSessionList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.savedSessionList.FormattingEnabled = true;
-            this.savedSessionList.Location = new System.Drawing.Point(102, 9);
-            this.savedSessionList.Name = "savedSessionList";
-            this.savedSessionList.Size = new System.Drawing.Size(806, 21);
-            this.savedSessionList.Sorted = true;
-            this.savedSessionList.TabIndex = 1;
-            this.savedSessionList.SelectedIndexChanged += new System.EventHandler(this.savedSessionList_SelectedIndexChanged);
-            this.savedSessionList.TextUpdate += new System.EventHandler(this.savedSessionList_TextUpdate);
-            // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
-            // 
             // selectAllFiltersCB
             // 
             this.selectAllFiltersCB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -629,6 +576,106 @@
             this.selectAllFiltersCB.UseVisualStyleBackColor = true;
             this.selectAllFiltersCB.CheckedChanged += new System.EventHandler(this.selectAllFiltersCB_CheckedChanged);
             // 
+            // optionsBtn
+            // 
+            this.optionsBtn.Location = new System.Drawing.Point(913, 26);
+            this.optionsBtn.Name = "optionsBtn";
+            this.optionsBtn.Size = new System.Drawing.Size(75, 23);
+            this.optionsBtn.TabIndex = 37;
+            this.optionsBtn.Text = "Options";
+            this.optionsBtn.UseVisualStyleBackColor = true;
+            this.optionsBtn.Click += new System.EventHandler(this.optionsBtn_Click);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(15, 32);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(84, 13);
+            this.label7.TabIndex = 19;
+            this.label7.Text = "Saved sessions:";
+            // 
+            // savedSessionList
+            // 
+            this.savedSessionList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.savedSessionList.FormattingEnabled = true;
+            this.savedSessionList.Location = new System.Drawing.Point(101, 28);
+            this.savedSessionList.Name = "savedSessionList";
+            this.savedSessionList.Size = new System.Drawing.Size(806, 21);
+            this.savedSessionList.Sorted = true;
+            this.savedSessionList.TabIndex = 1;
+            this.savedSessionList.SelectedIndexChanged += new System.EventHandler(this.savedSessionList_SelectedIndexChanged);
+            this.savedSessionList.TextUpdate += new System.EventHandler(this.savedSessionList_TextUpdate);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
+            // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.helpToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(1001, 24);
+            this.menuStrip1.TabIndex = 38;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveToolStripMenuItem,
+            this.deleteToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Text = "&File";
+            // 
+            // saveToolStripMenuItem
+            // 
+            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Text = "&Save";
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deleteToolStripMenuItem.Text = "&Delete";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Text = "E&xit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.aboutToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Text = "&Help";
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.aboutToolStripMenuItem.Text = "&About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -638,6 +685,8 @@
             this.Controls.Add(this.label7);
             this.Controls.Add(this.savedSessionList);
             this.Controls.Add(this.optionsBtn);
+            this.Controls.Add(this.menuStrip1);
+            this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "Initialize database";
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -654,6 +703,8 @@
             this.splitContainer1.ResumeLayout(false);
             this.tabStdErr.ResumeLayout(false);
             this.tabStdErr.PerformLayout();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -677,9 +728,7 @@
         private System.Windows.Forms.TabPage tabStdErr;
         private System.Windows.Forms.TextBox txtStdErr;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Button saveSessionButton;
         private System.Windows.Forms.ComboBox savedSessionList;
-        private System.Windows.Forms.Button deleteSessionButton;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox assemblyTB;
         private System.Windows.Forms.Button browseAssemblyBtn;
@@ -707,6 +756,14 @@
         private System.Windows.Forms.Button createExtensionsBtn;
         private System.Windows.Forms.TabPage tabScripts;
         private System.Windows.Forms.CheckBox selectAllFiltersCB;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
     }
 }
 
