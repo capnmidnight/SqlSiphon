@@ -287,7 +287,10 @@ namespace InitDB
             this.runButton.Enabled = false;
             Application.DoEvents();
             if (PathsAreCorrect())
+            {
+                tabControl1.SelectedTab = tabStdOut;
                 Task.Run(new Action(SetupDB));
+            }
         }
 
         private bool IsPostgres;
@@ -842,9 +845,18 @@ namespace InitDB
         {
             this.tabControl1.SelectedTab = this.tabStdOut;
             this.ToOutput(script.Script);
-            var connector = this.MakeDatabaseConnector();
-            using (var db = connector())
-                db.AlterDatabase(script);
+            if (script.ScriptType == ScriptType.CreateCatalogue)
+            {
+                this.RunQuery(script.Script, null, false, (s) => ToOutput(s ? "Success" : "Failure"));
+            }
+            else
+            {
+                var connector = this.MakeDatabaseConnector();
+                using (var db = connector())
+                {
+                    db.AlterDatabase(script);
+                }
+            }
         }
 
         private void optionsBtn_Click(object sender, EventArgs e)
@@ -929,6 +941,14 @@ namespace InitDB
         private void filterTypesCBL_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             FilterScripts(e);
+        }
+
+        private void selectAllFiltersCB_CheckedChanged(object sender, EventArgs e)
+        {
+            for (int i = 0; i < this.filterTypesCBL.Items.Count; ++i)
+            {
+                this.filterTypesCBL.SetItemChecked(i, this.selectAllFiltersCB.Checked);
+            }
         }
     }
 }
