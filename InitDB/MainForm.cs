@@ -214,7 +214,7 @@ namespace InitDB
                 this.SyncUI(() =>
                 {
                     this.tabControl1.SelectedTab = this.tabStdErr;
-                    this.runButton.Enabled = true;
+                    this.runToolStripMenuItem.Enabled = true;
                 });
             }
         }
@@ -288,9 +288,9 @@ namespace InitDB
             this.savedSessionList.DataSource = this.names;
         }
 
-        private void runButton_Click(object sender, EventArgs e)
+        private void runToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.runButton.Enabled = false;
+            this.runToolStripMenuItem.Enabled = false;
             Application.DoEvents();
             if (PathsAreCorrect())
             {
@@ -518,7 +518,7 @@ namespace InitDB
 
                 delta = CreateDelta(db);
                 DisplayDelta(delta);
-                this.SyncUI(() => runButton.Enabled = true);
+                this.SyncUI(() => runToolStripMenuItem.Enabled = true);
                 db.Dispose();
             });
         }

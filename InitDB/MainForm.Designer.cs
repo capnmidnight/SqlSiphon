@@ -61,7 +61,6 @@
             this.databaseTB = new System.Windows.Forms.TextBox();
             this.assemblyTB = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.runButton = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
             this.dbType = new System.Windows.Forms.Label();
             this.filterTypesCBL = new System.Windows.Forms.CheckedListBox();
@@ -78,6 +77,7 @@
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.runToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1.SuspendLayout();
@@ -123,7 +123,6 @@
             this.tableLayoutPanel1.Controls.Add(this.databaseTB, 3, 2);
             this.tableLayoutPanel1.Controls.Add(this.assemblyTB, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.label8, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.runButton, 5, 5);
             this.tableLayoutPanel1.Controls.Add(this.label12, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.dbType, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.filterTypesCBL, 0, 8);
@@ -152,10 +151,10 @@
             // objFilterTB
             // 
             this.objFilterTB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.objFilterTB, 4);
+            this.tableLayoutPanel1.SetColumnSpan(this.objFilterTB, 5);
             this.objFilterTB.Location = new System.Drawing.Point(155, 155);
             this.objFilterTB.Name = "objFilterTB";
-            this.objFilterTB.Size = new System.Drawing.Size(715, 20);
+            this.objFilterTB.Size = new System.Drawing.Size(819, 20);
             this.objFilterTB.TabIndex = 35;
             // 
             // tabControl1
@@ -487,17 +486,6 @@
             this.label8.TabIndex = 23;
             this.label8.Text = "Data assembly:";
             // 
-            // runButton
-            // 
-            this.runButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.runButton.Location = new System.Drawing.Point(876, 153);
-            this.runButton.Name = "runButton";
-            this.runButton.Size = new System.Drawing.Size(98, 24);
-            this.runButton.TabIndex = 22;
-            this.runButton.Text = "Run";
-            this.runButton.UseVisualStyleBackColor = true;
-            this.runButton.Click += new System.EventHandler(this.runButton_Click);
-            // 
             // label12
             // 
             this.label12.Anchor = System.Windows.Forms.AnchorStyles.Right;
@@ -604,6 +592,7 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.runToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -647,6 +636,13 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // rumToolStripMenuItem
+            // 
+            this.runToolStripMenuItem.Name = "rumToolStripMenuItem";
+            this.runToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
+            this.runToolStripMenuItem.Text = "&Run";
+            this.runToolStripMenuItem.Click += new System.EventHandler(this.runToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -708,7 +704,6 @@
         private System.Windows.Forms.TextBox databaseTB;
         private System.Windows.Forms.TextBox sqlUserTB;
         private System.Windows.Forms.TextBox sqlPassTB;
-        private System.Windows.Forms.Button runButton;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabStdOut;
@@ -750,6 +745,7 @@
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem runToolStripMenuItem;
     }
 }
 
