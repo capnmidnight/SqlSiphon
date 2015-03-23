@@ -92,8 +92,9 @@ namespace SqlSiphon
 
         private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, ISqlSiphon dal)
         {
+            var names = initial.Select(s => s.ToLower()).ToArray();
             this.Scripts.AddRange(final
-                .Where(u => !initial.Contains(u.Key))
+                .Where(u => !names.Contains(u.Key.ToLower()))
                 .Select(u => new ScriptStatus(ScriptType.CreateDatabaseLogin, u.Key, dal.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName))));
         }
 
