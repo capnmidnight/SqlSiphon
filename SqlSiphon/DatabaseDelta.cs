@@ -35,7 +35,7 @@ namespace SqlSiphon
             }
         }
 
-        private void Traverse<T>(
+        internal void Traverse<T>(
             Dictionary<string, T> final,
             Dictionary<string, T> initial,
             ScriptType dropType,
@@ -49,10 +49,13 @@ namespace SqlSiphon
                 initial,
                 (key, i) =>
                 {
-                    var script = makeDropScript(i);
-                    if (script != null)
+                    if (makeDropScript != null)
                     {
-                        this.Scripts.Add(new ScriptStatus(dropType, key, script));
+                        var script = makeDropScript(i);
+                        if (script != null && dropType != ScriptType.None)
+                        {
+                            this.Scripts.Add(new ScriptStatus(dropType, key, script));
+                        }
                     }
                 },
                 (key, f) =>

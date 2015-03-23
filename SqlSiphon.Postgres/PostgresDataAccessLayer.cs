@@ -43,11 +43,11 @@ namespace SqlSiphon.Postgres
     /// A base class for building Data Access Layers that connect to MySQL
     /// databases and execute store procedures stored within.
     /// </summary>
-    public partial class NpgsqlDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
+    public partial class PostgresDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
-        static NpgsqlDataAccessLayer()
+        static PostgresDataAccessLayer()
         {
             typeMapping = new Dictionary<string, Type>();
 
@@ -164,17 +164,17 @@ namespace SqlSiphon.Postgres
         /// opens the connection. 
         /// </summary>
         /// <param name="connectionString"></param>
-        public NpgsqlDataAccessLayer(string connectionString)
+        public PostgresDataAccessLayer(string connectionString)
             : base(connectionString)
         {
         }
 
-        public NpgsqlDataAccessLayer(NpgsqlConnection connection)
+        public PostgresDataAccessLayer(NpgsqlConnection connection)
             : base(connection)
         {
         }
 
-        public NpgsqlDataAccessLayer(NpgsqlDataAccessLayer dal)
+        public PostgresDataAccessLayer(PostgresDataAccessLayer dal)
             : base(dal.Connection)
         {
         }
@@ -204,17 +204,22 @@ namespace SqlSiphon.Postgres
             return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
         }
 
-        //protected override DatabaseState GetFinalState()
-        //{
-        //    var state = base.GetFinalState();
-        //    state.AddType(typeof(Memberships.aspnet_Applications), this);
-        //    state.AddType(typeof(Memberships.aspnet_Membership), this);
-        //    state.AddType(typeof(Memberships.aspnet_Roles), this);
-        //    state.AddType(typeof(Memberships.aspnet_SchemaVersions), this);
-        //    state.AddType(typeof(Memberships.aspnet_Users), this);
-        //    state.AddType(typeof(Memberships.aspnet_UsersInRoles), this);
-        //    return state;
-        //}
+        public override DatabaseState GetInitialState(string catalogueName, Regex filter)
+        {
+            var state = base.GetInitialState(catalogueName, filter);
+            var npgState = new PostgresDatabaseState(state);
+            this.GetExtensions().ForEach(npgState.AddExtension);
+            return npgState;
+        }
+
+        public override DatabaseState GetFinalState(string userName, string password)
+        {
+            var state = base.GetFinalState(userName, password);
+            var npgState = new PostgresDatabaseState(state);
+            npgState.AddExtension("uuid-ossp", "1.0");
+            npgState.AddExtension("postgis", "2.1.1");
+            return npgState;
+        }
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
         {
@@ -830,6 +835,14 @@ where constraint_schema != 'information_schema'
         public override List<InformationSchema.KeyColumnUsage> GetKeyColumns()
         {
             return GetList<InformationSchema.KeyColumnUsage>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query =
+@"select extname, extversion from pg_extension where extname != 'plpgsql';")]
+        internal List<pg_extension> GetExtensions()
+        {
+            return this.GetList<pg_extension>();
         }
     }
 }

@@ -9,6 +9,7 @@ namespace SqlSiphon
 {
     public interface ISqlSiphon : IDisposable
     {
+        DatabaseState GetInitialState(string catalogueName, Regex filterObjects);
         DatabaseState GetFinalState(string userName, string password);
         void AlterDatabase(ScriptStatus script);
         void MarkScriptAsRan(ScriptStatus script);

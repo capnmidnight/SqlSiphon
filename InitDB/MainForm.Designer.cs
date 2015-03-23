@@ -65,7 +65,6 @@
             this.dbType = new System.Windows.Forms.Label();
             this.filterTypesCBL = new System.Windows.Forms.CheckedListBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.createExtensionsBtn = new System.Windows.Forms.Button();
             this.selectAllFiltersCB = new System.Windows.Forms.CheckBox();
             this.optionsBtn = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
@@ -127,7 +126,6 @@
             this.tableLayoutPanel1.Controls.Add(this.dbType, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.filterTypesCBL, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 6);
-            this.tableLayoutPanel1.Controls.Add(this.createExtensionsBtn, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.selectAllFiltersCB, 0, 7);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(11, 55);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -528,17 +526,6 @@
             this.label5.TabIndex = 38;
             this.label5.Text = "Script types to run:";
             // 
-            // createExtensionsBtn
-            // 
-            this.createExtensionsBtn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.createExtensionsBtn.Location = new System.Drawing.Point(434, 33);
-            this.createExtensionsBtn.Name = "createExtensionsBtn";
-            this.createExtensionsBtn.Size = new System.Drawing.Size(155, 24);
-            this.createExtensionsBtn.TabIndex = 40;
-            this.createExtensionsBtn.Text = "Create extensions";
-            this.createExtensionsBtn.UseVisualStyleBackColor = true;
-            this.createExtensionsBtn.Click += new System.EventHandler(this.createExtensionsBtn_Click);
-            // 
             // selectAllFiltersCB
             // 
             this.selectAllFiltersCB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -637,9 +624,9 @@
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
-            // rumToolStripMenuItem
+            // runToolStripMenuItem
             // 
-            this.runToolStripMenuItem.Name = "rumToolStripMenuItem";
+            this.runToolStripMenuItem.Name = "runToolStripMenuItem";
             this.runToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
             this.runToolStripMenuItem.Text = "&Run";
             this.runToolStripMenuItem.Click += new System.EventHandler(this.runToolStripMenuItem_Click);
@@ -734,7 +721,6 @@
         private System.Windows.Forms.DataGridViewButtonColumn pendingScriptRunButtonColumn;
         private System.Windows.Forms.CheckedListBox filterTypesCBL;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button createExtensionsBtn;
         private System.Windows.Forms.TabPage tabScripts;
         private System.Windows.Forms.CheckBox selectAllFiltersCB;
         private System.Windows.Forms.MenuStrip menuStrip1;

@@ -643,6 +643,11 @@ AND COLUMN_NAME = @columnName;")]
             return GetList<InformationSchema.ConstraintColumnUsage>(tableSchema, tableName, columnName);
         }
 
+        public virtual DatabaseState GetInitialState(string catalogueName, Regex filter)
+        {
+            return new DatabaseState(catalogueName, filter, this);
+        }
+
         public virtual DatabaseState GetFinalState(string userName, string password)
         {
             var asm = this.GetType().Assembly;

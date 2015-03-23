@@ -20,15 +20,39 @@ namespace SqlSiphon
         public Dictionary<string, PrimaryKey> PrimaryKeys { get; private set; }
         public List<string> Schemata { get; private set; }
         public Dictionary<string, string> DatabaseLogins { get; private set; }
-        private DatabaseState()
+
+        /// <summary>
+        /// True-base constructor, forces the other constructors onto a path of correct initialization
+        /// </summary>
+        /// <param name="tables"></param>
+        /// <param name="indexes"></param>
+        /// <param name="routines"></param>
+        /// <param name="relationships"></param>
+        /// <param name="pks"></param>
+        /// <param name="schemata"></param>
+        /// <param name="logins"></param>
+        private DatabaseState(Dictionary<string, TableAttribute> tables, Dictionary<string, Index> indexes,
+            Dictionary<string, RoutineAttribute> routines, Dictionary<string, Relationship> relationships,
+            Dictionary<string, PrimaryKey> pks, List<string> schemata, Dictionary<string, string> logins)
         {
-            this.Tables = new Dictionary<string, TableAttribute>();
-            this.Indexes = new Dictionary<string, Index>();
-            this.Functions = new Dictionary<string, RoutineAttribute>();
-            this.Relationships = new Dictionary<string, Relationship>();
-            this.PrimaryKeys = new Dictionary<string, PrimaryKey>();
-            this.Schemata = new List<string>();
-            this.DatabaseLogins = new Dictionary<string, string>();
+            this.Tables = tables;
+            this.Indexes = indexes;
+            this.Functions = routines;
+            this.Relationships = relationships;
+            this.PrimaryKeys = pks;
+            this.Schemata = schemata;
+            this.DatabaseLogins = logins;
+        }
+
+        private DatabaseState()
+            : this(new Dictionary<string, TableAttribute>(), new Dictionary<string, Index>(), new Dictionary<string, RoutineAttribute>(),
+            new Dictionary<string, Relationship>(), new Dictionary<string, PrimaryKey>(), new List<string>(), new Dictionary<string, string>())
+        {
+        }
+
+        public DatabaseState(DatabaseState copy)
+            : this(copy.Tables, copy.Indexes, copy.Functions, copy.Relationships, copy.PrimaryKeys, copy.Schemata, copy.DatabaseLogins)
+        {
         }
 
         /// <summary>
@@ -221,6 +245,11 @@ namespace SqlSiphon
             {
                 this.CatalogueExists = false;
             }
+        }
+
+        public virtual DatabaseDelta Diff(DatabaseState initial, ISqlSiphon dal)
+        {
+            return new DatabaseDelta(this, initial, dal);
         }
     }
 }
