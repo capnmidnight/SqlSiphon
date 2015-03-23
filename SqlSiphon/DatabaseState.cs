@@ -33,7 +33,8 @@ namespace SqlSiphon
         /// <param name="logins"></param>
         private DatabaseState(Dictionary<string, TableAttribute> tables, Dictionary<string, Index> indexes,
             Dictionary<string, RoutineAttribute> routines, Dictionary<string, Relationship> relationships,
-            Dictionary<string, PrimaryKey> pks, List<string> schemata, Dictionary<string, string> logins)
+            Dictionary<string, PrimaryKey> pks, List<string> schemata, Dictionary<string, string> logins,
+            string catalogueName, bool? catalogueExists)
         {
             this.Tables = tables;
             this.Indexes = indexes;
@@ -42,16 +43,19 @@ namespace SqlSiphon
             this.PrimaryKeys = pks;
             this.Schemata = schemata;
             this.DatabaseLogins = logins;
+            this.CatalogueExists = catalogueExists;
+            this.CatalogueName = catalogueName;
         }
 
         private DatabaseState()
             : this(new Dictionary<string, TableAttribute>(), new Dictionary<string, Index>(), new Dictionary<string, RoutineAttribute>(),
-            new Dictionary<string, Relationship>(), new Dictionary<string, PrimaryKey>(), new List<string>(), new Dictionary<string, string>())
+            new Dictionary<string, Relationship>(), new Dictionary<string, PrimaryKey>(), new List<string>(), new Dictionary<string, string>(),
+            null, null)
         {
         }
 
         public DatabaseState(DatabaseState copy)
-            : this(copy.Tables, copy.Indexes, copy.Functions, copy.Relationships, copy.PrimaryKeys, copy.Schemata, copy.DatabaseLogins)
+            : this(copy.Tables, copy.Indexes, copy.Functions, copy.Relationships, copy.PrimaryKeys, copy.Schemata, copy.DatabaseLogins, copy.CatalogueName, copy.CatalogueExists)
         {
         }
 
