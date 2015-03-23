@@ -160,8 +160,16 @@ namespace SqlSiphon.SqlServer
                     var lenlen = (int)Math.Ceiling(Math.Log10(len));
                     transactionName = transactionName.Substring(0, 32 - lenlen) + lenlen.ToString();
                 }
-                string transactionBegin = string.Format(beginRoutineTemplate, transactionName);
-                string transactionEnd = string.Format(endRoutineTemplate, transactionName);
+                string transactionBegin = string.Format(@"begin try
+    begin transaction {0};", transactionName);
+                string transactionEnd = string.Format(@"commit transaction {0};
+end try
+begin catch
+    declare @msg nvarchar(4000), @lvl int, @stt int;
+    select @msg = error_message(), @lvl = error_severity(), @stt = error_state();
+    rollback transaction {0};
+    raiserror(@msg, @lvl, @stt);
+end catch;", transactionName);
                 query = string.Join(Environment.NewLine, transactionBegin, query, transactionEnd);
             }
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
@@ -184,43 +192,10 @@ end",
             return this.MakeRoutineBody(info);
         }
 
-        private static string beginRoutineTemplate = @"begin try
-    begin transaction {0};";
-        private static string endRoutineTemplate = @"commit transaction {0};
-end try
-begin catch
-    declare @msg nvarchar(4000), @lvl int, @stt int;
-    select @msg = error_message(), @lvl = error_severity(), @stt = error_state();
-    rollback transaction {0};
-    raiserror(@msg, @lvl, @stt);
-end catch;";
-
-        private static Regex queryExtractor = new Regex(
-            @"^\s*create\s+procedure.*?\sas\s+begin\s+(?:set\s+nocount\s+on;?\s+)?(.*?)(?:end;?\s*)?$",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        private static Regex transactionExtractor = MakeTransExtractor();
-        private static Regex MakeTransExtractor()
-        {
-            var pattern =
-                string.Format(@"^\s*{0}\s*(.*)\s*{1}\s*$",
-                    string.Format(beginRoutineTemplate, @"(TRANS\w+)"),
-                    string.Format(endRoutineTemplate.Replace("(", @"\(").Replace(")", @"\)"), @"\1"));
-            return new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        }
-
         public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {
             base.AnalyzeQuery(routineText, routine);
-            var match = queryExtractor.Match(routineText);
-            if (match.Groups.Count == 2)
-            {
-                var query = match.Groups[1].Value;
-                var transMatch = transactionExtractor.Match(query);
-                if (transMatch.Groups.Count == 3)
-                {
-                    routine.EnableTransaction = true;
-                }
-            }
+            routine.EnableTransaction = routineText.IndexOf("begin transaction TRANS") > -1;
         }
 
         public override string MakeCreateTableScript(TableAttribute info)
