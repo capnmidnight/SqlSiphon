@@ -340,7 +340,7 @@ namespace SqlSiphon.Postgres
                 }
                 else
                 {
-                    sqlType = string.Format("TABLE ({0})", this.MakeColumnSection(attr, true));
+                    sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
                 }
             }
             else if (reverseTypeMapping.ContainsKey(elemType))
@@ -355,7 +355,7 @@ namespace SqlSiphon.Postgres
             {
                 attr = new TableAttribute();
                 attr.InferProperties(systemType);
-                sqlType = string.Format("TABLE ({0})", this.MakeColumnSection(attr, true));
+                sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
             }
             else
             {
@@ -490,16 +490,16 @@ namespace SqlSiphon.Postgres
             switch (param.Direction)
             {
                 case ParameterDirection.InputOutput:
-                    dirString = "INOUT";
+                    dirString = "inout";
                     break;
                 case ParameterDirection.Output:
-                    dirString = "OUT";
+                    dirString = "out";
                     break;
             }
 
             var defaultString = "";
             if (param.DefaultValue != null)
-                defaultString = " DEFAULT = " + param.DefaultValue.ToString();
+                defaultString = " default = " + param.DefaultValue.ToString();
 
             return string.Format("{0} @{1} {2}{3}", dirString, param.Name, typeStr, defaultString);
         }
@@ -523,7 +523,7 @@ namespace SqlSiphon.Postgres
                     {
                         val = "uuid_generate_v4()";
                     }
-                    defaultString = "DEFAULT " + val;
+                    defaultString = "default " + val;
                 }
                 else if (column.IsIdentity)
                 {
@@ -710,7 +710,7 @@ alter table {1} add constraint {3} primary key using index {0};",
 
         public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
         {
-            return string.Format("CREATE USER {0} WITH PASSWORD '{1}'", userName, password);
+            return string.Format("create user {0} with password '{1}'", userName, password);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

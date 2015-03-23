@@ -76,7 +76,12 @@ namespace InitDB
             this.optionsDialog.BrowseSQLCMDPathClick += optionsDialog_BrowseSQLCMDPathClick;
         }
 
-        public Func<ISqlSiphon> MakeDatabaseConnector(bool skipDBUser)
+        public ISqlSiphon MakeDatabaseConnection()
+        {
+            return this.MakeDatabaseConnector()();
+        }
+
+        public Func<ISqlSiphon> MakeDatabaseConnector()
         {
             Func<ISqlSiphon> connector = null;
             string dbType = "UNKNOWN";
@@ -98,7 +103,7 @@ namespace InitDB
                         dbType = vt == pg ? POSTGRES : SQL_SERVER;
                         this.IsPostgres = dbType == POSTGRES;
                         var constructorParams = new[] { typeof(string) };
-                        var constructorArgs = new object[] { this.MakeConnectionString(skipDBUser) };
+                        var constructorArgs = new object[] { this.MakeConnectionString() };
                         var constructor = type.GetConstructor(constructorParams);
                         if (constructor != null)
                         {
@@ -116,19 +121,8 @@ namespace InitDB
             return connector;
         }
 
-        private string MakeConnectionString(bool skipDBUser)
+        private string MakeConnectionString()
         {
-            var creds = new List<string[]>();
-            creds.Add(new[] { this.adminUserTB.Text, this.adminPassTB.Text });
-            if (!skipDBUser)
-            {
-                creds.Add(new[] { this.sqlUserTB.Text, this.sqlPassTB.Text });
-            }
-
-            var cred = creds
-                .Where(s => !string.IsNullOrEmpty(s[0]) && !string.IsNullOrEmpty(s[1]))
-                .FirstOrDefault();
-
             string connStr = null;
             if (this.IsPostgres)
             {
@@ -137,10 +131,11 @@ namespace InitDB
                     Database = this.databaseTB.Text.ToLower()
                 };
 
-                if (cred != null)
+                if (!string.IsNullOrWhiteSpace(this.adminUserTB.Text)
+                    && !string.IsNullOrWhiteSpace(this.adminPassTB.Text))
                 {
-                    builder.UserName = cred[0];
-                    builder.Add("Password", cred[1]);
+                    builder.UserName = this.adminUserTB.Text.Trim();
+                    builder.Add("Password", this.adminPassTB.Text.Trim());
                 }
 
                 var i = this.serverTB.Text.IndexOf(":");
@@ -167,11 +162,13 @@ namespace InitDB
                     DataSource = this.serverTB.Text,
                     InitialCatalog = this.databaseTB.Text
                 };
-                builder.IntegratedSecurity = cred == null;
-                if (cred != null)
+
+                builder.IntegratedSecurity = string.IsNullOrWhiteSpace(this.adminUserTB.Text)
+                    || string.IsNullOrWhiteSpace(this.adminPassTB.Text);
+                if (!builder.IntegratedSecurity)
                 {
-                    builder.UserID = cred[0];
-                    builder.Password = cred[1];
+                    builder.UserID = this.adminUserTB.Text.Trim();
+                    builder.Password = this.adminPassTB.Text.Trim();
                 }
                 connStr = builder.ConnectionString;
             }
@@ -355,8 +352,7 @@ namespace InitDB
 
         private void SetupDB()
         {
-            var connector = MakeDatabaseConnector(false);
-            using (var db = connector())
+            using (var db = this.MakeDatabaseConnection())
             {
                 db.Progress += db_Progress;
                 var delta = CreateDelta(db);
@@ -383,15 +379,11 @@ namespace InitDB
         {
             try
             {
-                var connector = this.MakeDatabaseConnector(false);
-                using (db = connector())
+                foreach (var script in scripts)
                 {
-                    foreach (var script in scripts)
+                    if (script.Run && !RunScript(script, false, db))
                     {
-                        if (script.Run && !RunScript(script, false, db))
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
                 return true;
@@ -541,14 +533,6 @@ namespace InitDB
         {
             var r = ObjectFilter;
             var initial = db.GetInitialState(this.databaseTB.Text, r);
-            if (initial.CatalogueExists.HasValue && !initial.CatalogueExists.Value)
-            {
-                var makeUserlessConnector = MakeDatabaseConnector(true);
-                using (var db2 = makeUserlessConnector())
-                {
-                    initial.ReadDatabaseState(r, db2);
-                }
-            }
             var final = db.GetFinalState(this.sqlUserTB.Text, this.sqlPassTB.Text);
             return final.Diff(initial, db);
         }
@@ -588,7 +572,7 @@ namespace InitDB
 
         private void Analzye()
         {
-            var connector = this.MakeDatabaseConnector(false);
+            var connector = this.MakeDatabaseConnector();
             if (PathsAreCorrect())
             {
                 Task.Run(() =>
@@ -782,8 +766,7 @@ namespace InitDB
                         }
                         else if (e.ColumnIndex == pendingScriptRunButtonColumn.Index)
                         {
-                            var connector = this.MakeDatabaseConnector(false);
-                            using (var db = connector())
+                            using (var db = this.MakeDatabaseConnection())
                             {
                                 RunScript((ScriptStatus)row.DataBoundItem, true, db);
                             }
@@ -846,8 +829,7 @@ namespace InitDB
                     script = script.Substring(this.generalScriptTB.SelectionStart, this.generalScriptTB.SelectionLength);
                 }
                 var scriptObj = new ScriptStatus(ScriptType.None, "general", script);
-                var connector = this.MakeDatabaseConnector(false);
-                using (var db = connector())
+                using (var db = this.MakeDatabaseConnection())
                 {
                     this.RunScript(scriptObj, true, db);
                 }
