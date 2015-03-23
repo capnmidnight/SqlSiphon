@@ -208,7 +208,10 @@ namespace SqlSiphon.Postgres
         {
             var state = base.GetInitialState(catalogueName, filter);
             var npgState = new PostgresDatabaseState(state);
-            this.GetExtensions().ForEach(npgState.AddExtension);
+            if (npgState.CatalogueExists.HasValue && npgState.CatalogueExists.Value)
+            {
+                this.GetExtensions().ForEach(npgState.AddExtension);
+            }
             return npgState;
         }
 
