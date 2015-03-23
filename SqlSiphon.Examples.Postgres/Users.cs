@@ -15,7 +15,7 @@ namespace SqlSiphon.Examples.Postgres
         public string LoweredUserName { get; set; }
         [Column(Size = 16, IsOptional = true)]
         public string MobileAlias { get; set; }
-        [Column(IsOptional = true, DefaultValue= "0")]
+        [Column(IsOptional = true, DefaultValue= "false")]
         public bool IsAnonymous { get; set; }
         public DateTime LastActivityDate { get; set; }
     }

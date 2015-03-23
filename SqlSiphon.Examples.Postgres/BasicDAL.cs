@@ -60,7 +60,7 @@ from Users U
     join RoleHierarchy RH on UR.RoleId = RH.RoleID
     join Roles R on R.RoleID = RH.ParentRoleID
     join RoleTypesForRoles RTR on R.RoleID = RTR.RoleID
-    join RoleTypes RT on RTR.RoleTypeID = RT.RoleTypeID")]
+    join RoleTypes RT on RTR.RoleTypeID = RT.RoleTypeID;")]
         public List<UserWithRole> GetUsersWithRoles()
         {
             return this.GetList<UserWithRole>();
@@ -90,7 +90,7 @@ SELECT
 FROM Membership m
 INNER JOIN Users u on u.UserId = m.UserId
 INNER JOIN Applications a on a.ApplicationId = m.ApplicationId
-WHERE m.UserId = @userId and m.ApplicationId = @applicationId")]
+WHERE m.UserId = @userId and m.ApplicationId = @applicationId;")]
         public MembershipUser GetUserByUserName(string username, string applicationName)
         {
             return this.Get<MembershipUser>(username, applicationName);
@@ -105,7 +105,7 @@ SELECT
     u.Username
 FROM Users u
 INNER JOIN Membership m on m.UserId = u.UserId
-WHERE m.LoweredEmail = @email and u.ApplicationId = @applicationId")]
+WHERE m.LoweredEmail = @email and u.ApplicationId = @applicationId;")]
         public string GetUserNameByEmail(string email, string applicationName)
         {
             return this.Get<string>("Username", email.ToLower(), applicationName);
@@ -129,7 +129,7 @@ WHERE m.LoweredEmail = @email and u.ApplicationId = @applicationId")]
     m.LastLockoutDate
 FROM Membership m
 INNER JOIN Users u on u.UserId = m.UserId
-WHERE m.UserId = @userId")]
+WHERE m.UserId = @userId;")]
         public MembershipUser GetUserById(Guid userId)
         {
             return this.Get<MembershipUser>(userId);
@@ -140,7 +140,7 @@ WHERE m.UserId = @userId")]
             Query =
 @"SELECT UserId
    FROM Users
-    WHERE UserName = @username")]
+    WHERE UserName = @username;")]
         public Guid GetUserId(string username)
         {
             return this.Get<Guid>("UserId", username);
@@ -257,15 +257,12 @@ values (
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"
-declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
+@"declare @applicationId uniqueidentifier;
 declare @userId uniqueidentifier;
+select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
 select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-DELETE Membership
-WHERE UserId = @UserId AND ApplicationId = @applicationId;
-DELETE Users
-WHERE Username = @username AND ApplicationId = @applicationId;")]
+delete from Membership where UserId = @UserId and ApplicationId = @applicationId;
+delete from Users where UserID = @userId and ApplicationId = @applicationId;")]
         public void DeleteUser(string username, string applicationName)
         {
             this.Execute(username, applicationName);
@@ -547,24 +544,6 @@ WHERE UserId = @userId AND ApplicationId = @applicationId;")]
             this.Execute(username, applicationName, question, answer);
         }
 
-
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.StoredProcedure,
-            Query =
-@"declare @oldUserName nvarchar(256);
-select @oldUserName = UserName from Users where UserID = @userID;
-update Users
-    set UserName = @newUserName
-        --LoweredUserName = LOWER(@newUserName)
-where UserID = @userID;
-update DataSessions set FileName = replace(FileName, @oldUserName, @newUserName) 
-where SUBSTRING(FileName, 1, LEN(@oldUserName)) = @oldUserName;")]
-        public void ChangeUserName(Guid userID, string newUserName)
-        {
-            this.Execute(userID, newUserName);
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
@@ -696,10 +675,11 @@ WHERE Users.UserName= @username AND Roles.RoleName = @rolename;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"DELETE UsersInRoles FROM UsersInRoles 
-	INNER JOIN Users on Users.UserId = UsersInRoles.UserId
-	INNER JOIN Roles on Roles.RoleId = UsersInRoles.RoleId
-	WHERE Users.UserName = @username AND Roles.RoleName = @rolename;")]
+@"declare @UserID uniqueidentifier;
+declare @RoleID uniqueidentifier;
+select @UserID = UserID from Users where UserName = @username;
+select @RoleID = RoleID from Roles where RoleName = @rolename;
+delete from UsersInRoles where UserID = @UserID and RoleID = @RoleID;")]
         public void RemoveUserFromRole(string username, string rolename)
         {
             this.Execute(username, rolename);

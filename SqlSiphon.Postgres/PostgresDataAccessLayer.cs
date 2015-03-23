@@ -540,11 +540,16 @@ namespace SqlSiphon.Postgres
 
         public override string MakeDropRoutineScript(RoutineAttribute routine)
         {
+            return string.Format(@"drop function if exists {0} cascade;", this.MakeRoutineIdentifier(routine));
+        }
+
+        public override string MakeRoutineIdentifier(RoutineAttribute routine)
+        {
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var parameterSection = string.Join(", ", routine.Parameters.Select(this.MakeSqlTypeString));
-            return string.Format(@"drop function if exists {0}({1}) cascade;",
-                identifier,
-                parameterSection);
+            var parameterSection = string.Join(", ", routine.Parameters
+                .Where(p=>p.Direction == ParameterDirection.Input || p.Direction == ParameterDirection.InputOutput)
+                .Select(this.MakeSqlTypeString));
+            return string.Format(@"{0}({1})", identifier, parameterSection);
         }
 
         private static Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -800,14 +805,26 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
             return GetList<InformationSchema.ReferentialConstraints>();
         }
 
-
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
-@"select *
-from information_schema.routines
+@"select 
+        r.specific_catalog,
+        r.specific_schema,
+        r.specific_name,
+        r.routine_catalog,
+        r.routine_schema,
+        r.routine_name,
+        p.prosrc as routine_definition
+from information_schema.routines as r
+    inner join pg_proc as p on p.proname = r.routine_name
+    inner join (select specific_name, count(*) as argcount
+	    from information_schema.parameters
+	    where parameter_mode in ('IN', 'INOUT')
+	    group by specific_name) as q 
+		    on r.specific_name = q.specific_name
+		    and p.pronargs = q.argcount
 where specific_schema != 'information_schema'
     and specific_schema != 'pg_catalog'
-    and routine_body != 'EXTERNAL'
 order by specific_catalog, specific_schema, specific_name;")]
         public override List<InformationSchema.Routines> GetRoutines()
         {

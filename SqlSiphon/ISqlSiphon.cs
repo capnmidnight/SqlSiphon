@@ -30,6 +30,7 @@ namespace SqlSiphon
         List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
 
         string MakeIdentifier(params string[] parts);
+        string MakeRoutineIdentifier(RoutineAttribute routine);
         bool DescribesIdentity(InformationSchema.Columns column);
         bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
         bool RoutineChanged(RoutineAttribute final, RoutineAttribute initial);

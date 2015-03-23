@@ -34,11 +34,6 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabScripts = new System.Windows.Forms.TabPage();
             this.pendingScriptsGV = new System.Windows.Forms.DataGridView();
-            this.pendingScriptRunChoiceColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.pendingScriptTypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pendingScriptNameColumn = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.pendingScriptScriptColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pendingScriptRunButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabStdOut = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.generalScriptTB = new System.Windows.Forms.TextBox();
@@ -79,6 +74,11 @@
             this.runToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pendingScriptRunChoiceColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.pendingScriptTypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pendingScriptNameColumn = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.pendingScriptScriptColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pendingScriptRunButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabScripts.SuspendLayout();
@@ -199,48 +199,6 @@
             this.pendingScriptsGV.Size = new System.Drawing.Size(805, 402);
             this.pendingScriptsGV.TabIndex = 4;
             this.pendingScriptsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
-            // 
-            // pendingScriptRunChoiceColumn
-            // 
-            this.pendingScriptRunChoiceColumn.DataPropertyName = "Run";
-            this.pendingScriptRunChoiceColumn.HeaderText = "run";
-            this.pendingScriptRunChoiceColumn.Name = "pendingScriptRunChoiceColumn";
-            this.pendingScriptRunChoiceColumn.ReadOnly = true;
-            // 
-            // pendingScriptTypeColumn
-            // 
-            this.pendingScriptTypeColumn.DataPropertyName = "ScriptType";
-            this.pendingScriptTypeColumn.HeaderText = "type";
-            this.pendingScriptTypeColumn.Name = "pendingScriptTypeColumn";
-            this.pendingScriptTypeColumn.ReadOnly = true;
-            // 
-            // pendingScriptNameColumn
-            // 
-            this.pendingScriptNameColumn.DataPropertyName = "Name";
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle1;
-            this.pendingScriptNameColumn.HeaderText = "name";
-            this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
-            this.pendingScriptNameColumn.ReadOnly = true;
-            this.pendingScriptNameColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.pendingScriptNameColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.pendingScriptNameColumn.Width = 200;
-            // 
-            // pendingScriptScriptColumn
-            // 
-            this.pendingScriptScriptColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.pendingScriptScriptColumn.DataPropertyName = "Script";
-            this.pendingScriptScriptColumn.HeaderText = "script";
-            this.pendingScriptScriptColumn.Name = "pendingScriptScriptColumn";
-            this.pendingScriptScriptColumn.ReadOnly = true;
-            // 
-            // pendingScriptRunButtonColumn
-            // 
-            this.pendingScriptRunButtonColumn.HeaderText = "";
-            this.pendingScriptRunButtonColumn.Name = "pendingScriptRunButtonColumn";
-            this.pendingScriptRunButtonColumn.ReadOnly = true;
-            this.pendingScriptRunButtonColumn.Text = "run";
-            this.pendingScriptRunButtonColumn.UseColumnTextForButtonValue = true;
             // 
             // tabStdOut
             // 
@@ -646,6 +604,49 @@
             this.aboutToolStripMenuItem.Text = "&About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
+            // pendingScriptRunChoiceColumn
+            // 
+            this.pendingScriptRunChoiceColumn.DataPropertyName = "Run";
+            this.pendingScriptRunChoiceColumn.HeaderText = "run";
+            this.pendingScriptRunChoiceColumn.Name = "pendingScriptRunChoiceColumn";
+            this.pendingScriptRunChoiceColumn.ReadOnly = true;
+            // 
+            // pendingScriptTypeColumn
+            // 
+            this.pendingScriptTypeColumn.DataPropertyName = "ScriptType";
+            this.pendingScriptTypeColumn.HeaderText = "type";
+            this.pendingScriptTypeColumn.Name = "pendingScriptTypeColumn";
+            this.pendingScriptTypeColumn.ReadOnly = true;
+            // 
+            // pendingScriptNameColumn
+            // 
+            this.pendingScriptNameColumn.DataPropertyName = "Name";
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.pendingScriptNameColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            this.pendingScriptNameColumn.HeaderText = "name";
+            this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
+            this.pendingScriptNameColumn.ReadOnly = true;
+            this.pendingScriptNameColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.pendingScriptNameColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.pendingScriptNameColumn.Width = 200;
+            // 
+            // pendingScriptScriptColumn
+            // 
+            this.pendingScriptScriptColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.pendingScriptScriptColumn.DataPropertyName = "Script";
+            this.pendingScriptScriptColumn.HeaderText = "script";
+            this.pendingScriptScriptColumn.Name = "pendingScriptScriptColumn";
+            this.pendingScriptScriptColumn.ReadOnly = true;
+            this.pendingScriptScriptColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // pendingScriptRunButtonColumn
+            // 
+            this.pendingScriptRunButtonColumn.HeaderText = "";
+            this.pendingScriptRunButtonColumn.Name = "pendingScriptRunButtonColumn";
+            this.pendingScriptRunButtonColumn.ReadOnly = true;
+            this.pendingScriptRunButtonColumn.Text = "run";
+            this.pendingScriptRunButtonColumn.UseColumnTextForButtonValue = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -714,11 +715,6 @@
         private System.Windows.Forms.TextBox generalScriptTB;
         private System.Windows.Forms.Button optionsBtn;
         private System.Windows.Forms.DataGridView pendingScriptsGV;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn pendingScriptRunChoiceColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptTypeColumn;
-        private System.Windows.Forms.DataGridViewButtonColumn pendingScriptNameColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptScriptColumn;
-        private System.Windows.Forms.DataGridViewButtonColumn pendingScriptRunButtonColumn;
         private System.Windows.Forms.CheckedListBox filterTypesCBL;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TabPage tabScripts;
@@ -732,6 +728,11 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runToolStripMenuItem;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn pendingScriptRunChoiceColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptTypeColumn;
+        private System.Windows.Forms.DataGridViewButtonColumn pendingScriptNameColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptScriptColumn;
+        private System.Windows.Forms.DataGridViewButtonColumn pendingScriptRunButtonColumn;
     }
 }
 

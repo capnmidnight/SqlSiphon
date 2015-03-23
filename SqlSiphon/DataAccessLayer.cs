@@ -200,6 +200,8 @@ namespace SqlSiphon
             return identifier;
         }
 
+        public abstract string MakeRoutineIdentifier(RoutineAttribute routine);
+
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text,
             Query = "select * from ScriptStatus")]
@@ -711,7 +713,7 @@ AND COLUMN_NAME = @columnName;")]
                     {
                         var p2 = b.Parameters[i];
                         var tests = new bool[]{
-                            p1.Name != p2.Name,
+                            p1.Name.ToLower() != p2.Name.ToLower(),
                             p1.DefaultValue != p2.DefaultValue,
                             p1.Direction != p2.Direction,
                             p1.IsOptional != p2.IsOptional,

@@ -25,9 +25,9 @@ namespace SqlSiphon.Examples.Postgres
         public string PasswordQuestion { get; set; }
         [Column(Size = 256, IsOptional = true)]
         public string PasswordAnswer { get; set; }
-        [Column(DefaultValue = "0")]
+        [Column(DefaultValue = "false")]
         public bool IsApproved { get; set; }
-        [Column(DefaultValue = "0")]
+        [Column(DefaultValue = "false")]
         public bool IsLockedOut { get; set; }
         [Column(DefaultValue = "getdate()")]
         public DateTime CreateDate { get; set; }

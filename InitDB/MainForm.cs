@@ -377,7 +377,7 @@ namespace InitDB
 
         private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
         {
-            try
+            return WithErrorCapture(() =>
             {
                 foreach (var script in scripts)
                 {
@@ -385,14 +385,9 @@ namespace InitDB
                     {
                         return false;
                     }
-                }
+                };
                 return true;
-            }
-            catch (Exception exp)
-            {
-                this.ToError(exp);
-                return false;
-            }
+            });
         }
 
         private bool RunScript(ScriptStatus script, bool selectTab, ISqlSiphon db)
@@ -780,6 +775,7 @@ namespace InitDB
                             }
                             pendingScriptsGV.Rows.RemoveAt(e.RowIndex);
                         }
+                        return true;
                     }, (exp) =>
                     {
                         this.tabControl1.SelectedTab = this.tabStdErr;
@@ -844,7 +840,7 @@ namespace InitDB
             }
         }
 
-        private bool WithErrorCapture(Action act, Func<Exception, string> errorHandler = null)
+        private bool WithErrorCapture(Func<bool> act, Func<Exception, string> errorHandler = null)
         {
             if (errorHandler == null)
             {
@@ -852,11 +848,11 @@ namespace InitDB
             }
             try
             {
-                act();
-                return true;
+                return act();
             }
             catch (Exception exp)
             {
+                this.ToOutput("failed");
                 this.ToError(errorHandler(exp));
                 return false;
             }

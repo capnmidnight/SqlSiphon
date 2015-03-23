@@ -547,24 +547,6 @@ WHERE UserId = @userId AND ApplicationId = @applicationId;")]
             this.Execute(username, applicationName, question, answer);
         }
 
-
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.StoredProcedure,
-            Query =
-@"declare @oldUserName nvarchar(256);
-select @oldUserName = UserName from Users where UserID = @userID;
-update Users
-    set UserName = @newUserName
-        --LoweredUserName = LOWER(@newUserName)
-where UserID = @userID;
-update DataSessions set FileName = replace(FileName, @oldUserName, @newUserName) 
-where SUBSTRING(FileName, 1, LEN(@oldUserName)) = @oldUserName;")]
-        public void ChangeUserName(Guid userID, string newUserName)
-        {
-            this.Execute(userID, newUserName);
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =

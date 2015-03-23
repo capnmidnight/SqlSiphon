@@ -62,7 +62,7 @@ namespace SqlSiphon.MySql
 
         public override string MakeDropRoutineScript(RoutineAttribute info)
         {
-            return string.Format("drop procedure {0}", this.MakeIdentifier(info.Schema, info.Name));
+            return string.Format("drop procedure {0}", this.MakeRoutineIdentifier(info));
         }
 
         public override string MakeCreateRoutineScript(RoutineAttribute info)
