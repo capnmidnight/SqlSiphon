@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SqlSiphon.Examples.SqlServer
+namespace SqlSiphon.Examples.Postgres
 {
     public class UserWithRole
     {

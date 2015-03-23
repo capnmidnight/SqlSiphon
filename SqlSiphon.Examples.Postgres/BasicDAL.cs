@@ -9,7 +9,7 @@ using SqlSiphon;
 using SqlSiphon.Mapping;
 using SqlSiphon.Postgres;
 
-namespace SqlSiphon.Examples.SqlServer
+namespace SqlSiphon.Examples.Postgres
 {
     public class BasicDAL : PostgresDataAccessLayer
     {
