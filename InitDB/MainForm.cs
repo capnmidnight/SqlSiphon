@@ -440,13 +440,20 @@ namespace InitDB
                 this.ToError(string.Format("Tried running script from file \"{0}\", but it doesn't exist!", qry));
                 return false;
             }
-            else if (this.IsPostgres)
-            {
-                return RunQueryWithPSQL(qry, database, isFile);
-            }
             else
             {
-                return RunQueryWithSQLCMD(qry, database, isFile);
+                if (!isFile)
+                {
+                    qry = qry.Replace("\"", "\\\"");
+                }
+                if (this.IsPostgres)
+                {
+                    return RunQueryWithPSQL(qry, database, isFile);
+                }
+                else
+                {
+                    return RunQueryWithSQLCMD(qry, database, isFile);
+                }
             }
         }
 
@@ -570,7 +577,7 @@ namespace InitDB
             }
         }
 
-        private void Analzye()
+        private void Analyze()
         {
             var connector = this.MakeDatabaseConnector();
             if (PathsAreCorrect())
@@ -660,6 +667,7 @@ namespace InitDB
             }
 
             this.SaveSessions();
+            this.Analyze();
         }
 
         private Session CurrentSession
@@ -723,7 +731,7 @@ namespace InitDB
                     this.pendingScriptsGV.DataSource = null;
                     if (sessionName != DEFAULT_SESSION_NAME)
                     {
-                        this.Analzye();
+                        this.Analyze();
                     }
                 }
 
@@ -845,7 +853,6 @@ namespace InitDB
             try
             {
                 act();
-                this.ToOutput("Success!");
                 return true;
             }
             catch (Exception exp)

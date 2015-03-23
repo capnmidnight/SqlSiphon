@@ -160,7 +160,7 @@ begin catch
 end catch;";
 
         private static Regex queryExtractor = new Regex(
-            @"^\s*create\s+procedure.*?\sas\s+begin\s+(?:set\s+nocount\s+on;?\s+)?(.*?)(?:end;?\s*)?$", 
+            @"^\s*create\s+procedure.*?\sas\s+begin\s+(?:set\s+nocount\s+on;?\s+)?(.*?)(?:end;?\s*)?$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
         private static Regex transactionExtractor = MakeTransExtractor();
         private static Regex MakeTransExtractor()
@@ -186,24 +186,6 @@ end catch;";
                 }
                 routine.Query = routine.Query.Trim();
             }
-        }
-
-        public override string MakeDropSchemaScript(string schemaName)
-        {
-
-            if (!string.IsNullOrWhiteSpace(schemaName))
-            {
-                var s = schemaName.ToLower();
-                if (s != "guest"
-                    && s != "sys"
-                    && s != "information_schema"
-                    && s != "dbo"
-                    && !s.StartsWith("db_"))
-                {
-                    return base.MakeDropSchemaScript(schemaName);
-                }
-            }
-            return null;
         }
 
         private string MakeRoutineScript(RoutineAttribute info, string operation)
@@ -615,6 +597,16 @@ USE {2};
 CREATE USER {0} FOR LOGIN {0};
 ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;
 ALTER ROLE db_owner ADD MEMBER {0};", userName, password, database);
+        }
+
+
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query =
+@"select schema_name from information_schema.schemata where schema_name not like 'db_%' and schema_name not in ('information_schema', 'dbo', 'guest', 'sys');")]
+        public override List<string> GetSchemata()
+        {
+            return this.GetList<string>("schema_name");
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

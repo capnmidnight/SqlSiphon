@@ -715,6 +715,14 @@ alter table {1} add constraint {3} primary key using index {0};",
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
+@"select schema_name from information_schema.schemata where schema_name not like 'pg_%' and schema_name not in ('information_schema', 'public');")]
+        public override List<string> GetSchemata()
+        {
+            return this.GetList<string>("schema_name");
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query =
 @"select         
     ordinal_position,
     character_maximum_length,
@@ -799,6 +807,7 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
 from information_schema.routines
 where specific_schema != 'information_schema'
     and specific_schema != 'pg_catalog'
+    and routine_body != 'EXTERNAL'
 order by specific_catalog, specific_schema, specific_name;")]
         public override List<InformationSchema.Routines> GetRoutines()
         {

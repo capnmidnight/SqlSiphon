@@ -109,7 +109,7 @@ namespace SqlSiphon
                     {
                         if (function.CommandType == System.Data.CommandType.StoredProcedure)
                         {
-                            this.Functions.Add(dal.MakeIdentifier(function.Schema ?? dal.DefaultSchemaName, function.Name), function);
+                            this.Functions.Add(MakeRoutineIdentifier(function, dal), function);
                         }
                     }
                 }
@@ -155,7 +155,11 @@ namespace SqlSiphon
                     this.DatabaseLogins.Add(name, null);
                 }
                 this.CatalogueExists = true;
-                this.Schemata.AddRange(dal.GetSchemata());
+                var schemas = dal.GetSchemata();
+                if (schemas.Count > 0)
+                {
+                    this.Schemata.AddRange(schemas);
+                }
                 var columns = dal.GetColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
                 var constraints = dal.GetTableConstraints();
                 var constraintsByTable = constraints.ToHash(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name));
@@ -226,8 +230,19 @@ namespace SqlSiphon
                 {
                     var routine = routines[key];
                     var routineParameters = parameters.ContainsKey(key) ? parameters[key] : null;
-                    var ident = dal.MakeIdentifier(routine.routine_schema, routine.routine_name);
-                    this.Functions.Add(ident, new RoutineAttribute(routine, routineParameters, dal));
+                    if (routineParameters == null || !routineParameters.Any(p => string.IsNullOrWhiteSpace(p.parameter_name)))
+                    {
+                        var func = new RoutineAttribute(routine, routineParameters, dal);
+                        var ident = MakeRoutineIdentifier(func, dal);
+                        if (this.Functions.ContainsKey(ident))
+                        {
+                            throw new NotImplementedException("Don't know how to handle functions with identicle signatures");
+                        }
+                        else
+                        {
+                            this.Functions.Add(ident, func);
+                        }
+                    }
                 }
 
                 foreach (var idxName in indexedColumnsByName.Keys)
@@ -249,6 +264,17 @@ namespace SqlSiphon
             {
                 this.CatalogueExists = false;
             }
+        }
+
+        private static string MakeRoutineIdentifier(RoutineAttribute func, ISqlSiphon dal)
+        {
+            var ident = string.Format("{0}({1})",
+                dal.MakeIdentifier(func.Schema ?? dal.DefaultSchemaName, func.Name),
+                string.Join(",", func.Parameters
+                    .Select(p => p.SystemType ?? dal.GetSystemType(p.SqlType))
+                    .Where(t => t != null)
+                    .Select(t => t.Name)));
+            return ident;
         }
 
         public virtual DatabaseDelta Diff(DatabaseState initial, ISqlSiphon dal)

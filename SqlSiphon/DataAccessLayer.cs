@@ -771,15 +771,10 @@ AND COLUMN_NAME = @columnName;")]
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
-@"select schema_name from information_schema.schemata where schema_name != @defaultSchemaName;")]
-        protected virtual List<string> GetSchemataInternal(string defaultSchemaName)
-        {
-            return this.GetList<string>("schema_name", defaultSchemaName);
-        }
-
+@"select schema_name from information_schema.schemata;")]
         public virtual List<string> GetSchemata()
         {
-            return this.GetSchemataInternal(this.DefaultSchemaName);
+            return this.GetList<string>();
         }
 
         public virtual string MakeCreateCatalogueScript(string catalogueName)

@@ -27,14 +27,14 @@ namespace SqlSiphon.Postgres
                         delta.Scripts.Add(new ScriptStatus(
                             ScriptType.InstallExtension, 
                             string.Format("{0} v{1}", ext.Key, ext.Value),
-                            string.Format("create extension \\\"{0}\\\";", ext.Key)));
+                            string.Format("create extension \"{0}\";", ext.Key)));
                     }
                     else if (pg.Extensions[ext.Key] < ext.Value)
                     {
                         delta.Scripts.Add(new ScriptStatus(
                             ScriptType.InstallExtension,
                             string.Format("{0} v{1}", ext.Key, ext.Value),
-                            string.Format("alter extension \\\"{0}\\\" update;", ext.Key)));
+                            string.Format("alter extension \"{0}\" update;", ext.Key)));
                     }
                 }
             }
