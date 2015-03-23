@@ -59,6 +59,7 @@ namespace SqlSiphon
         string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);
 
         string MakeDropRoutineScript(RoutineAttribute routine);
+        string MakeRoutineBody(RoutineAttribute routine);
         string MakeCreateRoutineScript(RoutineAttribute routine);
         
         string MakeDropRelationshipScript(Relationship relation);

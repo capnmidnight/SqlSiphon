@@ -700,19 +700,14 @@ AND COLUMN_NAME = @columnName;")]
 
         public virtual bool RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
-            var q1 = this.MakeCreateRoutineScript(a);
-            var q2 = this.MakeCreateRoutineScript(b);
-            var changed = q1 != q2;
-            if (changed)
+            bool changedReturnType = a.SqlType != b.SqlType;
+            bool changedParameters = a.Parameters.Count != b.Parameters.Count;
+            if (!changedParameters)
             {
-                bool changedReturnType = a.SqlType != b.SqlType;
-                bool changedParameters = a.Parameters.Count != b.Parameters.Count;
-                if (!changedParameters)
+                var paramChanges = a.Parameters.Select((p1, i) =>
                 {
-                    var paramChanges = a.Parameters.Select((p1, i) =>
-                    {
-                        var p2 = b.Parameters[i];
-                        var tests = new bool[]{
+                    var p2 = b.Parameters[i];
+                    var tests = new bool[]{
                             p1.Name.ToLower() != p2.Name.ToLower(),
                             p1.DefaultValue != p2.DefaultValue,
                             p1.Direction != p2.Direction,
@@ -723,16 +718,17 @@ AND COLUMN_NAME = @columnName;")]
                             p1.Size != p2.Size,
                             p1.Precision != p2.Precision
                         };
-                        var changed2 = tests.Any(t => t);
-                        return changed2;
-                    }).ToArray();
-                    changedParameters = paramChanges.Any(t => t);
-                }
-                bool changedQuery = a.Query.Trim() != b.Query.Trim();
-                changed = changedReturnType
-                    || changedParameters
-                    || changedQuery;
+                    var changed2 = tests.Any(t => t);
+                    return changed2;
+                }).ToArray();
+                changedParameters = paramChanges.Any(t => t);
             }
+            var finalScript = this.MakeRoutineBody(a).Trim();
+            var initialScript = b.Query.Trim();
+            bool changedQuery = finalScript != initialScript;
+            var changed = changedReturnType
+                || changedParameters
+                || changedQuery;
             return changed;
         }
 
@@ -813,7 +809,10 @@ AND COLUMN_NAME = @columnName;")]
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
-        public abstract void AnalyzeQuery(string routineText, RoutineAttribute routine);
+        public virtual void AnalyzeQuery(string routineText, RoutineAttribute routine)
+        {
+            routine.Query = routineText;
+        }
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
@@ -829,6 +828,7 @@ AND COLUMN_NAME = @columnName;")]
         public abstract string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);
 
         public abstract string MakeDropRoutineScript(RoutineAttribute routine);
+        public abstract string MakeRoutineBody(RoutineAttribute routine);
         public abstract string MakeCreateRoutineScript(RoutineAttribute routine);
 
         public abstract string MakeDropRelationshipScript(Relationship relation);

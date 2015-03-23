@@ -148,9 +148,40 @@ namespace SqlSiphon.SqlServer
             return string.Format("drop procedure {0};", this.MakeRoutineIdentifier(info));
         }
 
+        public override string MakeRoutineBody(RoutineAttribute info)
+        {
+            var query = info.Query;
+            if (info.EnableTransaction)
+            {
+                string transactionName = string.Format("TRANS{0}{1}", info.Schema ?? DefaultSchemaName, info.Name);
+                int len = transactionName.Length;
+                if (len > 32)
+                {
+                    var lenlen = (int)Math.Ceiling(Math.Log10(len));
+                    transactionName = transactionName.Substring(0, 32 - lenlen) + lenlen.ToString();
+                }
+                string transactionBegin = string.Format(beginRoutineTemplate, transactionName);
+                string transactionEnd = string.Format(endRoutineTemplate, transactionName);
+                query = string.Join(Environment.NewLine, transactionBegin, query, transactionEnd);
+            }
+            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
+            var parameterSection = this.MakeParameterSection(info);
+
+            return string.Format(
+@"create procedure {0}
+    {1}
+as begin
+    set nocount on;
+    {2}
+end",
+                identifier,
+                parameterSection,
+                query);
+        }
+
         public override string MakeCreateRoutineScript(RoutineAttribute info)
         {
-            return this.MakeRoutineScript(info, "create");
+            return this.MakeRoutineBody(info);
         }
 
         private static string beginRoutineTemplate = @"begin try
@@ -179,49 +210,17 @@ end catch;";
 
         public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {
+            base.AnalyzeQuery(routineText, routine);
             var match = queryExtractor.Match(routineText);
             if (match.Groups.Count == 2)
             {
-                routine.Query = match.Groups[1].Value;
-                var transMatch = transactionExtractor.Match(routine.Query);
+                var query = match.Groups[1].Value;
+                var transMatch = transactionExtractor.Match(query);
                 if (transMatch.Groups.Count == 3)
                 {
                     routine.EnableTransaction = true;
-                    routine.Query = transMatch.Groups[2].Value;
                 }
-                routine.Query = routine.Query.Trim();
             }
-        }
-
-        private string MakeRoutineScript(RoutineAttribute info, string operation)
-        {
-            var query = info.Query;
-            if (info.EnableTransaction)
-            {
-                string transactionName = string.Format("TRANS{0}{1}", info.Schema ?? DefaultSchemaName, info.Name);
-                int len = transactionName.Length;
-                if (len > 32)
-                {
-                    var lenlen = (int)Math.Ceiling(Math.Log10(len));
-                    transactionName = transactionName.Substring(0, 32 - lenlen) + lenlen.ToString();
-                }
-                string transactionBegin = string.Format(beginRoutineTemplate, transactionName);
-                string transactionEnd = string.Format(endRoutineTemplate, transactionName);
-                query = string.Join(Environment.NewLine, transactionBegin, query, transactionEnd);
-            }
-            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
-            var parameterSection = this.MakeParameterSection(info);
-            return string.Format(
-@"{0} procedure {1}
-    {2}
-as begin
-    set nocount on;
-    {3}
-end",
-                operation,
-                identifier,
-                parameterSection,
-                query);
         }
 
         public override string MakeCreateTableScript(TableAttribute info)

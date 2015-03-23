@@ -290,25 +290,6 @@ namespace SqlSiphon.Postgres
             return false;
         }
 
-        private static Regex queryExtractor = new Regex(@"^\s*(declare\s+.*?)?begin\s+(.*?)(?:end;?\s*)?$",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        private static Regex parameterReverter = new Regex(@"\b_",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
-        {
-            var match = queryExtractor.Match(routineText);
-            if (match.Groups.Count == 3)
-            {
-                var declString = match.Groups[1].Value
-                    .Replace(";", ",")
-                    .Replace("uuid", "uniqueidentifier");
-
-                routine.Query += parameterReverter.Replace(declString, "@")
-                    + Environment.NewLine
-                    + parameterReverter.Replace(match.Groups[2].Value.Trim(), "@");
-            }
-        }
-
         public override string MakeCreateColumnScript(ColumnAttribute prop)
         {
             return string.Format("alter table if exists {0} add column {1} {2};",
@@ -546,9 +527,7 @@ namespace SqlSiphon.Postgres
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
         {
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var parameterSection = string.Join(", ", routine.Parameters
-                .Where(p=>p.Direction == ParameterDirection.Input || p.Direction == ParameterDirection.InputOutput)
-                .Select(this.MakeSqlTypeString));
+            var parameterSection = string.Join(", ", routine.Parameters.Select(this.MakeSqlTypeString));
             return string.Format(@"{0}({1})", identifier, parameterSection);
         }
 
@@ -556,9 +535,28 @@ namespace SqlSiphon.Postgres
 
         public override string MakeCreateRoutineScript(RoutineAttribute routine)
         {
-            var query = routine.Query;
+            var queryBody = this.MakeRoutineBody(routine);
+            var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
+            var parameterSection = this.MakeParameterSection(routine).Replace("@", "_");;
+            var query = string.Format(
+@"create or replace function {0}(
+{1}
+)
+    returns {2} as $$
+{3}
+$$ language plpgsql;",
+                identifier,
+                parameterSection,
+                this.MakeSqlTypeString(routine),
+                queryBody);
+            return query;
+        }
+
+        public override string MakeRoutineBody(RoutineAttribute routine)
+        {
+            var queryBody = routine.Query;
             var declarations = new List<string>();
-            query = HoistPattern.Replace(query, new MatchEvaluator(m =>
+            queryBody = HoistPattern.Replace(queryBody, new MatchEvaluator(m =>
             {
                 var parts = m.Groups
                     .Cast<Group>()
@@ -592,25 +590,13 @@ namespace SqlSiphon.Postgres
                 declarationString = "declare " + string.Join("", declarations);
             }
 
-            var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var parameterSection = this.MakeParameterSection(routine);
-            query = string.Format(
-@"create or replace function {0}(
-{1}
-)
-    returns {2} as $$
-{3}
+            queryBody = string.Format(
+@"{0}
 begin
-{4}
-end;
-$$ language plpgsql;",
-                identifier,
-                parameterSection,
-                this.MakeSqlTypeString(routine),
-                declarationString,
-                query);
-            query = query.Replace("@", "_");
-            return query;
+{1}
+end;", declarationString, queryBody);
+            queryBody = queryBody.Replace("@", "_");
+            return queryBody;
         }
 
         public override string MakeCreateTableScript(TableAttribute table)
@@ -817,7 +803,7 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
         p.prosrc as routine_definition
 from information_schema.routines as r
     inner join pg_proc as p on p.proname = r.routine_name
-    inner join (select specific_name, count(*) as argcount
+    left outer join (select specific_name, count(*) as argcount
 	    from information_schema.parameters
 	    where parameter_mode in ('IN', 'INOUT')
 	    group by specific_name) as q 
@@ -838,6 +824,7 @@ order by specific_catalog, specific_schema, specific_name;")]
 from information_schema.parameters
 where specific_schema != 'information_schema'
     and specific_schema != 'pg_catalog'
+    and parameter_mode in ('IN', 'INOUT')
 order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         public override List<InformationSchema.Parameters> GetParameters()
         {
