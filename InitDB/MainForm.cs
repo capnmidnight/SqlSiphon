@@ -690,7 +690,8 @@ namespace InitDB
             var sessionName = savedSessionList.SelectedItem as string;
             if (sessionName != null)
             {
-                if (this.sessions.ContainsKey(sessionName))
+                if (this.sessions.ContainsKey(sessionName) && MessageBox.Show(string.Format(
+                    "Are you sure you want to delete session \"{0}\"?", sessionName), "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.Yes)
                 {
                     this.sessions.Remove(sessionName);
                     this.names.Remove(sessionName);
@@ -879,6 +880,11 @@ namespace InitDB
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void analyzeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Analyze();
         }
     }
 }
