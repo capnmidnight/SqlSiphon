@@ -688,15 +688,18 @@ namespace InitDB
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var sessionName = savedSessionList.SelectedItem as string;
-            if (sessionName != null)
+            if (sessionName != null
+                && this.sessions.ContainsKey(sessionName) 
+                && MessageBox.Show(
+                    string.Format("Are you sure you want to delete session \"{0}\"?", sessionName), 
+                    "Confirm delete", 
+                    MessageBoxButtons.YesNo, 
+                    MessageBoxIcon.Question, 
+                    MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.Yes)
             {
-                if (this.sessions.ContainsKey(sessionName) && MessageBox.Show(string.Format(
-                    "Are you sure you want to delete session \"{0}\"?", sessionName), "Confirm delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.Yes)
-                {
-                    this.sessions.Remove(sessionName);
-                    this.names.Remove(sessionName);
-                    this.SaveSessions();
-                }
+                this.sessions.Remove(sessionName);
+                this.names.Remove(sessionName);
+                this.SaveSessions();
             }
         }
 
@@ -874,7 +877,13 @@ namespace InitDB
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("InitDB for SqlSiphon by Sean T. McBeth (sean@seanmcbeth.com)");
+            MessageBox.Show(string.Format(
+@"               InitDB (v{0})
+           for SqlSiphon (v{1})
+
+by Sean T. McBeth (v1) (sean@seanmcbeth.com)", 
+                Assembly.GetExecutingAssembly().GetName().Version,
+                typeof(ISqlSiphon).Assembly.GetName().Version));
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
