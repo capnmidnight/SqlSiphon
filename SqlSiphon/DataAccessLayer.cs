@@ -221,19 +221,19 @@ namespace SqlSiphon
         public void AlterDatabase(ScriptStatus script)
         {
             this.ExecuteQuery(script.Script);
-            this.MarkScriptAsRan(script);
+            try
+            {
+                this.MarkScriptAsRan(script);
+            }
+            catch (DbException exp)
+            {
+                if (!exp.Message.ToLower().Contains("scriptstatus"))
+                {
+                    throw;
+                }
+            }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.Text,
-            Query = @"if exists(select *
-from information_schema.tables 
-where table_name = 'ScriptStatus')
-begin
-    insert into ScriptStatus
-    (Script) values
-    (@script);
-end")]
         public void MarkScriptAsRan(ScriptStatus script)
         {
             this.Insert(new ScriptStatus[] { script });

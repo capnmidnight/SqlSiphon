@@ -361,7 +361,7 @@ namespace InitDB
                 var t = db.GetType();
                 this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
 
-                if (RunScripts(delta.Scripts, db))
+                if (RunScripts(delta.Scripts.OrderBy(s => s.ScriptType), db))
                 {
                     this.ToOutput("All done", true);
                 }
@@ -690,12 +690,12 @@ namespace InitDB
         {
             var sessionName = savedSessionList.SelectedItem as string;
             if (sessionName != null
-                && this.sessions.ContainsKey(sessionName) 
+                && this.sessions.ContainsKey(sessionName)
                 && MessageBox.Show(
-                    string.Format("Are you sure you want to delete session \"{0}\"?", sessionName), 
-                    "Confirm delete", 
-                    MessageBoxButtons.YesNo, 
-                    MessageBoxIcon.Question, 
+                    string.Format("Are you sure you want to delete session \"{0}\"?", sessionName),
+                    "Confirm delete",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
                     MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.Yes)
             {
                 this.sessions.Remove(sessionName);
@@ -882,7 +882,7 @@ namespace InitDB
 @"               InitDB (v{0})
            for SqlSiphon (v{1})
 
-by Sean T. McBeth (v1) (sean@seanmcbeth.com)", 
+by Sean T. McBeth (v1) (sean@seanmcbeth.com)",
                 Assembly.GetExecutingAssembly().GetName().Version,
                 typeof(ISqlSiphon).Assembly.GetName().Version));
         }

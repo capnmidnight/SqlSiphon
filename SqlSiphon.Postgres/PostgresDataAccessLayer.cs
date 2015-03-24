@@ -836,7 +836,6 @@ order by specific_catalog, specific_schema, specific_name;")]
             return GetList<InformationSchema.Routines>();
         }
 
-
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
 @"select *
@@ -847,12 +846,7 @@ where specific_schema != 'information_schema'
 order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         public override List<InformationSchema.Parameters> GetParameters()
         {
-            var parameters = GetList<InformationSchema.Parameters>();
-            foreach (var p in parameters)
-            {
-                p.data_type = this.NormalizeTypeName(p.data_type);
-            }
-            return parameters;
+            return GetList<InformationSchema.Parameters>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
