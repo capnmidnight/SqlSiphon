@@ -896,5 +896,23 @@ by Sean T. McBeth (v1) (sean@seanmcbeth.com)",
         {
             this.Analyze();
         }
+
+        private void exportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (this.saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                using (var db = this.MakeDatabaseConnection())
+                {
+                    var delta = this.CreateDelta(db);
+                    var sb = new System.Text.StringBuilder();
+                    foreach (var script in delta.Scripts.OrderBy(s=>s.ScriptType))
+                    {
+                        sb.AppendLine(script.Script);
+                        sb.AppendLine("GO");
+                    }
+                    File.WriteAllText(this.saveFileDialog1.FileName, sb.ToString());
+                }
+            }
+        }
     }
 }
