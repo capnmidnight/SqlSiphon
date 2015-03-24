@@ -191,6 +191,7 @@ namespace InitDB
                 {
                     box.AppendText(Environment.NewLine);
                 }
+                toolStripStatusLabel1.Text = txt;
                 if (modal)
                 {
                     MessageBox.Show(txt);
