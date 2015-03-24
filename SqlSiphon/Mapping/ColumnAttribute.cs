@@ -91,40 +91,8 @@ namespace SqlSiphon.Mapping
             {
                 this.IsOptional = true;
             }
-            // TODO: move all of this type conversion stuff to the DAL vendor implementation.
-            this.SqlType = column.udt_name ?? column.data_type;
-            if (this.SqlType[0] == '_')
-            {
-                this.SqlType = this.SqlType.Substring(1);
-            }
 
-            this.SystemType = dal.GetSystemType(this.SqlType);
-            if (this.SystemType == null)
-            {
-                throw new Exception("Couldn't find a matching type for " + this.SqlType ?? "<NULL TYPE>");
-            }
-
-            var systemSize = 0;
-            if (this.SystemType.IsPrimitive)
-            {
-                systemSize = System.Runtime.InteropServices.Marshal.SizeOf(this.SystemType);
-            }
-
-            if (column.numeric_precision.HasValue
-                && column.numeric_precision.Value != systemSize * 8)
-            {
-                this.Size = column.numeric_precision.Value;
-            }
-            
-            if (column.character_maximum_length.HasValue)
-            {
-                this.Size = column.character_maximum_length.Value;
-            }
-
-            if (column.numeric_scale.HasValue && column.numeric_scale.Value > 0)
-            {
-                this.Precision = column.numeric_scale.Value;
-            }
+            this.InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
         }
 
         public void InferProperties(TableAttribute table, System.Reflection.PropertyInfo obj)
@@ -177,15 +145,26 @@ namespace SqlSiphon.Mapping
             {
                 DefaultValue = this.DefaultValue,
                 Direction = System.Data.ParameterDirection.Input,
-                Ignore = this.Ignore,
-                Include = this.Include,
-                IsOptional = this.IsOptional,
-                Precision = this.Precision,
-                Size = this.Size,
                 Name = this.Name,
                 Schema = this.Schema,
                 SqlType = this.SqlType
             };
+            if (this.IsPrecisionSet)
+            {
+                p.Precision = this.Precision;
+            }
+            if (this.IsSizeSet)
+            {
+                p.Size = this.Size;
+            }
+            if (!this.optionalNotSet)
+            {
+                p.IsOptional = this.IsOptional;
+            }
+            if (this.IsIncludeSet)
+            {
+                p.Include = this.Include;
+            }
             return p;
         }
 

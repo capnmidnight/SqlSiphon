@@ -45,6 +45,7 @@ namespace SqlSiphon.Postgres
     /// </summary>
     public partial class PostgresDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
+        private static Dictionary<string, int> defaultTypeSizes;
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
         static PostgresDataAccessLayer()
@@ -127,8 +128,9 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("geography", typeof(string));
             typeMapping.Add("tsvector", typeof(string));
 
-            //typeMapping.Add("txid_snapshot", typeof(string));
-
+            defaultTypeSizes = new Dictionary<string, int>();
+            defaultTypeSizes.Add("float8", 53);
+         
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
                 .ToDictionary(g => g.Key, g => g.First());
@@ -183,6 +185,10 @@ namespace SqlSiphon.Postgres
         protected override string IdentifierPartBegin { get { return "\""; } }
         protected override string IdentifierPartEnd { get { return "\""; } }
         public override string DefaultSchemaName { get { return "public"; } }
+        public override int DefaultTypeSize(string typeName)
+        {
+            return defaultTypeSizes[typeName];
+        }
 
         public override string MakeIdentifier(params string[] parts)
         {
@@ -207,12 +213,12 @@ namespace SqlSiphon.Postgres
         public override DatabaseState GetInitialState(string catalogueName, Regex filter)
         {
             var state = base.GetInitialState(catalogueName, filter);
-            var npgState = new PostgresDatabaseState(state);
-            if (npgState.CatalogueExists.HasValue && npgState.CatalogueExists.Value)
+            var pgState = new PostgresDatabaseState(state);
+            if (pgState.CatalogueExists.HasValue && pgState.CatalogueExists.Value)
             {
-                this.GetExtensions().ForEach(npgState.AddExtension);
+                this.GetExtensions().ForEach(pgState.AddExtension);
             }
-            return npgState;
+            return pgState;
         }
 
         public override DatabaseState GetFinalState(string userName, string password)
@@ -584,11 +590,7 @@ $$ language plpgsql;",
                     .Select(p => p.Trim())
                     .Where(p => p.Length > 0)
                     .ToArray();
-                parts[1] = parts[1].ToLower();
-                if (typeMapping.ContainsKey(parts[1]) && reverseTypeMapping.ContainsKey(typeMapping[parts[1]]))
-                {
-                    parts[1] = reverseTypeMapping[typeMapping[parts[1]]];
-                }
+                parts[1] = NormalizeTypeName(parts[1].ToLower());
                 declarations[i] = "\r\n\t" + string.Join(" ", parts) + ";";
             }
             var declarationString = "";
@@ -604,6 +606,16 @@ begin
 end;", declarationString, queryBody);
             queryBody = queryBody.Replace("@", "_");
             return queryBody;
+        }
+
+        public string NormalizeTypeName(string name)
+        {
+            var newName = name;
+            if (typeMapping.ContainsKey(name) && reverseTypeMapping.ContainsKey(typeMapping[name]))
+            {                
+                newName = reverseTypeMapping[typeMapping[name]];
+            }
+            return newName;
         }
 
         public override string MakeCreateTableScript(TableAttribute table)
@@ -835,7 +847,12 @@ where specific_schema != 'information_schema'
 order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         public override List<InformationSchema.Parameters> GetParameters()
         {
-            return GetList<InformationSchema.Parameters>();
+            var parameters = GetList<InformationSchema.Parameters>();
+            foreach (var p in parameters)
+            {
+                p.data_type = this.NormalizeTypeName(p.data_type);
+            }
+            return parameters;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

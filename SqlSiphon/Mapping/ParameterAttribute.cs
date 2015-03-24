@@ -70,26 +70,13 @@ namespace SqlSiphon.Mapping
         public ParameterAttribute(InformationSchema.Parameters parameter, ISqlSiphon dal)
         {
             this.Include = true;
+
             if (!string.IsNullOrEmpty(parameter.parameter_name))
             {
                 this.Name = parameter.parameter_name.Substring(1);
             }
-            if (parameter.numeric_precision.HasValue)
-            {
-                this.Precision = parameter.numeric_precision.Value;
-            }
 
-            if (parameter.numeric_scale.HasValue)
-            {
-                this.Size = parameter.numeric_scale.Value;
-            }
-            else if (parameter.character_maximum_length.HasValue && parameter.character_maximum_length.Value > -1)
-            {
-                this.Size = parameter.character_maximum_length.Value;
-            }
-
-            this.SqlType = parameter.data_type;
-            this.SystemType = dal.GetSystemType(this.SqlType);
+            this.InferTypeInfo(parameter, parameter.data_type, dal);
 
             switch (parameter.parameter_mode)
             {

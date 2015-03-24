@@ -71,6 +71,10 @@ namespace SqlSiphon.SqlServer
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
         public override string DefaultSchemaName { get { return "dbo"; } }
+        public override int DefaultTypeSize(string typeName)
+        {
+            return 10;
+        }
 
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;

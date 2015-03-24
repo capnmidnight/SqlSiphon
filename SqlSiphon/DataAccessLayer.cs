@@ -713,10 +713,8 @@ AND COLUMN_NAME = @columnName;")]
                             p1.Direction != p2.Direction,
                             p1.IsOptional != p2.IsOptional,
                             p1.SystemType != p2.SystemType,
-                            p1.IsPrecisionSet != p2.IsPrecisionSet,
-                            p1.IsSizeSet != p2.IsSizeSet,
-                            p1.Size != p2.Size,
-                            p1.Precision != p2.Precision
+                            p1.Precision != p2.Precision,
+                            p1.Size != p2.Size
                         };
                     var changed2 = tests.Any(t => t);
                     return changed2;
@@ -806,6 +804,7 @@ AND COLUMN_NAME = @columnName;")]
         public abstract List<InformationSchema.KeyColumnUsage> GetKeyColumns();
 
         public abstract string DefaultSchemaName { get; }
+        public abstract int DefaultTypeSize(string typeName);
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);

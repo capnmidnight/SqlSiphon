@@ -33,24 +33,16 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.InformationSchema
 {
-    /// <summary>
-    /// This is an entity object for the SQL standard 
-    /// INFORMATION_SCHEMA.COLUMNS view.
-    /// http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt
-    /// (text-search "CREATE VIEW COLUMNS")
-    /// </summary>
-    [Table(Include = false, Schema = "information_schema")]
-    public class Columns : Typed
+    public class Typed
     {
-        public string table_catalog { get; set; }
-        public string table_schema { get; set; }
-        public string table_name { get; set; }
-        public string column_name { get; set; }
-        public string column_default { get; set; }
-        public string is_nullable { get; set; }
-        
-        public int? is_identity { get; set; }
-        public string udt_catalog { get; set; }
-        public string udt_schema { get; set; }
+        public int? ordinal_position { get; set; }
+        public string data_type { get; set; }
+        public string udt_name { get; set; }
+        public int? character_maximum_length { get; set; }
+        public int? character_octet_length { get; set; }
+        public short? numeric_precision { get; set; }
+        public short? numeric_precision_radix { get; set; }
+        public short? numeric_scale { get; set; }
+        public short? datetime_precision { get; set; }
     }
 }

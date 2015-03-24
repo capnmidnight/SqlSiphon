@@ -285,6 +285,42 @@ namespace SqlSiphon.Mapping
             this.SetSystemType(obj);
         }
 
+        protected void InferTypeInfo(InformationSchema.Typed obj, string sqlType, ISqlSiphon dal)
+        {
+            this.SqlType = sqlType;
+            if (this.SqlType[0] == '_')
+            {
+                this.SqlType = this.SqlType.Substring(1);
+            }
+            
+            this.SystemType = dal.GetSystemType(this.SqlType);
+            if (this.SystemType != null)
+            {
+                var systemSize = 0;
+                if (this.SystemType.IsPrimitive)
+                {
+                    systemSize = System.Runtime.InteropServices.Marshal.SizeOf(this.SystemType);
+                }
+
+                if (obj.numeric_precision.HasValue
+                    && obj.numeric_precision.Value != systemSize * 8
+                    && obj.numeric_precision.Value != dal.DefaultTypeSize(this.SqlType))
+                {
+                    this.Size = obj.numeric_precision.Value;
+                }
+
+                if (obj.character_maximum_length.HasValue && obj.character_maximum_length.Value > 0)
+                {
+                    this.Size = obj.character_maximum_length.Value;
+                }
+
+                if (obj.numeric_scale.HasValue && obj.numeric_scale.Value > 0)
+                {
+                    this.Precision = obj.numeric_scale.Value;
+                }
+            }
+        }
+
         public override string ToString()
         {
             return string.Format("[{0}].[{1}]", this.Schema, this.Name);
