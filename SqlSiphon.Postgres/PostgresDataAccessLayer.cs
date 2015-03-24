@@ -218,10 +218,17 @@ namespace SqlSiphon.Postgres
         public override DatabaseState GetFinalState(string userName, string password)
         {
             var state = base.GetFinalState(userName, password);
-            var npgState = new PostgresDatabaseState(state);
-            npgState.AddExtension("uuid-ossp", "1.0");
-            npgState.AddExtension("postgis", "2.1.1");
-            return npgState;
+            var pgState = new PostgresDatabaseState(state);
+            pgState.AddExtension("uuid-ossp", "1.0");
+            pgState.AddExtension("postgis", "2.1.1");
+            foreach (var extName in pgState.Extensions.Keys)
+            {
+                if (!pgState.Schemata.Contains(extName))
+                {
+                    pgState.Schemata.Add(extName);
+                }
+            }
+            return pgState;
         }
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)

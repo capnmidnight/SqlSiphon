@@ -10,9 +10,9 @@ namespace SqlSiphon
     {
         None,
         CreateCatalogue,
-        InstallExtension,
         CreateDatabaseLogin,
         CreateSchema,
+        InstallExtension,
         CreateTable,
         CreateColumn,
         TranslateData,

@@ -782,7 +782,7 @@ AND COLUMN_NAME = @columnName;")]
 
         private string MakeSchemaScript(string op, string schemaName)
         {
-            return string.Format("{0} schema {1};", op, schemaName);
+            return string.Format("{0} schema {1};", op, this.MakeIdentifier(schemaName));
         }
 
         public virtual string MakeCreateSchemaScript(string schemaName)

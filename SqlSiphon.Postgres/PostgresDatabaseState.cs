@@ -7,38 +7,68 @@ namespace SqlSiphon.Postgres
 {
     class PostgresDatabaseState : DatabaseState
     {
-        public Dictionary<string, Version> Extensions { get; private set; }
+        public Dictionary<string, pg_extension> Extensions { get; private set; }
         public PostgresDatabaseState(DatabaseState state)
             : base(state)
         {
-            this.Extensions = new Dictionary<string, Version>();
+            this.Extensions = new Dictionary<string, pg_extension>();
         }
 
         public override DatabaseDelta Diff(DatabaseState initial, ISqlSiphon dal)
         {
+            RemoveExtensionObjects(initial);
             var delta = base.Diff(initial, dal);
             var pg = initial as PostgresDatabaseState;
             if (pg != null)
             {
-                foreach (var ext in this.Extensions)
-                {
-                    if (!pg.Extensions.ContainsKey(ext.Key))
-                    {
-                        delta.Scripts.Add(new ScriptStatus(
-                            ScriptType.InstallExtension, 
-                            string.Format("{0} v{1}", ext.Key, ext.Value),
-                            string.Format("create extension \"{0}\";", ext.Key)));
-                    }
-                    else if (pg.Extensions[ext.Key] < ext.Value)
-                    {
-                        delta.Scripts.Add(new ScriptStatus(
-                            ScriptType.InstallExtension,
-                            string.Format("{0} v{1}", ext.Key, ext.Value),
-                            string.Format("alter extension \"{0}\" update;", ext.Key)));
-                    }
-                }
+                ProcessExtensions(dal, delta, pg.Extensions);
             }
             return delta;
+        }
+
+        private void RemoveExtensionObjects(DatabaseState initial)
+        {
+            var extSchema = this.Extensions.Keys.ToList();
+            RemoveExtensionObjects(extSchema, initial.Functions);
+            RemoveExtensionObjects(extSchema, initial.Indexes);
+            RemoveExtensionObjects(extSchema, initial.PrimaryKeys);
+            RemoveExtensionObjects(extSchema, initial.Relationships);
+            RemoveExtensionObjects(extSchema, initial.Tables);
+        }
+
+        private void RemoveExtensionObjects<T>(List<string> extSchema, Dictionary<string, T> collect) where T : SqlSiphon.Mapping.DatabaseObjectAttribute
+        {
+            var remove = collect
+                .Where(f => extSchema.Contains(f.Value.Schema))
+                .Select(f => f.Key).ToList();
+            foreach (var key in remove)
+            {
+                collect.Remove(key);
+            }
+        }
+
+        private void ProcessExtensions(ISqlSiphon dal, DatabaseDelta delta, Dictionary<string, pg_extension> extensions)
+        {
+            foreach (var ext in this.Extensions)
+            {
+                if (!extensions.ContainsKey(ext.Key))
+                {
+                    var schemaName = dal.MakeIdentifier(ext.Key);
+                    delta.Scripts.Add(new ScriptStatus(
+                        ScriptType.InstallExtension,
+                        string.Format("{0} v{1}", ext.Key, ext.Value.Version),
+                        string.Format("create extension if not exists \"{0}\" with schema {1};",
+                            ext.Key,
+                            schemaName)));
+                }
+                else if (extensions[ext.Key].Version < ext.Value.Version)
+                {
+                    delta.Scripts.Add(new ScriptStatus(
+                        ScriptType.InstallExtension,
+                        string.Format("{0} v{1}", ext.Key, ext.Value.Version),
+                        string.Format("alter extension \"{0}\" update;", ext.Key)));
+                }
+            }
         }
 
         public void AddExtension(pg_extension ext)
@@ -48,7 +78,7 @@ namespace SqlSiphon.Postgres
 
         public void AddExtension(string name, string version)
         {
-            this.Extensions.Add(name, new Version(version));
+            this.Extensions.Add(name, new pg_extension(name, version));
         }
     }
 }
