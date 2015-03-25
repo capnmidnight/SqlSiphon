@@ -57,6 +57,8 @@ namespace InitDB
         {
             InitializeComponent();
             this.pendingScriptsGV.AutoGenerateColumns = false;
+            this.initialScriptsGV.AutoGenerateColumns = false;
+            this.finalScriptsGV.AutoGenerateColumns = false;
             foreach (ScriptType value in Enum.GetValues(typeof(ScriptType)))
             {
                 if (value != ScriptType.None)
@@ -312,7 +314,7 @@ namespace InitDB
                 var t = db.GetType();
                 this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
 
-                if (RunScripts(delta.Scripts.OrderBy(s => s.ScriptType), db))
+                if (RunScripts(delta.Scripts, db))
                 {
                     this.ToOutput("All done", true);
                 }
@@ -552,8 +554,10 @@ namespace InitDB
         {
             this.SyncUI(() =>
             {
-                var list = new BindingList<ScriptStatus>(delta.Scripts.OrderBy(s => s.ScriptType).ToList());
+                var list = new BindingList<ScriptStatus>(delta.Scripts);
                 this.pendingScriptsGV.DataSource = list;
+                this.initialScriptsGV.DataSource = delta.Initial;
+                this.finalScriptsGV.DataSource = delta.Final;
                 FilterScripts();
             });
         }
@@ -856,7 +860,7 @@ by Sean T. McBeth (v1) (sean@seanmcbeth.com)",
                 {
                     var delta = this.CreateDelta(db);
                     var sb = new System.Text.StringBuilder();
-                    foreach (var script in delta.Scripts.OrderBy(s=>s.ScriptType))
+                    foreach (var script in delta.Scripts)
                     {
                         sb.AppendLine(script.Script);
                         sb.AppendLine("GO");

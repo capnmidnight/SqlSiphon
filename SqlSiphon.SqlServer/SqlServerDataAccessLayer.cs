@@ -139,6 +139,7 @@ namespace SqlSiphon.SqlServer
             typeMapping.Add("uniqueidentifier", typeof(Guid));
 
             defaultTypeSizes = new Dictionary<string, int>();
+            defaultTypeSizes.Add("int", 10);
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)

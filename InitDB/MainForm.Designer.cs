@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.objFilterTB = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -85,6 +87,16 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.tabInitialState = new System.Windows.Forms.TabPage();
+            this.tabFinalState = new System.Windows.Forms.TabPage();
+            this.initialScriptsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn1 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.finalScriptsGV = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn2 = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabScripts.SuspendLayout();
@@ -97,6 +109,10 @@
             this.tabStdErr.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.tabInitialState.SuspendLayout();
+            this.tabFinalState.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.initialScriptsGV)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.finalScriptsGV)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -168,6 +184,8 @@
             this.tabControl1.Controls.Add(this.tabScripts);
             this.tabControl1.Controls.Add(this.tabStdOut);
             this.tabControl1.Controls.Add(this.tabStdErr);
+            this.tabControl1.Controls.Add(this.tabInitialState);
+            this.tabControl1.Controls.Add(this.tabFinalState);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(155, 183);
             this.tabControl1.Name = "tabControl1";
@@ -610,33 +628,33 @@
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.saveToolStripMenuItem.Text = "&Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // exportToolStripMenuItem
             // 
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.exportToolStripMenuItem.Text = "&Export";
             this.exportToolStripMenuItem.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.deleteToolStripMenuItem.Text = "&Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(104, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -699,6 +717,118 @@
             this.saveFileDialog1.DefaultExt = "sql";
             this.saveFileDialog1.Filter = "SQL files|*.sql";
             // 
+            // tabInitialState
+            // 
+            this.tabInitialState.Controls.Add(this.initialScriptsGV);
+            this.tabInitialState.Location = new System.Drawing.Point(4, 22);
+            this.tabInitialState.Name = "tabInitialState";
+            this.tabInitialState.Padding = new System.Windows.Forms.Padding(3);
+            this.tabInitialState.Size = new System.Drawing.Size(811, 395);
+            this.tabInitialState.TabIndex = 11;
+            this.tabInitialState.Text = "Initial state";
+            this.tabInitialState.UseVisualStyleBackColor = true;
+            // 
+            // tabFinalState
+            // 
+            this.tabFinalState.Controls.Add(this.finalScriptsGV);
+            this.tabFinalState.Location = new System.Drawing.Point(4, 22);
+            this.tabFinalState.Name = "tabFinalState";
+            this.tabFinalState.Padding = new System.Windows.Forms.Padding(3);
+            this.tabFinalState.Size = new System.Drawing.Size(811, 395);
+            this.tabFinalState.TabIndex = 12;
+            this.tabFinalState.Text = "Final state";
+            this.tabFinalState.UseVisualStyleBackColor = true;
+            // 
+            // initialScriptsGV
+            // 
+            this.initialScriptsGV.AllowUserToAddRows = false;
+            this.initialScriptsGV.AllowUserToDeleteRows = false;
+            this.initialScriptsGV.AllowUserToResizeRows = false;
+            this.initialScriptsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.initialScriptsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.dataGridViewButtonColumn1,
+            this.dataGridViewTextBoxColumn2});
+            this.initialScriptsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.initialScriptsGV.Location = new System.Drawing.Point(3, 3);
+            this.initialScriptsGV.Name = "initialScriptsGV";
+            this.initialScriptsGV.ReadOnly = true;
+            this.initialScriptsGV.Size = new System.Drawing.Size(805, 389);
+            this.initialScriptsGV.TabIndex = 5;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.DataPropertyName = "ScriptType";
+            this.dataGridViewTextBoxColumn1.HeaderText = "type";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            // 
+            // dataGridViewButtonColumn1
+            // 
+            this.dataGridViewButtonColumn1.DataPropertyName = "Name";
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn1.DefaultCellStyle = dataGridViewCellStyle2;
+            this.dataGridViewButtonColumn1.HeaderText = "name";
+            this.dataGridViewButtonColumn1.Name = "dataGridViewButtonColumn1";
+            this.dataGridViewButtonColumn1.ReadOnly = true;
+            this.dataGridViewButtonColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewButtonColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewButtonColumn1.Width = 200;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn2.DataPropertyName = "Script";
+            this.dataGridViewTextBoxColumn2.HeaderText = "script";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            this.dataGridViewTextBoxColumn2.ReadOnly = true;
+            this.dataGridViewTextBoxColumn2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // finalScriptsGV
+            // 
+            this.finalScriptsGV.AllowUserToAddRows = false;
+            this.finalScriptsGV.AllowUserToDeleteRows = false;
+            this.finalScriptsGV.AllowUserToResizeRows = false;
+            this.finalScriptsGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.finalScriptsGV.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn3,
+            this.dataGridViewButtonColumn2,
+            this.dataGridViewTextBoxColumn4});
+            this.finalScriptsGV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.finalScriptsGV.Location = new System.Drawing.Point(3, 3);
+            this.finalScriptsGV.Name = "finalScriptsGV";
+            this.finalScriptsGV.ReadOnly = true;
+            this.finalScriptsGV.Size = new System.Drawing.Size(805, 389);
+            this.finalScriptsGV.TabIndex = 6;
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            this.dataGridViewTextBoxColumn3.DataPropertyName = "ScriptType";
+            this.dataGridViewTextBoxColumn3.HeaderText = "type";
+            this.dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            this.dataGridViewTextBoxColumn3.ReadOnly = true;
+            // 
+            // dataGridViewButtonColumn2
+            // 
+            this.dataGridViewButtonColumn2.DataPropertyName = "Name";
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle3;
+            this.dataGridViewButtonColumn2.HeaderText = "name";
+            this.dataGridViewButtonColumn2.Name = "dataGridViewButtonColumn2";
+            this.dataGridViewButtonColumn2.ReadOnly = true;
+            this.dataGridViewButtonColumn2.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewButtonColumn2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.dataGridViewButtonColumn2.Width = 200;
+            // 
+            // dataGridViewTextBoxColumn4
+            // 
+            this.dataGridViewTextBoxColumn4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn4.DataPropertyName = "Script";
+            this.dataGridViewTextBoxColumn4.HeaderText = "script";
+            this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+            this.dataGridViewTextBoxColumn4.ReadOnly = true;
+            this.dataGridViewTextBoxColumn4.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -731,6 +861,10 @@
             this.menuStrip1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.tabInitialState.ResumeLayout(false);
+            this.tabFinalState.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.initialScriptsGV)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.finalScriptsGV)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -794,6 +928,16 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.TabPage tabInitialState;
+        private System.Windows.Forms.DataGridView initialScriptsGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private System.Windows.Forms.TabPage tabFinalState;
+        private System.Windows.Forms.DataGridView finalScriptsGV;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn2;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
     }
 }
 

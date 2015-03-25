@@ -35,6 +35,11 @@ namespace SqlSiphon
             }
         }
 
+        private static void DumpAll<T>(List<ScriptStatus> outCollect, Dictionary<string, T> inCollect, ScriptType type, Func<T, string> makeScript)
+        {
+            outCollect.AddRange(inCollect.Select(i => new ScriptStatus(type, i.Key, makeScript(i.Value))));
+        }
+
         internal void Traverse<T>(
             Dictionary<string, T> final,
             Dictionary<string, T> initial,
@@ -44,6 +49,8 @@ namespace SqlSiphon
             Func<T, string> makeDropScript,
             Func<T, string> makeCreateScript)
         {
+            DumpAll(this.Initial, initial, createType, makeCreateScript);
+            DumpAll(this.Final, final, createType, makeCreateScript);
             Traverse(
                 final,
                 initial,
@@ -73,10 +80,15 @@ namespace SqlSiphon
         }
 
         public List<ScriptStatus> Scripts { get; private set; }
+        public List<ScriptStatus> Initial { get; private set; }
+        public List<ScriptStatus> Final { get; private set; }
 
         public DatabaseDelta(DatabaseState final, DatabaseState initial, ISqlSiphon dal)
         {
             this.Scripts = new List<ScriptStatus>();
+            this.Initial = new List<ScriptStatus>();
+            this.Final = new List<ScriptStatus>();
+
             if (initial.CatalogueExists == false)
             {
                 this.Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, initial.CatalogueName, dal.MakeCreateCatalogueScript(initial.CatalogueName)));
@@ -88,6 +100,9 @@ namespace SqlSiphon
             ProcessRelationships(final.Relationships, initial.Relationships, dal);
             ProcessKeys(final.PrimaryKeys, initial.PrimaryKeys, dal);
             ProcessFunctions(final.Functions, initial.Functions, dal);
+            this.Scripts.Sort();
+            this.Initial.Sort();
+            this.Final.Sort();
         }
 
         private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, ISqlSiphon dal)
@@ -160,6 +175,8 @@ namespace SqlSiphon
 
         private void ProcessTables(Dictionary<string, TableAttribute> finalTables, Dictionary<string, TableAttribute> initialTables, ISqlSiphon dal)
         {
+            DumpAll(this.Initial, initialTables, ScriptType.CreateTable, dal.MakeCreateTableScript);
+            DumpAll(this.Final, finalTables, ScriptType.CreateTable, dal.MakeCreateTableScript);
             Traverse(
                 finalTables,
                 initialTables,

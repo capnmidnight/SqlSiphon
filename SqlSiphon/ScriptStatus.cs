@@ -32,7 +32,7 @@ namespace SqlSiphon
     }
 
     [Table]
-    public class ScriptStatus : BoundObject
+    public class ScriptStatus : BoundObject, IComparable<ScriptStatus>
     {
         [AutoPK]
         public int ScriptID { get; set; }
@@ -67,6 +67,16 @@ namespace SqlSiphon
             this.ScriptType = type;
             this.Name = name;
             this.Script = script;
+        }
+
+        public int CompareTo(ScriptStatus obj)
+        {
+            int result = this.ScriptType.CompareTo(obj.ScriptType);
+            if (result == 0)
+            {
+                result = this.Name.CompareTo(obj.Name);
+            }
+            return result;
         }
     }
 }

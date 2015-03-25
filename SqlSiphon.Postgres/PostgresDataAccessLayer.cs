@@ -127,7 +127,7 @@ namespace SqlSiphon.Postgres
             defaultTypeSizes = new Dictionary<string, int>();
             defaultTypeSizes.Add("float4", 24);
             defaultTypeSizes.Add("float8", 53);
-            defaultTypeSizes.Add("integer", 64);
+            defaultTypeSizes.Add("integer", 32);
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
