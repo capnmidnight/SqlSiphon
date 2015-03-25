@@ -304,7 +304,7 @@ namespace SqlSiphon.Mapping
 
                 if (obj.numeric_precision.HasValue
                     && obj.numeric_precision.Value != systemSize * 8
-                    && obj.numeric_precision.Value != dal.DefaultTypeSize(this.SqlType))
+                    && obj.numeric_precision.Value != dal.DefaultTypeSize(this.SqlType, obj.numeric_precision.Value))
                 {
                     this.Size = obj.numeric_precision.Value;
                 }

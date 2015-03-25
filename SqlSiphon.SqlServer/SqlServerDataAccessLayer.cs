@@ -68,12 +68,40 @@ namespace SqlSiphon.SqlServer
         {
         }
 
+        public SqlServerDataAccessLayer(string server, string database, string userName, string password)
+            : base(server, database, userName, password)
+        {
+        }
+
+        public override string MakeConnectionString(string server, string database, string userName, string password)
+        {
+            var builder = new System.Data.SqlClient.SqlConnectionStringBuilder
+            {
+                DataSource = server,
+                InitialCatalog = database
+            };
+
+            builder.IntegratedSecurity = string.IsNullOrWhiteSpace(userName)
+                || string.IsNullOrWhiteSpace(password);
+            if (!builder.IntegratedSecurity)
+            {
+                builder.UserID = userName.Trim();
+                builder.Password = password.Trim();
+            }
+            return builder.ConnectionString;
+        }
+
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
         public override string DefaultSchemaName { get { return "dbo"; } }
-        public override int DefaultTypeSize(string typeName)
+        private static Dictionary<string, int> defaultTypeSizes;
+        public override int DefaultTypeSize(string typeName, int testSize)
         {
-            return 10;
+            if (!defaultTypeSizes.ContainsKey(typeName))
+            {
+                throw new Exception(string.Format("I don't know the default type size for `{0}`. Perhaps it is {1}?", typeName, testSize));
+            }
+            return defaultTypeSizes[typeName];
         }
 
         private static Dictionary<string, Type> typeMapping;
@@ -109,6 +137,8 @@ namespace SqlSiphon.SqlServer
             typeMapping.Add("binary", typeof(byte[]));
             typeMapping.Add("image", typeof(byte[]));
             typeMapping.Add("uniqueidentifier", typeof(Guid));
+
+            defaultTypeSizes = new Dictionary<string, int>();
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
@@ -720,6 +750,11 @@ where constraint_schema != 'information_schema';")]
             return GetList<InformationSchema.KeyColumnUsage>();
         }
 
+        /// <summary>
+        /// Implements bulk-insert capabilities for MS SQL Server.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
         public override void Insert<T>(IEnumerable<T> data)
         {
             if (data != null)

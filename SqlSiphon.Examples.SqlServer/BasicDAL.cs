@@ -13,8 +13,8 @@ namespace SqlSiphon.Examples.SqlServer
 {
     public class BasicDAL : SqlServerDataAccessLayer
     {
-        public BasicDAL(string connectionString)
-            : base(connectionString)
+        public BasicDAL(string server, string database, string userName, string password)
+            : base(server, database, userName, password)
         {
         }
 

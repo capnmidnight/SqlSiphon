@@ -32,6 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Security">
+      <HintPath>..\Mono.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql">
+      <HintPath>..\Npgsql.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -52,6 +58,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -73,6 +82,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj">
+      <Project>{175a4d4a-2c9d-4edd-b9cc-7adc3322cc1c}</Project>
+      <Name>SqlSiphon.Postgres</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlSiphon.Tokenizer\SqlSiphon.Tokenizer.csproj">
+      <Project>{e4d140a3-37c7-4bdc-9819-3613dd061358}</Project>
+      <Name>SqlSiphon.Tokenizer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj">
+      <Project>{136933a4-27e3-4cbf-84f8-8898447a3d8c}</Project>
+      <Name>SqlSiphon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

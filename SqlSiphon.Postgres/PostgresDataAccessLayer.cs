@@ -59,8 +59,7 @@ namespace SqlSiphon.Postgres
 
             typeMapping.Add("bit", typeof(bool[]));
             typeMapping.Add("varbit", typeof(bool[]));
-
-            typeMapping.Add("bit varying", typeof(List<bool>));
+            typeMapping.Add("bit varying", typeof(bool[]));
 
             typeMapping.Add("boolean", typeof(bool));
             typeMapping.Add("bool", typeof(bool));
@@ -70,17 +69,15 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("text", typeof(string));
             typeMapping.Add("character varying", typeof(string));
             typeMapping.Add("varchar", typeof(string));
-            typeMapping.Add("_varchar", typeof(string));
             typeMapping.Add("tsquery", typeof(string));
             typeMapping.Add("xml", typeof(string));
             typeMapping.Add("json", typeof(string));
             typeMapping.Add("name", typeof(string));
-
-            typeMapping.Add("character", typeof(char[]));
-            typeMapping.Add("char", typeof(char[]));
+            typeMapping.Add("character", typeof(string));
+            typeMapping.Add("char", typeof(string));
 
             typeMapping.Add("inet", typeof(System.Net.IPAddress));
-            typeMapping.Add("cidr", typeof(System.Net.IPAddress));
+            typeMapping.Add("cidr", typeof(string));
 
             typeMapping.Add("date", typeof(DateTime));
             typeMapping.Add("datetime", typeof(DateTime)); // included for tranlating T-SQL to PG/PSQL
@@ -116,20 +113,21 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("uuid", typeof(Guid));
             typeMapping.Add("uniqueidentifier", typeof(Guid)); // included for tranlating T-SQL to PG/PSQL
 
-            typeMapping.Add("box", typeof(string));
-            typeMapping.Add("circle", typeof(string));
-            typeMapping.Add("line", typeof(string));
-            typeMapping.Add("lseg", typeof(string));
+            typeMapping.Add("box", typeof(NpgsqlTypes.NpgsqlBox));
+            typeMapping.Add("circle", typeof(NpgsqlTypes.NpgsqlCircle));
+            typeMapping.Add("lseg", typeof(NpgsqlTypes.NpgsqlLSeg));
             typeMapping.Add("macaddr", typeof(string));
-            typeMapping.Add("path", typeof(string));
-            typeMapping.Add("point", typeof(string));
-            typeMapping.Add("polygon", typeof(string));
+            typeMapping.Add("path", typeof(NpgsqlTypes.NpgsqlPath));
+            typeMapping.Add("point", typeof(NpgsqlTypes.NpgsqlPoint));
+            typeMapping.Add("polygon", typeof(NpgsqlTypes.NpgsqlPolygon));
             typeMapping.Add("geometry", typeof(string));
             typeMapping.Add("geography", typeof(string));
             typeMapping.Add("tsvector", typeof(string));
 
             defaultTypeSizes = new Dictionary<string, int>();
+            defaultTypeSizes.Add("float4", 24);
             defaultTypeSizes.Add("float8", 53);
+            defaultTypeSizes.Add("integer", 64);
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
@@ -181,12 +179,53 @@ namespace SqlSiphon.Postgres
         {
         }
 
+        public PostgresDataAccessLayer(string server, string database, string userName, string password)
+            : base(server, database, userName, password)
+        {
+        }
+
+        public override string MakeConnectionString(string server, string database, string userName, string password)
+        {
+            var builder = new Npgsql.NpgsqlConnectionStringBuilder
+            {
+                Database = database.ToLower()
+            };
+
+            if (!string.IsNullOrWhiteSpace(userName)
+                && !string.IsNullOrWhiteSpace(password))
+            {
+                builder.UserName = userName.Trim();
+                builder.Add("Password", password.Trim());
+            }
+
+            var i = server.IndexOf(":");
+            if (i > -1)
+            {
+                builder.Host = server.Substring(0, i);
+                int port = 0;
+                if (int.TryParse(server.Substring(i + 1), out port))
+                {
+                    builder.Port = port;
+                }
+            }
+            else
+            {
+                builder.Host = server;
+            }
+
+            return builder.ConnectionString;
+        }
+
 
         protected override string IdentifierPartBegin { get { return "\""; } }
         protected override string IdentifierPartEnd { get { return "\""; } }
         public override string DefaultSchemaName { get { return "public"; } }
-        public override int DefaultTypeSize(string typeName)
+        public override int DefaultTypeSize(string typeName, int testSize)
         {
+            if (!defaultTypeSizes.ContainsKey(typeName))
+            {
+                throw new Exception(string.Format("I don't know the default type size for `{0}`. Perhaps it is {1}?\n\ndefaultTypeSizes.Add(\"{0}\", {1});\n\n", typeName, testSize));
+            }
             return defaultTypeSizes[typeName];
         }
 
@@ -225,7 +264,12 @@ namespace SqlSiphon.Postgres
         {
             var state = base.GetFinalState(userName, password);
             var pgState = new PostgresDatabaseState(state);
-            pgState.AddExtension("uuid-ossp", "1.0");
+            var guidType = typeof(Guid);
+
+            if (pgState.TypeExists<Guid>())
+            {
+                pgState.AddExtension("uuid-ossp", "1.0");
+            }
             pgState.AddExtension("postgis", "2.1.1");
             pgState.Schemata.AddRange(pgState.Extensions.Keys.Where(e => !pgState.Schemata.Contains(e)));
             return pgState;

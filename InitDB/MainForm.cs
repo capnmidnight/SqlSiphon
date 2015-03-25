@@ -102,15 +102,20 @@ namespace InitDB
                         var vt = type.IsSubclassOf(pg) ? pg : ms;
                         dbType = vt == pg ? POSTGRES : SQL_SERVER;
                         this.IsPostgres = dbType == POSTGRES;
-                        var constructorParams = new[] { typeof(string) };
-                        var constructorArgs = new object[] { this.MakeConnectionString() };
+                        var constructorParams = new[] { typeof(string), typeof(string), typeof(string), typeof(string) };
+                        var constructorArgs = new object[] { this.serverTB.Text, this.databaseTB.Text, this.adminUserTB.Text, this.adminPassTB.Text };
                         var constructor = type.GetConstructor(constructorParams);
+
                         if (constructor != null)
                         {
                             connector = () => (ISqlSiphon)constructor.Invoke(constructorArgs);
                             break;
                         }
                     }
+                }
+                if (connector == null)
+                {
+                    throw new Exception("Couldn't find any types with a constructor that takes four string parameters (server, database, userName, password).");
                 }
             }
 
@@ -119,60 +124,6 @@ namespace InitDB
                 this.dbType.Text = dbType;
             }));
             return connector;
-        }
-
-        private string MakeConnectionString()
-        {
-            string connStr = null;
-            if (this.IsPostgres)
-            {
-                var builder = new Npgsql.NpgsqlConnectionStringBuilder
-                {
-                    Database = this.databaseTB.Text.ToLower()
-                };
-
-                if (!string.IsNullOrWhiteSpace(this.adminUserTB.Text)
-                    && !string.IsNullOrWhiteSpace(this.adminPassTB.Text))
-                {
-                    builder.UserName = this.adminUserTB.Text.Trim();
-                    builder.Add("Password", this.adminPassTB.Text.Trim());
-                }
-
-                var i = this.serverTB.Text.IndexOf(":");
-                if (i > -1)
-                {
-                    builder.Host = this.serverTB.Text.Substring(0, i);
-                    int port = 0;
-                    if (int.TryParse(this.serverTB.Text.Substring(i + 1), out port))
-                    {
-                        builder.Port = port;
-                    }
-                }
-                else
-                {
-                    builder.Host = this.serverTB.Text;
-                }
-
-                connStr = builder.ConnectionString;
-            }
-            else
-            {
-                var builder = new System.Data.SqlClient.SqlConnectionStringBuilder
-                {
-                    DataSource = this.serverTB.Text,
-                    InitialCatalog = this.databaseTB.Text
-                };
-
-                builder.IntegratedSecurity = string.IsNullOrWhiteSpace(this.adminUserTB.Text)
-                    || string.IsNullOrWhiteSpace(this.adminPassTB.Text);
-                if (!builder.IntegratedSecurity)
-                {
-                    builder.UserID = this.adminUserTB.Text.Trim();
-                    builder.Password = this.adminPassTB.Text.Trim();
-                }
-                connStr = builder.ConnectionString;
-            }
-            return connStr;
         }
 
         private void SyncUI(Action act)

@@ -17,7 +17,7 @@ namespace SqlSiphon
         event DataProgressEventHandler Progress;
 
         string DefaultSchemaName { get; }
-        int DefaultTypeSize(string typeName);
+        int DefaultTypeSize(string typeName, int testSize);
 
         List<string> GetSchemata();
         List<string> GetDatabaseLogins();

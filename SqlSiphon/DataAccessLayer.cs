@@ -132,12 +132,11 @@ namespace SqlSiphon
         /// opens the connection. 
         /// </summary>
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
-        private DataAccessLayer(ConnectionT connection, bool isConnectionOwned)
+        private DataAccessLayer(bool isConnectionOwned)
         {
             this.FKNameRegex = new Regex(
                 string.Format(@"add constraint \{0}([\w_]+)\{1}", IdentifierPartBegin, IdentifierPartEnd),
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            this.Connection = connection;
             this.isConnectionOwned = isConnectionOwned;
             var type = this.GetType();
             this.meta = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type) ?? new TableAttribute();
@@ -145,8 +144,15 @@ namespace SqlSiphon
         }
 
         protected DataAccessLayer(string connectionString)
-            : this(new ConnectionT { ConnectionString = connectionString }, true)
+            : this(true)
         {
+            SetConnection(connectionString);
+        }
+
+        protected DataAccessLayer(string server, string database, string userName, string password)
+            : this(true)
+        {
+            SetConnection(this.MakeConnectionString(server, database, userName, password));
         }
 
         /// <summary>
@@ -155,14 +161,29 @@ namespace SqlSiphon
         /// </summary>
         /// <param name="connection"></param>
         protected DataAccessLayer(ConnectionT connection)
-            : this(connection, false)
+            : this(false)
         {
+            this.SetConnection(connection);
         }
 
         protected DataAccessLayer(DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
-            : this(dal != null ? dal.Connection : null, false)
+            : this(false)
         {
+            this.SetConnection(dal != null ? dal.Connection : null);
         }
+
+        private void SetConnection(string connectionString)
+        {
+            this.SetConnection(new ConnectionT { ConnectionString = connectionString });
+        }
+
+        private void SetConnection(ConnectionT connection)
+        {
+            this.Connection = connection;
+        }
+
+
+        public abstract string MakeConnectionString(string server, string database, string user, string password);
 
         /// <summary>
         /// Cleans up the connection with the database.
@@ -804,7 +825,7 @@ AND COLUMN_NAME = @columnName;")]
         public abstract List<InformationSchema.KeyColumnUsage> GetKeyColumns();
 
         public abstract string DefaultSchemaName { get; }
-        public abstract int DefaultTypeSize(string typeName);
+        public abstract int DefaultTypeSize(string typeName, int testSize);
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);

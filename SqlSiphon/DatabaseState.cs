@@ -276,5 +276,12 @@ namespace SqlSiphon
         {
             return new DatabaseDelta(this, initial, dal);
         }
+
+        public bool TypeExists<T>()
+        {
+            var type = typeof(T);
+            return this.Functions.Values.Any(f => f.SystemType == type || f.Parameters.Any(p => p.SystemType == type))
+                || this.Tables.Values.SelectMany(t => t.Properties).Any(p => p.SystemType == type);
+        }
     }
 }
