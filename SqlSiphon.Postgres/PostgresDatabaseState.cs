@@ -5,7 +5,11 @@ using System.Text;
 
 namespace SqlSiphon.Postgres
 {
-    class PostgresDatabaseState : DatabaseState
+    /// <summary>
+    /// Extends the DatabaseState class with some features that are specific to
+    /// Postgres.
+    /// </summary>
+    internal class PostgresDatabaseState : DatabaseState
     {
         public Dictionary<string, pg_extension> Extensions { get; private set; }
         public PostgresDatabaseState(DatabaseState state)
@@ -16,9 +20,14 @@ namespace SqlSiphon.Postgres
 
         public override DatabaseDelta Diff(DatabaseState initial, ISqlSiphon dal)
         {
-            RemoveExtensionObjects(initial);
-            var delta = base.Diff(initial, dal);
             var pg = initial as PostgresDatabaseState;
+            if (pg != null)
+            {
+                RemoveExtensionObjects(pg);
+            }
+
+            var delta = base.Diff(initial, dal);
+
             if (pg != null)
             {
                 ProcessExtensions(dal, delta, pg.Extensions);
@@ -26,14 +35,14 @@ namespace SqlSiphon.Postgres
             return delta;
         }
 
-        private void RemoveExtensionObjects(DatabaseState initial)
+        private void RemoveExtensionObjects(PostgresDatabaseState pg)
         {
             var extSchema = this.Extensions.Keys.ToList();
-            RemoveExtensionObjects(extSchema, initial.Functions);
-            RemoveExtensionObjects(extSchema, initial.Indexes);
-            RemoveExtensionObjects(extSchema, initial.PrimaryKeys);
-            RemoveExtensionObjects(extSchema, initial.Relationships);
-            RemoveExtensionObjects(extSchema, initial.Tables);
+            RemoveExtensionObjects(extSchema, pg.Functions);
+            RemoveExtensionObjects(extSchema, pg.Indexes);
+            RemoveExtensionObjects(extSchema, pg.PrimaryKeys);
+            RemoveExtensionObjects(extSchema, pg.Relationships);
+            RemoveExtensionObjects(extSchema, pg.Tables);
         }
 
         private void RemoveExtensionObjects<T>(List<string> extSchema, Dictionary<string, T> collect) where T : SqlSiphon.Mapping.DatabaseObjectAttribute

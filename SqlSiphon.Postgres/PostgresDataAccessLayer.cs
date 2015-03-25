@@ -130,7 +130,7 @@ namespace SqlSiphon.Postgres
 
             defaultTypeSizes = new Dictionary<string, int>();
             defaultTypeSizes.Add("float8", 53);
-         
+
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
                 .ToDictionary(g => g.Key, g => g.First());
@@ -227,13 +227,7 @@ namespace SqlSiphon.Postgres
             var pgState = new PostgresDatabaseState(state);
             pgState.AddExtension("uuid-ossp", "1.0");
             pgState.AddExtension("postgis", "2.1.1");
-            foreach (var extName in pgState.Extensions.Keys)
-            {
-                if (!pgState.Schemata.Contains(extName))
-                {
-                    pgState.Schemata.Add(extName);
-                }
-            }
+            pgState.Schemata.AddRange(pgState.Extensions.Keys.Where(e => !pgState.Schemata.Contains(e)));
             return pgState;
         }
 
@@ -550,7 +544,7 @@ namespace SqlSiphon.Postgres
         {
             var queryBody = this.MakeRoutineBody(routine);
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var parameterSection = this.MakeParameterSection(routine).Replace("@", "_");;
+            var parameterSection = this.MakeParameterSection(routine).Replace("@", "_"); ;
             var query = string.Format(
 @"create or replace function {0}(
 {1}
@@ -612,7 +606,7 @@ end;", declarationString, queryBody);
         {
             var newName = name;
             if (typeMapping.ContainsKey(name) && reverseTypeMapping.ContainsKey(typeMapping[name]))
-            {                
+            {
                 newName = reverseTypeMapping[typeMapping[name]];
             }
             return newName;

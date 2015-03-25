@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.SqlServe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.Postgres", "SqlSiphon.Examples.Postgres\SqlSiphon.Examples.Postgres.csproj", "{E087B9C4-7C30-4E79-A236-0E42FE9F718D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.Tokenizer", "SqlSiphon.Examples.Tokenizer\SqlSiphon.Examples.Tokenizer.csproj", "{FEAAB017-2E08-433A-8527-6231510A6BCE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Tokenizer", "SqlSiphon.Tokenizer\SqlSiphon.Tokenizer.csproj", "{E4D140A3-37C7-4BDC-9819-3613DD061358}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,6 +143,30 @@ Global
 		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|x64.ActiveCfg = Release|Any CPU
 		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|x86.ActiveCfg = Release|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Release|x64.ActiveCfg = Release|Any CPU
+		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Release|x86.ActiveCfg = Release|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Release|x64.ActiveCfg = Release|Any CPU
+		{E4D140A3-37C7-4BDC-9819-3613DD061358}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
