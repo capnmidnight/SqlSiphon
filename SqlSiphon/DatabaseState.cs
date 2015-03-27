@@ -71,6 +71,7 @@ namespace SqlSiphon
             {
                 this.DatabaseLogins.Add(userName, password);
             }
+
             foreach (var type in types)
             {
                 var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
@@ -83,8 +84,8 @@ namespace SqlSiphon
                         this.Tables.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name), table);
                         if (table.Properties.Any(p => p.IncludeInPrimaryKey))
                         {
-                            var key = new PrimaryKey(type);
-                            this.PrimaryKeys.Add(dal.MakeIdentifier(key.Schema ?? dal.DefaultSchemaName, key.GetName(dal)), key);
+                            table.PrimaryKey = new PrimaryKey(type);
+                            this.PrimaryKeys.Add(dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.GetName(dal)), table.PrimaryKey);
                         }
                         foreach (var index in table.Indexes)
                         {
@@ -93,6 +94,7 @@ namespace SqlSiphon
                     }
                 }
             }
+
             foreach (var type in types)
             {
                 if (type.GetInterface("ISqlSiphon") != null)
@@ -114,6 +116,7 @@ namespace SqlSiphon
                         if (field.FieldType == rt)
                         {
                             var r = (Relationship)field.GetValue(null);
+                            r.ResolveColumns(this.Tables, dal);
                             var id = dal.MakeIdentifier(r.Schema ?? dal.DefaultSchemaName, r.GetName(dal));
                             this.Relationships.Add(id, r);
                         }

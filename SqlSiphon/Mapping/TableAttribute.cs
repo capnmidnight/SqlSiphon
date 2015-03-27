@@ -46,10 +46,11 @@ namespace SqlSiphon.Mapping
         AllowMultiple = false)]
     public class TableAttribute : DatabaseObjectAttribute
     {
+        public PrimaryKey PrimaryKey { get; set; }
         public List<ColumnAttribute> Properties { get; private set; }
         public Dictionary<int, string> EnumValues { get; private set; }
         public Dictionary<string, Index> Indexes { get; private set; }
-        
+
         public TableAttribute()
         {
             this.Properties = new List<ColumnAttribute>();

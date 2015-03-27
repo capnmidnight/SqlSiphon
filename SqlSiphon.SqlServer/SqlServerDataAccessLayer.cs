@@ -555,7 +555,7 @@ DROP INDEX {0} ON {1};",
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
             var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
-            var toColumns = string.Join(", ", relation.To.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
+            var toColumns = string.Join(", ", relation.To.PrimaryKey.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
 
             return string.Format(
 @"alter table {0} add constraint {1}
@@ -564,7 +564,7 @@ DROP INDEX {0} ON {1};",
                     this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
                     this.MakeIdentifier(relation.GetName(this)),
                     fromColumns,
-                    this.MakeIdentifier(relation.To.Table.Schema ?? DefaultSchemaName, relation.To.Table.Name),
+                    this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
                     toColumns);
         }
 
