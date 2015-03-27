@@ -73,56 +73,50 @@ namespace SqlSiphon
             }
             foreach (var type in types)
             {
-                AddType(type, dal);
-            }
-        }
-
-        public void AddType(Type type, ISqlSiphon dal)
-        {
-            var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
-            if (table != null)
-            {
-                table.InferProperties(type);
-                table.Schema = table.Schema ?? dal.DefaultSchemaName;
-                if (table.Include)
+                var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
+                if (table != null)
                 {
-                    this.Tables.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name), table);
-                    if (table.Properties.Any(p => p.IncludeInPrimaryKey))
+                    table.InferProperties(type);
+                    table.Schema = table.Schema ?? dal.DefaultSchemaName;
+                    if (table.Include)
                     {
-                        var key = new PrimaryKey(type);
-                        this.PrimaryKeys.Add(dal.MakeIdentifier(key.Schema ?? dal.DefaultSchemaName, key.GetName(dal)), key);
-                    }
-                    foreach (var index in table.Indexes)
-                    {
-                        this.Indexes.Add(index.Key, index.Value);
+                        this.Tables.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name), table);
+                        if (table.Properties.Any(p => p.IncludeInPrimaryKey))
+                        {
+                            var key = new PrimaryKey(type);
+                            this.PrimaryKeys.Add(dal.MakeIdentifier(key.Schema ?? dal.DefaultSchemaName, key.GetName(dal)), key);
+                        }
+                        foreach (var index in table.Indexes)
+                        {
+                            this.Indexes.Add(index.Key, index.Value);
+                        }
                     }
                 }
             }
-
-            if (type.GetInterface("ISqlSiphon") != null)
+            foreach (var type in types)
             {
-                var methods = type.GetMethods();
-                foreach (var method in methods)
+                if (type.GetInterface("ISqlSiphon") != null)
                 {
-                    var function = dal.GetCommandDescription(method);
-                    if (function != null)
+                    var methods = type.GetMethods();
+                    foreach (var method in methods)
                     {
-                        if (function.CommandType == System.Data.CommandType.StoredProcedure)
+                        var function = dal.GetCommandDescription(method);
+                        if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
                         {
                             this.Functions.Add(dal.MakeRoutineIdentifier(function), function);
                         }
                     }
-                }
 
-                var rt = typeof(Relationship);
-                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-                foreach (var field in fields)
-                {
-                    if (field.FieldType == rt)
+                    var rt = typeof(Relationship);
+                    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+                    foreach (var field in fields)
                     {
-                        var r = (Relationship)field.GetValue(null);
-                        var id = dal.MakeIdentifier(r.Schema ?? dal.DefaultSchemaName, r.GetName(dal));
-                        this.Relationships.Add(id, r);
+                        if (field.FieldType == rt)
+                        {
+                            var r = (Relationship)field.GetValue(null);
+                            var id = dal.MakeIdentifier(r.Schema ?? dal.DefaultSchemaName, r.GetName(dal));
+                            this.Relationships.Add(id, r);
+                        }
                     }
                 }
             }
@@ -224,7 +218,7 @@ namespace SqlSiphon
                     .ToList();
                 var routines = new Dictionary<string, InformationSchema.Routines>();
                 var exists = new List<InformationSchema.Routines>();
-                foreach(var prm in xxx)
+                foreach (var prm in xxx)
                 {
                     var ident = dal.MakeIdentifier(prm.specific_schema, prm.specific_name);
                     if (routines.ContainsKey(ident))
