@@ -13,6 +13,12 @@ namespace SqlSiphon.Examples.SqlServer
 {
     public class BasicDAL : SqlServerDataAccessLayer
     {
+        public static Relationship FK_UsersInRoles_to_Users = new Relationship(typeof(UsersInRoles), typeof(Users));
+        public static Relationship FK_UsersInRoles_to_Roles = new Relationship(typeof(UsersInRoles), typeof(Roles));
+        public static Relationship FK_Roles_to_Applications = new Relationship(typeof(Roles), typeof(Applications));
+        public static Relationship FK_Membership_To_Users = new Relationship(typeof(Membership), typeof(Users));
+        public static Relationship FK_Membership_To_Applications = new Relationship(typeof(Membership), typeof(Applications));
+
         public BasicDAL(string server, string database, string userName, string password)
             : base(server, database, userName, password)
         {
@@ -26,44 +32,6 @@ namespace SqlSiphon.Examples.SqlServer
         public void CreateApplication(string applicationName, string description)
         {
             this.Execute(applicationName, description);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.StoredProcedure,
-            Query =
-@"select 
-    U.UserID, 
-    U.UserName,
-    M.Email,
-    R.RoleID,
-    R.RoleName,
-    RT.RoleTypeID,
-    RT.RoleTypeName
-from Users U
-    inner join Membership M on M.UserId = U.UserId 
-    left outer join UsersInRoles UR on U.UserID = UR.UserID
-    left outer join Roles R on UR.RoleID = R.RoleID
-    left outer join RoleTypesForRoles RTR on R.RoleID = RTR.RoleID
-    left outer join RoleTypes RT on RTR.RoleTypeID = RT.RoleTypeID
-union
-select 
-    U.UserID, 
-    U.UserName,
-    M.Email,
-    R.RoleID,
-    R.RoleName,
-    RT.RoleTypeID,
-    RT.RoleTypeName
-from Users U
-    join Membership M on U.UserID = M.UserID
-    join UsersInRoles UR on U.UserID = UR.UserID
-    join RoleHierarchy RH on UR.RoleId = RH.RoleID
-    join Roles R on R.RoleID = RH.ParentRoleID
-    join RoleTypesForRoles RTR on R.RoleID = RTR.RoleID
-    join RoleTypes RT on RTR.RoleTypeID = RT.RoleTypeID;")]
-        public List<UserWithRole> GetUsersWithRoles()
-        {
-            return this.GetList<UserWithRole>();
         }
 
 
@@ -181,9 +149,7 @@ VALUES
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-INSERT INTO Membership
+@"INSERT INTO Membership
     (UserId,
     ApplicationId,
     Password, 
@@ -204,9 +170,9 @@ INSERT INTO Membership
     FailedPasswordAttemptWindowStart,
     FailedPasswordAnswerAttemptCount, 
     FailedPasswordAnswerAttemptWindowStart)
-values (
+select
     @userId,
-    @applicationId,
+    ApplicationID,
     @password, 
     @passwordSalt,
     @email, 
@@ -224,7 +190,8 @@ values (
     0,
     @creationDate,
     0,
-    @creationDate);")]
+    @creationDate
+from Applications where ApplicationName = @applicationName;")]
         public MembershipUser CreateMembershipUser(Guid userId,
                                 string password,
                                 string passwordSalt,
@@ -236,10 +203,6 @@ values (
                                 string applicationName,
                                 bool isLockedOut)
         {
-            //DateTime creationDate = DateTime.Now;
-            //string comments = string.Empty;
-            //bool isLockedOut = false;
-
             this.Execute(userId,
                         password,
                         passwordSalt,
@@ -706,5 +669,6 @@ delete from UsersInRoles where UserID = @UserID and RoleID = @RoleID;")]
         {
             return this.GetList<string>("Username", userNameToMatch, rolename).ToArray();
         }
+
     }
 }
