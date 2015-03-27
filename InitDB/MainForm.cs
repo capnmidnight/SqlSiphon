@@ -361,8 +361,7 @@ namespace InitDB
             {
                 succeeded = this.RunCommandLineQuery(
                     script.Script,
-                    script.ScriptType == ScriptType.InstallExtension ? DatabaseName : null,
-                    false);
+                    script.ScriptType == ScriptType.InstallExtension ? DatabaseName : null);
 
                 if (script.ScriptType == ScriptType.CreateDatabaseLogin
                     && succeeded
@@ -382,31 +381,20 @@ namespace InitDB
             return succeeded;
         }
 
-        private bool RunCommandLineQuery(string qry, string database, bool isFile)
+        private bool RunCommandLineQuery(string qry, string database)
         {
-            if (isFile && !File.Exists(qry))
+            qry = qry.Replace("\"", "\\\"");
+            if (this.IsPostgres)
             {
-                this.ToError(string.Format("Tried running script from file \"{0}\", but it doesn't exist!", qry));
-                return false;
+                return RunQueryWithPSQL(qry, database);
             }
             else
             {
-                if (!isFile)
-                {
-                    qry = qry.Replace("\"", "\\\"");
-                }
-                if (this.IsPostgres)
-                {
-                    return RunQueryWithPSQL(qry, database, isFile);
-                }
-                else
-                {
-                    return RunQueryWithSQLCMD(qry, database, isFile);
-                }
+                return RunQueryWithSQLCMD(qry, database);
             }
         }
 
-        private bool RunQueryWithPSQL(string qry, string database, bool isFile)
+        private bool RunQueryWithPSQL(string qry, string database)
         {
             if (string.IsNullOrWhiteSpace(adminUserTB.Text) || string.IsNullOrWhiteSpace(adminPassTB.Text))
             {
@@ -461,7 +449,7 @@ namespace InitDB
                     }
                 }
 
-                var succeeded = RunProcess(this.optionsDialog.PSQLPath, "-h " + server, string.IsNullOrWhiteSpace(port) ? null : "-p " + port, "-U " + adminUserTB.Text, string.Format(" -{0} \"{1}\"", isFile ? "f" : "c", qry), (database != null) ? "-d " + database : null);
+                var succeeded = RunProcess(this.optionsDialog.PSQLPath, "-h " + server, string.IsNullOrWhiteSpace(port) ? null : "-p " + port, "-U " + adminUserTB.Text, string.Format(" -{0} \"{1}\"", "c", qry), (database != null) ? "-d " + database : null);
 
                 // put everything back the way it was
                 if (lineAdded)
@@ -480,9 +468,9 @@ namespace InitDB
             }
         }
 
-        private bool RunQueryWithSQLCMD(string qry, string database, bool isFile)
+        private bool RunQueryWithSQLCMD(string qry, string database)
         {
-            return RunProcess(this.optionsDialog.SQLCMDPath, "-S " + serverTB.Text, string.IsNullOrWhiteSpace(adminUserTB.Text) ? null : "-U " + adminUserTB.Text, string.IsNullOrWhiteSpace(adminPassTB.Text) ? null : "-P " + adminPassTB.Text, (database != null) ? "-d " + database : null, string.Format(" -{0} \"{1}\"", isFile ? "i" : "Q", qry));
+            return RunProcess(this.optionsDialog.SQLCMDPath, "-S " + serverTB.Text, string.IsNullOrWhiteSpace(adminUserTB.Text) ? null : "-U " + adminUserTB.Text, string.IsNullOrWhiteSpace(adminPassTB.Text) ? null : "-P " + adminPassTB.Text, (database != null) ? "-d " + database : null, string.Format(" -{0} \"{1}\"", "Q", qry));
         }
 
         private DatabaseDelta CreateDelta(ISqlSiphon db)
@@ -792,11 +780,7 @@ namespace InitDB
                 {
                     script = script.Substring(this.generalScriptTB.SelectionStart, this.generalScriptTB.SelectionLength);
                 }
-                var scriptObj = new ScriptStatus(ScriptType.None, "general", script);
-                using (var db = this.MakeDatabaseConnection())
-                {
-                    this.RunScript(scriptObj, true, db);
-                }
+                this.RunCommandLineQuery(script, DatabaseName);
             }
         }
 
