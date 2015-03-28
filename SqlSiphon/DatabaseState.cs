@@ -140,11 +140,6 @@ namespace SqlSiphon
             : this()
         {
             this.CatalogueName = catalogueName;
-            this.ReadDatabaseState(filter, dal);
-        }
-
-        public void ReadDatabaseState(Regex filter, ISqlSiphon dal)
-        {
             try
             {
                 foreach (var name in dal.GetDatabaseLogins())
@@ -187,7 +182,8 @@ namespace SqlSiphon
                         var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : new InformationSchema.KeyColumnUsage[] { };
                         var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : new InformationSchema.ConstraintColumnUsage[] { };
                         var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : new InformationSchema.IndexColumnUsage[] { };
-                        this.Tables.Add(tableName, new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal));
+                        var table = new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal);
+                        this.Tables.Add(tableName, table);
                         if (tableConstraints != null)
                         {
                             foreach (var constraint in tableConstraints)
@@ -209,13 +205,15 @@ namespace SqlSiphon
                                     }
                                     else if (constraint.constraint_type == "PRIMARY KEY")
                                     {
-                                        this.PrimaryKeys.Add(constraintName, new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal));
+                                        table.PrimaryKey = new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal);
+                                        this.PrimaryKeys.Add(constraintName, table.PrimaryKey);
                                     }
                                 }
                             }
                         }
                     }
                 }
+
                 var xxx = dal.GetRoutines()
                     .Where(r => filter == null || !filter.IsMatch(r.routine_name))
                     .ToList();

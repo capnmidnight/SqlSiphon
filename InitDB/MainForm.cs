@@ -699,39 +699,47 @@ namespace InitDB
 
         private void scriptGV_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            Task.Run(() =>
+            var gv = sender as DataGridView;
+            if (gv != null)
             {
-                this.SyncUI(() =>
+                gv.Enabled = false;
+                Task.Run(() =>
                 {
-                    pendingScriptsGV.Enabled = false;
-                    WithErrorCapture(() =>
+                    this.SyncUI(() =>
                     {
-                        var col = pendingScriptScriptColumn.Index;
-                        var row = pendingScriptsGV.Rows[e.RowIndex];
-                        var scriptCell = row.Cells[col];
-                        var script = (string)scriptCell.Value;
-                        Application.DoEvents();
-                        if (e.ColumnIndex == pendingScriptNameColumn.Index)
+                        WithErrorCapture(() =>
                         {
-                            scriptCell.Value = viewScript.Prompt(script);
-                        }
-                        else if (e.ColumnIndex == pendingScriptRunButtonColumn.Index)
-                        {
-                            using (var db = this.MakeDatabaseConnection())
+                            var row = gv.Rows[e.RowIndex];
+                            var scriptObject = (ScriptStatus)row.DataBoundItem;
+                            var selectedCell = row.Cells[e.ColumnIndex];
+                            var stringValue = selectedCell.Value as string;
+                            Application.DoEvents();
+                            if (stringValue == scriptObject.Script)
                             {
-                                RunScript((ScriptStatus)row.DataBoundItem, true, db);
+                                var newScript = viewScript.Prompt(scriptObject.Script);
+                                if (gv == pendingScriptsGV)
+                                {
+                                    selectedCell.Value = newScript;
+                                }
                             }
-                            pendingScriptsGV.Rows.RemoveAt(e.RowIndex);
-                        }
-                        return true;
-                    }, (exp) =>
-                    {
-                        this.tabControl1.SelectedTab = this.tabStdErr;
-                        return string.Format("{0}: {1}", exp.GetType().Name, exp.Message);
+                            else if (gv == pendingScriptsGV && stringValue == "run")
+                            {
+                                using (var db = this.MakeDatabaseConnection())
+                                {
+                                    RunScript(scriptObject, true, db);
+                                }
+                                gv.Rows.RemoveAt(e.RowIndex);
+                            }
+                            return true;
+                        }, (exp) =>
+                        {
+                            this.tabControl1.SelectedTab = this.tabStdErr;
+                            return string.Format("{0}: {1}", exp.GetType().Name, exp.Message);
+                        });
                     });
-                    pendingScriptsGV.Enabled = true;
                 });
-            });
+                gv.Enabled = true;
+            }
         }
 
         private void optionsBtn_Click(object sender, EventArgs e)
