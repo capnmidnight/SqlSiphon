@@ -72,8 +72,16 @@ namespace SqlSiphon
                 this.DatabaseLogins.Add(userName, password);
             }
 
+            var relationships = new List<Relationship>();
+            var methodDefTypes = new List<Type>();
+
             foreach (var type in types)
             {
+                if (type.GetInterface("ISqlSiphon") != null)
+                {
+                    methodDefTypes.Add(type);
+                }
+
                 var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
                 if (table != null)
                 {
@@ -93,33 +101,34 @@ namespace SqlSiphon
                         }
                     }
                 }
+
+                var rt = typeof(Relationship);
+                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+                foreach (var field in fields)
+                {
+                    if (field.FieldType == rt)
+                    {
+                        relationships.Add((Relationship)field.GetValue(null));
+                    }
+                }
             }
 
-            foreach (var type in types)
+            foreach (var relationship in relationships)
             {
-                if (type.GetInterface("ISqlSiphon") != null)
-                {
-                    var methods = type.GetMethods();
-                    foreach (var method in methods)
-                    {
-                        var function = dal.GetCommandDescription(method);
-                        if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
-                        {
-                            this.Functions.Add(dal.MakeRoutineIdentifier(function), function);
-                        }
-                    }
+                relationship.ResolveColumns(this.Tables, dal);
+                var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.GetName(dal));
+                this.Relationships.Add(id, relationship);
+            }
 
-                    var rt = typeof(Relationship);
-                    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-                    foreach (var field in fields)
+            foreach (var type in methodDefTypes)
+            {
+                var methods = type.GetMethods();
+                foreach (var method in methods)
+                {
+                    var function = dal.GetCommandDescription(method);
+                    if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
                     {
-                        if (field.FieldType == rt)
-                        {
-                            var r = (Relationship)field.GetValue(null);
-                            r.ResolveColumns(this.Tables, dal);
-                            var id = dal.MakeIdentifier(r.Schema ?? dal.DefaultSchemaName, r.GetName(dal));
-                            this.Relationships.Add(id, r);
-                        }
+                        this.Functions.Add(dal.MakeRoutineIdentifier(function), function);
                     }
                 }
             }

@@ -13,12 +13,6 @@ namespace SqlSiphon.Examples.Postgres
 {
     public class BasicDAL : PostgresDataAccessLayer
     {
-        public static Relationship FK_UsersInRoles_to_Users = new Relationship(typeof(UsersInRoles), typeof(Users));
-        public static Relationship FK_UsersInRoles_to_Roles = new Relationship(typeof(UsersInRoles), typeof(Roles));
-        public static Relationship FK_Roles_to_Applications = new Relationship(typeof(Roles), typeof(Applications));
-        public static Relationship FK_Membership_To_Users = new Relationship(typeof(Membership), typeof(Users));
-        public static Relationship FK_Membership_To_Applications = new Relationship(typeof(Membership), typeof(Applications));
-
         public BasicDAL(string server, string database, string userName, string password)
             : base(server, database, userName, password)
         {
