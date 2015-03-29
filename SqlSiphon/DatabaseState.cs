@@ -102,6 +102,15 @@ namespace SqlSiphon
                     }
                 }
 
+                var fks = DatabaseObjectAttribute.GetAttributes<FKAttribute>(type);
+                if (fks != null)
+                {
+                    foreach (var fk in fks)
+                    {
+                        relationships.Add(fk.MakeRelationshipObject(type));
+                    }
+                }
+
                 var rt = typeof(Relationship);
                 var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
                 foreach (var field in fields)

@@ -52,10 +52,13 @@ namespace SqlSiphon.Mapping
 
         public Relationship(string prefix, Type fromType, Type toType, params string[] fromColumns)
         {
-            this.Prefix = prefix;
+            this.Prefix = prefix ?? "";
             this.toType = toType;
             this.fromType = fromType;
-            this.fromColumnNames = fromColumns;
+            if (fromColumnNames != null && fromColumnNames.Length > 0)
+            {
+                this.fromColumnNames = fromColumns;
+            }
         }
 
         public void ResolveColumns(Dictionary<string, TableAttribute> tables, ISqlSiphon dal)

@@ -4,11 +4,10 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon.Examples.SqlServer
 {
     [Table]
+    [FK(typeof(Users))]
+    [FK(typeof(Applications), "ApplicationID")]
     public class Membership
     {
-        public static Relationship FK_Membership_To_Users = new Relationship(typeof(Membership), typeof(Users));
-        public static Relationship FK_Membership_To_Applications = new Relationship(typeof(Membership), typeof(Applications));
-
         [PK]
         public Guid UserID { get; set; }
         public Guid ApplicationID { get; set; }

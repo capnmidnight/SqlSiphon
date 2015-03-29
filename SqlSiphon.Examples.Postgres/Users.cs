@@ -4,6 +4,7 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon.Examples.Postgres
 {
     [Table]
+    [FK(typeof(Applications))]
     public class Users
     {
         [PK]
@@ -15,7 +16,7 @@ namespace SqlSiphon.Examples.Postgres
         public string LoweredUserName { get; set; }
         [Column(Size = 16, IsOptional = true)]
         public string MobileAlias { get; set; }
-        [Column(IsOptional = true, DefaultValue= "false")]
+        [Column(IsOptional = true, DefaultValue = "false")]
         public bool IsAnonymous { get; set; }
         public DateTime LastActivityDate { get; set; }
     }

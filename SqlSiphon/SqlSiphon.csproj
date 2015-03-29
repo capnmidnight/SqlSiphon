@@ -71,6 +71,7 @@
     <Compile Include="Mapping\AutoPKAttribute.cs" />
     <Compile Include="DatabaseState.cs" />
     <Compile Include="Mapping\IncludeInIndexAttribute.cs" />
+    <Compile Include="Mapping\ForiengKeyAttribute.cs" />
     <Compile Include="Mapping\TableAttribute.cs" />
     <Compile Include="Mapping\RoutineAttribute.cs" />
     <Compile Include="Mapping\DatabaseObjectAttribute.cs" />

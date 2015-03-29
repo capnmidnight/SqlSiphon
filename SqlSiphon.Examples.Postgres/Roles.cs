@@ -4,10 +4,9 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon.Examples.Postgres
 {
     [Table]
+    [FK(typeof(Applications))]
     public class Roles
     {
-        public static Relationship FK_Roles_to_Applications = new Relationship(typeof(Roles), typeof(Applications));
-        
         [PK]
         public Guid RoleID { get; set; }
         public Guid ApplicationID { get; set; }
