@@ -10,10 +10,10 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Examples
 {
-    public class BasicDAL<T> : DataConnector<T> where T : IDataConnectorFactory, new()
+    public class BasicDAL : DataConnector
     {
-        public BasicDAL(string server, string database, string userName, string password) :
-            base(server, database, userName, password)
+        public BasicDAL(IDataConnectorFactory factory, string server, string database, string userName, string password) :
+            base(factory, server, database, userName, password)
         {
         }
 

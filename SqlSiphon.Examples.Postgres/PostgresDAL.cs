@@ -11,10 +11,10 @@ using SqlSiphon.Postgres;
 
 namespace SqlSiphon.Examples.Postgres
 {
-    public class PostgresDAL : BasicDAL<PostgresDataConnectorFactory>
+    public class PostgresDAL : BasicDAL
     {
         public PostgresDAL(string server, string database, string userName, string password)
-            : base(server, database, userName, password)
+            : base(new PostgresDataConnectorFactory(), server, database, userName, password)
         {
         }
     }

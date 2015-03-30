@@ -7,12 +7,12 @@ using System.Data.Common;
 
 namespace SqlSiphon
 {
-    public abstract class DataConnector<T> : IDataConnector where T: IDataConnectorFactory, new()
+    public abstract class DataConnector : IDataConnector
     {
         private IDataConnector connector;
-        protected DataConnector(string server, string database, string userName, string password)
+        protected DataConnector(IDataConnectorFactory factory, string server, string database, string userName, string password)
         {
-            this.connector = new T().MakeConnector(server, database, userName, password);
+            this.connector = factory.MakeConnector(server, database, userName, password);
         }
 
         public void Dispose()

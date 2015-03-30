@@ -11,10 +11,10 @@ using SqlSiphon.SqlServer;
 
 namespace SqlSiphon.Examples.SqlServer
 {
-    public class SqlServerDAL: BasicDAL<SqlServerDataConnectorFactory>
+    public class SqlServerDAL: BasicDAL
     {
         public SqlServerDAL(string server, string database, string userName, string password)
-            : base(server, database, userName, password)
+            : base(new SqlServerDataConnectorFactory(), server, database, userName, password)
         {
         }
     }
