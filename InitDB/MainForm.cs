@@ -329,7 +329,7 @@ namespace InitDB
             }
         }
 
-        private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
+        private bool RunScripts(IEnumerable<ScriptStatus> scripts, IDatabaseStateWriter db)
         {
             return WithErrorCapture(() =>
             {
@@ -344,7 +344,7 @@ namespace InitDB
             });
         }
 
-        private bool RunScript(ScriptStatus script, bool selectTab, ISqlSiphon db)
+        private bool RunScript(ScriptStatus script, bool selectTab, IDatabaseStateWriter db)
         {
             bool succeeded = true;
             if (selectTab)
@@ -478,7 +478,7 @@ namespace InitDB
             var r = ObjectFilter;
             var initial = db.GetInitialState(this.databaseTB.Text, r);
             var final = db.GetFinalState(this.sqlUserTB.Text, this.sqlPassTB.Text);
-            return final.Diff(initial, db);
+            return final.Diff(initial, db, db);
         }
 
         private string DatabaseName
@@ -727,6 +727,14 @@ namespace InitDB
                                 using (var db = this.MakeDatabaseConnection())
                                 {
                                     RunScript(scriptObject, true, db);
+                                }
+                                gv.Rows.RemoveAt(e.RowIndex);
+                            }
+                            else if (gv == pendingScriptsGV && stringValue == "skip")
+                            {
+                                using (var db = this.MakeDatabaseConnection())
+                                {
+                                    db.MarkScriptAsRan(scriptObject);
                                 }
                                 gv.Rows.RemoveAt(e.RowIndex);
                             }

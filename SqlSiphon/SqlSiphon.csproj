@@ -55,6 +55,11 @@
   <ItemGroup>
     <Compile Include="BoundObject.cs" />
     <Compile Include="DatabaseDelta.cs" />
+    <Compile Include="IAssemblyStateReader.cs" />
+    <Compile Include="IDatabaseObjectHandler.cs" />
+    <Compile Include="IDatabaseScriptGenerator.cs" />
+    <Compile Include="IDatabaseStateReader.cs" />
+    <Compile Include="IDatabaseStateWriter.cs" />
     <Compile Include="IEnumerabledExt.cs" />
     <Compile Include="InformationSchema\Typed.cs" />
     <Compile Include="InformationSchema\IndexColumnUsage.cs" />

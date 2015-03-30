@@ -18,7 +18,7 @@ namespace SqlSiphon.Postgres
             this.Extensions = new Dictionary<string, pg_extension>();
         }
 
-        public override DatabaseDelta Diff(DatabaseState initial, ISqlSiphon dal)
+        public override DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator dal)
         {
             var pg = initial as PostgresDatabaseState;
             if (pg != null)
@@ -26,7 +26,7 @@ namespace SqlSiphon.Postgres
                 RemoveExtensionObjects(pg);
             }
 
-            var delta = base.Diff(initial, dal);
+            var delta = base.Diff(initial, asm, dal);
 
             if (pg != null)
             {
@@ -56,7 +56,7 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        private void ProcessExtensions(ISqlSiphon dal, DatabaseDelta delta, Dictionary<string, pg_extension> extensions)
+        private void ProcessExtensions(IDatabaseObjectHandler dal, DatabaseDelta delta, Dictionary<string, pg_extension> extensions)
         {
             foreach (var ext in this.Extensions)
             {

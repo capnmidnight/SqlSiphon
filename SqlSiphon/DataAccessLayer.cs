@@ -242,22 +242,28 @@ namespace SqlSiphon
         public void AlterDatabase(ScriptStatus script)
         {
             this.ExecuteQuery(script.Script);
-            try
+            if (script.ScriptType == ScriptType.InitializeData)
             {
-                this.MarkScriptAsRan(script);
-            }
-            catch (DbException exp)
-            {
-                if (!exp.Message.ToLower().Contains("scriptstatus"))
+                try
                 {
-                    throw;
+                    this.MarkScriptAsRan(script);
+                }
+                catch (DbException exp)
+                {
+                    if (!exp.Message.ToLower().Contains("scriptstatus"))
+                    {
+                        throw;
+                    }
                 }
             }
         }
 
         public void MarkScriptAsRan(ScriptStatus script)
         {
-            this.Insert(new ScriptStatus[] { script });
+            if (script.ScriptType == ScriptType.InitializeData)
+            {
+                this.Insert(script);
+            }
         }
 
 
@@ -268,7 +274,19 @@ namespace SqlSiphon
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
-        public virtual void Insert<T>(IEnumerable<T> data)
+        public virtual void Insert<T>(params T[] data)
+        {
+            this.InsertAll(data.AsEnumerable());
+        }
+
+        /// <summary>
+        /// Performs a basic insert operation for a collection of data. By default, this will perform poorly, as it does
+        /// a naive INSERT statement for each element of the array. It is meant as a base implementation that can be overridden
+        /// in deriving classes to support their vendor's bulk-insert operation.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        public virtual void InsertAll<T>(IEnumerable<T> data)
         {
             if (data != null)
             {
@@ -340,7 +358,7 @@ namespace SqlSiphon
             if (method == null)
                 throw new Exception("Could not find a mapped method!");
 
-            var meta = GetCommandDescription(method);
+            var meta = RoutineAttribute.GetCommandDescription(method);
 
             // since the parameters array was passed to this method by the mapped method, the mapped
             // method has the responsibility to pass the parameters in the same order they are
@@ -622,26 +640,11 @@ namespace SqlSiphon
             var results = new List<RoutineAttribute>();
             foreach (var method in methods)
             {
-                var info = this.GetCommandDescription(method);
+                var info = RoutineAttribute.GetCommandDescription(method);
                 if (info != null)
                     results.Add(info);
             }
             return results;
-        }
-
-        public RoutineAttribute GetCommandDescription(MethodInfo method)
-        {
-            var meta = DatabaseObjectAttribute.GetAttribute<RoutineAttribute>(method);
-            if (meta != null)
-            {
-                if (meta.CommandType == CommandType.TableDirect)
-                    throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
-                meta.InferProperties(method);
-
-                if (meta.Schema == null)
-                    meta.Schema = DefaultSchemaName;
-            }
-            return meta;
         }
 
         private void Process<T>(List<T> collection, Func<T, string> makeMessage, Action<T> action)
@@ -676,7 +679,7 @@ AND COLUMN_NAME = @columnName;")]
             var asm = this.GetType().Assembly;
             var types = asm.GetTypes().ToList();
             types.Insert(0, typeof(ScriptStatus));
-            var final = new DatabaseState(types, this, userName, password);
+            var final = new DatabaseState(types, this, this, userName, password);
             return final;
         }
 

@@ -456,17 +456,15 @@ namespace SqlSiphon.Postgres
                 finalType = typeof(int);
             }
             var tests = new bool[]{
-                final.Include == initial.Include,
-                final.IsIdentity == initial.IsIdentity,
-                final.IsOptional == initial.IsOptional,
-                final.Name.ToLower() == initial.Name.ToLower(),
-                finalType == initial.SystemType,
-                final.Table != null,
-                initial.Table != null,
-                final.Table.Schema.ToLower() == initial.Table.Schema.ToLower(),
-                final.Table.Name.ToLower() == initial.Table.Name.ToLower()
+                final.Include != initial.Include,
+                final.IsIdentity != initial.IsIdentity,
+                final.IsOptional != initial.IsOptional,
+                final.Name.ToLower() != initial.Name.ToLower(),
+                finalType != initial.SystemType,
+                final.Table.Schema.ToLower() != initial.Table.Schema.ToLower(),
+                final.Table.Name.ToLower() != initial.Table.Name.ToLower()
             };
-            var unchanged = tests.Aggregate((a, b) => a && b);
+            var changed = tests.Any(a => a);
             if (final.SystemType == initial.SystemType)
             {
                 if (final.DefaultValue != null
@@ -501,18 +499,18 @@ namespace SqlSiphon.Postgres
                     {
                         initial.DefaultValue = final.DefaultValue;
                     }
-                    unchanged = unchanged && valuesMatch;
+                    changed = changed || !valuesMatch;
                 }
 
                 if (final.Size != initial.Size)
                 {
-                    if (final.SystemType != typeof(double) || final.IsSizeSet || initial.Size != 53)
+                    if (final.SystemType != typeof(double) || final.IsSizeSet || initial.Size != this.DefaultTypeSize(final.SqlType, initial.Size))
                     {
-                        unchanged = false;
+                        changed = true;
                     }
                 }
             }
-            return !unchanged;
+            return changed;
         }
 
         protected override string MakeParameterString(ParameterAttribute param)

@@ -77,7 +77,7 @@ namespace SqlSiphon.Mapping
             this.IncludeInPrimaryKey = false;
         }
 
-        public ColumnAttribute(TableAttribute table, InformationSchema.Columns column, bool includeInPK, ISqlSiphon dal)
+        public ColumnAttribute(TableAttribute table, InformationSchema.Columns column, bool includeInPK, IDatabaseStateReader dal)
         {
             this.Table = table;
             this.Name = column.column_name;

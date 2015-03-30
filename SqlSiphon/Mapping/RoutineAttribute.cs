@@ -88,7 +88,7 @@ namespace SqlSiphon.Mapping
             this.EnableTransaction = false;
         }
 
-        public RoutineAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, ISqlSiphon dal)
+        public RoutineAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, IDatabaseStateReader dal)
         {
             this.Schema = routine.routine_schema;
             this.Name = routine.routine_name;
@@ -121,6 +121,18 @@ namespace SqlSiphon.Mapping
                 ?? new ParameterAttribute();
             attr.InferProperties(parameter);
             return attr;
+        }
+
+        public static RoutineAttribute GetCommandDescription(MethodInfo method)
+        {
+            var meta = DatabaseObjectAttribute.GetAttribute<RoutineAttribute>(method);
+            if (meta != null)
+            {
+                if (meta.CommandType == CommandType.TableDirect)
+                    throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
+                meta.InferProperties(method);
+            }
+            return meta;
         }
 
         /// <summary>

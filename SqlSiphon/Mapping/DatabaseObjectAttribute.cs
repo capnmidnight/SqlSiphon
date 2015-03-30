@@ -285,7 +285,7 @@ namespace SqlSiphon.Mapping
             this.SetSystemType(obj);
         }
 
-        protected void InferTypeInfo(InformationSchema.Typed obj, string sqlType, ISqlSiphon dal)
+        protected void InferTypeInfo(InformationSchema.Typed obj, string sqlType, IDatabaseStateReader dal)
         {
             this.SqlType = sqlType;
             if (this.SqlType[0] == '_')

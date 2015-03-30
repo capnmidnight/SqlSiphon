@@ -64,7 +64,7 @@ namespace SqlSiphon.Mapping
             InformationSchema.KeyColumnUsage[] keyColumns,
             InformationSchema.ConstraintColumnUsage[] constraintColumns,
             InformationSchema.IndexColumnUsage[] indexedColumns,
-            ISqlSiphon dal)
+            IDatabaseStateReader dal)
             : this()
         {
             var testColumn = columns.First();

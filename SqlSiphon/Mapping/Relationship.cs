@@ -23,7 +23,7 @@ namespace SqlSiphon.Mapping
             InformationSchema.TableConstraints uniqueConstraint,
             InformationSchema.ConstraintColumnUsage[] uniqueConstraintColumns,
             InformationSchema.Columns[] uniqueTableColumns,
-            ISqlSiphon dal)
+            IDatabaseStateReader dal)
         {
             this.Schema = constraint.constraint_schema;
             this.Name = constraint.constraint_name;
@@ -61,7 +61,7 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public void ResolveColumns(Dictionary<string, TableAttribute> tables, ISqlSiphon dal)
+        public void ResolveColumns(Dictionary<string, TableAttribute> tables, IDatabaseScriptGenerator dal)
         {
             this.To = tables.Values.Where(t => t.SystemType == this.toType).FirstOrDefault();
             this.From = tables.Values.Where(t => t.SystemType == this.fromType).FirstOrDefault();
@@ -113,7 +113,7 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public string GetName(ISqlSiphon dal)
+        public string GetName(IDatabaseScriptGenerator dal)
         {
             return this.Name ?? string.Format(
                 "fk_{0}_from_{1}_{2}_{3}",

@@ -756,7 +756,7 @@ where constraint_schema != 'information_schema';")]
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
-        public override void Insert<T>(IEnumerable<T> data)
+        public override void InsertAll<T>(IEnumerable<T> data)
         {
             if (data != null)
             {
@@ -774,7 +774,7 @@ where constraint_schema != 'information_schema';")]
                 var usesVarBinary = tableData.Columns.Cast<DataColumn>().Any(c => c.DataType == typeof(byte[]));
                 if (IsOnMonoRuntime && usesVarBinary)
                 {
-                    base.Insert(data);
+                    base.InsertAll(data);
                 }
                 else
                 {

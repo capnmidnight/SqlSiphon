@@ -67,7 +67,7 @@ namespace SqlSiphon.Mapping
 
         public ParameterAttribute() {}
 
-        public ParameterAttribute(InformationSchema.Parameters parameter, ISqlSiphon dal)
+        public ParameterAttribute(InformationSchema.Parameters parameter, IDatabaseStateReader dal)
         {
             this.Include = true;
 

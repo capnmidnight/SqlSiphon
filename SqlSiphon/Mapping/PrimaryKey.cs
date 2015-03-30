@@ -26,7 +26,7 @@ namespace SqlSiphon.Mapping
             InformationSchema.TableConstraints uniqueConstraint,
             InformationSchema.ConstraintColumnUsage[] uniqueConstraintColumns,
             InformationSchema.Columns[] uniqueTableColumns,
-            ISqlSiphon dal)
+            IDatabaseStateReader dal)
         {
             this.Schema = constraint.constraint_schema;
             this.Name = constraint.constraint_name;
@@ -47,7 +47,7 @@ namespace SqlSiphon.Mapping
                 .ToArray();
         }
 
-        public string GetName(ISqlSiphon dal)
+        public string GetName(IDatabaseScriptGenerator dal)
         {
             return this.Name ?? string.Format(
                 "pk_{0}_{1}",

@@ -64,7 +64,7 @@ namespace SqlSiphon
         /// mappings to database objects.
         /// </summary>
         /// <param name="asm"></param>
-        public DatabaseState(IEnumerable<Type> types, ISqlSiphon dal, string userName, string password)
+        public DatabaseState(IEnumerable<Type> types, IAssemblyStateReader asm, IDatabaseScriptGenerator dal, string userName, string password)
             : this()
         {
             if (!string.IsNullOrWhiteSpace(userName))
@@ -134,7 +134,7 @@ namespace SqlSiphon
                 var methods = type.GetMethods();
                 foreach (var method in methods)
                 {
-                    var function = dal.GetCommandDescription(method);
+                    var function = RoutineAttribute.GetCommandDescription(method);
                     if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
                     {
                         this.Functions.Add(dal.MakeRoutineIdentifier(function), function);
@@ -142,12 +142,19 @@ namespace SqlSiphon
                 }
             }
 
-            this.Schemata.AddRange(this.Tables.Values.Select(t => t.Schema)
+            this.Schemata.AddRange(this.GetSchemata(dal));
+        }
+
+        private List<string> GetSchemata(IDatabaseScriptGenerator dal)
+        {
+            var schemata = this.Tables.Values.Select(t => t.Schema)
                 .Union(this.Functions.Values.Select(f => f.Schema))
                 .Union(this.Relationships.Values.Select(r => r.Schema))
                 .Union(this.PrimaryKeys.Values.Select(r => r.Schema))
                 .Where(s => !string.IsNullOrWhiteSpace(s) && !this.Schemata.Contains(s) && s != dal.DefaultSchemaName)
-                .Distinct());
+                .Distinct()
+                .ToList();
+            return schemata;
         }
 
         /// <summary>
@@ -285,9 +292,9 @@ namespace SqlSiphon
             }
         }
 
-        public virtual DatabaseDelta Diff(DatabaseState initial, ISqlSiphon dal)
+        public virtual DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {
-            return new DatabaseDelta(this, initial, dal);
+            return new DatabaseDelta(this, initial, asm, gen);
         }
 
         public bool TypeExists<T>()
