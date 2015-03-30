@@ -73,7 +73,8 @@ namespace SqlSiphon.SqlServer
         {
         }
 
-        protected SqlServerDataAccessLayer() : base()
+        protected SqlServerDataAccessLayer()
+            : base()
         {
 
         }
@@ -288,13 +289,28 @@ DROP INDEX {0} ON {1};",
                 tableName);
         }
 
+        private static string GetDefaultValue(DatabaseObjectAttribute p)
+        {
+            var defaultValue = p.DefaultValue;
+            if (defaultValue == null)
+            {
+                defaultValue = "";
+            }
+            else if (p.SystemType == typeof(bool))
+            {
+                var testValue = defaultValue.ToLower();
+                defaultValue = testValue == "true" ? "1" : "0";
+            }
+            return defaultValue;
+        }
+
         protected override string MakeParameterString(ParameterAttribute p)
         {
             var typeStr = MakeSqlTypeString(p);
             return string.Join(" ",
                 "@" + p.Name,
                 typeStr,
-                p.DefaultValue ?? "").Trim();
+                GetDefaultValue(p)).Trim();
         }
 
         protected override string MakeColumnString(ColumnAttribute p, bool isReturnType)
@@ -302,7 +318,7 @@ DROP INDEX {0} ON {1};",
             var typeStr = MakeSqlTypeString(p);
             var defaultString = "";
             if (p.DefaultValue != null)
-                defaultString = string.Format("DEFAULT ({0})", p.DefaultValue);
+                defaultString = string.Format("DEFAULT ({0})", GetDefaultValue(p));
             else if (p.IsIdentity)
                 defaultString = "IDENTITY(1, 1)";
 
