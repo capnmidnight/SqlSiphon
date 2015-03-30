@@ -751,6 +751,7 @@ namespace InitDB
             if (this.optionsDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 this.options[SQLCMD_PATH_KEY] = this.optionsDialog.SQLCMDPath;
+                this.options[PSQL_PATH_KEY] = this.optionsDialog.PSQLPath;
                 File.WriteAllLines(OPTIONS_FILENAME,
                     this.options.Select(kv => string.Join("=", kv.Key, kv.Value)).ToArray());
             }
