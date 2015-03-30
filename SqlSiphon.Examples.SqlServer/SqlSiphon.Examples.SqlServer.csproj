@@ -32,23 +32,17 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Applications.cs" />
-    <Compile Include="BasicDAL.cs" />
-    <Compile Include="Membership.cs" />
-    <Compile Include="MembershipUser.cs" />
+    <Compile Include="SqlServerDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Roles.cs" />
-    <Compile Include="Users.cs" />
-    <Compile Include="UsersInRoles.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SqlSiphon.Examples\SqlSiphon.Examples.csproj">
+      <Project>{38251332-2c6d-413a-aa3a-88ba110b3d4f}</Project>
+      <Name>SqlSiphon.Examples</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj">
       <Project>{1c09319b-01e7-4f56-b29b-61fd4e546f54}</Project>
       <Name>SqlSiphon.SqlServer</Name>

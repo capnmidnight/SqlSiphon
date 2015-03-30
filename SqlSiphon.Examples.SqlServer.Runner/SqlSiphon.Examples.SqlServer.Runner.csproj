@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E087B9C4-7C30-4E79-A236-0E42FE9F718D}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{03563419-53BF-4076-A350-2B6392A38CB2}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlSiphon.Examples.Postgres</RootNamespace>
-    <AssemblyName>SqlSiphon.Examples.Postgres</AssemblyName>
+    <RootNamespace>SqlSiphon.Examples.SqlServer.Runner</RootNamespace>
+    <AssemblyName>SqlSiphon.Examples.SqlServer.Runner</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -30,12 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Security">
-      <HintPath>..\Mono.Security.dll</HintPath>
-    </Reference>
-    <Reference Include="Npgsql">
-      <HintPath>..\Npgsql.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -45,17 +41,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PostgresDAL.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlSiphon.Examples.SqlServer\SqlSiphon.Examples.SqlServer.csproj">
+      <Project>{c809c958-aa9d-4f4a-a1de-020374490932}</Project>
+      <Name>SqlSiphon.Examples.SqlServer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SqlSiphon.Examples\SqlSiphon.Examples.csproj">
       <Project>{38251332-2c6d-413a-aa3a-88ba110b3d4f}</Project>
       <Name>SqlSiphon.Examples</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj">
-      <Project>{175a4d4a-2c9d-4edd-b9cc-7adc3322cc1c}</Project>
-      <Name>SqlSiphon.Postgres</Name>
+    <ProjectReference Include="..\SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj">
+      <Project>{1c09319b-01e7-4f56-b29b-61fd4e546f54}</Project>
+      <Name>SqlSiphon.SqlServer</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj">
       <Project>{136933a4-27e3-4cbf-84f8-8898447a3d8c}</Project>

@@ -6,7 +6,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon
 {
-    public interface ISqlSiphon : IDisposable, 
+    public interface ISqlSiphon : IDataConnector, 
         IDatabaseStateReader, 
         IDatabaseStateWriter,
         IAssemblyStateReader, 

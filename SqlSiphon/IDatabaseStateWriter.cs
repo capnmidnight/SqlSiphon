@@ -9,7 +9,5 @@ namespace SqlSiphon
     {
         void AlterDatabase(ScriptStatus script);
         void MarkScriptAsRan(ScriptStatus script);
-
-        event DataProgressEventHandler Progress;
     }
 }

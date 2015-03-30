@@ -8,7 +8,7 @@ namespace SqlSiphon
 {
     public interface IAssemblyStateReader
     {
-        DatabaseState GetFinalState(string userName, string password);
+        DatabaseState GetFinalState(Type dalType, string userName, string password);
 
         bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
         bool RoutineChanged(RoutineAttribute final, RoutineAttribute initial);

@@ -7,14 +7,13 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using SqlSiphon;
 using SqlSiphon.Mapping;
-using SqlSiphon.Postgres;
 
-namespace SqlSiphon.Examples.Postgres
+namespace SqlSiphon.Examples
 {
-    public class BasicDAL : PostgresDataAccessLayer
+    public class BasicDAL<T> : DataConnector<T> where T : IDataConnectorFactory, new()
     {
-        public BasicDAL(string server, string database, string userName, string password)
-            : base(server, database, userName, password)
+        public BasicDAL(string server, string database, string userName, string password) :
+            base(server, database, userName, password)
         {
         }
 

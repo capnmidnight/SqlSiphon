@@ -1,7 +1,7 @@
 ﻿using System;
 using SqlSiphon.Mapping;
 
-namespace SqlSiphon.Examples.Postgres
+namespace SqlSiphon.Examples
 {
     public class MembershipUser
     {

@@ -73,13 +73,14 @@ namespace SqlSiphon
             }
 
             var relationships = new List<Relationship>();
-            var methodDefTypes = new List<Type>();
+            var routineDefTypes = new List<Type>();
 
             foreach (var type in types)
             {
-                if (type.GetInterface("ISqlSiphon") != null)
+                var interfaces = type.GetInterfaces();
+                if (interfaces.Contains(typeof(IDataConnector)))
                 {
-                    methodDefTypes.Add(type);
+                    routineDefTypes.Add(type);
                 }
 
                 var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
@@ -129,7 +130,7 @@ namespace SqlSiphon
                 this.Relationships.Add(id, relationship);
             }
 
-            foreach (var type in methodDefTypes)
+            foreach (var type in routineDefTypes)
             {
                 var methods = type.GetMethods();
                 foreach (var method in methods)
@@ -137,7 +138,15 @@ namespace SqlSiphon
                     var function = RoutineAttribute.GetCommandDescription(method);
                     if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
                     {
-                        this.Functions.Add(dal.MakeRoutineIdentifier(function), function);
+                        var functionName = dal.MakeRoutineIdentifier(function);
+                        if (this.Functions.ContainsKey(functionName))
+                        {
+
+                        }
+                        else
+                        {
+                            this.Functions.Add(functionName, function);
+                        }
                     }
                 }
             }

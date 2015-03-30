@@ -81,7 +81,7 @@ namespace SqlSiphon
                 .ForEach(p => p.SetValue(obj, reader[p.Name.ToUpper()]));
         }
 
-        protected static bool IsTypePrimitive(Type type)
+        private static bool IsTypePrimitive(Type type)
         {
             return type.IsPrimitive
                 || type == typeof(decimal)
@@ -120,13 +120,6 @@ namespace SqlSiphon
 
         public ConnectionT Connection { get; private set; }
 
-        public event DataProgressEventHandler Progress;
-        protected void MakeProgress(int currentRow, int rowCount, string message)
-        {
-            if (this.Progress != null)
-                this.Progress(this, new DataProgressEventArgs(currentRow, rowCount, message));
-        }
-
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
         /// opens the connection. 
@@ -141,6 +134,11 @@ namespace SqlSiphon
             var type = this.GetType();
             this.meta = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type) ?? new TableAttribute();
             this.meta.InferProperties(type);
+        }
+
+        protected DataAccessLayer()
+        {
+
         }
 
         protected DataAccessLayer(string connectionString)
@@ -197,6 +195,11 @@ namespace SqlSiphon
                 this.Connection.Dispose();
                 this.Connection = null;
             }
+        }
+
+        public ISqlSiphon GetGodObject()
+        {
+            return this;
         }
 
         private void Open()
@@ -341,7 +344,7 @@ namespace SqlSiphon
         /// <param name="parameterValues">a variable number of parameters to pass to the stored procedure.
         /// </param>
         /// <returns>a SqlCommand structure for encapsulating a stored procedure call</returns>
-        protected CommandT ConstructCommand(params object[] parameterValues) { return ConstructCommand(false, parameterValues); }
+        private CommandT ConstructCommand(params object[] parameterValues) { return ConstructCommand(false, parameterValues); }
         private CommandT ConstructCommand(bool isPrimitive, params object[] parameterValues)
         {
             // because this method is private, it will never be called directly by a method tagged
@@ -383,7 +386,7 @@ namespace SqlSiphon
             return command;
         }
 
-        protected virtual CommandT BuildCommand(string procName, CommandType commandType, ParameterAttribute[] methParams)
+        private CommandT BuildCommand(string procName, CommandType commandType, ParameterAttribute[] methParams)
         {
             // the mapped method must match the name of a stored procedure in the database, or the
             // query or procedure name must be provided explicitly in the RoutineAttribute's
@@ -433,13 +436,13 @@ namespace SqlSiphon
         /// executed. If the Type parameter EntityT is a primitive type, then the first parameter is treated
         /// as the column name in the table from which to retrieve the desired value</param>
         /// <returns>an object that represents the row from the database</returns>
-        protected EntityT Get<EntityT>(params object[] parameters)
+        public EntityT Get<EntityT>(params object[] parameters)
         {
             // the ToList call is necessary to consume the entire enumerator
             return GetEnumerator<EntityT>(parameters).ToList().FirstOrDefault();
         }
 
-        protected EntityT Return<EntityT>(params object[] parameters)
+        public EntityT Return<EntityT>(params object[] parameters)
         {
             using (var cmd = this.ConstructCommand(parameters))
             {
@@ -477,7 +480,7 @@ namespace SqlSiphon
                     Execute(command);
         }
 
-        protected void Execute(params object[] parameters)
+        public void Execute(params object[] parameters)
         {
             using (var command = ConstructCommand(parameters))
                 Execute(command, parameters);
@@ -493,7 +496,7 @@ namespace SqlSiphon
         /// executed. If the Type parameter EntityT is a primitive type, then the first parameter is treated
         /// as the column name in the table from which to retrieve the desired value</param>
         /// <returns>the populated list of objects that represent the rows in the database</returns>
-        protected List<EntityT> GetList<EntityT>(params object[] parameters)
+        public List<EntityT> GetList<EntityT>(params object[] parameters)
         {
             return GetEnumerator<EntityT>(parameters).ToList();
         }
@@ -511,7 +514,7 @@ namespace SqlSiphon
             return result;
         }
 
-        protected DataSet GetDataSet(params object[] parameters)
+        public DataSet GetDataSet(params object[] parameters)
         {
             using (var command = ConstructCommand(parameters))
                 return GetDataSet(command, parameters);
@@ -536,7 +539,7 @@ namespace SqlSiphon
             return (DataReaderT)reader;
         }
 
-        protected DataReaderT GetReader(params object[] parameters)
+        public DbDataReader GetReader(params object[] parameters)
         {
             using (var command = ConstructCommand(parameters))
                 return GetReader(command, parameters);
@@ -609,7 +612,7 @@ namespace SqlSiphon
         /// executed. If the Type parameter EntityT is a primitive type, then the first parameter is treated
         /// as the column name or column index in the table from which to retrieve the desired value</param>
         /// <returns>the populated list of objects that represent the rows in the database</returns>
-        protected IEnumerable<EntityT> GetEnumerator<EntityT>(params object[] parameters)
+        public IEnumerable<EntityT> GetEnumerator<EntityT>(params object[] parameters)
         {
             var type = typeof(EntityT);
 
@@ -633,52 +636,21 @@ namespace SqlSiphon
             }
         }
 
-        protected List<RoutineAttribute> FindProcedureDefinitions()
-        {
-            var t = this.GetType();
-            var methods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
-            var results = new List<RoutineAttribute>();
-            foreach (var method in methods)
-            {
-                var info = RoutineAttribute.GetCommandDescription(method);
-                if (info != null)
-                    results.Add(info);
-            }
-            return results;
-        }
-
-        private void Process<T>(List<T> collection, Func<T, string> makeMessage, Action<T> action)
-        {
-            for (int i = 0; i < collection.Count; ++i)
-            {
-                var message = makeMessage(collection[i]);
-                action(collection[i]);
-                this.MakeProgress(i, collection.Count, message);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.Text, Query =
-@"SELECT *
-FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
-WHERE TABLE_SCHEMA = @tableSchema
-AND TABLE_NAME = @tableName
-AND COLUMN_NAME = @columnName;")]
-        public List<InformationSchema.ConstraintColumnUsage> GetColumnConstraints(string tableSchema, string tableName, string columnName)
-        {
-            return GetList<InformationSchema.ConstraintColumnUsage>(tableSchema, tableName, columnName);
-        }
-
         public virtual DatabaseState GetInitialState(string catalogueName, Regex filter)
         {
             return new DatabaseState(catalogueName, filter, this);
         }
 
-        public virtual DatabaseState GetFinalState(string userName, string password)
+        public virtual DatabaseState GetFinalState(Type dalType, string userName, string password)
         {
-            var asm = this.GetType().Assembly;
-            var types = asm.GetTypes().ToList();
-            types.Insert(0, typeof(ScriptStatus));
+            var currentType = dalType;
+            var types = new List<Type>();
+            while (currentType != typeof(object))
+            {
+                var asm = currentType.Assembly;
+                types.AddRange(asm.GetTypes());
+                currentType = currentType.BaseType;
+            }
             var final = new DatabaseState(types, this, this, userName, password);
             return final;
         }

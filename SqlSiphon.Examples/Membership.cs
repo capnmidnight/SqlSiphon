@@ -1,7 +1,7 @@
 ﻿using System;
 using SqlSiphon.Mapping;
 
-namespace SqlSiphon.Examples.Postgres
+namespace SqlSiphon.Examples
 {
     [Table]
     [FK(typeof(Users))]
@@ -28,9 +28,9 @@ namespace SqlSiphon.Examples.Postgres
         [Column(Size = 256, IsOptional = true)]
         public string PasswordAnswer { get; set; }
         [Column(DefaultValue = "false")]
-        public bool IsApproved { get; set; }
+        public virtual bool IsApproved { get; set; }
         [Column(DefaultValue = "false")]
-        public bool IsLockedOut { get; set; }
+        public virtual bool IsLockedOut { get; set; }
         [Column(DefaultValue = "getdate()")]
         public DateTime CreateDate { get; set; }
         public DateTime LastLoginDate { get; set; }

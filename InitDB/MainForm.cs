@@ -89,28 +89,28 @@ namespace InitDB
             string dbType = "UNKNOWN";
             if (File.Exists(this.assemblyTB.Text))
             {
-                var ss = typeof(ISqlSiphon);
+                var ss = typeof(IDataConnector);
                 var assembly = System.Reflection.Assembly.LoadFrom(this.assemblyTB.Text);
                 var candidateTypes = assembly.GetTypes()
                     .Where(t => t.GetInterfaces().Contains(ss)
                                 && !t.IsAbstract
                                 && !t.IsInterface).ToArray();
-                var pg = typeof(SqlSiphon.Postgres.PostgresDataAccessLayer);
-                var ms = typeof(SqlSiphon.SqlServer.SqlServerDataAccessLayer);
+                var pg = typeof(SqlSiphon.Postgres.PostgresDataConnectorFactory);
+                var ms = typeof(SqlSiphon.SqlServer.SqlServerDataConnectorFactory);
                 foreach (var type in candidateTypes)
                 {
-                    if (type.IsSubclassOf(pg) || type.IsSubclassOf(ms))
+                    if (type.BaseType.GenericTypeArguments.Any(t => t == pg || t == ms))
                     {
-                        var vt = type.IsSubclassOf(pg) ? pg : ms;
-                        dbType = vt == pg ? POSTGRES : SQL_SERVER;
-                        this.IsPostgres = dbType == POSTGRES;
+                        this.IsPostgres = type.BaseType.GenericTypeArguments.Contains(pg);
+                        dbType = this.IsPostgres ? POSTGRES : SQL_SERVER;
                         var constructorParams = new[] { typeof(string), typeof(string), typeof(string), typeof(string) };
                         var constructorArgs = new object[] { this.serverTB.Text, this.databaseTB.Text, this.adminUserTB.Text, this.adminPassTB.Text };
                         var constructor = type.GetConstructor(constructorParams);
 
                         if (constructor != null)
                         {
-                            connector = () => (ISqlSiphon)constructor.Invoke(constructorArgs);
+                            this.CurrentDataAccessLayerType = type;
+                            connector = () => ((IDataConnector)constructor.Invoke(constructorArgs)).GetGodObject();
                             break;
                         }
                     }
@@ -308,7 +308,6 @@ namespace InitDB
         {
             using (var db = this.MakeDatabaseConnection())
             {
-                db.Progress += db_Progress;
                 var delta = CreateDelta(db);
                 DisplayDelta(delta);
                 var t = db.GetType();
@@ -473,11 +472,13 @@ namespace InitDB
             return RunProcess(this.optionsDialog.SQLCMDPath, "-S " + serverTB.Text, string.IsNullOrWhiteSpace(adminUserTB.Text) ? null : "-U " + adminUserTB.Text, string.IsNullOrWhiteSpace(adminPassTB.Text) ? null : "-P " + adminPassTB.Text, (database != null) ? "-d " + database : null, string.Format(" -{0} \"{1}\"", "Q", qry));
         }
 
+        private Type CurrentDataAccessLayerType;
+
         private DatabaseDelta CreateDelta(ISqlSiphon db)
         {
             var r = ObjectFilter;
             var initial = db.GetInitialState(this.databaseTB.Text, r);
-            var final = db.GetFinalState(this.sqlUserTB.Text, this.sqlPassTB.Text);
+            var final = db.GetFinalState(this.CurrentDataAccessLayerType, this.sqlUserTB.Text, this.sqlPassTB.Text);
             return final.Diff(initial, db, db);
         }
 
@@ -492,11 +493,6 @@ namespace InitDB
                 }
                 return dbName;
             }
-        }
-
-        private void db_Progress(object sender, DataProgressEventArgs e)
-        {
-            this.ToOutput(string.Format("{0} of {1}: {2}", e.CurrentRow + 1, e.RowCount, e.Message));
         }
 
         private Regex ObjectFilter

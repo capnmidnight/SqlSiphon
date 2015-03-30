@@ -80,6 +80,7 @@
     <Compile Include="PostgresDatabaseState.cs" />
     <Compile Include="pg_extension.cs" />
     <Compile Include="PostgresDataAccessLayer.cs" />
+    <Compile Include="PostgresDataConnectorFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

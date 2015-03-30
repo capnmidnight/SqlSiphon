@@ -43,7 +43,7 @@ namespace SqlSiphon.Postgres
     /// A base class for building Data Access Layers that connect to MySQL
     /// databases and execute store procedures stored within.
     /// </summary>
-    public partial class PostgresDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
+    public class PostgresDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
         private static Dictionary<string, int> defaultTypeSizes;
         private static Dictionary<string, Type> typeMapping;
@@ -260,9 +260,9 @@ namespace SqlSiphon.Postgres
             return pgState;
         }
 
-        public override DatabaseState GetFinalState(string userName, string password)
+        public override DatabaseState GetFinalState(Type dalType, string userName, string password)
         {
-            var state = base.GetFinalState(userName, password);
+            var state = base.GetFinalState(dalType, userName, password);
             var pgState = new PostgresDatabaseState(state);
             var guidType = typeof(Guid);
 

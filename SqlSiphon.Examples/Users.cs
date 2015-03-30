@@ -1,7 +1,7 @@
 ﻿using System;
 using SqlSiphon.Mapping;
 
-namespace SqlSiphon.Examples.Postgres
+namespace SqlSiphon.Examples
 {
     [Table]
     [FK(typeof(Applications))]
@@ -17,7 +17,7 @@ namespace SqlSiphon.Examples.Postgres
         [Column(Size = 16, IsOptional = true)]
         public string MobileAlias { get; set; }
         [Column(IsOptional = true, DefaultValue = "false")]
-        public bool IsAnonymous { get; set; }
+        public virtual bool IsAnonymous { get; set; }
         public DateTime LastActivityDate { get; set; }
     }
 }

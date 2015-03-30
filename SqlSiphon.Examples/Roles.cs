@@ -1,7 +1,7 @@
 ﻿using System;
 using SqlSiphon.Mapping;
 
-namespace SqlSiphon.Examples.SqlServer
+namespace SqlSiphon.Examples
 {
     [Table]
     [FK(typeof(Applications))]

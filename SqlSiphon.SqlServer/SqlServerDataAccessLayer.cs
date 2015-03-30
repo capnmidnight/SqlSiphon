@@ -46,7 +46,7 @@ namespace SqlSiphon.SqlServer
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
-    public partial class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
+    public class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
@@ -71,6 +71,11 @@ namespace SqlSiphon.SqlServer
         public SqlServerDataAccessLayer(string server, string database, string userName, string password)
             : base(server, database, userName, password)
         {
+        }
+
+        protected SqlServerDataAccessLayer() : base()
+        {
+
         }
 
         public override string MakeConnectionString(string server, string database, string userName, string password)
