@@ -15,10 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.ODBC", "SqlSiphon
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InitDB", "InitDB\InitDB.csproj", "{27BD4F0D-5652-4B3E-9BE4-33ED0F2DFBA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.SqlServer", "SqlSiphon.Examples.SqlServer\SqlSiphon.Examples.SqlServer.csproj", "{C809C958-AA9D-4F4A-A1DE-020374490932}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.Postgres", "SqlSiphon.Examples.Postgres\SqlSiphon.Examples.Postgres.csproj", "{E087B9C4-7C30-4E79-A236-0E42FE9F718D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.Tokenizer", "SqlSiphon.Examples.Tokenizer\SqlSiphon.Examples.Tokenizer.csproj", "{FEAAB017-2E08-433A-8527-6231510A6BCE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Tokenizer", "SqlSiphon.Tokenizer\SqlSiphon.Tokenizer.csproj", "{E4D140A3-37C7-4BDC-9819-3613DD061358}"
@@ -123,30 +119,6 @@ Global
 		{27BD4F0D-5652-4B3E-9BE4-33ED0F2DFBA1}.Release|Mixed Platforms.Build.0 = Debug|Any CPU
 		{27BD4F0D-5652-4B3E-9BE4-33ED0F2DFBA1}.Release|x64.ActiveCfg = Debug|Any CPU
 		{27BD4F0D-5652-4B3E-9BE4-33ED0F2DFBA1}.Release|x86.ActiveCfg = Debug|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Release|x64.ActiveCfg = Release|Any CPU
-		{C809C958-AA9D-4F4A-A1DE-020374490932}.Release|x86.ActiveCfg = Release|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|x64.ActiveCfg = Release|Any CPU
-		{E087B9C4-7C30-4E79-A236-0E42FE9F718D}.Release|x86.ActiveCfg = Release|Any CPU
 		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEAAB017-2E08-433A-8527-6231510A6BCE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

@@ -15,7 +15,7 @@ namespace SqlSiphon.Examples.SqlServer.Runner
         };
         static void Main(string[] args)
         {
-            using (var db = new SqlServerDAL("localhost\\SQLEXPRESS", "TestDB", "TestDBUser", "TestDBPassword"))
+            using (var db = new BasicDAL(new SqlSiphon.SqlServer.SqlServerDataConnectorFactory(), "localhost\\SQLEXPRESS", "TestDB", "TestDBUser", "TestDBPassword"))
             {
                 var roles = db.GetAllRoles();
                 Console.WriteLine("Currently {0} roles", roles.Length);

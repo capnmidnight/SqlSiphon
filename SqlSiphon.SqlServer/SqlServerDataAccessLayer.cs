@@ -48,6 +48,11 @@ namespace SqlSiphon.SqlServer
     /// </summary>
     public class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
+        public const string DATABASE_TYPE_NAME = "Microsoft SQL Server";
+        public override string DatabaseType
+        {
+            get { return DATABASE_TYPE_NAME; }
+        }
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
         /// opens the connection. 
@@ -817,6 +822,13 @@ where constraint_schema != 'information_schema';")]
         public override Type GetSystemType(string sqlType)
         {
             return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
+        }
+
+
+
+        public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
+        {
+            return RunProcess(executablePath, "-S " + server, string.IsNullOrWhiteSpace(adminUser) ? null : "-U " + adminUser, string.IsNullOrWhiteSpace(adminPass) ? null : "-P " + adminPass, (database != null) ? "-d " + database : null, string.Format(" -{0} \"{1}\"", "Q", query));
         }
     }
 }

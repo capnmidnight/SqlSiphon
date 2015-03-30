@@ -48,10 +48,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlSiphon.Examples.SqlServer\SqlSiphon.Examples.SqlServer.csproj">
-      <Project>{c809c958-aa9d-4f4a-a1de-020374490932}</Project>
-      <Name>SqlSiphon.Examples.SqlServer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SqlSiphon.Examples\SqlSiphon.Examples.csproj">
       <Project>{38251332-2c6d-413a-aa3a-88ba110b3d4f}</Project>
       <Name>SqlSiphon.Examples</Name>

@@ -32,6 +32,7 @@ using System;
 using System.Data;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using Npgsql;
@@ -48,6 +49,14 @@ namespace SqlSiphon.Postgres
         private static Dictionary<string, int> defaultTypeSizes;
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
+
+        public const string DATABASE_TYPE_NAME = "PostgreSQL";
+
+        public override string DatabaseType
+        {
+            get { return DATABASE_TYPE_NAME; }
+        }
+
         static PostgresDataAccessLayer()
         {
             typeMapping = new Dictionary<string, Type>();
@@ -214,6 +223,77 @@ namespace SqlSiphon.Postgres
             }
 
             return builder.ConnectionString;
+        }
+
+        public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
+        {
+            if (string.IsNullOrWhiteSpace(adminUser) || string.IsNullOrWhiteSpace(adminPass))
+            {
+                throw new Exception("PSQL does not support Windows Authentication. Please provide a username and password for the server process.");
+            }
+            else
+            {
+                string port = null;
+                var i = server.IndexOf(":");
+                if (i > -1)
+                {
+                    port = server.Substring(i + 1);
+                    server = server.Substring(0, i);
+                }
+
+                // we can't send a password to the server directly, so we have twiddle the user's
+                // pgpass.conf file. See this page for more information on the pgpass.conf file:
+                //     http://www.postgresql.org/docs/current/static/libpq-pgpass.html
+                i = configurationPath.IndexOf("InitDB");
+                configurationPath = Path.Combine(configurationPath.Substring(0, i), "postgresql", "pgpass.conf");
+                bool lineAdded = false;
+                string[] originalConf = null;
+                if (File.Exists(configurationPath))
+                {
+                    originalConf = File.ReadAllLines(configurationPath);
+                }
+                var lineToAdd = string.Format(
+                    "{0}:{1}:{2}:{3}:{4}",
+                    server,
+                    port ?? "*",
+                    database ?? "*",
+                    adminUser,
+                    adminPass);
+
+                if (originalConf == null)
+                {
+                    lineAdded = true;
+                    File.WriteAllText(configurationPath, lineToAdd);
+                }
+                else
+                {
+                    var conf = originalConf.ToList();
+                    i = conf.IndexOf(lineToAdd);
+                    if (i == -1)
+                    {
+                        conf.Add(lineToAdd);
+                        lineAdded = true;
+                        File.WriteAllLines(configurationPath, conf);
+                    }
+                }
+
+                var succeeded = RunProcess(executablePath, "-h " + server, string.IsNullOrWhiteSpace(port) ? null : "-p " + port, "-U " + adminUser, string.Format(" -{0} \"{1}\"", "c", query), (database != null) ? "-d " + database : null);
+
+                // put everything back the way it was
+                if (lineAdded)
+                {
+                    if (originalConf == null)
+                    {
+                        File.Delete(configurationPath);
+                    }
+                    else
+                    {
+                        File.WriteAllLines(configurationPath, originalConf);
+                    }
+                }
+
+                return succeeded;
+            }
         }
 
 

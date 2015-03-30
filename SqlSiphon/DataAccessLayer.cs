@@ -197,11 +197,6 @@ namespace SqlSiphon
             }
         }
 
-        public ISqlSiphon GetGodObject()
-        {
-            return this;
-        }
-
         private void Open()
         {
             try
@@ -833,5 +828,61 @@ namespace SqlSiphon
         public abstract string MakeCreatePrimaryKeyScript(PrimaryKey key);
         public abstract string MakeDropIndexScript(Index index);
         public abstract string MakeCreateIndexScript(Index index);
+
+        public abstract string DatabaseType { get; }
+
+        public abstract bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query);
+
+        public event EventHandler OnStandardOutput;
+        public event EventHandler OnStandardError;
+        private void ToOutput(string value)
+        {
+            if (this.OnStandardOutput != null)
+            {
+                this.OnStandardOutput(this, new EventArgs());
+            }
+        }
+        private void ToError(string value)
+        {
+            if (this.OnStandardError != null)
+            {
+                this.OnStandardError(this, new EventArgs());
+            }
+        }
+
+        protected bool RunProcess(string name, params string[] args)
+        {
+            var succeeded = true;
+            var shortName = new System.IO.FileInfo(name).Name;
+            this.ToOutput(string.Format(":> {0} {1}\r\n", shortName, string.Join(" ", args)));
+            var procInfo = new ProcessStartInfo
+            {
+                FileName = name,
+                Arguments = string.Join(" ", args.Where(s => s != null)),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                ErrorDialog = true,
+            };
+            using (var proc = new Process())
+            {
+                proc.StartInfo = procInfo;
+                proc.EnableRaisingEvents = true;
+                proc.Start();
+                proc.WaitForExit();
+                while (proc.StandardOutput.Peek() != -1)
+                {
+                    this.ToOutput(proc.StandardOutput.ReadLine());
+                }
+                while (proc.StandardError.Peek() != -1)
+                {
+                    succeeded = false;
+                    this.ToError(proc.StandardError.ReadLine());
+                }
+            }
+            return succeeded;
+        }
     }
 }

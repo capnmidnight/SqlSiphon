@@ -17,6 +17,17 @@ namespace InitDB
         public string LoginPassword { get { return Get<string>(); } set { Set(value); } }
         public string AssemblyFile { get { return Get<string>(); } set { Set(value); } }
         public string ObjectFilter { get { return Get<string>(); } set { Set(value); } }
+        public int DatabaseTypeIndex
+        {
+            get
+            {
+                var str = Get<string>();
+                int index = 0;
+                int.TryParse(str, out index);
+                return index;
+            }
+            set { Set(value.ToString()); }
+        }
         public ScriptType[] ScriptTypes { get { return Get<ScriptType[]>(); } set { Set(value); } }
 
         public static char PAIR_SEPARATOR = ';';
@@ -24,12 +35,13 @@ namespace InitDB
         public static char ARRAY_VALUE_SEPARATOR = ',';
 
         public Session()
-            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", "", "", "", new ScriptType[] { })
+            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", "", "", "", 0, new ScriptType[] { })
         {
         }
 
         public Session(string name, string server, string dbname, string adminName, string adminPassword,
-            string loginName, string loginPassword, string assemblyFile, string objectFilter, ScriptType[] filters)
+            string loginName, string loginPassword, string assemblyFile, string objectFilter, int databaseTypeIndex,
+            ScriptType[] filters)
         {
             this.Name = name;
             this.Server = server;
@@ -40,6 +52,7 @@ namespace InitDB
             this.LoginPassword = loginPassword;
             this.AssemblyFile = assemblyFile;
             this.ObjectFilter = objectFilter;
+            this.DatabaseTypeIndex = databaseTypeIndex;
             this.ScriptTypes = filters;
         }
 

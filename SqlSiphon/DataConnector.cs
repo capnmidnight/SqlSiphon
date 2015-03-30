@@ -10,6 +10,14 @@ namespace SqlSiphon
     public abstract class DataConnector : IDataConnector
     {
         private IDataConnector connector;
+        public string DatabaseType
+        {
+            get
+            {
+                return this.connector.DatabaseType;
+            }
+        }
+
         protected DataConnector(IDataConnectorFactory factory, string server, string database, string userName, string password)
         {
             this.connector = factory.MakeConnector(server, database, userName, password);
