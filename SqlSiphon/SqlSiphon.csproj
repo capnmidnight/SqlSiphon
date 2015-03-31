@@ -67,7 +67,7 @@
     <Compile Include="InformationSchema\Typed.cs" />
     <Compile Include="InformationSchema\IndexColumnUsage.cs" />
     <Compile Include="InformationSchema\Columns.cs" />
-    <Compile Include="DataAccessLayer.cs" />
+    <Compile Include="SqlSiphon.cs" />
     <Compile Include="DataProgressEventArgs.cs" />
     <Compile Include="InformationSchema\KeyColumnUsage.cs" />
     <Compile Include="InformationSchema\Routines.cs" />

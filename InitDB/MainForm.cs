@@ -116,7 +116,7 @@ namespace InitDB
                     {
                         this.CurrentDataAccessLayerType = type;
                         var dbc = ((DataConnector)constructor.Invoke(constructorArgs));
-                        return dbc.GetGodObject();
+                        return dbc.GetSqlSiphon();
                     }
                 }
             }

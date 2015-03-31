@@ -46,7 +46,7 @@ namespace SqlSiphon.SqlServer
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
-    public class SqlServerDataAccessLayer : DataAccessLayer<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
+    public class SqlServerDataAccessLayer : SqlSiphon<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
         public const string DATABASE_TYPE_NAME = "Microsoft SQL Server";
         public override string DatabaseType

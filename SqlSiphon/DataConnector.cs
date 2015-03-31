@@ -28,7 +28,7 @@ namespace SqlSiphon
             this.connector.Dispose();
         }
 
-        public ISqlSiphon GetGodObject()
+        public ISqlSiphon GetSqlSiphon()
         {
             return (ISqlSiphon)connector;
         }

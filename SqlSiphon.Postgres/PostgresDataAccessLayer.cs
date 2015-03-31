@@ -44,7 +44,7 @@ namespace SqlSiphon.Postgres
     /// A base class for building Data Access Layers that connect to MySQL
     /// databases and execute store procedures stored within.
     /// </summary>
-    public class PostgresDataAccessLayer : DataAccessLayer<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
+    public class PostgresDataAccessLayer : SqlSiphon<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
         private static Dictionary<string, int> defaultTypeSizes;
         private static Dictionary<string, Type> typeMapping;

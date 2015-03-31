@@ -53,7 +53,7 @@ namespace SqlSiphon
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
     /// </summary>
-    public abstract class DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> :
+    public abstract class SqlSiphon<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> :
         ISqlSiphon
         where ConnectionT : DbConnection, new()
         where CommandT : DbCommand, new()
@@ -62,7 +62,7 @@ namespace SqlSiphon
         where DataReaderT : DbDataReader
     {
         protected static readonly bool IsOnMonoRuntime;
-        static DataAccessLayer()
+        static SqlSiphon()
         {
             IsOnMonoRuntime = Type.GetType("Mono.Runtime") != null;
         }
@@ -125,7 +125,7 @@ namespace SqlSiphon
         /// opens the connection. 
         /// </summary>
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
-        private DataAccessLayer(bool isConnectionOwned)
+        private SqlSiphon(bool isConnectionOwned)
         {
             this.FKNameRegex = new Regex(
                 string.Format(@"add constraint \{0}([\w_]+)\{1}", IdentifierPartBegin, IdentifierPartEnd),
@@ -136,18 +136,18 @@ namespace SqlSiphon
             this.meta.InferProperties(type);
         }
 
-        protected DataAccessLayer()
+        protected SqlSiphon()
         {
 
         }
 
-        protected DataAccessLayer(string connectionString)
+        protected SqlSiphon(string connectionString)
             : this(true)
         {
             SetConnection(connectionString);
         }
 
-        protected DataAccessLayer(string server, string database, string userName, string password)
+        protected SqlSiphon(string server, string database, string userName, string password)
             : this(true)
         {
             SetConnection(this.MakeConnectionString(server, database, userName, password));
@@ -158,13 +158,13 @@ namespace SqlSiphon
         /// if it is not already open.
         /// </summary>
         /// <param name="connection"></param>
-        protected DataAccessLayer(ConnectionT connection)
+        protected SqlSiphon(ConnectionT connection)
             : this(false)
         {
             this.SetConnection(connection);
         }
 
-        protected DataAccessLayer(DataAccessLayer<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
+        protected SqlSiphon(SqlSiphon<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
             : this(false)
         {
             this.SetConnection(dal != null ? dal.Connection : null);
