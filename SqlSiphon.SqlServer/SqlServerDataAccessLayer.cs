@@ -824,11 +824,32 @@ where constraint_schema != 'information_schema';")]
             return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
         }
 
+        protected override void ToOutput(string value)
+        {
+            if (ParseMessageForError(value))
+            {
+                base.ToError(value);
+            }
+            else
+            {
+                base.ToOutput(value);
+            }
+        }
 
+        private static Regex ErrorMessageFormat = new Regex("Msg \\d+, Level \\d+, State \\d+,", RegexOptions.Compiled);
+
+        private bool ParseMessageForError(string message)
+        {
+            var match = ErrorMessageFormat.Match(message);
+            return match.Success;
+        }
 
         public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
         {
-            return RunProcess(
+            bool succeeded = true;
+            var onStdErrorOutput = new IOEventHandler((o, e) => succeeded = false);
+            this.OnStandardError += onStdErrorOutput;
+            bool complete = RunProcess(
                 executablePath, 
                 new string[]{
                     "-S " + server, 
@@ -837,6 +858,8 @@ where constraint_schema != 'information_schema';")]
                     (database == null) ? null : "-d " + database,
                     string.Format("-Q \"{0}\"", query)
                 });
+            this.OnStandardError -= onStdErrorOutput;
+            return complete && succeeded;
         }
     }
 }

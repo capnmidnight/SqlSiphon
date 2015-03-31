@@ -835,14 +835,14 @@ namespace SqlSiphon
 
         public event IOEventHandler OnStandardOutput;
         public event IOEventHandler OnStandardError;
-        private void ToOutput(string value)
+        protected virtual void ToOutput(string value)
         {
             if (this.OnStandardOutput != null)
             {
                 this.OnStandardOutput(this, new IOEventArgs(value));
             }
         }
-        private void ToError(string value)
+        protected void ToError(string value)
         {
             if (this.OnStandardError != null)
             {

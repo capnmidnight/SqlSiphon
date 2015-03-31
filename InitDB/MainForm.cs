@@ -147,6 +147,7 @@ namespace InitDB
                 statusRTB.SelectionStart = statusRTB.TextLength;
                 statusRTB.ScrollToCaret();
                 toolStripStatusLabel1.Text = txt.Substring(0, Math.Min(txt.Length, 100)).Trim();
+
                 if (modal)
                 {
                     MessageBox.Show(txt);
