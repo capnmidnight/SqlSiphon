@@ -72,8 +72,7 @@ namespace InitDB
                 }
             }
             this.Icon = Properties.Resources.InitDBLogo;
-            this.txtStdOut.Text = string.Empty;
-            this.txtStdErr.Text = string.Empty;
+            this.statusRTB.Text = string.Empty;
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             var version = assembly.GetName().Version;
             this.Text += " v" + version.ToString(4);
@@ -131,16 +130,23 @@ namespace InitDB
             else act();
         }
 
-        private void Dump(TextBox box, string txt, bool modal)
+        private void Dump(string txt, bool isError, bool modal)
         {
             this.SyncUI(() =>
             {
-                box.AppendText(txt);
-                if (!txt.EndsWith("..."))
+                if(!txt.EndsWith("..."))
                 {
-                    box.AppendText(Environment.NewLine);
+                    txt += "\n";
                 }
-                toolStripStatusLabel1.Text = txt;
+
+                statusRTB.AppendText(txt);
+                statusRTB.SelectionStart = statusRTB.TextLength - txt.Length;
+                statusRTB.SelectionLength = txt.Length;
+                statusRTB.SelectionColor = isError ? System.Drawing.Color.Salmon : System.Drawing.Color.Aquamarine;
+                statusRTB.SelectionLength = 0;
+                statusRTB.SelectionStart = statusRTB.TextLength;
+                statusRTB.ScrollToCaret();
+                toolStripStatusLabel1.Text = txt.Substring(0, Math.Min(txt.Length, 100)).Trim();
                 if (modal)
                 {
                     MessageBox.Show(txt);
@@ -160,10 +166,10 @@ namespace InitDB
         {
             if (txt != null)
             {
-                this.Dump(this.txtStdErr, txt, modal);
+                this.Dump(txt, true, modal);
                 this.SyncUI(() =>
                 {
-                    this.tabControl1.SelectedTab = this.tabStdErr;
+                    this.tabControl1.SelectedTab = this.tabStatus;
                     this.runToolStripMenuItem.Enabled = true;
                 });
             }
@@ -171,7 +177,7 @@ namespace InitDB
 
         private void ToOutput(string txt, bool modal = false)
         {
-            this.Dump(this.txtStdOut, txt, modal);
+            this.Dump(txt, false, modal);
         }
 
         private void LoadOptions()
@@ -244,7 +250,7 @@ namespace InitDB
             Application.DoEvents();
             if (PathsAreCorrect())
             {
-                tabControl1.SelectedTab = tabStdOut;
+                tabControl1.SelectedTab = tabStatus;
                 Task.Run(new Action(SetupDB));
             }
         }
@@ -313,7 +319,7 @@ namespace InitDB
             bool succeeded = true;
             if (selectTab)
             {
-                this.tabControl1.SelectedTab = this.tabStdOut;
+                this.tabControl1.SelectedTab = this.tabStatus;
             }
 
             this.ToOutput(HORIZONTAL_LINE);
@@ -543,8 +549,7 @@ namespace InitDB
                     {
                         this.filterTypesCBL.SetItemChecked(i, st.Contains((ScriptType)this.filterTypesCBL.Items[i]));
                     }
-                    this.txtStdOut.Text = "";
-                    this.txtStdErr.Text = "";
+                    this.statusRTB.Text = "";
                     tabControl1.SelectedTab = this.tabScripts;
                     this.pendingScriptsGV.DataSource = null;
                     if (sessionName != DEFAULT_SESSION_NAME)
@@ -613,7 +618,7 @@ namespace InitDB
                     return succeeded;
                 }, (exp) =>
                 {
-                    this.tabControl1.SelectedTab = this.tabStdErr;
+                    this.tabControl1.SelectedTab = this.tabStatus;
                     return string.Format("{0}: {1}", exp.GetType().Name, exp.Message);
                 });
                 gv.Enabled = true;
