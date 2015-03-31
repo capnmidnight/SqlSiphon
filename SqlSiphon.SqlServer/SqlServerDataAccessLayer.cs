@@ -219,7 +219,8 @@ end catch;", transactionName);
                 query = string.Join(Environment.NewLine, transactionBegin, query, transactionEnd);
             }
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
-            var parameterSection = this.MakeParameterSection(info);
+            var parameters = info.Parameters.Select(this.MakeParameterString);
+            var parameterSection = string.Join(", ", parameters);
 
             return string.Format(
 @"create procedure {0}

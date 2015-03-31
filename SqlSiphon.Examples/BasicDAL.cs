@@ -88,7 +88,7 @@ namespace SqlSiphon.Examples
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.StoredProcedure,
+        [Routine(CommandType = CommandType.Text,
             Query =
 @"select ApplicationID
 from Applications

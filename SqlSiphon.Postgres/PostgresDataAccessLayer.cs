@@ -508,26 +508,23 @@ namespace SqlSiphon.Postgres
 
         private string MakeComplexSqlTypeString(Type systemType)
         {
-            string name = systemType != null ? systemType.FullName : null;
             string sqlType = null;
-            var isRef = systemType.Name.Last() == '&';
             var isCollection = systemType.GetInterfaces().Contains(typeof(IEnumerable));
-            Type elemType = systemType;
             if (isCollection)
             {
-                if (elemType.IsArray)
+                if (systemType.IsArray)
                 {
-                    elemType = elemType.GetElementType();
+                    systemType = systemType.GetElementType();
                 }
-                else if(elemType.IsGenericType)
+                else if (systemType.IsGenericType)
                 {
-                    elemType = elemType.GetGenericArguments().First();
+                    systemType = systemType.GetGenericArguments().First();
                 }
             }
-            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(elemType);
+            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(systemType);
             if (attr != null)
             {
-                attr.InferProperties(elemType);
+                attr.InferProperties(systemType);
                 if (isCollection)
                 {
                     sqlType = attr.Name + "[]";
@@ -537,9 +534,9 @@ namespace SqlSiphon.Postgres
                     sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
                 }
             }
-            else if (reverseTypeMapping.ContainsKey(elemType))
+            else if (reverseTypeMapping.ContainsKey(systemType))
             {
-                sqlType = reverseTypeMapping[elemType];
+                sqlType = reverseTypeMapping[systemType];
                 if (isCollection)
                 {
                     sqlType += "[]";
@@ -748,15 +745,20 @@ namespace SqlSiphon.Postgres
         {
             var queryBody = this.MakeRoutineBody(routine);
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var parameterSection = this.MakeParameterSection(routine).Replace("@", "_"); ;
             var returnType = this.MakeSqlTypeString(routine);
+            var parameters = routine.Parameters.Select(this.MakeParameterString).ToList();
+            if (returnType != null)
+            {
+                parameters.Add("returnValue " + returnType);
+            }
+            var parameterSection = string.Join(", ", parameters);
             var query = string.Format(
 @"create or replace function {0}(
 {1}
 )
     returns {2} as $$
 {3}
-$$ language sql;",
+$$ language plpgsql;",
                 identifier,
                 parameterSection,
                 returnType ?? "void",

@@ -135,8 +135,10 @@ namespace InitDB
             {
                 if (!txt.EndsWith("..."))
                 {
-                    txt += "\n";
+                    txt += Environment.NewLine;
                 }
+
+                txt = txt.Replace("\r\n", "\n");
 
                 statusRTB.AppendText(txt);
                 statusRTB.SelectionStart = statusRTB.TextLength - txt.Length;
@@ -318,17 +320,15 @@ namespace InitDB
 
         private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
         {
-            return WithErrorCapture(() =>
+            var succeeded = false;
+            foreach (var script in scripts)
             {
-                foreach (var script in scripts)
+                if (script.Run)
                 {
-                    if (script.Run && !RunScript(script, false, db))
-                    {
-                        return false;
-                    }
-                };
-                return true;
-            });
+                    succeeded = WithErrorCapture(() => RunScript(script, false, db)) && succeeded;
+                }
+            };
+            return succeeded;
         }
 
         private bool RunScript(ScriptStatus script, bool selectTab, ISqlSiphon db)
@@ -550,6 +550,7 @@ namespace InitDB
             var sessionName = savedSessionList.SelectedItem as string;
             if (sessionName != null)
             {
+                sessionToolStripMenuItem.Enabled = savedSessionList.SelectedIndex > 0;
                 if (this.CurrentSession != null)
                 {
                     this.serverTB.Text = this.CurrentSession.Server;

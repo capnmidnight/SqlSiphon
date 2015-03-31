@@ -654,11 +654,6 @@ namespace SqlSiphon
             return str;
         }
 
-        protected string MakeParameterSection(RoutineAttribute info)
-        {
-            return ArgumentList(info.Parameters, this.MakeParameterString);
-        }
-
         protected string MakeColumnSection(TableAttribute info, bool isReturnType)
         {
             return ArgumentList(info.Properties.Where(p => p.Include), p => this.MakeColumnString(p, isReturnType));
