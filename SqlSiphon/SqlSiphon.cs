@@ -226,7 +226,7 @@ namespace SqlSiphon
             Query = "select count(*) from ScriptStatus")]
         public int GetDatabaseVersion()
         {
-            return this.Get<int>(0);
+            return this.Get<int>();
         }
 
         public void AlterDatabase(ScriptStatus script)
@@ -546,7 +546,7 @@ namespace SqlSiphon
                 Func<object> getter = null;
 
                 if (key is string)
-                    getter = () => reader[(string)key];
+                    throw new Exception("String keys are no longer supported. Use integer index instead.");
                 else if (key is int)
                     getter = () => reader[(int)key];
                 else if (key is Type)
@@ -600,25 +600,9 @@ namespace SqlSiphon
         {
             var type = typeof(EntityT);
 
-            // The most basic case is returning values from one column in the table.
-            // The first parameter is skipped because it's the column name to retrieve,
-            // not a parameter to the stored procedure
-            bool isPrimitive = IsTypePrimitive(type);
-
-            object key = type;
-
-            if (isPrimitive)
-            {
-                key = parameters.FirstOrDefault();
-                if (key == null)
-                {
-                    key = 0;
-                }
-                else
-                {
-                    parameters = parameters.Skip(1).ToArray();
-                }
-            }
+            // If we're returning a primitive value, we assume it's in the first position
+            // of the result set.
+            object key = IsTypePrimitive(type) ? (object)0 : type;
 
             using (var command = ConstructCommand(parameters))
             {

@@ -196,7 +196,8 @@ namespace SqlSiphon.SqlServer
 
         public override string MakeRoutineBody(RoutineAttribute info)
         {
-            var query = info.Query;
+            var query = info.Query.Replace("into returnValue", "")
+                .Replace("return query ", "");
             if (info.EnableTransaction)
             {
                 string transactionName = string.Format("TRANS{0}{1}", info.Schema ?? DefaultSchemaName, info.Name);
@@ -628,7 +629,7 @@ DROP INDEX {0} ON {1};",
         [Routine(CommandType = CommandType.Text, Query = @"select name from sys.sysusers")]
         public override List<string> GetDatabaseLogins()
         {
-            return this.GetList<string>("name");
+            return this.GetList<string>();
         }
 
         public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
@@ -640,14 +641,12 @@ ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;
 ALTER ROLE db_owner ADD MEMBER {0};", userName, password, database);
         }
 
-
-
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
 @"select schema_name from information_schema.schemata where schema_name not like 'db_%' and schema_name not in ('information_schema', 'dbo', 'guest', 'sys');")]
         public override List<string> GetSchemata()
         {
-            return this.GetList<string>("schema_name");
+            return this.GetList<string>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -851,7 +850,7 @@ where constraint_schema != 'information_schema';")]
             var onStdErrorOutput = new IOEventHandler((o, e) => succeeded = false);
             this.OnStandardError += onStdErrorOutput;
             bool complete = RunProcess(
-                executablePath, 
+                executablePath,
                 new string[]{
                     "-S " + server, 
                     string.IsNullOrWhiteSpace(adminUser) ? null : "-U " + adminUser, 

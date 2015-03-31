@@ -242,6 +242,8 @@ namespace SqlSiphon.Postgres
                     database = database.ToLower();
                 }
 
+                query = query.Replace("\"", "\\\"");
+
                 // I prefer colon-separated address/port specifications.
                 string port = null;
                 int i = server.IndexOf(":");
@@ -501,7 +503,7 @@ namespace SqlSiphon.Postgres
 
         public override bool RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
-            var typeA = this.MakeSqlTypeString(a);
+            var typeA = this.MakeSqlTypeString(a) ?? "void";
             bool changedReturnType = typeA != b.SqlType;
             return changedReturnType || base.RoutineChanged(a, b);
         }
@@ -690,7 +692,7 @@ namespace SqlSiphon.Postgres
             if (param.DefaultValue != null)
                 defaultString = " default = " + param.DefaultValue.ToString();
 
-            return string.Format("{0} @{1} {2}{3}", dirString, param.Name, typeStr, defaultString);
+            return string.Format("{0} _{1} {2}{3}", dirString, param.Name, typeStr, defaultString).Trim();
         }
 
         protected override string MakeColumnString(ColumnAttribute column, bool isReturnType)
@@ -745,20 +747,20 @@ namespace SqlSiphon.Postgres
         {
             var queryBody = this.MakeRoutineBody(routine);
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var returnType = this.MakeSqlTypeString(routine);
-            var parameters = routine.Parameters.Select(this.MakeParameterString).ToList();
-            if (returnType != null)
+            var returnType = this.MakeSqlTypeString(routine) ?? "void";
+            if (returnType.Contains("[]"))
             {
-                parameters.Add("returnValue " + returnType);
+                returnType = "setof " + returnType.Substring(0, returnType.Length - 2);
             }
+            var parameters = routine.Parameters.Select(this.MakeParameterString).ToList();
             var parameterSection = string.Join(", ", parameters);
             var query = string.Format(
-@"create or replace function {0}(
-{1}
-)
-    returns {2} as $$
+@"create or replace function {0}({1})
+returns {2} 
+language plpgsql
+as $$
 {3}
-$$ language plpgsql;",
+$$;",
                 identifier,
                 parameterSection,
                 returnType ?? "void",
@@ -769,6 +771,8 @@ $$ language plpgsql;",
         public override string MakeRoutineBody(RoutineAttribute routine)
         {
             var queryBody = routine.Query;
+            queryBody = queryBody.Replace("getdate()", "current_date")
+                .Replace("newid()", "uuid_generate_v4()");
             var declarations = new List<string>();
             queryBody = HoistPattern.Replace(queryBody, new MatchEvaluator(m =>
             {
@@ -783,6 +787,22 @@ $$ language plpgsql;",
                 declarations.AddRange(parts);
                 return "";
             }));
+
+
+            var returnType = this.MakeSqlTypeString(routine);
+            if (returnType != null)
+            {
+                if (returnType.Contains("[]"))
+                {
+                    returnType = null;
+                }
+                else
+                {
+                    declarations.Add("returnValue " + returnType);
+                    queryBody += "\nreturn returnValue;";
+                }
+            }
+
             for (int i = 0; i < declarations.Count; ++i)
             {
                 var parts = declarations[i]
@@ -792,7 +812,7 @@ $$ language plpgsql;",
                     .Where(p => p.Length > 0)
                     .ToArray();
                 parts[1] = NormalizeTypeName(parts[1].ToLower());
-                declarations[i] = "\r\n\t" + string.Join(" ", parts) + ";";
+                declarations[i] = "\n\t" + string.Join(" ", parts) + ";";
             }
             var declarationString = "";
             if (declarations.Count > 0)
@@ -804,9 +824,11 @@ $$ language plpgsql;",
 @"{0}
 begin
 {1}
-end;", declarationString, queryBody);
+end", 
+                declarationString, 
+                queryBody);
             queryBody = queryBody.Replace("@", "_");
-            return queryBody;
+            return queryBody.Trim();
         }
 
         public string NormalizeTypeName(string name)
@@ -916,7 +938,7 @@ alter table {1} add constraint {3} primary key using index {0};",
         [Routine(CommandType = CommandType.Text, Query = @"select usename from pg_catalog.pg_user")]
         public override List<string> GetDatabaseLogins()
         {
-            return this.GetList<string>("usename");
+            return this.GetList<string>();
         }
 
         public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
@@ -929,7 +951,7 @@ alter table {1} add constraint {3} primary key using index {0};",
 @"select schema_name from information_schema.schemata where schema_name not like 'pg_%' and schema_name not in ('information_schema', 'public');")]
         public override List<string> GetSchemata()
         {
-            return this.GetList<string>("schema_name");
+            return this.GetList<string>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

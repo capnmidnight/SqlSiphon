@@ -295,15 +295,10 @@ namespace SqlSiphon
                     .Where(r => filter == null || !filter.IsMatch(r.routine_name))
                     .ToList();
                 var routines = new Dictionary<string, InformationSchema.Routines>();
-                var exists = new List<InformationSchema.Routines>();
                 foreach (var prm in xxx)
                 {
                     var ident = dal.MakeIdentifier(prm.specific_schema, prm.specific_name);
-                    if (routines.ContainsKey(ident))
-                    {
-                        exists.Add(prm);
-                    }
-                    else
+                    if (!routines.ContainsKey(ident))
                     {
                         routines.Add(ident, prm);
                     }

@@ -28,6 +28,7 @@ namespace SqlSiphon
         CreateRoutine,
         DropIndex,
         CreateIndex,
+        AlterSettings,
         InitializeData
     }
 

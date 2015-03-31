@@ -42,16 +42,10 @@ namespace SqlSiphon.Examples
             roles = db.GetRoles(appID);
 
             var users = db.GetAllUsers(appName);
-            var userNames = users.Select(u => u.UserName.ToLower()).ToList();
-            var userIDs = users.ToDictionary(u => u.UserName.ToLower(), u => u.UserID);
             foreach (var userName in new[] { "Anna", "Bob", "Christine", "Dave" })
             {
-                Guid userID;
-                if (userNames.Contains(userName.ToLower())) 
-                {
-                    userID = userIDs[userName.ToLower()];
-                }
-                else
+                Guid userID = db.GetUserID(userName);
+                if(userID == Guid.Empty)
                 {
                     userID = Guid.NewGuid();
                     if (userID != db.CreateUser(userID, userName, appName))
@@ -88,14 +82,15 @@ namespace SqlSiphon.Examples
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.Text,
+        [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select ApplicationID
+@"select ApplicationID 
+into returnValue
 from Applications
 where ApplicationName = @applicationName;")]
         public Guid GetApplicationID(string applicationName)
         {
-            return this.Get<Guid>("ApplicationID", applicationName);
+            return this.Get<Guid>(applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -126,6 +121,7 @@ where ApplicationName = @applicationName;")]
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
+into returnValue
 from Membership m
 inner join Users u on u.UserID = m.UserID
 inner join Applications a on a.ApplicationID = m.ApplicationID
@@ -140,6 +136,7 @@ where u.userName = @userName
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
 @"select u.userName
+into returnValue
 from Users u
 inner join Membership m on m.UserID = u.UserID
 inner join Application a on u.ApplicationID = a.ApplicationID
@@ -147,7 +144,7 @@ where m.LoweredEmail = lower(@email)
     and u.ApplicatoinName = @applicationName;")]
         public string GetuserNameByEmail(string email, string applicationName)
         {
-            return this.Get<string>("userName", email, applicationName);
+            return this.Get<string>(email, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -166,6 +163,7 @@ where m.LoweredEmail = lower(@email)
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
+into returnValue
 from Membership m
 inner join Users u on u.UserID = m.UserID
 where m.UserID = @userID;")]
@@ -178,11 +176,12 @@ where m.UserID = @userID;")]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
 @"select UserID
+into returnValue
 from Users
 where userName = @userName;")]
         public Guid GetUserID(string userName)
         {
-            return this.Get<Guid>("UserID", userName);
+            return this.Get<Guid>(userName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -287,7 +286,7 @@ delete from Membership where UserID = @UserID
 
 delete from Users where UserID = @userID
     and ApplicationID = @applicationID;")]
-        public void deleteUser(string userName, string applicationName)
+        public void DeleteUser(string userName, string applicationName)
         {
             this.Execute(userName, applicationName);
         }
@@ -328,7 +327,7 @@ select @applicationID = ApplicationID
 from Applications
 where ApplicationName = @applicationName;
 
-select 
+return query select 
     u.UserID, 
     u.userName, 
     m.Email, 
@@ -359,7 +358,9 @@ select @applicationID = ApplicationID
 from Applications
 where ApplicationName = @applicationName;
 
-select Count(*) from Users
+select Count(*)
+into returnValue
+from Users
 where LastActivityDate > @compareDate
     and ApplicationID = @applicationID;")]
         public int GetNumberOfUsersOnline(DateTime compareDate, string applicationName)
@@ -392,6 +393,7 @@ where LastActivityDate > @compareDate
     m.FailedPasswordAnswerAttemptCount,
     m.FailedPasswordAnswerAttemptWindowStart,
     m.Comment
+into returnValue
 from Membership m
 inner join Users u on u.UserID = m.UserID
 inner join Applications a on a.ApplicationID = m.ApplicationID
@@ -578,7 +580,7 @@ select @applicationID = ApplicationID
 from Applications
 where ApplicationName = @applicationName;
 
-select 
+return query select 
     u.UserID, 
     u.userName, 
     m.Email, 
@@ -610,7 +612,7 @@ select @applicationID = ApplicationID
 from Applications
 where ApplicationName = @applicationName;
 
-select 
+return query select 
     u.UserID, 
     u.userName, 
     m.Email, 
@@ -722,7 +724,7 @@ insert into Roles
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
 @"delete from Roles
-	where RoleName = @roleName;")]
+where RoleName = @roleName;")]
         public void DeleteRole(string roleName)
         {
             // remove FK items
@@ -733,16 +735,17 @@ insert into Roles
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select RoleName from Roles;")]
+@"return query select RoleName 
+from Roles;")]
         public string[] GetAllRoles()
         {
-            return this.GetList<string>("roleName").ToArray();
+            return this.GetList<string>().ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select *
+@"return query select *
 from Roles
 where ApplicationID = @applicationID;")]
         public List<Roles> GetRoles(Guid applicationID)
@@ -753,33 +756,34 @@ where ApplicationID = @applicationID;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select Roles.RoleName
+@"return query select Roles.RoleName
 from UsersInRoles
 	inner join Users on Users.UserID = UsersInRoles.UserID
 	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
 where Users.userName = @userName;")]
         public string[] GetRolesForUser(string userName)
         {
-            return this.GetList<string>("RoleName", userName).ToArray();
+            return this.GetList<string>(userName).ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select Users.userName 
+@"return query select Users.userName 
 from UsersInRoles
 	inner join Users on Users.UserID = UsersInRoles.UserID
 	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
 where Roles.RoleName = @roleName;")]
         public string[] GetUsersInRole(string roleName)
         {
-            return this.GetList<string>("userName", roleName).ToArray();
+            return this.GetList<string>(roleName).ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select COUNT(*) 
+@"select COUNT(*)
+into returnValue
 from UsersInRoles
     inner join Users on Users.UserID = UsersInRoles.UserID
 	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
@@ -787,7 +791,7 @@ where Users.userName= @userName
     and Roles.RoleName = @roleName;")]
         public bool IsUserInRole(string userName, string roleName)
         {
-            return this.Get<int>(0, userName, roleName) > 0;
+            return this.Get<int>(userName, roleName) > 0;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -816,17 +820,18 @@ where UserID = @UserID
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
 @"select COUNT(*)
+into returnValue
 from Roles
 where RoleName = @roleName;")]
         public bool RoleExists(string roleName)
         {
-            return this.Get<int>(0, roleName) > 0;
+            return this.Get<int>(roleName) > 0;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select Users.userName 
+@"return query select Users.userName 
 from UsersInRoles
     inner join Users on Users.UserID = UsersInRoles.UserID
     inner join Roles on Roles.RoleID = UsersInRoles.RoleID
@@ -834,7 +839,7 @@ where Users.userName like @userNameToMatch
     and Roles.RoleName = @roleName;")]
         public string[] FindUsersInRole(string userNameToMatch, string roleName)
         {
-            return this.GetList<string>("userName", userNameToMatch, roleName).ToArray();
+            return this.GetList<string>(userNameToMatch, roleName).ToArray();
         }
     }
 }

@@ -32,6 +32,11 @@ namespace SqlSiphon.Postgres
             {
                 ProcessExtensions(dal, delta, pg.Extensions);
             }
+
+            delta.Scripts.Add(new ScriptStatus(
+                ScriptType.AlterSettings, 
+                "set schema search path", 
+                string.Format("set search_path = {0},public;", string.Join(",", this.Schemata.Select(s=>dal.MakeIdentifier(s))))));
             return delta;
         }
 
