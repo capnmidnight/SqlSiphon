@@ -320,7 +320,7 @@ namespace InitDB
 
         private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
         {
-            var succeeded = false;
+            var succeeded = true;
             foreach (var script in scripts)
             {
                 if (script.Run)
