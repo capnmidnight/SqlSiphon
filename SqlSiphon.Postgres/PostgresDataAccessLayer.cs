@@ -235,69 +235,127 @@ namespace SqlSiphon.Postgres
             {
                 if (database != null)
                 {
+                    // Postgres is case-insensitive to database names in general, but
+                    // the psql program is not. You can't make a mixed-case database,
+                    // but psql will not match mixed-case names to their lowercase version.
                     database = database.ToLower();
                 }
+
+                // I prefer colon-separated address/port specifications.
                 string port = null;
-                var i = server.IndexOf(":");
+                int i = server.IndexOf(":");
                 if (i > -1)
                 {
                     port = server.Substring(i + 1);
                     server = server.Substring(0, i);
                 }
 
-                // we can't send a password to the server directly, so we have twiddle the user's
-                // pgpass.conf file. See this page for more information on the pgpass.conf file:
-                //     http://www.postgresql.org/docs/current/static/libpq-pgpass.html
-                i = configurationPath.IndexOf("InitDB");
-                configurationPath = Path.Combine(configurationPath.Substring(0, i), "postgresql", "pgpass.conf");
-                bool lineAdded = false;
-                string[] originalConf = null;
-                if (File.Exists(configurationPath))
-                {
-                    originalConf = File.ReadAllLines(configurationPath);
-                }
-                var lineToAdd = string.Format(
-                    "{0}:{1}:{2}:{3}:{4}",
-                    server,
-                    port ?? "*",
-                    database ?? "*",
-                    adminUser,
-                    adminPass);
+                configurationPath = FindConfigurationFile(configurationPath);
 
-                if (originalConf == null)
-                {
-                    lineAdded = true;
-                    File.WriteAllText(configurationPath, lineToAdd);
-                }
-                else
-                {
-                    var conf = originalConf.ToList();
-                    i = conf.IndexOf(lineToAdd);
-                    if (i == -1)
-                    {
-                        conf.Add(lineToAdd);
-                        lineAdded = true;
-                        File.WriteAllLines(configurationPath, conf);
-                    }
-                }
+                string[] originalConf = InjectUserCredentials(configurationPath, server, port, database, adminUser, adminPass);
 
-                var succeeded = RunProcess(executablePath, "-h " + server, string.IsNullOrWhiteSpace(port) ? null : "-p " + port, "-U " + adminUser, string.Format(" -{0} \"{1}\"", "c", query), (database != null) ? "-d " + database : null);
-
-                // put everything back the way it was
-                if (lineAdded)
+                bool succeeded = false;
+                try
                 {
-                    if (originalConf == null)
-                    {
-                        File.Delete(configurationPath);
-                    }
-                    else
-                    {
-                        File.WriteAllLines(configurationPath, originalConf);
-                    }
+                    succeeded = RunProcess(
+                        executablePath,
+                        new string[]{
+                            "-h " + server, 
+                            string.IsNullOrWhiteSpace(port) ? null : "-p " + port, 
+                            "-U " + adminUser, 
+                            (database == null) ? null : "-d " + database,
+                            string.Format("-c \"{0}\"", query)
+                    });
+                }
+                finally
+                {
+                    RevertConfigurationFile(configurationPath, originalConf);
                 }
 
                 return succeeded;
             }
+        }
+
+        private static void RevertConfigurationFile(string configurationPath, string[] originalConf)
+        {
+            if (originalConf != null)
+            {
+                if (originalConf.Length == 0)
+                {
+                    File.Delete(configurationPath);
+                }
+                else
+                {
+                    File.WriteAllLines(configurationPath, originalConf);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Starting from InitDB's configuration file, finds the Postgres configuration file.
+        /// </summary>
+        /// <param name="configurationPath"></param>
+        /// <returns></returns>
+        private static string FindConfigurationFile(string configurationPath)
+        {
+            // If either InitDB or Postgres' configuration file moves, this will break. But
+            // for now, they are both in the User's AppData directory.
+            int j = configurationPath.IndexOf("InitDB");
+            configurationPath = Path.Combine(configurationPath.Substring(0, j), "postgresql", "pgpass.conf");
+            return configurationPath;
+        }
+
+        /// <summary>
+        /// We can't send a password to the server directly, so we have twiddle the user's
+        /// pgpass.conf file. See this page for more information on the pgpass.conf file:
+        ///     http://www.postgresql.org/docs/current/static/libpq-pgpass.html
+        /// </summary>
+        /// <param name="configurationPath"></param>
+        /// <param name="server"></param>
+        /// <param name="port"></param>
+        /// <param name="database"></param>
+        /// <param name="adminUser"></param>
+        /// <param name="adminPass"></param>
+        /// <returns></returns>
+        private static string[] InjectUserCredentials(string configurationPath, string server, string port, string database, string adminUser, string adminPass)
+        {
+            string[] originalConf = null;
+            if (File.Exists(configurationPath))
+            {
+                originalConf = File.ReadAllLines(configurationPath);
+            }
+
+            var lineToAdd = string.Format(
+                "{0}:{1}:{2}:{3}:{4}",
+                server,
+                port ?? "*",
+                database ?? "*",
+                adminUser,
+                adminPass);
+
+            if (originalConf == null)
+            {
+                // No configuration file exists, so make one.
+                originalConf = new string[0];
+                File.WriteAllText(configurationPath, lineToAdd);
+            }
+            else
+            {
+                var conf = originalConf.ToList();
+                int i = conf.IndexOf(lineToAdd);
+                if (i == -1)
+                {
+                    conf.Add(lineToAdd);
+                    File.WriteAllLines(configurationPath, conf);
+                }
+                else
+                {
+                    // the configuration file is already setup for us,
+                    // so don't make any changes to it.
+                    originalConf = null;
+                }
+            }
+            return originalConf;
         }
 
 

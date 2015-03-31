@@ -850,7 +850,7 @@ namespace SqlSiphon
             }
         }
 
-        protected bool RunProcess(string path, params string[] args)
+        protected bool RunProcess(string path, string[] args)
         {
             var succeeded = true;
             var shortName = new System.IO.FileInfo(path).Name;

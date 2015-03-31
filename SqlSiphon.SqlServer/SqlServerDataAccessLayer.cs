@@ -828,7 +828,15 @@ where constraint_schema != 'information_schema';")]
 
         public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
         {
-            return RunProcess(executablePath, "-S " + server, string.IsNullOrWhiteSpace(adminUser) ? null : "-U " + adminUser, string.IsNullOrWhiteSpace(adminPass) ? null : "-P " + adminPass, (database != null) ? "-d " + database : null, string.Format(" -{0} \"{1}\"", "Q", query));
+            return RunProcess(
+                executablePath, 
+                new string[]{
+                    "-S " + server, 
+                    string.IsNullOrWhiteSpace(adminUser) ? null : "-U " + adminUser, 
+                    string.IsNullOrWhiteSpace(adminPass) ? null : "-P " + adminPass, 
+                    (database == null) ? null : "-d " + database,
+                    string.Format("-Q \"{0}\"", query)
+                });
         }
     }
 }
