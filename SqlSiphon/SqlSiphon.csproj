@@ -57,7 +57,7 @@
     <Compile Include="DatabaseDelta.cs" />
     <Compile Include="DataConnector.cs" />
     <Compile Include="IAssemblyStateReader.cs" />
-    <Compile Include="IDataAccess.cs" />
+    <Compile Include="IDataConnector.cs" />
     <Compile Include="IDatabaseObjectHandler.cs" />
     <Compile Include="IDatabaseScriptGenerator.cs" />
     <Compile Include="IDatabaseStateReader.cs" />

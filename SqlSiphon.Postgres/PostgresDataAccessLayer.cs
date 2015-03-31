@@ -30,6 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
 using System.Data;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -498,17 +499,36 @@ namespace SqlSiphon.Postgres
                 this.MakeIdentifier(prop.Name));
         }
 
+        public override bool RoutineChanged(RoutineAttribute a, RoutineAttribute b)
+        {
+            var typeA = this.MakeSqlTypeString(a);
+            bool changedReturnType = typeA != b.SqlType;
+            return changedReturnType || base.RoutineChanged(a, b);
+        }
+
         private string MakeComplexSqlTypeString(Type systemType)
         {
             string name = systemType != null ? systemType.FullName : null;
             string sqlType = null;
             var isRef = systemType.Name.Last() == '&';
-            var elemType = systemType.IsArray || isRef ? systemType.GetElementType() : systemType;
+            var isCollection = systemType.GetInterfaces().Contains(typeof(IEnumerable));
+            Type elemType = systemType;
+            if (isCollection)
+            {
+                if (elemType.IsArray)
+                {
+                    elemType = elemType.GetElementType();
+                }
+                else if(elemType.IsGenericType)
+                {
+                    elemType = elemType.GetGenericArguments().First();
+                }
+            }
             var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(elemType);
             if (attr != null)
             {
                 attr.InferProperties(elemType);
-                if (systemType.IsArray)
+                if (isCollection)
                 {
                     sqlType = attr.Name + "[]";
                 }
@@ -520,7 +540,7 @@ namespace SqlSiphon.Postgres
             else if (reverseTypeMapping.ContainsKey(elemType))
             {
                 sqlType = reverseTypeMapping[elemType];
-                if (systemType.IsArray)
+                if (isCollection)
                 {
                     sqlType += "[]";
                 }
@@ -729,16 +749,17 @@ namespace SqlSiphon.Postgres
             var queryBody = this.MakeRoutineBody(routine);
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = this.MakeParameterSection(routine).Replace("@", "_"); ;
+            var returnType = this.MakeSqlTypeString(routine);
             var query = string.Format(
 @"create or replace function {0}(
 {1}
 )
     returns {2} as $$
 {3}
-$$ language plpgsql;",
+$$ language sql;",
                 identifier,
                 parameterSection,
-                this.MakeSqlTypeString(routine),
+                returnType ?? "void",
                 queryBody);
             return query;
         }
@@ -991,13 +1012,14 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
 @"select 
-        r.specific_catalog,
-        r.specific_schema,
-        r.specific_name,
-        r.routine_catalog,
-        r.routine_schema,
-        r.routine_name,
-        p.prosrc as routine_definition
+    r.specific_catalog,
+    r.specific_schema,
+    r.specific_name,
+    r.routine_catalog,
+    r.routine_schema,
+    r.routine_name,
+    r.data_type,
+    p.prosrc as routine_definition
 from information_schema.routines as r
     inner join pg_proc as p on p.proname = r.routine_name
     left outer join (select specific_name, count(*) as argcount

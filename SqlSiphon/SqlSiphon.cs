@@ -223,14 +223,6 @@ namespace SqlSiphon
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text,
-            Query = "select * from ScriptStatus")]
-        public List<ScriptStatus> GetScriptStatus()
-        {
-            return this.GetList<ScriptStatus>();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.Text,
             Query = "select count(*) from ScriptStatus")]
         public int GetDatabaseVersion()
         {
@@ -549,35 +541,38 @@ namespace SqlSiphon
         /// <returns></returns>
         private IEnumerable<EntityT> Iterate<EntityT>(DataReaderT reader, object key)
         {
-            Func<object> getter = null;
-
-            if (key is string)
-                getter = () => reader[(string)key];
-            else if (key is int)
-                getter = () => reader[(int)key];
-            else if (key is Type)
+            using (reader)
             {
-                // A raw entity type must have a default constructor. We need to be able to create an
-                // uninitialized version of the object so that we can set the fields to the
-                // mapped values later
-                var type = (Type)key;
-                var constructor = type.GetConstructor(Type.EmptyTypes);
-                if (constructor == null)
-                    throw new Exception("Entity classes need default constructors!");
-                var columnNames = new string[reader.FieldCount];
-                for (int i = 0; i < reader.FieldCount; ++i)
-                    columnNames[i] = reader.GetName(i).ToUpper();
-                var fields = GetProperties(type);
-                getter = delegate()
+                Func<object> getter = null;
+
+                if (key is string)
+                    getter = () => reader[(string)key];
+                else if (key is int)
+                    getter = () => reader[(int)key];
+                else if (key is Type)
                 {
-                    var inst = (EntityT)constructor.Invoke(null);
-                    DoMapping(inst, reader, columnNames, fields);
-                    return inst;
-                };
-            }
-
-            if (getter != null)
-            {
+                    // A raw entity type must have a default constructor. We need to be able to create an
+                    // uninitialized version of the object so that we can set the fields to the
+                    // mapped values later
+                    var type = (Type)key;
+                    var constructor = type.GetConstructor(Type.EmptyTypes);
+                    if (constructor == null)
+                        throw new Exception("Entity classes need default constructors!");
+                    var columnNames = new string[reader.FieldCount];
+                    for (int i = 0; i < reader.FieldCount; ++i)
+                        columnNames[i] = reader.GetName(i).ToUpper();
+                    var fields = GetProperties(type);
+                    getter = delegate()
+                    {
+                        var inst = (EntityT)constructor.Invoke(null);
+                        DoMapping(inst, reader, columnNames, fields);
+                        return inst;
+                    };
+                }
+                else
+                {
+                    throw new ArgumentException("When retrieving a primitive data type, the first parameter to the procedure must be a string Column Name or an integer Column Index. Given: " + key.GetType().Name);
+                }
                 while (reader.Read())
                 {
                     var val = getter();
@@ -587,12 +582,6 @@ namespace SqlSiphon
                         yield return (EntityT)val;
                 }
             }
-
-            reader.Dispose();
-
-            // this is done here to make sure the reader gets disposed first
-            if (getter == null)
-                throw new ArgumentException("When retrieving a primitive data type, the first parameter to the procedure must be a string Column Name or an integer Column Index. Given: " + key.GetType().Name);
         }
 
 
@@ -620,8 +609,15 @@ namespace SqlSiphon
 
             if (isPrimitive)
             {
-                key = parameters.First();
-                parameters = parameters.Skip(1).ToArray();
+                key = parameters.FirstOrDefault();
+                if (key == null)
+                {
+                    key = 0;
+                }
+                else
+                {
+                    parameters = parameters.Skip(1).ToArray();
+                }
             }
 
             using (var command = ConstructCommand(parameters))
@@ -674,8 +670,17 @@ namespace SqlSiphon
             {
                 var isIdentity = p is ColumnAttribute && ((ColumnAttribute)p).IsIdentity;
                 var systemType = p.SystemType;
-                if (systemType != null && systemType.IsEnum)
-                    systemType = typeof(int);
+                if (systemType != null)
+                {
+                    if (systemType.IsEnum)
+                    {
+                        systemType = typeof(int);
+                    }
+                    else if (systemType == typeof(void))
+                    {
+                        systemType = null;
+                    }
+                }
                 return MakeSqlTypeString(
                     p.SqlType,
                     systemType,
@@ -691,7 +696,6 @@ namespace SqlSiphon
 
         public virtual bool RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
-            bool changedReturnType = a.SqlType != b.SqlType;
             bool changedParameters = a.Parameters.Count != b.Parameters.Count;
             if (!changedParameters)
             {
@@ -715,8 +719,7 @@ namespace SqlSiphon
             var finalScript = this.MakeRoutineBody(a).Trim();
             var initialScript = b.Query.Trim();
             bool changedQuery = finalScript != initialScript;
-            var changed = changedReturnType
-                || changedParameters
+            var changed = changedParameters
                 || changedQuery;
             return changed;
         }
@@ -764,6 +767,14 @@ namespace SqlSiphon
             return this.GetList<string>();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query =
+@"select script from ScriptStatus;")]
+        public virtual List<string> GetScriptStatus()
+        {
+            return this.GetList<string>();
+        }
+
         public virtual string MakeCreateCatalogueScript(string catalogueName)
         {
             return string.Format("create database {0};", catalogueName);
@@ -783,55 +794,6 @@ namespace SqlSiphon
         {
             return MakeSchemaScript("drop", schemaName);
         }
-
-        public abstract List<string> GetDatabaseLogins();
-        public abstract List<InformationSchema.Columns> GetColumns();
-        public abstract List<InformationSchema.IndexColumnUsage> GetIndexColumns();
-        public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
-        public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
-        public abstract List<InformationSchema.Routines> GetRoutines();
-        public abstract List<InformationSchema.Parameters> GetParameters();
-        public abstract List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns();
-        public abstract List<InformationSchema.KeyColumnUsage> GetKeyColumns();
-
-        public abstract string DefaultSchemaName { get; }
-        public abstract int DefaultTypeSize(string typeName, int testSize);
-        public abstract Type GetSystemType(string sqlType);
-        public abstract bool DescribesIdentity(InformationSchema.Columns column);
-        public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
-        public virtual void AnalyzeQuery(string routineText, RoutineAttribute routine)
-        {
-            routine.Query = routineText;
-        }
-
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
-        protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
-        protected abstract string MakeParameterString(ParameterAttribute p);
-
-        public abstract string MakeCreateDatabaseLoginScript(string userName, string password, string database);
-
-        public abstract string MakeCreateTableScript(TableAttribute table);
-        public abstract string MakeDropTableScript(TableAttribute table);
-
-        public abstract string MakeCreateColumnScript(ColumnAttribute column);
-        public abstract string MakeDropColumnScript(ColumnAttribute column);
-        public abstract string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);
-
-        public abstract string MakeDropRoutineScript(RoutineAttribute routine);
-        public abstract string MakeRoutineBody(RoutineAttribute routine);
-        public abstract string MakeCreateRoutineScript(RoutineAttribute routine);
-
-        public abstract string MakeDropRelationshipScript(Relationship relation);
-        public abstract string MakeCreateRelationshipScript(Relationship relation);
-
-        public abstract string MakeDropPrimaryKeyScript(PrimaryKey key);
-        public abstract string MakeCreatePrimaryKeyScript(PrimaryKey key);
-        public abstract string MakeDropIndexScript(Index index);
-        public abstract string MakeCreateIndexScript(Index index);
-
-        public abstract string DatabaseType { get; }
-
-        public abstract bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query);
 
         public event IOEventHandler OnStandardOutput;
         public event IOEventHandler OnStandardError;
@@ -884,5 +846,54 @@ namespace SqlSiphon
             }
             return succeeded;
         }
+
+        public abstract List<string> GetDatabaseLogins();
+        public abstract List<InformationSchema.Columns> GetColumns();
+        public abstract List<InformationSchema.IndexColumnUsage> GetIndexColumns();
+        public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
+        public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
+        public abstract List<InformationSchema.Routines> GetRoutines();
+        public abstract List<InformationSchema.Parameters> GetParameters();
+        public abstract List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns();
+        public abstract List<InformationSchema.KeyColumnUsage> GetKeyColumns();
+
+        public abstract string DefaultSchemaName { get; }
+        public abstract int DefaultTypeSize(string typeName, int testSize);
+        public abstract Type GetSystemType(string sqlType);
+        public abstract bool DescribesIdentity(InformationSchema.Columns column);
+        public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
+        public virtual void AnalyzeQuery(string routineText, RoutineAttribute routine)
+        {
+            routine.Query = routineText;
+        }
+
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
+        protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
+        protected abstract string MakeParameterString(ParameterAttribute p);
+
+        public abstract string MakeCreateDatabaseLoginScript(string userName, string password, string database);
+
+        public abstract string MakeCreateTableScript(TableAttribute table);
+        public abstract string MakeDropTableScript(TableAttribute table);
+
+        public abstract string MakeCreateColumnScript(ColumnAttribute column);
+        public abstract string MakeDropColumnScript(ColumnAttribute column);
+        public abstract string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);
+
+        public abstract string MakeDropRoutineScript(RoutineAttribute routine);
+        public abstract string MakeRoutineBody(RoutineAttribute routine);
+        public abstract string MakeCreateRoutineScript(RoutineAttribute routine);
+
+        public abstract string MakeDropRelationshipScript(Relationship relation);
+        public abstract string MakeCreateRelationshipScript(Relationship relation);
+
+        public abstract string MakeDropPrimaryKeyScript(PrimaryKey key);
+        public abstract string MakeCreatePrimaryKeyScript(PrimaryKey key);
+        public abstract string MakeDropIndexScript(Index index);
+        public abstract string MakeCreateIndexScript(Index index);
+
+        public abstract string DatabaseType { get; }
+
+        public abstract bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query);
     }
 }

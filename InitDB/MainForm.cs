@@ -82,7 +82,7 @@ namespace InitDB
             this.optionsDialog.BrowseSQLCMDPathClick += optionsDialog_BrowseSQLCMDPathClick;
         }
 
-        public ISqlSiphon MakeDatabaseConnection()
+        public DataConnector MakeDatabaseConnection()
         {
             var constructorParams = new[] { 
                 typeof(IDataConnectorFactory),
@@ -115,8 +115,7 @@ namespace InitDB
                     if (constructor != null && constructorArgs != null)
                     {
                         this.CurrentDataAccessLayerType = type;
-                        var dbc = ((DataConnector)constructor.Invoke(constructorArgs));
-                        return dbc.GetSqlSiphon();
+                        return ((DataConnector)constructor.Invoke(constructorArgs));
                     }
                 }
             }
@@ -134,7 +133,7 @@ namespace InitDB
         {
             this.SyncUI(() =>
             {
-                if(!txt.EndsWith("..."))
+                if (!txt.EndsWith("..."))
                 {
                     txt += "\n";
                 }
@@ -256,6 +255,53 @@ namespace InitDB
             }
         }
 
+        private void SetupDB()
+        {
+            WithErrorCapture(() =>
+            {
+                bool succeeded = false;
+                using (var db = this.MakeDatabaseConnection())
+                {
+                    var ss = db.GetSqlSiphon();
+                    var delta = CreateDelta(ss);
+                    DisplayDelta(delta);
+                    var t = db.GetType();
+                    this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
+
+                    succeeded = RunScripts(delta.Scripts, ss);
+                    try
+                    {
+                        if (delta.PostExecute != null)
+                        {
+                            foreach (var post in delta.PostExecute)
+                            {
+                                post(db);
+                            }
+                        }
+                    }
+                    catch (Exception exp)
+                    {
+                        succeeded = false;
+                        this.ToError(exp);
+                    }
+
+                    if (succeeded)
+                    {
+                        this.ToOutput("All done", true);
+                    }
+                    else
+                    {
+                        this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
+                    }
+
+                    delta = CreateDelta(ss);
+                    DisplayDelta(delta);
+                    this.SyncUI(() => runToolStripMenuItem.Enabled = true);
+                }
+                return succeeded;
+            });
+        }
+
         private bool PathsAreCorrect()
         {
             var sqlcmdGood = File.Exists(this.optionsDialog.SQLCMDPath);
@@ -268,36 +314,6 @@ namespace InitDB
             if (!assemblyGood)
                 this.ToError("Can't find Assembly");
             return psqlGood && sqlcmdGood && assemblyGood;
-        }
-
-        private void SetupDB()
-        {
-            WithErrorCapture(() =>
-            {
-                bool succeeded = false;
-                using (var db = this.MakeDatabaseConnection())
-                {
-                    var delta = CreateDelta(db);
-                    DisplayDelta(delta);
-                    var t = db.GetType();
-                    this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
-
-                    succeeded = RunScripts(delta.Scripts, db);
-                    if (succeeded)
-                    {
-                        this.ToOutput("All done", true);
-                    }
-                    else
-                    {
-                        this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
-                    }
-
-                    delta = CreateDelta(db);
-                    DisplayDelta(delta);
-                    this.SyncUI(() => runToolStripMenuItem.Enabled = true);
-                }
-                return succeeded;
-            });
         }
 
         private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
@@ -405,7 +421,7 @@ namespace InitDB
                     try
                     {
                         this.ToOutput("Synchronizing schema.");
-                        using (var db = this.MakeDatabaseConnection())
+                        using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
                         {
                             DisplayDelta(CreateDelta(db));
                         }
@@ -604,7 +620,7 @@ namespace InitDB
                     {
                         using (var db = this.MakeDatabaseConnection())
                         {
-                            succeeded = RunScript(scriptObject, true, db);
+                            succeeded = RunScript(scriptObject, true, db.GetSqlSiphon());
                         }
                         gv.Rows.RemoveAt(e.RowIndex);
                     }
@@ -612,7 +628,7 @@ namespace InitDB
                     {
                         using (var db = this.MakeDatabaseConnection())
                         {
-                            db.MarkScriptAsRan(scriptObject);
+                            db.GetSqlSiphon().MarkScriptAsRan(scriptObject);
                         }
                         gv.Rows.RemoveAt(e.RowIndex);
                     }
@@ -675,8 +691,8 @@ namespace InitDB
                     script = script.Substring(this.generalScriptTB.SelectionStart, this.generalScriptTB.SelectionLength);
                 }
                 var scriptObj = new ScriptStatus(ScriptType.InstallExtension, "none", script);
-                
-                using (var db = this.MakeDatabaseConnection())
+
+                using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
                 {
                     this.RunScript(scriptObj, true, db);
                 }
@@ -752,7 +768,7 @@ by Sean T. McBeth (v1) (sean@seanmcbeth.com)",
         {
             if (this.saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                using (var db = this.MakeDatabaseConnection())
+                using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
                 {
                     var delta = this.CreateDelta(db);
                     var sb = new System.Text.StringBuilder();

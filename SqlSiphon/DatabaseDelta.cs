@@ -82,6 +82,7 @@ namespace SqlSiphon
         public List<ScriptStatus> Scripts { get; private set; }
         public List<ScriptStatus> Initial { get; private set; }
         public List<ScriptStatus> Final { get; private set; }
+        public List<Action<IDataConnector>> PostExecute { get; private set; }
 
         public DatabaseDelta(DatabaseState final, DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {
@@ -100,9 +101,13 @@ namespace SqlSiphon
             ProcessRelationships(final.Relationships, initial.Relationships, asm, gen);
             ProcessKeys(final.PrimaryKeys, initial.PrimaryKeys, asm, gen);
             ProcessFunctions(final.Functions, initial.Functions, asm, gen);
+            this.Scripts.AddRange(final.InitScripts
+                .Where(s => !initial.InitScripts.Contains(s))
+                .Select((s, i) => new ScriptStatus(ScriptType.InitializeData, "init", s)));
             this.Scripts.Sort();
             this.Initial.Sort();
             this.Final.Sort();
+            this.PostExecute = final.PostExecute;
         }
 
         private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)

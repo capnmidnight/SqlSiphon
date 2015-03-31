@@ -491,7 +491,7 @@ DROP INDEX {0} ON {1};",
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
         {
-            if (sqlType == null && reverseTypeMapping.ContainsKey(systemType))
+            if (sqlType == null && systemType != null && reverseTypeMapping.ContainsKey(systemType))
             {
                 sqlType = reverseTypeMapping[systemType];
             }

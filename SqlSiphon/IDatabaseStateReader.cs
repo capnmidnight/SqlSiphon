@@ -19,6 +19,7 @@ namespace SqlSiphon
         Type GetSystemType(string sqlType);
 
         List<string> GetSchemata();
+        List<string> GetScriptStatus();
         List<string> GetDatabaseLogins();
         List<InformationSchema.Columns> GetColumns();
         List<InformationSchema.IndexColumnUsage> GetIndexColumns();

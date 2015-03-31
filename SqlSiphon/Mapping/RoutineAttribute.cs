@@ -94,6 +94,7 @@ namespace SqlSiphon.Mapping
             this.Name = routine.routine_name;
             this.CommandType = System.Data.CommandType.StoredProcedure;
             this.Parameters = new List<ParameterAttribute>();
+            this.SqlType = routine.data_type;
             int begin = routine.routine_definition
                 .ToLower()
                 .IndexOf("set nocount on;");
@@ -146,6 +147,10 @@ namespace SqlSiphon.Mapping
         {
             base.InferProperties(obj);
             this.originalMethod = obj;
+            if (obj.ReturnType != typeof(void))
+            {
+                this.SystemType = obj.ReturnType;
+            }
             this.Parameters.AddRange(obj.GetParameters()
                 .Select(this.ToMappedParameter));
         }

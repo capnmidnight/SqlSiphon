@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using SqlSiphon.Mapping;
 
@@ -12,6 +13,89 @@ namespace SqlSiphon.Examples
         public BasicDAL(IDataConnectorFactory factory, string server, string database, string userName, string password) :
             base(factory, server, database, userName, password)
         {
+        }
+
+        public static void FirstTimeSetup(BasicDAL db)
+        {
+            var appName = "TestApplication";
+            var appID = db.GetApplicationID(appName);
+            if (appID == Guid.Empty)
+            {
+                db.CreateApplication(appName, "an applciation for testing");
+                appID = db.GetApplicationID(appName);
+            }
+
+            if (appID == Guid.Empty)
+            {
+                throw new Exception("Couldn't create the test application");
+            }
+
+            var roles = db.GetRoles(appID);
+            var roleNames = roles.Select(r => r.LoweredRoleName).ToList();
+            foreach (var roleName in new[] { "User", "Admin" })
+            {
+                if (!roleNames.Contains(roleName.ToLower()))
+                {
+                    db.CreateRole(roleName, appName, "basic " + roleName.ToLower() + " role");
+                }
+            }
+            roles = db.GetRoles(appID);
+
+            var users = db.GetAllUsers(appName);
+            var userNames = users.Select(u => u.UserName.ToLower()).ToList();
+            var userIDs = users.ToDictionary(u => u.UserName.ToLower(), u => u.UserID);
+            foreach (var userName in new[] { "Anna", "Bob", "Christine", "Dave" })
+            {
+                Guid userID;
+                if (userNames.Contains(userName.ToLower())) 
+                {
+                    userID = userIDs[userName.ToLower()];
+                }
+                else
+                {
+                    userID = Guid.NewGuid();
+                    if (userID != db.CreateUser(userID, userName, appName))
+                    {
+                        // why did the database change the UserID?
+                    }
+                    else
+                    {
+                        db.CreateMembershipUser(
+                            userID, 
+                            userName.ToLower() + "password", 
+                            "asdf12345", 
+                            userName + "@test.com", 
+                            "no question", 
+                            "no answer", 
+                            true, 
+                            DateTime.Now, 
+                            appName, 
+                            false);
+                    }
+                }
+
+                var userRoles = db.GetRolesForUser(userName).Select(r=>r.ToLower()).ToList();
+                if (!userRoles.Contains("user"))
+                {
+                    db.AddUserToRole(userName, "User");
+                }
+                if (userName == "Anna" && !userRoles.Contains("admin"))
+                {
+                    db.AddUserToRole(userName, "Admin");
+                }
+            }
+            users = db.GetAllUsers(appName);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.StoredProcedure,
+            Query =
+@"select ApplicationID
+from Applications
+where ApplicationName = @applicationName;")]
+        public Guid GetApplicationID(string applicationName)
+        {
+            return this.Get<Guid>("ApplicationID", applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -108,7 +192,7 @@ where userName = @userName;")]
     (UserID,
     ApplicationID,
     userName,
-    LowereduserName,
+    LoweredUserName,
     MobileAlias,
     IsAnonymous,
     LastActivityDate)
@@ -174,7 +258,8 @@ select
     @creationDate,
     0,
     @creationDate
-from Applications where ApplicationName = @applicationName;")]
+from Applications
+where ApplicationName = @applicationName;")]
         public MembershipUser CreateMembershipUser(Guid userID, string password, string passwordSalt, string email, string passwordQuestion, string passwordAnswer, bool isApproved, DateTime creationDate, string applicationName, bool isLockedOut)
         {
             this.Execute(userID, password, passwordSalt, email, passwordQuestion, passwordAnswer, isApproved, creationDate, applicationName, isLockedOut);
@@ -592,7 +677,7 @@ declare @userID uniqueidentifier;
 
 select @roleID = RoleID
 from Roles
-where roleName = @roleName;
+where RoleName = @roleName;
 
 select @userID = UserID
 from Users
@@ -616,7 +701,7 @@ from Applications
 where ApplicationName = @applicationName;
 
 insert into Roles 
-(RoleID, ApplicationID, roleName, LoweredroleName, Description) Values 
+(RoleID, ApplicationID, RoleName, LoweredRoleName, Description) Values 
 (newid(), @applicationID, @roleName, lower(@roleName), @description);")]
         public void CreateRole(string roleName, string applicationName, string description)
         {
@@ -627,7 +712,7 @@ insert into Roles
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
 @"delete from UsersInRoles
-	where RoleID = (select RoleID from Roles where roleName = @roleName);")]
+	where RoleID = (select RoleID from Roles where RoleName = @roleName);")]
         public void DeleteUsersInRole(string roleName)
         {
             this.Execute(roleName);
@@ -637,7 +722,7 @@ insert into Roles
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
 @"delete from Roles
-	where roleName = @roleName;")]
+	where RoleName = @roleName;")]
         public void DeleteRole(string roleName)
         {
             // remove FK items
@@ -648,7 +733,7 @@ insert into Roles
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select roleName from Roles;")]
+@"select RoleName from Roles;")]
         public string[] GetAllRoles()
         {
             return this.GetList<string>("roleName").ToArray();
@@ -657,13 +742,25 @@ insert into Roles
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select Roles.roleName from UsersInRoles
+@"select *
+from Roles
+where ApplicationID = @applicationID;")]
+        public List<Roles> GetRoles(Guid applicationID)
+        {
+            return this.GetList<Roles>(applicationID);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.StoredProcedure,
+            Query =
+@"select Roles.RoleName
+from UsersInRoles
 	inner join Users on Users.UserID = UsersInRoles.UserID
 	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
-where Users.userName= @userName;")]
+where Users.userName = @userName;")]
         public string[] GetRolesForUser(string userName)
         {
-            return this.GetList<string>("roleName", userName).ToArray();
+            return this.GetList<string>("RoleName", userName).ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -673,7 +770,7 @@ where Users.userName= @userName;")]
 from UsersInRoles
 	inner join Users on Users.UserID = UsersInRoles.UserID
 	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
-where Roles.roleName = @roleName;")]
+where Roles.RoleName = @roleName;")]
         public string[] GetUsersInRole(string roleName)
         {
             return this.GetList<string>("userName", roleName).ToArray();
@@ -687,7 +784,7 @@ from UsersInRoles
     inner join Users on Users.UserID = UsersInRoles.UserID
 	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
 where Users.userName= @userName
-    and Roles.roleName = @roleName;")]
+    and Roles.RoleName = @roleName;")]
         public bool IsUserInRole(string userName, string roleName)
         {
             return this.Get<int>(0, userName, roleName) > 0;
@@ -705,9 +802,10 @@ where userName = @userName;
 
 select @RoleID = RoleID
 from Roles
-where roleName = @roleName;
+where RoleName = @roleName;
 
-delete from UsersInRoles where UserID = @UserID
+delete from UsersInRoles
+where UserID = @UserID
     and RoleID = @RoleID;")]
         public void RemoveUserFromRole(string userName, string roleName)
         {
@@ -719,7 +817,7 @@ delete from UsersInRoles where UserID = @UserID
             Query =
 @"select COUNT(*)
 from Roles
-	where roleName = @roleName;")]
+where RoleName = @roleName;")]
         public bool RoleExists(string roleName)
         {
             return this.Get<int>(0, roleName) > 0;
@@ -733,7 +831,7 @@ from UsersInRoles
     inner join Users on Users.UserID = UsersInRoles.UserID
     inner join Roles on Roles.RoleID = UsersInRoles.RoleID
 where Users.userName like @userNameToMatch
-    and Roles.roleName = @roleName;")]
+    and Roles.RoleName = @roleName;")]
         public string[] FindUsersInRole(string userNameToMatch, string roleName)
         {
             return this.GetList<string>("userName", userNameToMatch, roleName).ToArray();

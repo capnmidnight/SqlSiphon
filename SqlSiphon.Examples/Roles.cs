@@ -11,9 +11,9 @@ namespace SqlSiphon.Examples
         public Guid RoleID { get; set; }
         public Guid ApplicationID { get; set; }
         [Column(Size = 256)]
-        public string Rolename { get; set; }
+        public string RoleName { get; set; }
         [Column(Size = 256)]
-        public string LoweredRolename { get; set; }
+        public string LoweredRoleName { get; set; }
         [Column(Size = 256, IsOptional = true)]
         public string Description { get; set; }
     }
