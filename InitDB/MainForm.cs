@@ -323,6 +323,15 @@ namespace InitDB
                 || script.ScriptType == ScriptType.CreateDatabaseLogin
                 || script.ScriptType == ScriptType.InstallExtension)
             {
+
+                var db_OnStandardError = new IOEventHandler((sender, args) =>
+                {
+                    succeeded = false;
+                    this.ToError(args.Text);
+                });
+
+                db.OnStandardError += db_OnStandardError;
+                db.OnStandardOutput += db_OnStandardOutput;
                 succeeded = db.RunCommandLine(
                     GetExecutable(db),
                     System.Windows.Forms.Application.UserAppDataPath,
@@ -331,6 +340,8 @@ namespace InitDB
                     this.adminUserTB.Text,
                     this.adminPassTB.Text,
                     script.Script);
+                db.OnStandardOutput -= db_OnStandardOutput;
+                db.OnStandardError -= db_OnStandardError;
 
                 if (succeeded && script.ScriptType == ScriptType.CreateDatabaseLogin)
                 {
@@ -346,6 +357,11 @@ namespace InitDB
             this.ToOutput(succeeded ? "succeeded!" : "failed.");
 
             return succeeded;
+        }
+
+        void db_OnStandardOutput(object sender, IOEventArgs args)
+        {
+            this.ToOutput(args.Text);
         }
 
         private Type CurrentDataAccessLayerType;
@@ -652,10 +668,11 @@ namespace InitDB
                 {
                     script = script.Substring(this.generalScriptTB.SelectionStart, this.generalScriptTB.SelectionLength);
                 }
+                var scriptObj = new ScriptStatus(ScriptType.InstallExtension, "none", script);
+                
                 using (var db = this.MakeDatabaseConnection())
                 {
-                    db.RunCommandLine(GetExecutable(db), System.Windows.Forms.Application.UserAppDataPath,
-                        this.serverTB.Text, this.databaseTB.Text, this.adminUserTB.Text, this.adminPassTB.Text, script);
+                    this.RunScript(scriptObj, true, db);
                 }
             }
         }

@@ -75,6 +75,7 @@
     <Compile Include="InformationSchema\TableConstraints.cs" />
     <Compile Include="InformationSchema\ConstraintColumnUsage.cs" />
     <Compile Include="InformationSchema\Parameters.cs" />
+    <Compile Include="IOEventArgs.cs" />
     <Compile Include="ISqlSiphon.cs" />
     <Compile Include="Mapping\AutoPKAttribute.cs" />
     <Compile Include="DatabaseState.cs" />

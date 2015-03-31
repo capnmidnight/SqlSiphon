@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Data;
 using System.Runtime.CompilerServices;
-using SqlSiphon;
 using SqlSiphon.Mapping;
+
 
 namespace SqlSiphon.Examples
 {
@@ -20,8 +17,9 @@ namespace SqlSiphon.Examples
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"INSERT INTO Applications (ApplicationId, ApplicationName, LoweredApplicationName, Description)
-	Values (NewID(), @applicationName, LOWER(@applicationName), @description);")]
+@"insert into Applications 
+(ApplicationID, ApplicationName, LoweredApplicationName, Description) values 
+(newid(), @applicationName, lower(@applicationName), @description);")]
         public void CreateApplication(string applicationName, string description)
         {
             this.Execute(applicationName, description);
@@ -31,13 +29,9 @@ namespace SqlSiphon.Examples
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-SELECT 
-    u.UserId, 
-    u.Username, 
+@"select 
+    u.UserID, 
+    u.userName, 
     m.Email, 
     m.PasswordQuestion,
     m.Comment, 
@@ -48,36 +42,36 @@ SELECT
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
-FROM Membership m
-INNER JOIN Users u on u.UserId = m.UserId
-INNER JOIN Applications a on a.ApplicationId = m.ApplicationId
-WHERE m.UserId = @userId and m.ApplicationId = @applicationId;")]
-        public MembershipUser GetUserByUserName(string username, string applicationName)
+from Membership m
+inner join Users u on u.UserID = m.UserID
+inner join Applications a on a.ApplicationID = m.ApplicationID
+where u.userName = @userName
+    and a.ApplicationName = @applicationName;")]
+        public MembershipUser GetUserByUserName(string userName, string applicationName)
         {
-            return this.Get<MembershipUser>(username, applicationName);
+            return this.Get<MembershipUser>(userName, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-SELECT 
-    u.Username
-FROM Users u
-INNER JOIN Membership m on m.UserId = u.UserId
-WHERE m.LoweredEmail = @email and u.ApplicationId = @applicationId;")]
-        public string GetUserNameByEmail(string email, string applicationName)
+@"select u.userName
+from Users u
+inner join Membership m on m.UserID = u.UserID
+inner join Application a on u.ApplicationID = a.ApplicationID
+where m.LoweredEmail = lower(@email)
+    and u.ApplicatoinName = @applicationName;")]
+        public string GetuserNameByEmail(string email, string applicationName)
         {
-            return this.Get<string>("Username", email.ToLower(), applicationName);
+            return this.Get<string>("userName", email, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"SELECT 
-    u.UserId, 
-    u.Username, 
+@"select 
+    u.UserID, 
+    u.userName, 
     m.Email, 
     m.PasswordQuestion,
     m.Comment, 
@@ -88,63 +82,59 @@ WHERE m.LoweredEmail = @email and u.ApplicationId = @applicationId;")]
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
-FROM Membership m
-INNER JOIN Users u on u.UserId = m.UserId
-WHERE m.UserId = @userId;")]
-        public MembershipUser GetUserById(Guid userId)
+from Membership m
+inner join Users u on u.UserID = m.UserID
+where m.UserID = @userID;")]
+        public MembershipUser GetUserByID(Guid userID)
         {
-            return this.Get<MembershipUser>(userId);
+            return this.Get<MembershipUser>(userID);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"SELECT UserId
-   FROM Users
-    WHERE UserName = @username;")]
-        public Guid GetUserId(string username)
+@"select UserID
+from Users
+where userName = @userName;")]
+        public Guid GetUserID(string userName)
         {
-            return this.Get<Guid>("UserId", username);
+            return this.Get<Guid>("UserID", userName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-INSERT INTO Users 
-    (UserId,
-    ApplicationId,
-    UserName,
-    LoweredUserName,
+@"insert into Users 
+    (UserID,
+    ApplicationID,
+    userName,
+    LowereduserName,
     MobileAlias,
     IsAnonymous,
     LastActivityDate)
-VALUES
-    (@userId,
-    @applicationId,
-    @username,
-    LOWER(@username),
+select
+    @userID,
+    ApplicationID,
+    @userName,
+    lower(@userName),
     NULL,
     0,
-    GetDate());")]
-        public Guid CreateUser(Guid userId,
-                                        string username,
-                                        string applicationName)
+    GetDate()
+from Applications
+where ApplicationName = @applicationName;")]
+        public Guid CreateUser(Guid userID, string userName, string applicationName)
         {
-            this.Execute(userId,
-                        username,
-                        applicationName);
+            this.Execute(userID, userName, applicationName);
 
-            return this.GetUserId(username);
+            return this.GetUserID(userName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"INSERT INTO Membership
-    (UserId,
-    ApplicationId,
+@"insert into Membership
+    (UserID,
+    ApplicationID,
     Password, 
     PasswordSalt,
     Email, 
@@ -164,12 +154,12 @@ VALUES
     FailedPasswordAnswerAttemptCount, 
     FailedPasswordAnswerAttemptWindowStart)
 select
-    @userId,
+    @userID,
     ApplicationID,
     @password, 
     @passwordSalt,
     @email, 
-    LOWER(@email),
+    lower(@email),
     @passwordQuestion, 
     @passwordAnswer, 
     0,
@@ -185,71 +175,77 @@ select
     0,
     @creationDate
 from Applications where ApplicationName = @applicationName;")]
-        public MembershipUser CreateMembershipUser(Guid userId,
-                                string password,
-                                string passwordSalt,
-                                string email,
-                                string passwordQuestion,
-                                string passwordAnswer,
-                                bool isApproved,
-                                DateTime creationDate,
-                                string applicationName,
-                                bool isLockedOut)
+        public MembershipUser CreateMembershipUser(Guid userID, string password, string passwordSalt, string email, string passwordQuestion, string passwordAnswer, bool isApproved, DateTime creationDate, string applicationName, bool isLockedOut)
         {
-            this.Execute(userId,
-                        password,
-                        passwordSalt,
-                        email,
-                        passwordQuestion,
-                        passwordAnswer,
-                        isApproved,
-                        creationDate,
-                        applicationName,
-                        isLockedOut);
+            this.Execute(userID, password, passwordSalt, email, passwordQuestion, passwordAnswer, isApproved, creationDate, applicationName, isLockedOut);
 
-            return this.GetUserById(userId);
+            return this.GetUserByID(userID);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-declare @userId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-delete from Membership where UserId = @UserId and ApplicationId = @applicationId;
-delete from Users where UserID = @userId and ApplicationId = @applicationId;")]
-        public void DeleteUser(string username, string applicationName)
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select @userID = UserID
+from Users
+where userName = @userName
+    and ApplicationID = @applicationID;
+
+delete from Membership where UserID = @UserID
+    and ApplicationID = @applicationID;
+
+delete from Users where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void deleteUser(string userName, string applicationName)
         {
-            this.Execute(username, applicationName);
+            this.Execute(userName, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-Update Membership
-SET Email = @email,
-    LoweredEmail = LOWER( @email),
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select @userID = UserID
+from Users
+where userName = @userName
+    and ApplicationID = @applicationID;
+
+update Membership
+set Email = @email,
+    LoweredEmail = lower( @email),
     Comment = @comment,
     IsApproved = @isApproved
-WHERE UserId = @userId AND ApplicationId = @applicationId;")]
-        public void UpdateUser(string username, string applicationName, string email, string comment, bool isApproved)
+where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void UpdateUser(string userName, string applicationName, string email, string comment, bool isApproved)
         {
-            this.Execute(username, applicationName, email, comment, isApproved);
+            this.Execute(userName, applicationName, email, comment, isApproved);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-SELECT 
-    u.UserId, 
-    u.Username, 
+@"declare @applicationID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select 
+    u.UserID, 
+    u.userName, 
     m.Email, 
     m.PasswordQuestion,
     m.Comment, 
@@ -260,10 +256,10 @@ SELECT
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
-FROM Membership m
-INNER JOIN Users u on u.UserId = m.UserId
-WHERE m.ApplicationId = @applicationId
- ORDER BY Username Asc;")]
+from Membership m
+inner join Users u on u.UserID = m.UserID
+where m.ApplicationID = @applicationID
+order by userName asc;")]
         public List<MembershipUser> GetAllUsers(string applicationName)
         {
             return this.GetList<MembershipUser>(applicationName);
@@ -272,10 +268,15 @@ WHERE m.ApplicationId = @applicationId
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-SELECT Count(*) FROM Users
-WHERE LastActivityDate > @compareDate AND ApplicationId = @applicationId;")]
+@"declare @applicationID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select Count(*) from Users
+where LastActivityDate > @compareDate
+    and ApplicationID = @applicationID;")]
         public int GetNumberOfUsersOnline(DateTime compareDate, string applicationName)
         {
             return this.Get<int>(compareDate, applicationName);
@@ -284,12 +285,8 @@ WHERE LastActivityDate > @compareDate AND ApplicationId = @applicationId;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-SELECT 
-    u.UserId, 
+@"select 
+    u.UserID, 
     a.ApplicationID, 
     m.Password,
     m.PasswordFormat,
@@ -310,133 +307,195 @@ SELECT
     m.FailedPasswordAnswerAttemptCount,
     m.FailedPasswordAnswerAttemptWindowStart,
     m.Comment
-FROM Membership m
-INNER JOIN Users u on u.UserId = m.UserId
-INNER JOIN Applications a on a.ApplicationID = m.ApplicationID
-WHERE u.UserId = @userId AND a.ApplicationId = @applicationId;")]
-        public Membership GetMembership(string username, string applicationName)
+from Membership m
+inner join Users u on u.UserID = m.UserID
+inner join Applications a on a.ApplicationID = m.ApplicationID
+where u.userName = @userName
+    and a.ApplicationName = @applicationName;")]
+        public Membership GetMembership(string userName, string applicationName)
         {
-            return this.Get<Membership>(username, applicationName);
-        }
-
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.StoredProcedure,
-            Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-UPDATE Membership
-SET Password = @newPassword,
-LastPasswordChangedDate  = @lastPasswordChangedDate,
-ApplicationId = @applicationId
-WHERE UserId = @userId;")]
-        public void ChangePassword(string username, string newPassword, DateTime lastPasswordChangedDate, string applicationName)
-        {
-            this.Execute(username, newPassword, lastPasswordChangedDate, applicationName);
+            return this.Get<Membership>(userName, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-UPDATE Membership
-SET LastLoginDate = @lastLoginDate
-WHERE UserId = @userId AND ApplicationId = @applicationId;")]
-        public void UserLogin(DateTime lastLoginDate, Guid userId, string applicationName)
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select @userID = UserID
+from Users
+where userName = @userName
+    and ApplicationID = @applicationID;
+
+update Membership set
+    Password = @newPassword,
+    LastPasswordChangedDate = @lastPasswordChangedDate,
+    ApplicationID = @applicationID
+where UserID = @userID;")]
+        public void ChangePassword(string userName, string newPassword, DateTime lastPasswordChangedDate, string applicationName)
         {
-            this.Execute(lastLoginDate, userId, applicationName);
+            this.Execute(userName, newPassword, lastPasswordChangedDate, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
+@"declare @applicationID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+update Membership set
+    LastLoginDate = @lastLoginDate
+where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void UserLogin(DateTime lastLoginDate, Guid userID, string applicationName)
+        {
+            this.Execute(lastLoginDate, userID, applicationName);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.StoredProcedure,
+            Query =
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select @userID = UserID
+from Users
+where userName = @userName
+    and ApplicationID = @applicationID;
+
         
-        UPDATE Membership
-SET FailedPasswordAttemptCount  = @failedPasswordAttemptCount,
+update Membership
+set FailedPasswordAttemptCount  = @failedPasswordAttemptCount,
     FailedPasswordAttemptWindowStart  = @failedPasswordAttemptWindowStart 
-WHERE UserId = @userId AND ApplicationId = @applicationId;")]
-        public void UpdateFailedPasswordAttemptCountAndDate(string username, string applicationName, int failedPasswordAttemptCount, DateTime failedPasswordAttemptWindowStart)
+where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void UpdateFailedPasswordAttemptCountAndDate(string userName, string applicationName, int failedPasswordAttemptCount, DateTime failedPasswordAttemptWindowStart)
         {
-            this.Execute(username, applicationName, failedPasswordAttemptCount, failedPasswordAttemptWindowStart);
+            this.Execute(userName, applicationName, failedPasswordAttemptCount, failedPasswordAttemptWindowStart);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-UPDATE Membership
-SET FailedPasswordAttemptCount  = @failedPasswordAttemptCount
-WHERE UserId = @userId AND ApplicationId = @applicationId;")]
-        public void UpdateFailedPasswordAttemptCount(string username, string applicationName, int failedPasswordAttemptCount)
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select @userID = UserID
+from Users
+where userName = @userName
+    and ApplicationID = @applicationID;
+
+update Membership
+set FailedPasswordAttemptCount  = @failedPasswordAttemptCount
+where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void UpdateFailedPasswordAttemptCount(string userName, string applicationName, int failedPasswordAttemptCount)
         {
-            this.Execute(username, applicationName, failedPasswordAttemptCount);
+            this.Execute(userName, applicationName, failedPasswordAttemptCount);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-UPDATE Membership
-SET FailedPasswordAnswerAttemptCount   = @failedPasswordAnswerAttemptCount,
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select @userID = UserID
+from Users
+where userName = @userName
+    and ApplicationID = @applicationID;
+
+update Membership
+set FailedPasswordAnswerAttemptCount   = @failedPasswordAnswerAttemptCount,
     FailedPasswordAnswerAttemptWindowStart = @failedPasswordAnswerAttemptWindowStart 
-WHERE UserId = @userId AND ApplicationId = @applicationId;")]
-        public void UpdateFailedPasswordAnswerAttemptCountAndDate(string username, string applicationName, int failedPasswordAnswerAttemptCount, DateTime failedPasswordAnswerAttemptWindowStart)
+where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void UpdateFailedPasswordAnswerAttemptCountAndDate(string userName, string applicationName, int failedPasswordAnswerAttemptCount, DateTime failedPasswordAnswerAttemptWindowStart)
         {
-            this.Execute(username, applicationName, failedPasswordAnswerAttemptCount, failedPasswordAnswerAttemptWindowStart);
+            this.Execute(userName, applicationName, failedPasswordAnswerAttemptCount, failedPasswordAnswerAttemptWindowStart);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-UPDATE Membership
-SET FailedPasswordAnswerAttemptCount   = @failedPasswordAnswerAttemptCount
-WHERE UserId = @userId AND ApplicationId = @applicationId;")]
-        public void UpdateFailedPasswordAnswerAttemptCount(string username, string applicationName, int failedPasswordAnswerAttemptCount)
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select @userID = UserID
+from Users
+where userName = @userName
+    and ApplicationID = @applicationID;
+
+update Membership
+set FailedPasswordAnswerAttemptCount = @failedPasswordAnswerAttemptCount
+where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void UpdateFailedPasswordAnswerAttemptCount(string userName, string applicationName, int failedPasswordAnswerAttemptCount)
         {
-            this.Execute(username, applicationName, failedPasswordAnswerAttemptCount);
+            this.Execute(userName, applicationName, failedPasswordAnswerAttemptCount);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-declare @userId uniqueidentifier;
-select @userId = UserId from Users where UserName = @username AND ApplicationId = @applicationId;
-UPDATE Membership
-SET IsLockedOut = @isLockedOut,
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select @userID = UserID
+from Users
+where userName = @userName
+    and ApplicationID = @applicationID;
+
+update Membership
+set IsLockedOut = @isLockedOut,
     LastLockoutDate = @lastLockoutDate
-WHERE UserId = @userId AND ApplicationId = @applicationId;")]
-        public void LockUnlockUser(string username, string applicationName, bool isLockedOut, DateTime lastLockoutDate)
+where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void LockUnlockUser(string userName, string applicationName, bool isLockedOut, DateTime lastLockoutDate)
         {
-            this.Execute(username, applicationName, isLockedOut, lastLockoutDate);
+            this.Execute(userName, applicationName, isLockedOut, lastLockoutDate);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-SELECT 
-    u.UserId, 
-    u.Username, 
+@"declare @applicationID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select 
+    u.UserID, 
+    u.userName, 
     m.Email, 
     m.PasswordQuestion,
     m.Comment, 
@@ -447,23 +506,28 @@ SELECT
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
-FROM Membership m
-INNER JOIN Users u on u.UserId = m.UserId
-INNER JOIN Applications a on a.ApplicationId = m.ApplicationId
-WHERE u.Username LIKE @usernameToMatch AND m.ApplicationId = @applicationId;")]
-        public List<MembershipUser> FindUsersByName(string usernameToMatch, string applicationName)
+from Membership m
+inner join Users u on u.UserID = m.UserID
+inner join Applications a on a.ApplicationID = m.ApplicationID
+where u.userName LIKE @userNameToMatch
+    and m.ApplicationID = @applicationID;")]
+        public List<MembershipUser> FindUsersByName(string userNameToMatch, string applicationName)
         {
-            return this.GetList<MembershipUser>(usernameToMatch, applicationName);
+            return this.GetList<MembershipUser>(userNameToMatch, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-SELECT 
-    u.UserId, 
-    u.Username, 
+@"declare @applicationID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+select 
+    u.UserID, 
+    u.userName, 
     m.Email, 
     m.PasswordQuestion,
     m.Comment, 
@@ -474,10 +538,11 @@ SELECT
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
-FROM Membership m
-INNER JOIN Users u on u.UserId = m.UserId
-INNER JOIN Applications a on a.ApplicationId = m.ApplicationId
-WHERE Email LIKE @emailToMatch AND m.ApplicationId = @applicationId;")]
+from Membership m
+inner join Users u on u.UserID = m.UserID
+inner join Applications a on a.ApplicationID = m.ApplicationID
+where Email like @emailToMatch
+    and m.ApplicationID = @applicationID;")]
         public List<MembershipUser> FindUsersByEmail(string emailToMatch, string applicationName)
         {
             return this.GetList<MembershipUser>(emailToMatch, applicationName);
@@ -486,26 +551,33 @@ WHERE Email LIKE @emailToMatch AND m.ApplicationId = @applicationId;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"
-declare @userId uniqueidentifier;
-select @userId = UserID from Users where UserName = @username;
-declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-UPDATE Membership
-SET PasswordQuestion = @question,
+@"declare @applicationID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @userID = UserID
+from Users
+where userName = @userName;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+update Membership
+set PasswordQuestion = @question,
     PasswordAnswer = @answer
-WHERE UserId = @userId AND ApplicationId = @applicationId;")]
-        public void ChangePasswordQuestionAndAnswer(string username, string applicationName, string question, string answer)
+where UserID = @userID
+    and ApplicationID = @applicationID;")]
+        public void ChangePasswordQuestionAndAnswer(string userName, string applicationName, string question, string answer)
         {
-            this.Execute(username, applicationName, question, answer);
+            this.Execute(userName, applicationName, question, answer);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"update Membership
-    set Email = @newAddress,
-        LoweredEmail = LOWER(@newAddress)
+@"update Membership set 
+    Email = @newAddress,
+    LoweredEmail = lower(@newAddress)
 where UserID = @userID;")]
         public void ChangeEmail(Guid userID, string newAddress)
         {
@@ -515,117 +587,110 @@ where UserID = @userID;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"INSERT INTO UsersInRoles (UserId, RoleId)
-	Values ((select UserId from Users where UserName = @userName),
-            (select RoleId from Roles where RoleName = @rolename));")]
-        public void AddUserToRole(string username, string rolename)
+@"declare @roleID uniqueidentifier;
+declare @userID uniqueidentifier;
+
+select @roleID = RoleID
+from Roles
+where roleName = @roleName;
+
+select @userID = UserID
+from Users
+where userName = @userName;
+
+insert into UsersInRoles
+(UserID, RoleID) Values 
+(@userID, @roleID);")]
+        public void AddUserToRole(string userName, string roleName)
         {
-            this.Execute(username, rolename);
+            this.Execute(userName, roleName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationId uniqueidentifier;
-select @applicationId = ApplicationId from Applications where ApplicationName = @applicationName;
-INSERT INTO Roles (RoleId, ApplicationId, Rolename, LoweredRoleName, Description)
-	Values (NewID(), @applicationId, @rolename, LOWER(@rolename), @description);")]
-        public void CreateRole(string rolename, string applicationName, string description)
+@"declare @applicationID uniqueidentifier;
+
+select @applicationID = ApplicationID
+from Applications
+where ApplicationName = @applicationName;
+
+insert into Roles 
+(RoleID, ApplicationID, roleName, LoweredroleName, Description) Values 
+(newid(), @applicationID, @roleName, lower(@roleName), @description);")]
+        public void CreateRole(string roleName, string applicationName, string description)
         {
-            this.Execute(rolename, applicationName, description);
+            this.Execute(roleName, applicationName, description);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"DELETE FROM UsersInRoles
-	WHERE RoleId = (select RoleId from Roles where RoleName = @rolename);")]
-        public void DeleteUsersInRole(string rolename)
+@"delete from UsersInRoles
+	where RoleID = (select RoleID from Roles where roleName = @roleName);")]
+        public void DeleteUsersInRole(string roleName)
         {
-            this.Execute(rolename);
+            this.Execute(roleName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"DELETE FROM RoleTypesForRoles
-	WHERE RoleId = (select RoleId from Roles where RoleName = @rolename);")]
-        public void DeleteRoleTypesForRoles(string rolename)
-        {
-            this.Execute(rolename);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.StoredProcedure,
-            Query =
-@"DELETE FROM RoleHierarchy
-	WHERE RoleId = (select RoleId from Roles where RoleName = @rolename)
-    OR ParentRoleId = (select RoleId from Roles where RoleName = @rolename);")]
-        public void DeleteRoleHierarchy(string rolename)
-        {
-            this.Execute(rolename);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.StoredProcedure,
-            Query =
-@"DELETE FROM Roles
-	WHERE RoleName = @rolename;")]
-        public void DeleteRole(string rolename)
+@"delete from Roles
+	where roleName = @roleName;")]
+        public void DeleteRole(string roleName)
         {
             // remove FK items
-            this.DeleteUsersInRole(rolename);
-            this.DeleteRoleTypesForRoles(rolename);
-            this.DeleteRoleHierarchy(rolename);
-
-            this.Execute(rolename);
+            this.DeleteUsersInRole(roleName);
+            this.Execute(roleName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"SELECT RoleName FROM Roles;")]
+@"select roleName from Roles;")]
         public string[] GetAllRoles()
         {
-            return this.GetList<string>("RoleName").ToArray();
+            return this.GetList<string>("roleName").ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"SELECT Roles.Rolename FROM UsersInRoles
-	INNER JOIN Users on Users.UserId = UsersInRoles.UserId
-	INNER JOIN Roles on Roles.RoleId = UsersInRoles.RoleId
-WHERE Users.UserName= @username;")]
-        public string[] GetRolesForUser(string username)
+@"select Roles.roleName from UsersInRoles
+	inner join Users on Users.UserID = UsersInRoles.UserID
+	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
+where Users.userName= @userName;")]
+        public string[] GetRolesForUser(string userName)
         {
-            return this.GetList<string>("RoleName", username).ToArray();
+            return this.GetList<string>("roleName", userName).ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"SELECT Users.UserName 
-FROM UsersInRoles
-	INNER JOIN Users on Users.UserId = UsersInRoles.UserId
-	INNER JOIN Roles on Roles.RoleId = UsersInRoles.RoleId
-WHERE Roles.RoleName = @rolename;")]
-        public string[] GetUsersInRole(string rolename)
+@"select Users.userName 
+from UsersInRoles
+	inner join Users on Users.UserID = UsersInRoles.UserID
+	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
+where Roles.roleName = @roleName;")]
+        public string[] GetUsersInRole(string roleName)
         {
-            return this.GetList<string>("UserName", rolename).ToArray();
+            return this.GetList<string>("userName", roleName).ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"SELECT COUNT(*) 
-FROM UsersInRoles
-INNER JOIN Users on Users.UserId = UsersInRoles.UserId
-	INNER JOIN Roles on Roles.RoleId = UsersInRoles.RoleId
-WHERE Users.UserName= @username AND Roles.RoleName = @rolename;")]
-        public bool IsUserInRole(string username, string rolename)
+@"select COUNT(*) 
+from UsersInRoles
+    inner join Users on Users.UserID = UsersInRoles.UserID
+	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
+where Users.userName= @userName
+    and Roles.roleName = @roleName;")]
+        public bool IsUserInRole(string userName, string roleName)
         {
-            return this.Get<int>(0, username, rolename) > 0;
+            return this.Get<int>(0, userName, roleName) > 0;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -633,34 +698,45 @@ WHERE Users.UserName= @username AND Roles.RoleName = @rolename;")]
             Query =
 @"declare @UserID uniqueidentifier;
 declare @RoleID uniqueidentifier;
-select @UserID = UserID from Users where UserName = @username;
-select @RoleID = RoleID from Roles where RoleName = @rolename;
-delete from UsersInRoles where UserID = @UserID and RoleID = @RoleID;")]
-        public void RemoveUserFromRole(string username, string rolename)
+
+select @UserID = UserID
+from Users
+where userName = @userName;
+
+select @RoleID = RoleID
+from Roles
+where roleName = @roleName;
+
+delete from UsersInRoles where UserID = @UserID
+    and RoleID = @RoleID;")]
+        public void RemoveUserFromRole(string userName, string roleName)
         {
-            this.Execute(username, rolename);
+            this.Execute(userName, roleName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"SELECT COUNT(*) FROM Roles
-	WHERE RoleName = @rolename;")]
-        public bool RoleExists(string rolename)
+@"select COUNT(*)
+from Roles
+	where roleName = @roleName;")]
+        public bool RoleExists(string roleName)
         {
-            return this.Get<int>(0, rolename) > 0;
+            return this.Get<int>(0, roleName) > 0;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"SELECT Users.Username FROM UsersInRoles
-	INNER JOIN Users on Users.UserId = UsersInRoles.UserId
-	INNER JOIN Roles on Roles.RoleId = UsersInRoles.RoleId
-	WHERE Users.UserName like @userNameToMatch AND Roles.RoleName = @rolename;")]
-        public string[] FindUsersInRole(string userNameToMatch, string rolename)
+@"select Users.userName 
+from UsersInRoles
+    inner join Users on Users.UserID = UsersInRoles.UserID
+    inner join Roles on Roles.RoleID = UsersInRoles.RoleID
+where Users.userName like @userNameToMatch
+    and Roles.roleName = @roleName;")]
+        public string[] FindUsersInRole(string userNameToMatch, string roleName)
         {
-            return this.GetList<string>("Username", userNameToMatch, rolename).ToArray();
+            return this.GetList<string>("userName", userNameToMatch, roleName).ToArray();
         }
     }
 }

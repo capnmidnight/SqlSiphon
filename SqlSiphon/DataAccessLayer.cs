@@ -833,31 +833,31 @@ namespace SqlSiphon
 
         public abstract bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query);
 
-        public event EventHandler OnStandardOutput;
-        public event EventHandler OnStandardError;
+        public event IOEventHandler OnStandardOutput;
+        public event IOEventHandler OnStandardError;
         private void ToOutput(string value)
         {
             if (this.OnStandardOutput != null)
             {
-                this.OnStandardOutput(this, new EventArgs());
+                this.OnStandardOutput(this, new IOEventArgs(value));
             }
         }
         private void ToError(string value)
         {
             if (this.OnStandardError != null)
             {
-                this.OnStandardError(this, new EventArgs());
+                this.OnStandardError(this, new IOEventArgs(value));
             }
         }
 
-        protected bool RunProcess(string name, params string[] args)
+        protected bool RunProcess(string path, params string[] args)
         {
             var succeeded = true;
-            var shortName = new System.IO.FileInfo(name).Name;
+            var shortName = new System.IO.FileInfo(path).Name;
             this.ToOutput(string.Format(":> {0} {1}\r\n", shortName, string.Join(" ", args)));
             var procInfo = new ProcessStartInfo
             {
-                FileName = name,
+                FileName = path,
                 Arguments = string.Join(" ", args.Where(s => s != null)),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

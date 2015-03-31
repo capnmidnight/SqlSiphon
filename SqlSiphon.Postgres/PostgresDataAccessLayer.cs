@@ -233,6 +233,10 @@ namespace SqlSiphon.Postgres
             }
             else
             {
+                if (database != null)
+                {
+                    database = database.ToLower();
+                }
                 string port = null;
                 var i = server.IndexOf(":");
                 if (i > -1)
