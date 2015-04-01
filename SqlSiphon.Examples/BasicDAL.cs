@@ -45,7 +45,7 @@ namespace SqlSiphon.Examples
             foreach (var userName in new[] { "Anna", "Bob", "Christine", "Dave" })
             {
                 Guid userID = db.GetUserID(userName);
-                if(userID == Guid.Empty)
+                if (userID == Guid.Empty)
                 {
                     userID = Guid.NewGuid();
                     if (userID != db.CreateUser(userID, userName, appName))
@@ -55,20 +55,20 @@ namespace SqlSiphon.Examples
                     else
                     {
                         db.CreateMembershipUser(
-                            userID, 
-                            userName.ToLower() + "password", 
-                            "asdf12345", 
-                            userName + "@test.com", 
-                            "no question", 
-                            "no answer", 
-                            true, 
-                            DateTime.Now, 
-                            appName, 
+                            userID,
+                            userName.ToLower() + "password",
+                            "asdf12345",
+                            userName + "@test.com",
+                            "no question",
+                            "no answer",
+                            true,
+                            DateTime.Now,
+                            appName,
                             false);
                     }
                 }
 
-                var userRoles = db.GetRolesForUser(userName).Select(r=>r.ToLower()).ToList();
+                var userRoles = db.GetRolesForUser(userName).Select(r => r.ToLower()).ToList();
                 if (!userRoles.Contains("user"))
                 {
                     db.AddUserToRole(userName, "User");
@@ -205,10 +205,14 @@ select
     GetDate()
 from Applications
 where ApplicationName = @applicationName;")]
-        public Guid CreateUser(Guid userID, string userName, string applicationName)
+        public void InsertUser(Guid userID, string userName, string applicationName)
         {
             this.Execute(userID, userName, applicationName);
+        }
 
+        public Guid CreateUser(Guid userID, string userName, string applicationName)
+        {
+            this.InsertUser(userID, userName, applicationName);
             return this.GetUserID(userName);
         }
 
@@ -259,10 +263,14 @@ select
     @creationDate
 from Applications
 where ApplicationName = @applicationName;")]
-        public MembershipUser CreateMembershipUser(Guid userID, string password, string passwordSalt, string email, string passwordQuestion, string passwordAnswer, bool isApproved, DateTime creationDate, string applicationName, bool isLockedOut)
+        public void InsertMembershipUser(Guid userID, string password, string passwordSalt, string email, string passwordQuestion, string passwordAnswer, bool isApproved, DateTime creationDate, string applicationName, bool isLockedOut)
         {
             this.Execute(userID, password, passwordSalt, email, passwordQuestion, passwordAnswer, isApproved, creationDate, applicationName, isLockedOut);
+        }
 
+        public MembershipUser CreateMembershipUser(Guid userID, string password, string passwordSalt, string email, string passwordQuestion, string passwordAnswer, bool isApproved, DateTime creationDate, string applicationName, bool isLockedOut)
+        {
+            this.InsertMembershipUser(userID, password, passwordSalt, email, passwordQuestion, passwordAnswer, isApproved, creationDate, applicationName, isLockedOut);
             return this.GetUserByID(userID);
         }
 
@@ -698,7 +706,8 @@ insert into UsersInRoles
             Query =
 @"declare @applicationID uniqueidentifier;
 
-select @applicationID = ApplicationID
+select ApplicationID
+into @applicationID
 from Applications
 where ApplicationName = @applicationName;
 

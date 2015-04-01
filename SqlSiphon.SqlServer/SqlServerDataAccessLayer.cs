@@ -197,7 +197,8 @@ namespace SqlSiphon.SqlServer
         public override string MakeRoutineBody(RoutineAttribute info)
         {
             var query = info.Query.Replace("into returnValue", "")
-                .Replace("return query ", "");
+                .Replace("return query ", "")
+                .Replace("perform ", "select ");
             if (info.EnableTransaction)
             {
                 string transactionName = string.Format("TRANS{0}{1}", info.Schema ?? DefaultSchemaName, info.Name);

@@ -824,7 +824,7 @@ $$;",
 @"{0}
 begin
 {1}
-end", 
+end;", 
                 declarationString, 
                 queryBody);
             queryBody = queryBody.Replace("@", "_");
