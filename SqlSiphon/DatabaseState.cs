@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon
@@ -358,6 +357,218 @@ namespace SqlSiphon
             var type = typeof(T);
             return this.Functions.Values.Any(f => f.SystemType == type || f.Parameters.Any(p => p.SystemType == type))
                 || this.Tables.Values.SelectMany(t => t.Properties).Any(p => p.SystemType == type);
+        }
+
+        private static Dictionary<Type, string> TYPE_NAMES;
+        private static void AddType<T>(string name) { TYPE_NAMES.Add(typeof(T), name); }
+        static DatabaseState()
+        {
+            TYPE_NAMES = new Dictionary<Type, string>();
+            AddType<short>("short");
+            AddType<ushort>("ushort");
+            AddType<int>("int");
+            AddType<uint>("uint");
+            AddType<long>("long");
+            AddType<ulong>("ulong");
+            AddType<char>("char");
+            AddType<byte>("byte");
+            AddType<sbyte>("sbyte");
+            AddType<bool>("bool");
+            AddType<float>("float");
+            AddType<double>("double");
+            AddType<decimal>("decimal");
+            AddType<string>("string");
+        }
+
+        static string TypeName(Type t)
+        {
+            if (t != null)
+            {
+                if (TYPE_NAMES.ContainsKey(t))
+                {
+                    return TYPE_NAMES[t];
+                }
+                else
+                {
+                    return t.Name;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void WriteCodeFiles(string directory, string nameSpace, string name)
+        {
+            if (Directory.Exists(directory))
+            {
+                foreach (var table in this.Tables.Values)
+                {
+                    var columnStrings = new List<string>();
+                    var indexes = this.Indexes.Values.Where(i => i.Table.Schema == table.Schema && i.Table.Name == table.Name);
+                    foreach (var column in table.Properties)
+                    {
+                        if (column.Include)
+                        {
+                            var columnAttrString = "";
+                            var hasOptions = column.DefaultValue != null
+                                || column.IsPrecisionSet
+                                || column.IsSizeSet
+                                || column.IsOptional && !column.SystemType.IsValueType;
+                            if (column.IncludeInPrimaryKey)
+                            {
+                                if (column.IsIdentity)
+                                {
+                                    columnAttrString = @"
+        [AutoPK";
+                                }
+                                else
+                                {
+                                    columnAttrString = @"
+        [PK";
+                                }
+                            }
+                            else if (hasOptions)
+                            {
+                                columnAttrString = "[Column";
+                            }
+
+                            if (hasOptions)
+                            {
+                                columnAttrString += "(";
+                                string sep = "";
+                                if (column.DefaultValue != null)
+                                {
+                                    columnAttrString += string.Format(@"{0}DefaultValue = ""{0}""", sep, column.DefaultValue);
+                                    sep = ", ";
+                                }
+                                if (column.IsSizeSet)
+                                {
+                                    columnAttrString += string.Format(@"{0}Size = {1}", sep, column.Size);
+                                    sep = ", ";
+                                }
+                                if (column.IsPrecisionSet)
+                                {
+                                    columnAttrString += string.Format(@"{0}Precision = {1}", sep, column.Precision);
+                                    sep = ", ";
+                                }
+                                if (column.IsOptional && !column.SystemType.IsValueType)
+                                {
+                                    columnAttrString += string.Format(@"{0}IsOptional = {1}", sep, column.IsOptional ? "true" : "false");
+                                    sep = ", ";
+                                }
+                                columnAttrString += ")";
+                            }
+
+                            if (columnAttrString.Length > 0)
+                            {
+                                columnAttrString += "]";
+                            }
+
+                            var indexString = string.Join("", indexes
+                                .Where(i => i.Columns.Any(c => c == column.Name))
+                                .Select(i => string.Format(@"
+        [IncludeInIndex(""{0}"")]", i.Name)));
+
+                            var typeName = TypeName(column.SystemType);
+
+                            columnStrings.Add(string.Format(@"
+        {0}{1}
+        public {2}{3} {4} {{ get; set; }}
+",
+                                indexString,
+                                columnAttrString,
+                                typeName,
+                                column.IsOptional && column.SystemType.IsValueType ? "?" : "",
+                                column.Name));
+                        }
+                    }
+
+                    var fkAttrString = "";
+                    var fks = this.Relationships.Values.Where(r => r.From.Schema == table.Schema && r.From.Name == table.Name);
+                    foreach (var fk in fks)
+                    {
+                        fkAttrString += @"
+    [FK(";
+                        var prefix = fk.FromColumns.SelectMany(c =>
+                            table.Properties.Where(c2 => c.Name.EndsWith(c2.Name))
+                                .Select(c2 => c.Name.Substring(0, c.Name.IndexOf(c2.Name))))
+                            .FirstOrDefault();
+                        if (prefix != null && prefix.Length > 0)
+                        {
+                            fkAttrString += string.Format(@"Prefix = ""{0}"", ", prefix);
+                        }
+
+                        fkAttrString += string.Format("typeof({0}))]", fk.To.Name);
+                    }
+                    var codeFile = string.Format(@"using System;
+using SqlSiphon.Mapping;
+
+namespace {0}
+{{
+    [Table]{1}
+    public class {2}
+    {{
+        {3}
+    }}
+}}", nameSpace, fkAttrString, table.Name, string.Join("", columnStrings));
+                    File.WriteAllText(Path.Combine(directory, table.Name + ".cs"), codeFile);
+                }
+                var routineSectionStr = string.Join("", this.Functions.Values.Select(f =>
+                {
+                    bool isCollection = f.SystemType != null && f.SystemType.GetInterface("IEnumerable") != null;
+                    var type = f.SystemType;
+                    if (isCollection)
+                    {
+
+                    }
+                    var retTypeStr = TypeName(type) ?? "void";
+                    if (isCollection)
+                    {
+                        retTypeStr = string.Format("List<{0}>", retTypeStr);
+                    }
+                    var paramSection = "";
+                    var retKey = retTypeStr == "void" ? "" : "return ";
+                    var command = retTypeStr == "void" ? "Execute" : string.Format("Get{0}<{1}>", isCollection ? "List" : "", retTypeStr);
+                    var callSection = "";
+                    return string.Format(@"
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.StoredProcedure,
+            Query =
+@""{0}"")]
+        public {1} {2}({3})
+        {{
+            {4}this.{5}({6});
+        }}", f.Query, retTypeStr, f.Name, paramSection, retKey, command, callSection);
+                }));
+                var routineFile = string.Format(@"using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using SqlSiphon.Mapping;
+
+
+namespace {0}
+{{
+    public class {1} : DataConnector
+    {{
+        public {1}(IDataConnectorFactory factory, string server, string database, string userName, string password) :
+            base(factory, server, database, userName, password)
+        {{
+        }}
+
+        public static void FirstTimeSetup({1} db)
+        {{
+        }}
+
+        {2}
+    }}
+}}", nameSpace, name, routineSectionStr);
+                File.WriteAllText(Path.Combine(directory, name + ".cs"), routineFile);
+            }
         }
     }
 }

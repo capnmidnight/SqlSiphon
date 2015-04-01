@@ -782,5 +782,14 @@ by Sean T. McBeth (v1) (sean@seanmcbeth.com)",
                 }
             }
         }
+
+        private void generateCodeBTN_Click(object sender, EventArgs e)
+        {
+            using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
+            {
+                var initial = db.GetInitialState(this.databaseTB.Text, ObjectFilter);
+                initial.WriteCodeFiles(@"D:\\Sean\\Desktop", "TestProject.Data", "TestConnector");
+            }
+        }
     }
 }
