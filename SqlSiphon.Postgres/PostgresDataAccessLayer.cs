@@ -757,10 +757,10 @@ namespace SqlSiphon.Postgres
             var query = string.Format(
 @"create or replace function {0}({1})
 returns {2} 
-language plpgsql
 as $$
 {3}
-$$;",
+$$
+language plpgsql;",
                 identifier,
                 parameterSection,
                 returnType ?? "void",
@@ -768,11 +768,15 @@ $$;",
             return query;
         }
 
+        private static Regex SetVariablePattern = new Regex("select (@\\w+) = (\\w+)", RegexOptions.Compiled);
+
         public override string MakeRoutineBody(RoutineAttribute routine)
         {
             var queryBody = routine.Query;
             queryBody = queryBody.Replace("getdate()", "current_date")
                 .Replace("newid()", "uuid_generate_v4()");
+
+            queryBody = SetVariablePattern.Replace(queryBody, "select $2 into $1");
             var declarations = new List<string>();
             queryBody = HoistPattern.Replace(queryBody, new MatchEvaluator(m =>
             {
@@ -792,7 +796,7 @@ $$;",
             var returnType = this.MakeSqlTypeString(routine);
             if (returnType != null)
             {
-                if (returnType.Contains("[]"))
+                if (returnType.Contains("[]") || returnType.StartsWith("table"))
                 {
                     returnType = null;
                 }

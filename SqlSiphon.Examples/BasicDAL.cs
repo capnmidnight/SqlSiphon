@@ -121,7 +121,6 @@ where ApplicationName = @applicationName;")]
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
-into returnValue
 from Membership m
 inner join Users u on u.UserID = m.UserID
 inner join Applications a on a.ApplicationID = m.ApplicationID
@@ -163,7 +162,6 @@ where m.LoweredEmail = lower(@email)
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
     m.LastLockoutDate
-into returnValue
 from Membership m
 inner join Users u on u.UserID = m.UserID
 where m.UserID = @userID;")]
@@ -340,14 +338,14 @@ return query select
     u.userName, 
     m.Email, 
     m.PasswordQuestion,
-    m.Comment, 
     m.IsApproved, 
     m.IsLockedOut, 
     m.CreateDate, 
     m.LastLoginDate,
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
-    m.LastLockoutDate
+    m.LastLockoutDate,
+    m.Comment
 from Membership m
 inner join Users u on u.UserID = m.UserID
 where m.ApplicationID = @applicationID
@@ -401,7 +399,6 @@ where LastActivityDate > @compareDate
     m.FailedPasswordAnswerAttemptCount,
     m.FailedPasswordAnswerAttemptWindowStart,
     m.Comment
-into returnValue
 from Membership m
 inner join Users u on u.UserID = m.UserID
 inner join Applications a on a.ApplicationID = m.ApplicationID
@@ -706,8 +703,7 @@ insert into UsersInRoles
             Query =
 @"declare @applicationID uniqueidentifier;
 
-select ApplicationID
-into @applicationID
+select @applicationID = ApplicationID
 from Applications
 where ApplicationName = @applicationName;
 
@@ -754,7 +750,12 @@ from Roles;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"return query select *
+@"return query select 
+    RoleID,
+    ApplicationID,
+    RoleName,
+    LoweredRoleName,
+    Description
 from Roles
 where ApplicationID = @applicationID;")]
         public List<Roles> GetRoles(Guid applicationID)
