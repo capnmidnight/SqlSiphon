@@ -149,19 +149,19 @@ where m.LoweredEmail = lower(@email)
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select 
+@"return query select 
     u.UserID, 
-    u.userName, 
+    u.UserName, 
     m.Email, 
-    m.PasswordQuestion,
-    m.Comment, 
+    m.PasswordQuestion, 
     m.IsApproved, 
     m.IsLockedOut, 
     m.CreateDate, 
     m.LastLoginDate,
     u.LastActivityDate, 
     m.LastPasswordChangedDate, 
-    m.LastLockoutDate
+    m.LastLockoutDate,
+    m.Comment
 from Membership m
 inner join Users u on u.UserID = m.UserID
 where m.UserID = @userID;")]
@@ -199,13 +199,17 @@ select
     @userName,
     lower(@userName),
     NULL,
-    0,
+    @isAnonymous,
     GetDate()
 from Applications
 where ApplicationName = @applicationName;")]
+        public void InsertUser(Guid userID, string userName, string applicationName, bool isAnonymous)
+        {
+            this.Execute(userID, userName, applicationName, isAnonymous);
+        }
         public void InsertUser(Guid userID, string userName, string applicationName)
         {
-            this.Execute(userID, userName, applicationName);
+            this.InsertUser(userID, userName, applicationName, false);
         }
 
         public Guid CreateUser(Guid userID, string userName, string applicationName)
@@ -335,7 +339,7 @@ where ApplicationName = @applicationName;
 
 return query select 
     u.UserID, 
-    u.userName, 
+    u.UserName, 
     m.Email, 
     m.PasswordQuestion,
     m.IsApproved, 
@@ -770,7 +774,7 @@ where ApplicationID = @applicationID;")]
 from UsersInRoles
 	inner join Users on Users.UserID = UsersInRoles.UserID
 	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
-where Users.userName = @userName;")]
+where Users.userName = @userName;", Size = 256)]
         public string[] GetRolesForUser(string userName)
         {
             return this.GetList<string>(userName).ToArray();

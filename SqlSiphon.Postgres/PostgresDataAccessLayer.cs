@@ -444,14 +444,24 @@ namespace SqlSiphon.Postgres
 
             if (size.HasValue && typeName.IndexOf("(") == -1)
             {
+                var format = precision.HasValue
+                    ? "({0},{1})"
+                    : "({0})";
+                var sizeStr = string.Format(format, size, precision);
+                var bracketsIndex = typeName.IndexOf("[]");
+                if (bracketsIndex > -1)
+                {
+                    typeName = typeName.Substring(0, bracketsIndex);
+                }
                 if (typeName == "text")
                 {
                     typeName = "varchar";
                 }
-                var format = precision.HasValue
-                    ? "{0}({1},{2})"
-                    : "{0}({1})";
-                typeName = string.Format(format, typeName, size, precision);
+                typeName += sizeStr;
+                if (bracketsIndex > -1)
+                {
+                    typeName += "[]";
+                }
             }
             return typeName;
         }
@@ -769,12 +779,24 @@ language plpgsql;",
         }
 
         private static Regex SetVariablePattern = new Regex("select (@\\w+) = (\\w+)", RegexOptions.Compiled);
+        private static Regex ReplaceFuncsPattern = new Regex("(newid|getdate)\\(\\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public override string MakeRoutineBody(RoutineAttribute routine)
         {
             var queryBody = routine.Query;
-            queryBody = queryBody.Replace("getdate()", "current_date")
-                .Replace("newid()", "uuid_generate_v4()");
+            queryBody = ReplaceFuncsPattern.Replace(queryBody, new MatchEvaluator(m =>
+            {
+                var func = m.Groups[1].Value.ToLower();
+                if (func == "newid")
+                {
+                    return "uuid_generate_v4()";
+                }
+                else if (func == "getdate")
+                {
+                    return "current_date";
+                }
+                return "";
+            }));
 
             queryBody = SetVariablePattern.Replace(queryBody, "select $2 into $1");
             var declarations = new List<string>();
@@ -828,8 +850,8 @@ language plpgsql;",
 @"{0}
 begin
 {1}
-end;", 
-                declarationString, 
+end;",
+                declarationString,
                 queryBody);
             queryBody = queryBody.Replace("@", "_");
             return queryBody.Trim();

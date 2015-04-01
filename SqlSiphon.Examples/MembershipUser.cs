@@ -6,8 +6,11 @@ namespace SqlSiphon.Examples
     public class MembershipUser
     {
         public Guid UserID { get; set; }
+        [Column(Size = 256)]
         public string UserName { get; set; }
+        [Column(Size = 256, IsOptional = true)]
         public string Email { get; set; }
+        [Column(Size = 256, IsOptional = true)]
         public string PasswordQuestion { get; set; }
         public bool IsApproved { get; set; }
         public bool IsLockedOut { get; set; }
@@ -16,6 +19,7 @@ namespace SqlSiphon.Examples
         public DateTime LastActivityDate { get; set; }
         public DateTime LastPasswordChangedDate { get; set; }
         public DateTime LastLockoutDate { get; set; }
+        [Column(Size = 256, IsOptional = true)]
         public string Comment { get; set; }
     }
 }
