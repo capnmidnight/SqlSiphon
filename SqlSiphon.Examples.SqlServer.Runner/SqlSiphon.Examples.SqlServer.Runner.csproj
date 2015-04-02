@@ -42,6 +42,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Begin.cs" />
+    <Compile Include="BlockBuilder.cs" />
     <Compile Include="LogicClauseBuilder.cs" />
     <Compile Include="ClauseBuilder.cs" />
     <Compile Include="Query.cs" />

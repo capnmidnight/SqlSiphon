@@ -20,16 +20,17 @@ namespace SqlSiphon.Examples.SqlServer.Runner
             Console.WriteLine
             (
                 Begin.Declare<int>("count")
-                .Declare<string>("asdf")
+                    .Declare<string>("asdf")
                 .From<MyTable>()
-                .InnerJoin<MyTable, int>("a", a => a.MyNumber, Ops.LessThan, MyTable => MyTable.MyNumber)
-                .And<MyTable, MyTable, string>(a => a.MyWord, Ops.Equal, MyTable => MyTable.MyWord)
-                .Or<MyTable, MyTable, int>(a => a.MyNumber, Ops.GreaterThan, MyTable => MyTable.MyNumber)
+                    .InnerJoin<MyTable, int>("a", a => a.MyNumber, Ops.LessThan, MyTable => MyTable.MyNumber)
+                        .And<MyTable, MyTable, string>(a => a.MyWord, Ops.Equal, MyTable => MyTable.MyWord)
+                        .Or<MyTable, MyTable, int>(a => a.MyNumber, Ops.GreaterThan, MyTable => MyTable.MyNumber)
                 .Select<MyTable, int>(a => a.MyNumber)
-                ._<MyTable, string>(a => a.MyWord)
-                .Min<MyTable, int>(MyTable => MyTable.MyNumber, "MinMyNumber")
-                .Max<MyTable, string>(a => a.MyWord, "MaxWord")
+                    ._<MyTable, string>(a => a.MyWord)
+                    .Min<MyTable, int>(MyTable => MyTable.MyNumber, "MinMyNumber")
+                    .Max<MyTable, string>(a => a.MyWord, "MaxWord")
                 .Where<MyTable, int>(a => a.MyNumber, Ops.Equal, 2)
+                    .And<MyTable, string>(a => a.MyWord, Ops.Equal, "asdf")
             );
         }
     }
