@@ -15,6 +15,8 @@ namespace SqlSiphon.Examples.SqlServer.Runner
         public static Ops LessThanEqual = new Ops("<=");
         public static Ops GreaterThan = new Ops(">");
         public static Ops GreaterThanEqual = new Ops(">=");
+        public static Ops Is = new Ops("is");
+        public static Ops IsNot = new Ops("is not");
         private string token;
         internal Ops(string token) { this.token = token; }
         public override string ToString() { return this.token; }

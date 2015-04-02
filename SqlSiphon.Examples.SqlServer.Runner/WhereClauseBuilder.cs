@@ -9,8 +9,8 @@ namespace SqlSiphon.Examples.SqlServer.Runner
     public class WhereClauseBuilder : LogicClauseBuilder<WhereClauseBuilder>
     {
         private string select, from;
-        public WhereClauseBuilder(Dictionary<string, Type> tables, string select, string from, string firstExpression)
-            : base(tables)
+        public WhereClauseBuilder(Dictionary<string, Type> symbols, string select, string from, string firstExpression)
+            : base(symbols)
         {
             this.select = select;
             this.from = from;

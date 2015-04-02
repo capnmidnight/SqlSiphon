@@ -9,8 +9,8 @@ namespace SqlSiphon.Examples.SqlServer.Runner
     public class SelectClauseBuilder : ClauseBuilder<SelectClauseBuilder>
     {
         private string from;
-        public SelectClauseBuilder(Dictionary<string, Type> tables, string from, string firstColumn, string alias = null)
-            : base(tables)
+        public SelectClauseBuilder(Dictionary<string, Type> symbols, string from, string firstColumn, string alias = null)
+            : base(symbols)
         {
             this.from = from;
             this.AddColumn("select \n\t", firstColumn, alias);
@@ -37,7 +37,14 @@ namespace SqlSiphon.Examples.SqlServer.Runner
         public WhereClauseBuilder Where<T, V>(Func<T, V> column, Ops op, V value)
             where T : BoundObject, new()
         {
-            return new WhereClauseBuilder(this.tables, this.query.ToString(), this.from, this.GetExpression(column, op, value));
+            return new WhereClauseBuilder(this.symbols, this.query.ToString(), this.from, this.MakeExpression(column, op, value));
+        }
+
+        public WhereClauseBuilder Where<T, U, V>(Func<T, V> left, Ops op, Func<U, V> right)
+            where T : BoundObject, new()
+            where U : BoundObject, new()
+        {
+            return new WhereClauseBuilder(this.symbols, this.query.ToString(), this.from, this.MakeExpression(left, op, right));
         }
 
         private SelectClauseBuilder AddColumn(string pre, string column, string alias, string post = null)
