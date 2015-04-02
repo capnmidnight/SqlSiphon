@@ -42,8 +42,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LogicClauseBuilder.cs" />
+    <Compile Include="ClauseBuilder.cs" />
+    <Compile Include="Query.cs" />
+    <Compile Include="FromClauseBuilder.cs" />
+    <Compile Include="Ops.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelectClauseBuilder.cs" />
+    <Compile Include="WhereClauseBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
