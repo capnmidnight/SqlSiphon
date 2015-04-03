@@ -861,7 +861,7 @@ namespace SqlSiphon
 
         public abstract string MakeDropRoutineScript(RoutineAttribute routine);
         public abstract string MakeRoutineBody(RoutineAttribute routine);
-        public abstract string MakeCreateRoutineScript(RoutineAttribute routine);
+        public abstract string MakeCreateRoutineScript(RoutineAttribute routine, bool createBody = true);
 
         public abstract string MakeDropRelationshipScript(Relationship relation);
         public abstract string MakeCreateRelationshipScript(Relationship relation);

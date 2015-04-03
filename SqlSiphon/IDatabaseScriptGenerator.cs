@@ -25,7 +25,7 @@ namespace SqlSiphon
 
         string MakeDropRoutineScript(RoutineAttribute routine);
         string MakeRoutineBody(RoutineAttribute routine);
-        string MakeCreateRoutineScript(RoutineAttribute routine);
+        string MakeCreateRoutineScript(RoutineAttribute routine, bool buildBody = true);
 
         string MakeDropRelationshipScript(Relationship relation);
         string MakeCreateRelationshipScript(Relationship relation);

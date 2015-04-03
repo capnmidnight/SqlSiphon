@@ -236,9 +236,9 @@ end",
                 query);
         }
 
-        public override string MakeCreateRoutineScript(RoutineAttribute info)
+        public override string MakeCreateRoutineScript(RoutineAttribute info, bool createBody = true)
         {
-            return this.MakeRoutineBody(info);
+            return createBody ? this.MakeRoutineBody(info) : info.Query;
         }
 
         public override void AnalyzeQuery(string routineText, RoutineAttribute routine)

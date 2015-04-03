@@ -17,13 +17,23 @@ namespace InitDB
             InitializeComponent();
         }
 
-        public string Prompt(string text)
+        public void Prompt(string text)
         {
             this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.textBox1.Text = text;
-            return this.ShowDialog() == System.Windows.Forms.DialogResult.OK
-                ? this.textBox1.Text
-                : text;
+            this.Show();
+        }
+
+        public void Prompt(string text, Action<string> callback)
+        {
+            this.FormClosing += (o, e) =>
+            {
+                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)
+                {
+                    callback(this.textBox1.Text);
+                }
+            };
+            this.Prompt(text);
         }
 
         private void button1_Click(object sender, EventArgs e)

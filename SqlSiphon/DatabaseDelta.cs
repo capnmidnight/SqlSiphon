@@ -47,9 +47,10 @@ namespace SqlSiphon
             ScriptType createType,
             Func<T, T, bool> isChanged,
             Func<T, string> makeDropScript,
-            Func<T, string> makeCreateScript)
+            Func<T, string> makeCreateScript,
+            Func<T, string> altMakeCreateScript = null)
         {
-            DumpAll(this.Initial, initial, createType, makeCreateScript);
+            DumpAll(this.Initial, initial, createType, altMakeCreateScript ?? makeCreateScript);
             DumpAll(this.Final, final, createType, makeCreateScript);
             Traverse(
                 final,
@@ -139,7 +140,8 @@ namespace SqlSiphon
                 ScriptType.CreateRoutine,
                 asm.RoutineChanged,
                 gen.MakeDropRoutineScript,
-                gen.MakeCreateRoutineScript);
+                f => gen.MakeCreateRoutineScript(f, true),
+                f => gen.MakeCreateRoutineScript(f, false));
         }
 
         private void ProcessKeys(Dictionary<string, PrimaryKey> finalKeys, Dictionary<string, PrimaryKey> initialKeys, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)

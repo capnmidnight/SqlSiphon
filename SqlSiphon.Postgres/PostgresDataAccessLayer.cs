@@ -753,9 +753,9 @@ namespace SqlSiphon.Postgres
 
         private static Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public override string MakeCreateRoutineScript(RoutineAttribute routine)
+        public override string MakeCreateRoutineScript(RoutineAttribute routine, bool createBody = true)
         {
-            var queryBody = this.MakeRoutineBody(routine);
+            var queryBody = createBody ? this.MakeRoutineBody(routine) : routine.Query.Trim();
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var returnType = this.MakeSqlTypeString(routine) ?? "void";
             if (returnType.Contains("[]"))

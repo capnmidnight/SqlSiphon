@@ -54,7 +54,6 @@ namespace InitDB
         private Dictionary<string, Session> sessions;
         private Dictionary<string, string> options;
         private BindingList<string> names;
-        private ScriptView viewScript = new ScriptView();
         private OptionsDialog optionsDialog = new OptionsDialog();
 
         public MainForm()
@@ -611,11 +610,16 @@ namespace InitDB
                     Application.DoEvents();
                     if (stringValue == scriptObject.Script)
                     {
-                        var newScript = viewScript.Prompt(scriptObject.Script);
+                        var sv = new ScriptView();
                         if (gv == pendingScriptsGV)
                         {
-                            selectedCell.Value = newScript;
+                            sv.Prompt(scriptObject.Script, s => selectedCell.Value = s);
                         }
+                        else
+                        {
+                            sv.Prompt(scriptObject.Script);
+                        }
+                        // forms get disposed when they get closed, no need to dispose them here.
                     }
                     else if (gv == pendingScriptsGV && stringValue == "run")
                     {
