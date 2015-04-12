@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.SqlServer", "SqlS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InitDB", "InitDB\InitDB.csproj", "{27BD4F0D-5652-4B3E-9BE4-33ED0F2DFBA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.SqlServer.Runner", "SqlSiphon.Examples.SqlServer.Runner\SqlSiphon.Examples.SqlServer.Runner.csproj", "{03563419-53BF-4076-A350-2B6392A38CB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.Runner", "SqlSiphon.Examples.SqlServer.Runner\SqlSiphon.Examples.Runner.csproj", "{03563419-53BF-4076-A350-2B6392A38CB2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples", "SqlSiphon.Examples\SqlSiphon.Examples.csproj", "{38251332-2C6D-413A-AA3A-88BA110B3D4F}"
 EndProject

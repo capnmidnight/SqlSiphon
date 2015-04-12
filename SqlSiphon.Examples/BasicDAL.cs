@@ -15,6 +15,16 @@ namespace SqlSiphon.Examples
         {
         }
 
+        public BasicDAL(IDataConnector connection)
+            : base(connection)
+        {
+        }
+
+        public BasicDAL()
+            : base()
+        {
+        }
+
         public static void FirstTimeSetup(BasicDAL db)
         {
             var appName = "TestApplication";
