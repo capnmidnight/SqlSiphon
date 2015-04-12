@@ -106,22 +106,32 @@ namespace SqlSiphon.Mapping
         {
             if (value == DBNull.Value)
                 value = null;
-            try
+            var targetType = this.originalProperty.PropertyType;
+            if (targetType.IsGenericType
+                && targetType.Name.StartsWith("Nullable"))
             {
-                var targetType = this.originalProperty.PropertyType;
-                if (targetType.IsGenericType
-                    && targetType.Name.StartsWith("Nullable"))
-                {
-                    targetType = targetType.GetGenericArguments()[0];
-                    if (value != null)
-                        value = Convert.ChangeType(value, targetType);
-                }
-                else if (targetType.IsEnum
-                    && value is string)
+                targetType = targetType.GetGenericArguments()[0];
+            }
+
+
+            if (value != null)
+            {
+                if (targetType.IsEnum && value is string)
                 {
                     value = Enum.Parse(targetType, (string)value);
                 }
+                else if (targetType.IsEnum && value is int)
+                {
+                    value = Enum.ToObject(targetType, (int)value);
+                }
+                else
+                {
+                    value = Convert.ChangeType(value, targetType);
+                }
+            }
 
+            try
+            {
                 this.originalProperty.SetValue(obj, value, null);
             }
             catch (Exception exp)
