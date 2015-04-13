@@ -969,7 +969,7 @@ alter table {1} add constraint {3} primary key using index {0};",
 
         public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
         {
-            return string.Format("create user {0} with password '{1}'", userName, password);
+            return string.Format("create user {0} with superuser password '{1}';", userName, password);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

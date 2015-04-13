@@ -28,7 +28,7 @@ namespace SqlSiphon.Examples.SqlServer.Runner
                 if(factory is SqlSiphon.SqlServer.SqlServerDataConnectorFactory){
                     server += "\\SQLEXPRESS";
                 }
-                using (db.Connection = factory.MakeConnector(server, "TestDB", "TestDBUser", "testpassword"))
+                using (db.Connection = factory.MakeConnector(server, "TestDB", "TestDBUser", "TestDBPassword"))
                 {
                     Console.WriteLine("Getting data from {0}", db.DatabaseType);
                     Console.WriteLine(string.Join(", ", db.GetAllRoles()));

@@ -46,14 +46,13 @@ namespace ssp
                 {
                     using (var searcher = new ManagementObjectSearcher("SELECT * FROM WIN32_SerialPort"))
                     {
-                        searcher
-                            .Get()
-                            .Cast<ManagementBaseObject>()
-                            .ToList()
-                            .ForEach(p => Console.WriteLine(
-                                "{0} - {1}", 
-                                p["DeviceID"], 
-                                p["Description"]));
+                        foreach (var p in searcher.Get())
+                        {
+                            Console.WriteLine(
+                                "{0} - {1}",
+                                p["DeviceID"],
+                                p["Description"]);
+                        }
                     }
                 }
                 else if (options.Port != null)
