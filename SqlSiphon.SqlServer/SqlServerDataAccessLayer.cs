@@ -115,6 +115,12 @@ namespace SqlSiphon.SqlServer
             return defaultTypeSizes[typeName];
         }
 
+        protected override void OnOpened()
+        {
+            base.OnOpened();
+            this.ExecuteQuery("SET ARITHABORT ON;");
+        }
+
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
         static SqlServerDataAccessLayer()

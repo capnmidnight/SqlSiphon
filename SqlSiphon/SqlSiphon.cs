@@ -202,12 +202,20 @@ namespace SqlSiphon
             try
             {
                 if (Connection.State == ConnectionState.Closed)
+                {
                     Connection.Open();
+                    this.OnOpened();
+                }
             }
             catch (Exception exp)
             {
                 throw new ConnectionFailedException("Could not connect to the database at : " + this.Connection.ConnectionString, exp);
             }
+        }
+
+        protected virtual void OnOpened()
+        {
+            // do nothing in the base case
         }
 
         public virtual string MakeIdentifier(params string[] parts)
