@@ -115,10 +115,38 @@ namespace SqlSiphon.SqlServer
             return defaultTypeSizes[typeName];
         }
 
+        private const SqlServerOptions STANDARD_OPTIONS = SqlServerOptions.ANSI_WARNINGS | SqlServerOptions.ANSI_PADDING | SqlServerOptions.ANSI_NULLS | SqlServerOptions.ARITHABORT | SqlServerOptions.QUOTED_IDENTIFIER | SqlServerOptions.ANSI_NULL_DFLT_ON | SqlServerOptions.CONCAT_NULL_YIELDS_NULL;
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query = @"select cast(@@OPTIONS as int) as Options")]
+        public SqlServerOptions GetSqlServerOptions()
+        {
+            return (SqlServerOptions)this.Get<int>(0);
+        }
+
         protected override void OnOpened()
         {
             base.OnOpened();
-            this.ExecuteQuery("SET ARITHABORT ON;");
+            try
+            {
+                var options = this.GetSqlServerOptions();
+                var allOptions = Enum.GetValues(typeof(SqlServerOptions))
+                    .Cast<SqlServerOptions>()
+                    .ToArray();
+
+                foreach (var option in allOptions)
+                {
+                    if ((STANDARD_OPTIONS & option) != SqlServerOptions.None 
+                        && (options & option) == SqlServerOptions.None)
+                    {
+                        this.Execute(string.Format("SET {0} ON;", option));
+                    }
+                }
+            }
+            catch
+            {
+                // not going to care about the error
+            }
         }
 
         private static Dictionary<string, Type> typeMapping;
@@ -229,16 +257,17 @@ end catch;", transactionName);
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameters = info.Parameters.Select(this.MakeParameterString);
             var parameterSection = string.Join(", ", parameters);
-
+            var withRecompile = info.GetAttribute<SqlServerWithRecompileAttribute>() != null;
             return string.Format(
 @"create procedure {0}
     {1}
-as begin
+{2}as begin
     set nocount on;
-    {2}
+    {3}
 end",
                 identifier,
                 parameterSection,
+                withRecompile ? "with recompile\r\n" : "",
                 query);
         }
 

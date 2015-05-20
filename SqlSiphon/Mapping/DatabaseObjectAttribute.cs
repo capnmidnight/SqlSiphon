@@ -52,6 +52,8 @@ namespace SqlSiphon.Mapping
         AllowMultiple = false)]
     public abstract class DatabaseObjectAttribute : Attribute
     {
+        public ICustomAttributeProvider SourceObject { get; private set; }
+
         /// <summary>
         /// Get or set a schema name for objects in the database. Defaults to
         /// null, which causes the data access system to use whatever is
@@ -67,7 +69,7 @@ namespace SqlSiphon.Mapping
         /// this behavior.
         /// </summary>
         public string Name { get; set; }
- 
+
         /// <summary>
         /// A property to turn on or off the inclusion of the
         /// type as an object in the database. Defaults to
@@ -121,9 +123,25 @@ namespace SqlSiphon.Mapping
         /// <returns>The attribute instance, or null if no such
         /// attribute exists</returns>
         public static T GetAttribute<T>(ICustomAttributeProvider obj)
-            where T : DatabaseObjectAttribute, new()
+            where T : Attribute, new()
         {
-            return GetAttributes<T>(obj).FirstOrDefault();
+            var attr = GetAttributes<T>(obj).FirstOrDefault() ?? new T();
+            var mappingAttribute = attr as DatabaseObjectAttribute;
+            if (mappingAttribute != null)
+            {
+                mappingAttribute.SourceObject = obj;
+            }
+            return attr;
+        }
+
+        public T GetAttribute<T>()
+            where T : Attribute, new()
+        {
+            if (this.SourceObject != null)
+            {
+                return DatabaseObjectAttribute.GetAttribute<T>(this.SourceObject);
+            }
+            return default(T);
         }
 
         /// <summary>
@@ -153,7 +171,7 @@ namespace SqlSiphon.Mapping
         /// doesn't mean anything for .NET types.
         /// </summary>
         public bool IsSizeSet { get; private set; }
-        
+
         private int typeSize;
 
         /// <summary>
@@ -201,7 +219,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public string DefaultValue { get; set; }
 
-        protected bool optionalNotSet = true;
+        public bool IsOptionalSet { get; set; }
         private bool isOptionalField = false;
 
         /// <summary>
@@ -214,7 +232,7 @@ namespace SqlSiphon.Mapping
             get { return isOptionalField; }
             set
             {
-                optionalNotSet = false;
+                IsOptionalSet = true;
                 isOptionalField = value;
             }
         }
@@ -227,7 +245,7 @@ namespace SqlSiphon.Mapping
                 if (type.IsGenericType)
                 {
                     this.SystemType = type.GetGenericArguments()[0];
-                    if (type.Name.StartsWith("Nullable") && this.optionalNotSet)
+                    if (type.Name.StartsWith("Nullable") && !this.IsOptionalSet)
                         this.IsOptional = true;
                 }
             }
@@ -292,7 +310,7 @@ namespace SqlSiphon.Mapping
             {
                 this.SqlType = this.SqlType.Substring(1);
             }
-            
+
             this.SystemType = dal.GetSystemType(this.SqlType);
             if (this.SystemType != null)
             {

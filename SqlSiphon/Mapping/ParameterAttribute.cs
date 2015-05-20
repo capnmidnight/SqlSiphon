@@ -117,7 +117,7 @@ namespace SqlSiphon.Mapping
             // from whether or not the method's parameter is optional, 
             // but only if the IsOptional property of the attribute 
             // was not set explicitly.
-            if (this.optionalNotSet)
+            if (!this.IsOptionalSet)
                 this.IsOptional = parameter.IsOptional;
 
             // Infer the default value for the stored procedure's 

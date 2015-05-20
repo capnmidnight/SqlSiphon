@@ -167,7 +167,7 @@ namespace SqlSiphon.Mapping
             {
                 p.Size = this.Size;
             }
-            if (!this.optionalNotSet)
+            if (this.IsOptionalSet)
             {
                 p.IsOptional = this.IsOptional;
             }
