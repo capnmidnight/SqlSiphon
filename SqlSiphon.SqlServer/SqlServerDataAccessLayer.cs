@@ -136,7 +136,7 @@ namespace SqlSiphon.SqlServer
 
                 foreach (var option in allOptions)
                 {
-                    if ((STANDARD_OPTIONS & option) != SqlServerOptions.None 
+                    if ((STANDARD_OPTIONS & option) != SqlServerOptions.None
                         && (options & option) == SqlServerOptions.None)
                     {
                         this.Execute(string.Format("SET {0} ON;", option));
@@ -506,10 +506,11 @@ DROP INDEX {0} ON {1};",
             else if (final.IsOptional != initial.IsOptional)
             {
                 return string.Format(
-                    "{0} alter column {1} {2} not null;",
+                    "{0} alter column {1} {2} {3} null;",
                     preamble,
                     this.MakeIdentifier(final.Name),
-                    final.IsOptional ? "drop" : "set");
+                    this.MakeSqlTypeString(final),
+                    final.IsOptional ? "" : "not");
             }
             else if (final.SystemType != initial.SystemType
                 || final.Size != initial.Size
@@ -820,7 +821,7 @@ where constraint_schema != 'information_schema';")]
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
         public override void InsertAll<T>(IEnumerable<T> data)
-        {        
+        {
             if (data != null)
             {
                 var t = typeof(T);
