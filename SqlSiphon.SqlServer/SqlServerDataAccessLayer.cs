@@ -219,6 +219,24 @@ namespace SqlSiphon.SqlServer
             reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
         }
 
+
+        public static string MakeUDTTName(Type t)
+        {
+            if (t.IsArray)
+                t = t.GetElementType();
+
+            var attr = DatabaseObjectAttribute.GetAttribute<SqlServerTableAttribute>(t);
+            if (attr == null)
+            {
+                attr = new SqlServerTableAttribute();
+                attr.Name = t.Name;
+            }
+
+            attr.InferProperties(t);
+
+            return attr.Name + "UDTT";
+        }
+
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
         {
             return this.MakeIdentifier(routine.Schema ?? this.DefaultSchemaName, routine.Name);
@@ -354,7 +372,8 @@ DROP INDEX {0} ON {1};",
             return string.Join(" ",
                 "@" + p.Name,
                 typeStr,
-                GetDefaultValue(p)).Trim();
+                GetDefaultValue(p),
+                IsUDTT(p.SystemType) ? "readonly" : "").Trim();
         }
 
         protected override string MakeColumnString(ColumnAttribute p, bool isReturnType)
@@ -529,11 +548,14 @@ DROP INDEX {0} ON {1};",
             }
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, int? size, int? precision, bool isIdentity)
         {
-            if (sqlType == null && systemType != null && reverseTypeMapping.ContainsKey(systemType))
+            if (sqlType == null)
             {
-                sqlType = reverseTypeMapping[systemType];
+                if (reverseTypeMapping.ContainsKey(systemType))
+                    sqlType = reverseTypeMapping[systemType];
+                else if (isCollection || IsUDTT(systemType))
+                    sqlType = MakeUDTTName(systemType);
             }
 
             if (sqlType != null)
@@ -689,33 +711,55 @@ ALTER ROLE db_owner ADD MEMBER {0};", userName, password, database);
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
+@"select s.name as table_schema, tt.name as table_name, c.name as column_name, t.name as data_type, c.max_length, c.precision, c.scale, c.is_nullable, c.is_identity, d.definition as column_default
+from sys.table_types tt
+	inner join sys.columns c on c.object_id = tt.type_table_object_id
+	inner join sys.schemas s on s.schema_id = tt.schema_id
+	inner join sys.types t on t.system_type_id = c.system_type_id
+	left outer join sys.default_constraints d on d.object_id = c.default_object_id
+order by c.column_id;")]
+        private List<InformationSchema.Columns> GetUDTTColumns()
+        {
+            return this.GetEnumerator<InformationSchema.Columns>()
+                .Select(RemoveDefaultValueParens)
+                .ToList();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query =
 @"select *, COLUMNPROPERTY(object_id(TABLE_NAME), COLUMN_NAME, 'IsIdentity') as is_identity
 from information_schema.columns
 where table_schema != 'information_schema'
 order by table_catalog, table_schema, table_name, ordinal_position;")]
         public override List<InformationSchema.Columns> GetColumns()
         {
-            var columns = GetList<InformationSchema.Columns>();
-            // SQL Server wraps default values in parens, and it can do this many times, just to vex us!
-            foreach (var column in columns)
+            return this.GetEnumerator<InformationSchema.Columns>()
+                .Select(RemoveDefaultValueParens)
+                .ToList();
+        }
+
+        /// <summary>
+        /// SQL Server wraps default values in parens, and it can do this many times, just to vex us!
+        /// </summary>
+        /// <param name="columns"></param>
+        private static InformationSchema.Columns RemoveDefaultValueParens(InformationSchema.Columns column)
+        {
+            if (column.column_default != null)
             {
-                if (column.column_default != null)
+                while (column.column_default.StartsWith("("))
                 {
-                    while (column.column_default.StartsWith("("))
-                    {
-                        column.column_default = column.column_default.Substring(1);
-                    }
-                    while (column.column_default.EndsWith(")"))
-                    {
-                        column.column_default = column.column_default.Substring(0, column.column_default.Length - 1);
-                    }
-                    if (column.column_default.EndsWith("("))
-                    {
-                        column.column_default += ")";
-                    }
+                    column.column_default = column.column_default.Substring(1);
+                }
+                while (column.column_default.EndsWith(")"))
+                {
+                    column.column_default = column.column_default.Substring(0, column.column_default.Length - 1);
+                }
+                if (column.column_default.EndsWith("("))
+                {
+                    column.column_default += ")";
                 }
             }
-            return columns;
+            return column;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -860,6 +904,46 @@ where constraint_schema != 'information_schema';")]
         public override Type GetSystemType(string sqlType)
         {
             return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
+        }
+
+        public override DatabaseState GetInitialState(string catalogueName, Regex filter)
+        {
+            var state = base.GetInitialState(catalogueName, filter);
+            var ssState = new SqlServerDatabaseState(state);
+            if (ssState.CatalogueExists.HasValue && ssState.CatalogueExists.Value)
+            {
+                var udttColumns = this.GetUDTTColumns().ToHash(col => this.MakeIdentifier(col.table_schema, col.table_name));
+                foreach (var udtt in udttColumns)
+                {
+                    ssState.UDTTs.Add(udtt.Key.ToLowerInvariant(), new TableAttribute(udtt.Value, this));
+                }
+            }
+            return ssState;
+        }
+
+        public override DatabaseState GetFinalState(Type dalType, string userName, string password)
+        {
+            var state = base.GetFinalState(dalType, userName, password);
+            var ssState = new SqlServerDatabaseState(state);
+            foreach (var parameter in ssState.Functions.Values.SelectMany(f=>f.Parameters))
+            {
+                if (IsUDTT(parameter.SystemType))
+                {
+                    ssState.AddTable(ssState.UDTTs, parameter.SystemType, this, new TableAttribute());
+                }
+            }
+            return ssState;
+        }
+        public static bool IsUDTT(Type t)
+        {
+            var isUDTT = false;
+            if (t.IsArray)
+            {
+                t = t.GetElementType();
+                isUDTT = t != typeof(byte) && DataConnector.IsTypePrimitive(t);
+            }
+            var attr = Mapping.DatabaseObjectAttribute.GetAttribute<SqlServerTableAttribute>(t);
+            return (attr != null && attr.IsUploadable) || isUDTT;
         }
 
         protected override void ToOutput(string value)

@@ -81,18 +81,6 @@ namespace SqlSiphon
                 .ForEach(p => p.SetValue(obj, reader[p.Name.ToUpper()]));
         }
 
-        private static bool IsTypePrimitive(Type type)
-        {
-            return type.IsPrimitive
-                || type == typeof(decimal)
-                || type == typeof(string)
-                || type == typeof(DateTime)
-                || type == typeof(Guid)
-                || type == typeof(byte[])
-                || (type.IsGenericType
-                    && IsTypePrimitive(type.GetGenericArguments().First()));
-        }
-
         protected static List<ColumnAttribute> GetProperties(Type type)
         {
             var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type)
@@ -597,7 +585,7 @@ namespace SqlSiphon
 
             // If we're returning a primitive value, we assume it's in the first position
             // of the result set.
-            object key = IsTypePrimitive(type) ? (object)0 : type;
+            object key = DataConnector.IsTypePrimitive(type) ? (object)0 : type;
 
             using (var command = ConstructCommand(parameters))
             {
@@ -658,6 +646,7 @@ namespace SqlSiphon
                 return MakeSqlTypeString(
                     p.SqlType,
                     systemType,
+                    p.IsCollection,
                     p.IsSizeSet ? new Nullable<int>(p.Size) : null,
                     p.IsPrecisionSet ? new Nullable<int>(p.Precision) : null,
                     isIdentity);
@@ -841,7 +830,7 @@ namespace SqlSiphon
             routine.Query = routineText;
         }
 
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, int? size, int? precision, bool isIdentity);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(ParameterAttribute p);
 

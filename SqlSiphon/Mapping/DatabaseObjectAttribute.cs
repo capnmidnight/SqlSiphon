@@ -237,6 +237,22 @@ namespace SqlSiphon.Mapping
             }
         }
 
+        /// <summary>
+        /// Returns true if the SystemType represents some kind of collection
+        /// of multiple values.
+        /// </summary>
+        public bool IsCollection
+        {
+            get
+            {
+                return this.SystemType != null
+                    && this.SystemType
+                    .FindInterfaces(new TypeFilter((t, o) =>
+                        t == typeof(System.Collections.IEnumerable)), null)
+                    .Length > 0;
+            }
+        }
+
         private void SetSystemType(Type type)
         {
             if (this.SystemType == null)

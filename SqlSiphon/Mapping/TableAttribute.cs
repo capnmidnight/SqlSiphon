@@ -60,6 +60,13 @@ namespace SqlSiphon.Mapping
 
         public TableAttribute(
             InformationSchema.Columns[] columns,
+            IDatabaseStateReader dal)
+            : this(columns, null, null, null, null, dal)
+        {
+        }
+
+        public TableAttribute(
+            InformationSchema.Columns[] columns,
             InformationSchema.TableConstraints[] constraints,
             InformationSchema.KeyColumnUsage[] keyColumns,
             InformationSchema.ConstraintColumnUsage[] constraintColumns,
@@ -96,13 +103,18 @@ namespace SqlSiphon.Mapping
                     columnConstraints[columnKey].Add(dal.MakeIdentifier(c.constraint_schema, c.constraint_name));
                 }
             }
-            var constraintTypes = constraints.ToDictionary(c => dal.MakeIdentifier(c.constraint_schema, c.constraint_name), c => c.constraint_type);
+
+            Dictionary<string, string> constraintTypes = null;
+
+            if (constraints != null)
+            {
+                constraintTypes = constraints.ToDictionary(c => dal.MakeIdentifier(c.constraint_schema, c.constraint_name), c => c.constraint_type);
+            }
             foreach (var column in columns)
             {
                 var key = dal.MakeIdentifier(column.column_name);
                 var isIncludedInPK = columnConstraints.ContainsKey(key)
-                    && columnConstraints[key].Any(constraintName =>
-                        constraintTypes.ContainsKey(constraintName)
+                    && columnConstraints[key].Any(constraintName => constraintTypes != null && constraintTypes.ContainsKey(constraintName)
                         && constraintTypes[constraintName] == "PRIMARY KEY");
                 this.Properties.Add(new ColumnAttribute(this, column, isIncludedInPK, dal));
             }

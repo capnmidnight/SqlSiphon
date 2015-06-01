@@ -9,6 +9,18 @@ namespace SqlSiphon
 {
     public abstract class DataConnector : IDataConnector
     {
+        public static bool IsTypePrimitive(Type type)
+        {
+            return type.IsPrimitive
+                || type == typeof(decimal)
+                || type == typeof(string)
+                || type == typeof(DateTime)
+                || type == typeof(Guid)
+                || type == typeof(byte[])
+                || (type.IsGenericType
+                    && DataConnector.IsTypePrimitive(type.GetGenericArguments().First()));
+        }
+
         private IDataConnector connectionInternal;
         public IDataConnector Connection
         {

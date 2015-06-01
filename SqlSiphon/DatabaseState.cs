@@ -180,26 +180,31 @@ namespace SqlSiphon
             var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
             if (table != null)
             {
-                table.InferProperties(type);
-                table.Schema = table.Schema ?? dal.DefaultSchemaName;
-                if (table.Include)
+                AddTable(this.Tables, type, dal, table);
+            }
+        }
+
+        public void AddTable(Dictionary<string, TableAttribute> tableCollection, Type type, IDatabaseScriptGenerator dal, TableAttribute table)
+        {
+            table.InferProperties(type);
+            table.Schema = table.Schema ?? dal.DefaultSchemaName;
+            if (table.Include)
+            {
+                tableCollection.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant(), table);
+                if (table.Properties.Any(p => p.IncludeInPrimaryKey))
                 {
-                    this.Tables.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant(), table);
-                    if (table.Properties.Any(p => p.IncludeInPrimaryKey))
+                    table.PrimaryKey = new PrimaryKey(type);
+                    this.PrimaryKeys.Add(dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.GetName(dal)).ToLowerInvariant(), table.PrimaryKey);
+                }
+                foreach (var index in table.Indexes)
+                {
+                    if (this.Indexes.ContainsKey(index.Key))
                     {
-                        table.PrimaryKey = new PrimaryKey(type);
-                        this.PrimaryKeys.Add(dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.GetName(dal)).ToLowerInvariant(), table.PrimaryKey);
+                        throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, this.Indexes[index.Key].Table.Name);
                     }
-                    foreach (var index in table.Indexes)
+                    else
                     {
-                        if (this.Indexes.ContainsKey(index.Key))
-                        {
-                            throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, this.Indexes[index.Key].Table.Name);
-                        }
-                        else
-                        {
-                            this.Indexes.Add(index.Key.ToLowerInvariant(), index.Value);
-                        }
+                        this.Indexes.Add(index.Key.ToLowerInvariant(), index.Value);
                     }
                 }
             }
