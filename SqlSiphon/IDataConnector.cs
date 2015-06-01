@@ -17,5 +17,19 @@ namespace SqlSiphon
         DataSet GetDataSet(params object[] parameters);
         DbDataReader GetReader(params object[] parameters);
         IEnumerable<EntityT> GetEnumerator<EntityT>(params object[] parameters);
+        void InsertAll<T>(IEnumerable<T> data);
+    }
+
+    public static class IDataConnectorExt
+    {
+        public static void InsertAll<T>(this IDataConnector connector, params T[] data)
+        {
+            connector.InsertAll(data);
+        }
+
+        public static void InsertAll<T>(this IDataConnector connector, List<T> data)
+        {
+            connector.InsertAll(data.ToArray());
+        }
     }
 }

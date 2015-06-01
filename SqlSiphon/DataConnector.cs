@@ -95,5 +95,10 @@ namespace SqlSiphon
         {
             return this.Connection.GetEnumerator<EntityT>(parameters);
         }
+
+        public void InsertAll<T>(IEnumerable<T> data)
+        {
+            this.Connection.InsertAll(data);
+        }
     }
 }

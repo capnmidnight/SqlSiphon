@@ -819,7 +819,7 @@ where constraint_schema != 'information_schema';")]
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
         public override void InsertAll<T>(IEnumerable<T> data)
-        {
+        {        
             if (data != null)
             {
                 var t = typeof(T);

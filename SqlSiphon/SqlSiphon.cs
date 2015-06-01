@@ -260,21 +260,8 @@ namespace SqlSiphon
         {
             if (script.ScriptType == ScriptType.InitializeData)
             {
-                this.Insert(script);
+                this.InsertAll(script);
             }
-        }
-
-
-        /// <summary>
-        /// Performs a basic insert operation for a collection of data. By default, this will perform poorly, as it does
-        /// a naive INSERT statement for each element of the array. It is meant as a base implementation that can be overridden
-        /// in deriving classes to support their vendor's bulk-insert operation.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="data"></param>
-        public virtual void Insert<T>(params T[] data)
-        {
-            this.InsertAll(data.AsEnumerable());
         }
 
         /// <summary>
