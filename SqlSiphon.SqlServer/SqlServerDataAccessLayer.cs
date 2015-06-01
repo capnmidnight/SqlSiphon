@@ -185,6 +185,7 @@ namespace SqlSiphon.SqlServer
 
             defaultTypeSizes = new Dictionary<string, int>();
             defaultTypeSizes.Add("int", 10);
+            defaultTypeSizes.Add("real", 64);
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)

@@ -61,6 +61,8 @@
     <Compile Include="BoundObject.cs" />
     <Compile Include="DatabaseDelta.cs" />
     <Compile Include="DataConnector.cs" />
+    <Compile Include="Exceptions\IndexExistsException.cs" />
+    <Compile Include="Exceptions\RelationShipExistsException.cs" />
     <Compile Include="IAssemblyStateReader.cs" />
     <Compile Include="IDataConnector.cs" />
     <Compile Include="IDatabaseObjectHandler.cs" />

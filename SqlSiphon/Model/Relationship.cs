@@ -16,7 +16,7 @@ namespace SqlSiphon.Mapping
 
         public string Prefix { get; private set; }
 
-        public Relationship(
+        internal Relationship(
             InformationSchema.TableConstraints constraint,
             InformationSchema.KeyColumnUsage[] constraintColumns,
             InformationSchema.Columns[] tableColumns,
@@ -35,27 +35,12 @@ namespace SqlSiphon.Mapping
             this.FromColumns = constraintColumns.Select(c => new ColumnAttribute(this.From, columns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
         }
 
-        public Relationship(Type fromType, Type toType)
-            : this("", fromType, toType, null)
-        {
-        }
-
-        public Relationship(string prefix, Type fromType, Type toType)
-            : this(prefix, fromType, toType, null)
-        {
-        }
-
-        public Relationship(Type fromType, Type toType, params string[] fromColumns)
-            : this("", fromType, toType, fromColumns)
-        {
-        }
-
-        public Relationship(string prefix, Type fromType, Type toType, params string[] fromColumns)
+        internal Relationship(string prefix, Type fromType, Type toType, params string[] fromColumns)
         {
             this.Prefix = prefix ?? "";
             this.toType = toType;
             this.fromType = fromType;
-            if (fromColumnNames != null && fromColumnNames.Length > 0)
+            if (fromColumns != null && fromColumns.Length > 0)
             {
                 this.fromColumnNames = fromColumns;
             }

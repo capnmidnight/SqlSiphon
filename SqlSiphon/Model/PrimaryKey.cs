@@ -21,7 +21,7 @@ namespace SqlSiphon.Mapping
         public TableAttribute Table { get; private set; }
         public ColumnAttribute[] KeyColumns { get; private set; }
 
-        public PrimaryKey(
+        internal PrimaryKey(
             InformationSchema.TableConstraints constraint,
             InformationSchema.TableConstraints uniqueConstraint,
             InformationSchema.ConstraintColumnUsage[] uniqueConstraintColumns,
@@ -38,7 +38,7 @@ namespace SqlSiphon.Mapping
                 .ToArray();
         }
 
-        public PrimaryKey(Type toType)
+        internal PrimaryKey(Type toType)
         {
             this.Table = GetAttribute(toType);
             this.KeyColumns = this.Table.Properties

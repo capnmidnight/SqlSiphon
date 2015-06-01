@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using SqlSiphon.Mapping;
+using SqlSiphon.Exceptions;
 
 namespace SqlSiphon
 {
@@ -163,7 +164,14 @@ namespace SqlSiphon
             {
                 relationship.ResolveColumns(this.Tables, dal);
                 var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.GetName(dal));
-                this.Relationships.Add(id, relationship);
+                if (this.Relationships.ContainsKey(id))
+                {
+                    throw new RelationshipExistsException(id);
+                }
+                else
+                {
+                    this.Relationships.Add(id, relationship);
+                }
             }
         }
 
@@ -184,7 +192,14 @@ namespace SqlSiphon
                     }
                     foreach (var index in table.Indexes)
                     {
-                        this.Indexes.Add(index.Key, index.Value);
+                        if (this.Indexes.ContainsKey(index.Key))
+                        {
+                            throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, this.Indexes[index.Key].Table.Name);
+                        }
+                        else
+                        {
+                            this.Indexes.Add(index.Key, index.Value);
+                        }
                     }
                 }
             }

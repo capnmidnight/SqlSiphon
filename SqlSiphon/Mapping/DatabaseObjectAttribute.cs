@@ -125,7 +125,7 @@ namespace SqlSiphon.Mapping
         public static T GetAttribute<T>(ICustomAttributeProvider obj)
             where T : Attribute, new()
         {
-            var attr = GetAttributes<T>(obj).FirstOrDefault() ?? new T();
+            var attr = GetAttributes<T>(obj).FirstOrDefault();
             var mappingAttribute = attr as DatabaseObjectAttribute;
             if (mappingAttribute != null)
             {
