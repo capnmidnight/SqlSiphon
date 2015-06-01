@@ -74,7 +74,7 @@ namespace SqlSiphon
             this.PostExecute = new List<Action<IDataConnector>>();
             if (!string.IsNullOrWhiteSpace(userName))
             {
-                this.DatabaseLogins.Add(userName, password);
+                this.DatabaseLogins.Add(userName.ToLowerInvariant(), password);
             }
 
             var relationships = new List<Relationship>();
@@ -151,7 +151,7 @@ namespace SqlSiphon
                         }
                         else
                         {
-                            this.Functions.Add(functionName, function);
+                            this.Functions.Add(functionName.ToLowerInvariant(), function);
                         }
                     }
                 }
@@ -170,7 +170,7 @@ namespace SqlSiphon
                 }
                 else
                 {
-                    this.Relationships.Add(id, relationship);
+                    this.Relationships.Add(id.ToLowerInvariant(), relationship);
                 }
             }
         }
@@ -184,11 +184,11 @@ namespace SqlSiphon
                 table.Schema = table.Schema ?? dal.DefaultSchemaName;
                 if (table.Include)
                 {
-                    this.Tables.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name), table);
+                    this.Tables.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant(), table);
                     if (table.Properties.Any(p => p.IncludeInPrimaryKey))
                     {
                         table.PrimaryKey = new PrimaryKey(type);
-                        this.PrimaryKeys.Add(dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.GetName(dal)), table.PrimaryKey);
+                        this.PrimaryKeys.Add(dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.GetName(dal)).ToLowerInvariant(), table.PrimaryKey);
                     }
                     foreach (var index in table.Indexes)
                     {
@@ -198,7 +198,7 @@ namespace SqlSiphon
                         }
                         else
                         {
-                            this.Indexes.Add(index.Key, index.Value);
+                            this.Indexes.Add(index.Key.ToLowerInvariant(), index.Value);
                         }
                     }
                 }
@@ -231,7 +231,7 @@ namespace SqlSiphon
             {
                 foreach (var name in dal.GetDatabaseLogins())
                 {
-                    this.DatabaseLogins.Add(name, null);
+                    this.DatabaseLogins.Add(name.ToLowerInvariant(), null);
                 }
                 this.CatalogueExists = true;
                 var schemas = dal.GetSchemata();
@@ -274,7 +274,7 @@ namespace SqlSiphon
                         var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : new InformationSchema.ConstraintColumnUsage[] { };
                         var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : new InformationSchema.IndexColumnUsage[] { };
                         var table = new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal);
-                        this.Tables.Add(tableName, table);
+                        this.Tables.Add(tableName.ToLowerInvariant(), table);
                         if (tableConstraints != null)
                         {
                             foreach (var constraint in tableConstraints)
@@ -289,7 +289,7 @@ namespace SqlSiphon
                                     var uniqueTableColumns = columns[dal.MakeIdentifier(uniqueConstraint.table_schema, uniqueConstraint.table_name)];
                                     if (constraint.constraint_type == "FOREIGN KEY")
                                     {
-                                        this.Relationships.Add(constraintName, new Relationship(
+                                        this.Relationships.Add(constraintName.ToLowerInvariant(), new Relationship(
                                             constraint, constraintColumns, tableColumns,
                                             uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns,
                                             dal));
@@ -297,7 +297,7 @@ namespace SqlSiphon
                                     else if (constraint.constraint_type == "PRIMARY KEY")
                                     {
                                         table.PrimaryKey = new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal);
-                                        this.PrimaryKeys.Add(constraintName, table.PrimaryKey);
+                                        this.PrimaryKeys.Add(constraintName.ToLowerInvariant(), table.PrimaryKey);
                                     }
                                 }
                             }
@@ -314,7 +314,7 @@ namespace SqlSiphon
                     var ident = dal.MakeIdentifier(prm.specific_schema, prm.specific_name);
                     if (!routines.ContainsKey(ident))
                     {
-                        routines.Add(ident, prm);
+                        routines.Add(ident.ToLowerInvariant(), prm);
                     }
                 }
                 var parameters = dal.GetParameters()
@@ -328,7 +328,7 @@ namespace SqlSiphon
                     var ident = dal.MakeRoutineIdentifier(function);
                     if (!this.Functions.ContainsKey(ident))
                     {
-                        this.Functions.Add(ident, function);
+                        this.Functions.Add(ident.ToLowerInvariant(), function);
                     }
                 }
 
@@ -339,7 +339,7 @@ namespace SqlSiphon
                     if (this.Tables.ContainsKey(tableName))
                     {
                         var table = this.Tables[tableName];
-                        this.Indexes.Add(idxName, new Index(table, idxName));
+                        this.Indexes.Add(idxName.ToLowerInvariant(), new Index(table, idxName));
                         foreach (var idxCol in idx)
                         {
                             this.Indexes[idxName].Columns.Add(idxCol.column_name);
