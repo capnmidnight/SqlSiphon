@@ -236,7 +236,7 @@ namespace SqlSiphon
                 }
                 catch (DbException exp)
                 {
-                    if (!exp.Message.ToLower().Contains("scriptstatus"))
+                    if (!exp.Message.ToLowerInvariant().Contains("scriptstatus"))
                     {
                         throw;
                     }
@@ -646,7 +646,6 @@ namespace SqlSiphon
                 return MakeSqlTypeString(
                     p.SqlType,
                     systemType,
-                    p.IsCollection,
                     p.IsSizeSet ? new Nullable<int>(p.Size) : null,
                     p.IsPrecisionSet ? new Nullable<int>(p.Precision) : null,
                     isIdentity);
@@ -659,14 +658,22 @@ namespace SqlSiphon
 
         public virtual bool RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
-            bool changedParameters = a.Parameters.Count != b.Parameters.Count;
-            if (!changedParameters)
+            var scriptA = this.MakeCreateRoutineScript(a);
+            var scriptB = this.MakeCreateRoutineScript(b, false);
+            if (scriptA == scriptB)
             {
-                var paramChanges = a.Parameters.Select((p1, i) =>
+                return false;
+            }
+            else
+            {
+                bool changedParameters = a.Parameters.Count != b.Parameters.Count;
+                if (!changedParameters)
                 {
-                    var p2 = b.Parameters[i];
-                    var tests = new bool[]{
-                            p1.Name.ToLower() != p2.Name.ToLower(),
+                    var paramChanges = a.Parameters.Select((p1, i) =>
+                    {
+                        var p2 = b.Parameters[i];
+                        var tests = new bool[]{
+                            p1.Name.ToLowerInvariant() != p2.Name.ToLowerInvariant(),
                             p1.DefaultValue != p2.DefaultValue,
                             p1.Direction != p2.Direction,
                             p1.IsOptional != p2.IsOptional,
@@ -674,27 +681,28 @@ namespace SqlSiphon
                             p1.Precision != p2.Precision,
                             p1.Size != p2.Size
                         };
-                    var changed2 = tests.Any(t => t);
-                    return changed2;
-                }).ToArray();
-                changedParameters = paramChanges.Any(t => t);
+                        var changed2 = tests.Any(t => t);
+                        return changed2;
+                    }).ToArray();
+                    changedParameters = paramChanges.Any(t => t);
+                }
+                var finalScript = this.MakeRoutineBody(a).Trim();
+                var initialScript = b.Query.Trim();
+                bool changedQuery = finalScript != initialScript;
+                var changed = changedParameters
+                    || changedQuery;
+                return changed;
             }
-            var finalScript = this.MakeRoutineBody(a).Trim();
-            var initialScript = b.Query.Trim();
-            bool changedQuery = finalScript != initialScript;
-            var changed = changedParameters
-                || changedQuery;
-            return changed;
         }
 
         public virtual bool RelationshipChanged(Relationship a, Relationship b)
         {
-            var aFromTableName = this.MakeIdentifier(a.From.Schema, a.From.Name).ToLower();
-            var aFromColumnNames = a.FromColumns.Select(c => c.Name.ToLower());
-            var aToTableName = this.MakeIdentifier(a.To.Schema, a.To.Name).ToLower();
-            var bFromTableName = this.MakeIdentifier(b.From.Schema, b.From.Name).ToLower();
-            var bFromColumnNames = b.FromColumns.Select(c => c.Name.ToLower());
-            var bToTableName = this.MakeIdentifier(b.To.Schema, b.To.Name).ToLower();
+            var aFromTableName = this.MakeIdentifier(a.From.Schema, a.From.Name).ToLowerInvariant();
+            var aFromColumnNames = a.FromColumns.Select(c => c.Name.ToLowerInvariant());
+            var aToTableName = this.MakeIdentifier(a.To.Schema, a.To.Name).ToLowerInvariant();
+            var bFromTableName = this.MakeIdentifier(b.From.Schema, b.From.Name).ToLowerInvariant();
+            var bFromColumnNames = b.FromColumns.Select(c => c.Name.ToLowerInvariant());
+            var bToTableName = this.MakeIdentifier(b.To.Schema, b.To.Name).ToLowerInvariant();
             var changed = aFromTableName != bFromTableName
                 || aToTableName != bToTableName
                 || aFromColumnNames.Any(c => !bFromColumnNames.Contains(c))
@@ -704,10 +712,10 @@ namespace SqlSiphon
 
         public virtual bool IndexChanged(Index a, Index b)
         {
-            var aTableName = this.MakeIdentifier(a.Table.Schema, a.Table.Name).ToLower();
-            var bTableName = this.MakeIdentifier(b.Table.Schema, b.Table.Name).ToLower();
-            var aColumnNames = a.Columns.Select(c => c.ToLower());
-            var bColumnNames = b.Columns.Select(c => c.ToLower());
+            var aTableName = this.MakeIdentifier(a.Table.Schema, a.Table.Name).ToLowerInvariant();
+            var bTableName = this.MakeIdentifier(b.Table.Schema, b.Table.Name).ToLowerInvariant();
+            var aColumnNames = a.Columns.Select(c => c.ToLowerInvariant());
+            var bColumnNames = b.Columns.Select(c => c.ToLowerInvariant());
             var changed = aTableName != bTableName
                 || aColumnNames.Any(c => !bColumnNames.Contains(c))
                 || bColumnNames.Any(c => !aColumnNames.Contains(c));
@@ -718,7 +726,7 @@ namespace SqlSiphon
         {
             var f = this.MakeCreatePrimaryKeyScript(final);
             var i = this.MakeCreatePrimaryKeyScript(initial);
-            var changed = f.ToLower() != i.ToLower();
+            var changed = f.ToLowerInvariant() != i.ToLowerInvariant();
             return changed;
         }
 
@@ -830,7 +838,7 @@ namespace SqlSiphon
             routine.Query = routineText;
         }
 
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, int? size, int? precision, bool isIdentity);
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(ParameterAttribute p);
 

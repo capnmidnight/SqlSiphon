@@ -65,6 +65,8 @@ namespace SqlSiphon.Mapping
             }
         }
 
+        public bool IsUDTT { get; private set; }
+
         public ParameterAttribute() {}
 
         public ParameterAttribute(InformationSchema.Parameters parameter, IDatabaseStateReader dal)
@@ -76,7 +78,7 @@ namespace SqlSiphon.Mapping
                 this.Name = parameter.parameter_name.Substring(1);
             }
 
-            this.InferTypeInfo(parameter, parameter.data_type, dal);
+            this.InferTypeInfo(parameter, parameter.user_defined_type_name ?? parameter.data_type, dal);
 
             switch (parameter.parameter_mode)
             {
@@ -87,6 +89,8 @@ namespace SqlSiphon.Mapping
                     this.Direction = ParameterDirection.InputOutput;
                     break;
             }
+
+            this.IsUDTT = parameter.user_defined_type_name != null;
         }
         
         /// <summary>

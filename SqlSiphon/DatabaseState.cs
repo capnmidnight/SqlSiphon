@@ -186,12 +186,15 @@ namespace SqlSiphon
 
         public void AddTable(Dictionary<string, TableAttribute> tableCollection, Type type, IDatabaseScriptGenerator dal, TableAttribute table)
         {
-            table.InferProperties(type);
+            if (type != null)
+            {
+                table.InferProperties(type);
+            }
             table.Schema = table.Schema ?? dal.DefaultSchemaName;
             if (table.Include)
             {
                 tableCollection.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant(), table);
-                if (table.Properties.Any(p => p.IncludeInPrimaryKey))
+                if (type != null && table.Properties.Any(p => p.IncludeInPrimaryKey))
                 {
                     table.PrimaryKey = new PrimaryKey(type);
                     this.PrimaryKeys.Add(dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.GetName(dal)).ToLowerInvariant(), table.PrimaryKey);
@@ -323,7 +326,7 @@ namespace SqlSiphon
                     }
                 }
                 var parameters = dal.GetParameters()
-                    .GroupBy(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name))
+                    .GroupBy(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name).ToLowerInvariant())
                     .ToDictionary(g => g.Key, g => g.ToArray());
                 foreach (var key in routines.Keys)
                 {

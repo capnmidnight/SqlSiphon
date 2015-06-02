@@ -7,7 +7,7 @@ namespace SqlSiphon
 {
     public class DatabaseDelta
     {
-        private static void Traverse<T>(
+        public static void Traverse<T>(
             Dictionary<string, T> final,
             Dictionary<string, T> initial,
             Action<string, T> remove,
@@ -35,7 +35,7 @@ namespace SqlSiphon
             }
         }
 
-        private static void DumpAll<T>(List<ScriptStatus> outCollect, Dictionary<string, T> inCollect, ScriptType type, Func<T, string> makeScript)
+        public static void DumpAll<T>(List<ScriptStatus> outCollect, Dictionary<string, T> inCollect, ScriptType type, Func<T, string> makeScript)
         {
             outCollect.AddRange(inCollect.Select(i => new ScriptStatus(type, i.Key, makeScript(i.Value))));
         }
@@ -113,9 +113,9 @@ namespace SqlSiphon
 
         private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {
-            var names = initial.Select(s => s.ToLower()).ToArray();
+            var names = initial.Select(s => s.ToLowerInvariant()).ToArray();
             this.Scripts.AddRange(final
-                .Where(u => !names.Contains(u.Key.ToLower()))
+                .Where(u => !names.Contains(u.Key.ToLowerInvariant()))
                 .Select(u => new ScriptStatus(ScriptType.CreateDatabaseLogin, u.Key, gen.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName))));
         }
 
@@ -197,8 +197,8 @@ namespace SqlSiphon
                 },
                 (tableName, finalTable, initialTable) =>
                 {
-                    var finalColumns = finalTable.Properties.ToDictionary(p => gen.MakeIdentifier(finalTable.Schema ?? gen.DefaultSchemaName, finalTable.Name, p.Name).ToLower());
-                    var initialColumns = initialTable.Properties.ToDictionary(p => gen.MakeIdentifier(initialTable.Schema ?? gen.DefaultSchemaName, initialTable.Name, p.Name).ToLower());
+                    var finalColumns = finalTable.Properties.ToDictionary(p => gen.MakeIdentifier(finalTable.Schema ?? gen.DefaultSchemaName, finalTable.Name, p.Name).ToLowerInvariant());
+                    var initialColumns = initialTable.Properties.ToDictionary(p => gen.MakeIdentifier(initialTable.Schema ?? gen.DefaultSchemaName, initialTable.Name, p.Name).ToLowerInvariant());
 
                     Traverse(
                         finalColumns,

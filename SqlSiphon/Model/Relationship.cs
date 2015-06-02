@@ -57,19 +57,19 @@ namespace SqlSiphon.Mapping
 
             if (this.fromColumnNames == null)
             {
-                var pk = this.To.PrimaryKey.KeyColumns.ToDictionary(p => (this.Prefix + p.Name).ToLower());
+                var pk = this.To.PrimaryKey.KeyColumns.ToDictionary(p => (this.Prefix + p.Name).ToLowerInvariant());
                 this.FromColumns = this.From.Properties
-                    .Where(p => pk.ContainsKey(p.Name.ToLower()))
+                    .Where(p => pk.ContainsKey(p.Name.ToLowerInvariant()))
                     .ToArray();
             }
             else
             {
                 for (var i = 0; i < this.fromColumnNames.Length; ++i)
                 {
-                    this.fromColumnNames[i] = this.fromColumnNames[i].ToLower();
+                    this.fromColumnNames[i] = this.fromColumnNames[i].ToLowerInvariant();
                 }
                 this.FromColumns = this.From.Properties
-                    .Where(p => this.fromColumnNames.Contains(p.Name.ToLower()))
+                    .Where(p => this.fromColumnNames.Contains(p.Name.ToLowerInvariant()))
                     .ToArray();
             }
 

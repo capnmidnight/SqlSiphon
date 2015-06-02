@@ -37,6 +37,10 @@ namespace SqlSiphon.Postgres
                 ScriptType.AlterSettings, 
                 "set schema search path", 
                 string.Format("set search_path = {0},public;", string.Join(",", this.Schemata.Select(s=>dal.MakeIdentifier(s))))));
+
+            delta.Scripts.Sort();
+            delta.Initial.Sort();
+            delta.Final.Sort();
             return delta;
         }
 

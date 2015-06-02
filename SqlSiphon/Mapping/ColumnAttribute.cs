@@ -87,7 +87,7 @@ namespace SqlSiphon.Mapping
             this.IncludeInPrimaryKey = includeInPK;
             this.Include = true;
 
-            if (column.is_nullable != null && column.is_nullable.ToLower() == "yes")
+            if (column.is_nullable != null && column.is_nullable.ToLowerInvariant() == "yes")
             {
                 this.IsOptional = true;
             }

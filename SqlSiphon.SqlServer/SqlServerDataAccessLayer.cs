@@ -185,7 +185,7 @@ namespace SqlSiphon.SqlServer
 
             defaultTypeSizes = new Dictionary<string, int>();
             defaultTypeSizes.Add("int", 10);
-            defaultTypeSizes.Add("real", 64);
+            defaultTypeSizes.Add("real", 24);
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
@@ -317,6 +317,21 @@ create table {2}(
                 columnSection);
         }
 
+        internal string MakeCreateUDTTScript(TableAttribute info)
+        {
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, info.Name);
+            var columnSection = this.MakeColumnSection(info, false);
+            return string.Format(
+@"if not exists(select * from sys.table_types tt inner join sys.schemas s on s.schema_id = tt.schema_id where s.name = '{0}' and tt.name = '{1}') create type {2} as table(
+    {3}
+)",
+                schema,
+                info.Name,
+                identifier,
+                columnSection);
+        }
+
         public override string MakeDropTableScript(TableAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
@@ -327,6 +342,15 @@ create table {2}(
                 schema,
                 info.Name,
                 identifier);
+        }
+
+        internal string MakeDropUDTTScript(TableAttribute info)
+        {
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = this.MakeIdentifier(schema, info.Name);
+            return string.Format(
+@"if exists(select * from sys.table_types tt inner join sys.schemas s on s.schema_id = tt.schema_id where s.name = '{0}' and tt.name = '{1}')
+    drop type {2}", schema, info.Name, identifier);
         }
 
         public override string MakeCreateIndexScript(Index idx)
@@ -360,7 +384,7 @@ DROP INDEX {0} ON {1};",
             }
             else if (p.SystemType == typeof(bool))
             {
-                var testValue = defaultValue.ToLower();
+                var testValue = defaultValue.ToLowerInvariant();
                 defaultValue = testValue == "true" ? "1" : "0";
             }
             return defaultValue;
@@ -369,11 +393,12 @@ DROP INDEX {0} ON {1};",
         protected override string MakeParameterString(ParameterAttribute p)
         {
             var typeStr = MakeSqlTypeString(p);
+            var isUDTT = p.IsUDTT || (p.SystemType != null && IsUDTT(p.SystemType));
             return string.Join(" ",
                 "@" + p.Name,
                 typeStr,
                 GetDefaultValue(p),
-                IsUDTT(p.SystemType) ? "readonly" : "").Trim();
+                isUDTT ? "readonly" : "").Trim();
         }
 
         protected override string MakeColumnString(ColumnAttribute p, bool isReturnType)
@@ -417,12 +442,10 @@ DROP INDEX {0} ON {1};",
             var tests = new bool[]{
                 final.Include == initial.Include,
                 final.IsOptional == initial.IsOptional,
-                final.Name.ToLower() == initial.Name.ToLower(),
+                final.Name.ToLowerInvariant() == initial.Name.ToLowerInvariant(),
                 finalType == initial.SystemType,
-                final.Table != null,
-                initial.Table != null,
-                final.Table.Schema.ToLower() == initial.Table.Schema.ToLower(),
-                final.Table.Name.ToLower() == initial.Table.Name.ToLower()
+                final.Table != null && initial.Table != null && final.Table.Schema.ToLowerInvariant() == initial.Table.Schema.ToLowerInvariant(),
+                final.Table != null && initial.Table != null && final.Table.Name.ToLowerInvariant() == initial.Table.Name.ToLowerInvariant()
             };
             var unchanged = tests.Aggregate((a, b) => a && b);
             if (final.SystemType == initial.SystemType)
@@ -434,13 +457,13 @@ DROP INDEX {0} ON {1};",
                     bool valuesMatch = true;
                     if (final.SystemType == typeof(bool))
                     {
-                        var xb = final.DefaultValue.Replace("'", "").ToLower();
+                        var xb = final.DefaultValue.Replace("'", "").ToLowerInvariant();
                         var xbb = xb == "true" || xb == "1";
                         var yb = initial.DefaultValue
                             .Replace("'", "")
                             .Replace("((", "")
                             .Replace("))", "")
-                            .ToLower();
+                            .ToLowerInvariant();
                         var ybb = yb == "true" || yb == "1";
                         valuesMatch = xbb == ybb;
                     }
@@ -454,9 +477,6 @@ DROP INDEX {0} ON {1};",
                             || initial.DefaultValue == "((" + final.DefaultValue + "))"
                             || final.DefaultValue == "('" + initial.DefaultValue + "')"
                             || initial.DefaultValue == "('" + final.DefaultValue + "')"; ;
-                    }
-                    else
-                    {
                     }
 
                     if (valuesMatch)
@@ -548,13 +568,13 @@ DROP INDEX {0} ON {1};",
             }
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, int? size, int? precision, bool isIdentity)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
         {
             if (sqlType == null)
             {
                 if (reverseTypeMapping.ContainsKey(systemType))
                     sqlType = reverseTypeMapping[systemType];
-                else if (isCollection || IsUDTT(systemType))
+                else if (IsUDTT(systemType))
                     sqlType = MakeUDTTName(systemType);
             }
 
@@ -717,7 +737,8 @@ from sys.table_types tt
 	inner join sys.schemas s on s.schema_id = tt.schema_id
 	inner join sys.types t on t.system_type_id = c.system_type_id
 	left outer join sys.default_constraints d on d.object_id = c.default_object_id
-order by c.column_id;")]
+where t.name != 'sysname'
+order by s.name, tt.name, c.column_id;")]
         private List<InformationSchema.Columns> GetUDTTColumns()
         {
             return this.GetEnumerator<InformationSchema.Columns>()
@@ -925,15 +946,39 @@ where constraint_schema != 'information_schema';")]
         {
             var state = base.GetFinalState(dalType, userName, password);
             var ssState = new SqlServerDatabaseState(state);
-            foreach (var parameter in ssState.Functions.Values.SelectMany(f=>f.Parameters))
+            var types = new HashSet<Type>();
+            foreach (var parameter in ssState.Functions.Values.SelectMany(f => f.Parameters))
             {
                 if (IsUDTT(parameter.SystemType))
                 {
-                    ssState.AddTable(ssState.UDTTs, parameter.SystemType, this, new TableAttribute());
+                    var elementType = parameter.SystemType;
+                    if (elementType.IsArray)
+                    {
+                        elementType = elementType.GetElementType();
+                    }
+                    types.Add(elementType);
                 }
+            }
+            foreach (var type in types)
+            {
+                var attr = new TableAttribute();
+                var scanType = type;
+                attr.Name = type.Name + "UDTT";
+                if (DataConnector.IsTypePrimitive(type))
+                {
+                    var valueColumn = new ColumnAttribute
+                    {
+                        Name = "Value"
+                    };
+                    valueColumn.InferProperties(type);
+                    attr.Properties.Add(valueColumn);
+                    scanType = null;
+                }
+                ssState.AddTable(ssState.UDTTs, scanType, this, attr);
             }
             return ssState;
         }
+
         public static bool IsUDTT(Type t)
         {
             var isUDTT = false;

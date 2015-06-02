@@ -420,7 +420,7 @@ namespace SqlSiphon.Postgres
             return pgState;
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, bool isCollection, int? size, int? precision, bool isIdentity)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
         {
             string typeName = null;
 
