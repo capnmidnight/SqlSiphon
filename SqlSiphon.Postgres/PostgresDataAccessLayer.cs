@@ -365,7 +365,7 @@ namespace SqlSiphon.Postgres
         protected override string IdentifierPartBegin { get { return "\""; } }
         protected override string IdentifierPartEnd { get { return "\""; } }
         public override string DefaultSchemaName { get { return "public"; } }
-        public override int DefaultTypeSize(string typeName, int testSize)
+        public override int DefaultTypePrecision(string typeName, int testSize)
         {
             if (!defaultTypeSizes.ContainsKey(typeName))
             {
@@ -675,7 +675,7 @@ namespace SqlSiphon.Postgres
 
                 if (final.Size != initial.Size)
                 {
-                    if (final.SystemType != typeof(double) || final.IsSizeSet || initial.Size != this.DefaultTypeSize(final.SqlType, initial.Size))
+                    if (final.SystemType != typeof(double) || final.IsSizeSet || initial.Size != this.DefaultTypePrecision(final.SqlType, initial.Size))
                     {
                         changed = true;
                     }

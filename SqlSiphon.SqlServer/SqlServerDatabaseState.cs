@@ -66,6 +66,7 @@ namespace SqlSiphon.SqlServer
                         },
                         (columnName, finalColumn, initialColumn) =>
                         {
+                            var colDiff = asm.ColumnChanged(finalColumn, initialColumn);
                             changed = changed || asm.ColumnChanged(finalColumn, initialColumn);
                         });
                     if (changed)

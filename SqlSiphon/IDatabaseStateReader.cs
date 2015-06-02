@@ -15,7 +15,7 @@ namespace SqlSiphon
 
         void AnalyzeQuery(string routineText, RoutineAttribute routine);
 
-        int DefaultTypeSize(string typeName, int testSize);
+        int DefaultTypePrecision(string typeName, int testPrecision);
         Type GetSystemType(string sqlType);
 
         List<string> GetSchemata();

@@ -105,14 +105,14 @@ namespace SqlSiphon.SqlServer
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
         public override string DefaultSchemaName { get { return "dbo"; } }
-        private static Dictionary<string, int> defaultTypeSizes;
-        public override int DefaultTypeSize(string typeName, int testSize)
+        private static Dictionary<string, int> defaultTypePrecisions;
+        public override int DefaultTypePrecision(string typeName, int testPrecision)
         {
-            if (!defaultTypeSizes.ContainsKey(typeName))
+            if (!defaultTypePrecisions.ContainsKey(typeName))
             {
-                throw new Exception(string.Format("I don't know the default type size for `{0}`. Perhaps it is {1}?", typeName, testSize));
+                throw new Exception(string.Format("I don't know the default precision for type `{0}`. Perhaps it is {1}?", typeName, testPrecision));
             }
-            return defaultTypeSizes[typeName];
+            return defaultTypePrecisions[typeName];
         }
 
         private const SqlServerOptions STANDARD_OPTIONS = SqlServerOptions.ANSI_WARNINGS | SqlServerOptions.ANSI_PADDING | SqlServerOptions.ANSI_NULLS | SqlServerOptions.ARITHABORT | SqlServerOptions.QUOTED_IDENTIFIER | SqlServerOptions.ANSI_NULL_DFLT_ON | SqlServerOptions.CONCAT_NULL_YIELDS_NULL;
@@ -183,9 +183,11 @@ namespace SqlSiphon.SqlServer
             typeMapping.Add("image", typeof(byte[]));
             typeMapping.Add("uniqueidentifier", typeof(Guid));
 
-            defaultTypeSizes = new Dictionary<string, int>();
-            defaultTypeSizes.Add("int", 10);
-            defaultTypeSizes.Add("real", 24);
+            defaultTypePrecisions = new Dictionary<string, int>();
+            defaultTypePrecisions.Add("nvarchar", 0); 
+            defaultTypePrecisions.Add("int", 10);
+            defaultTypePrecisions.Add("real", 24);
+            defaultTypePrecisions.Add("datetime2", 27);
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
@@ -440,19 +442,20 @@ DROP INDEX {0} ON {1};",
                 finalType = typeof(int);
             }
             var tests = new bool[]{
-                final.Include == initial.Include,
-                final.IsOptional == initial.IsOptional,
-                final.Name.ToLowerInvariant() == initial.Name.ToLowerInvariant(),
-                finalType == initial.SystemType,
-                final.Table != null && initial.Table != null && final.Table.Schema.ToLowerInvariant() == initial.Table.Schema.ToLowerInvariant(),
-                final.Table != null && initial.Table != null && final.Table.Name.ToLowerInvariant() == initial.Table.Name.ToLowerInvariant()
+                final.Include != initial.Include,
+                final.IsOptional != initial.IsOptional,
+                final.Name.ToLowerInvariant() != initial.Name.ToLowerInvariant(),
+                finalType != initial.SystemType,
+                final.Table == null || initial.Table == null || final.Table.Schema.ToLowerInvariant() != initial.Table.Schema.ToLowerInvariant(),
+                final.Table == null || initial.Table == null || final.Table.Name.ToLowerInvariant() != initial.Table.Name.ToLowerInvariant()
             };
-            var unchanged = tests.Aggregate((a, b) => a && b);
-            if (final.SystemType == initial.SystemType)
+            var changed = tests.Aggregate((a, b) => a || b);
+            if (!changed)
             {
-                if (final.DefaultValue != null
-                    && initial.DefaultValue != null
-                    && final.DefaultValue != initial.DefaultValue)
+                changed = final.DefaultValue != initial.DefaultValue;
+                if (changed
+                    && final.DefaultValue != null
+                    && initial.DefaultValue != null)
                 {
                     bool valuesMatch = true;
                     if (final.SystemType == typeof(bool))
@@ -483,28 +486,14 @@ DROP INDEX {0} ON {1};",
                     {
                         initial.DefaultValue = final.DefaultValue;
                     }
-                    unchanged = unchanged && valuesMatch;
+                    changed = !valuesMatch;
                 }
-
-                if (final.Size != initial.Size)
+                else if (final.Size != initial.Size)
                 {
-                    if ((final.SystemType != typeof(int) || final.IsSizeSet || initial.Size != 10)
-                        && (final.SystemType != typeof(double) || final.IsSizeSet || initial.Size != 24)
-                        && (final.SystemType != typeof(byte[]) || final.IsSizeSet || initial.Size != -1)
-                        && (final.SystemType != typeof(string) || final.IsSizeSet || initial.Size != -1))
-                    {
-                        unchanged = false;
-                    }
-                    else
-                    {
-                        initial.Size = final.Size;
-                    }
+                    changed = true;
                 }
             }
-            if (!unchanged)
-            {
-            }
-            return !unchanged;
+            return changed;
         }
 
         public override string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial)
@@ -731,7 +720,7 @@ ALTER ROLE db_owner ADD MEMBER {0};", userName, password, database);
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
-@"select s.name as table_schema, tt.name as table_name, c.name as column_name, t.name as data_type, c.max_length, c.precision, c.scale, c.is_nullable, c.is_identity, d.definition as column_default
+@"select s.name as table_schema, tt.name as table_name, c.name as column_name, t.name as data_type, c.max_length as character_maximum_length, c.precision as numeric_precision, c.scale as numeric_scale, c.is_nullable, c.is_identity, d.definition as column_default
 from sys.table_types tt
 	inner join sys.columns c on c.object_id = tt.type_table_object_id
 	inner join sys.schemas s on s.schema_id = tt.schema_id
@@ -741,9 +730,17 @@ where t.name != 'sysname'
 order by s.name, tt.name, c.column_id;")]
         private List<InformationSchema.Columns> GetUDTTColumns()
         {
-            return this.GetEnumerator<InformationSchema.Columns>()
+            var columns = this.GetEnumerator<InformationSchema.Columns>()
                 .Select(RemoveDefaultValueParens)
                 .ToList();
+            foreach (var column in columns)
+            {
+                if (column.data_type == "nvarchar" && column.character_maximum_length != -1)
+                {
+                    column.character_maximum_length /= 2;
+                }
+            }
+            return columns;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -754,9 +751,10 @@ where table_schema != 'information_schema'
 order by table_catalog, table_schema, table_name, ordinal_position;")]
         public override List<InformationSchema.Columns> GetColumns()
         {
-            return this.GetEnumerator<InformationSchema.Columns>()
+            var columns = this.GetEnumerator<InformationSchema.Columns>()
                 .Select(RemoveDefaultValueParens)
                 .ToList();
+            return columns;
         }
 
         /// <summary>

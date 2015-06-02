@@ -829,7 +829,7 @@ namespace SqlSiphon
         public abstract List<InformationSchema.KeyColumnUsage> GetKeyColumns();
 
         public abstract string DefaultSchemaName { get; }
-        public abstract int DefaultTypeSize(string typeName, int testSize);
+        public abstract int DefaultTypePrecision(string typeName, int testPrecision);
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);

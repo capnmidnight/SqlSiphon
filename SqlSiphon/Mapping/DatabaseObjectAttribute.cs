@@ -321,10 +321,9 @@ namespace SqlSiphon.Mapping
                 }
 
                 if (obj.numeric_precision.HasValue
-                    && obj.numeric_precision.Value != systemSize * 8
-                    && obj.numeric_precision.Value != dal.DefaultTypeSize(this.SqlType, obj.numeric_precision.Value))
+                    && obj.numeric_precision.Value != dal.DefaultTypePrecision(this.SqlType, obj.numeric_precision.Value))
                 {
-                    this.Size = obj.numeric_precision.Value;
+                    this.Precision = obj.numeric_precision.Value;
                 }
 
                 if (obj.character_maximum_length.HasValue && obj.character_maximum_length.Value > 0)
