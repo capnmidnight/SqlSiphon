@@ -163,8 +163,8 @@ namespace SqlSiphon.SqlServer
             typeMapping.Add("money", typeof(decimal));
             typeMapping.Add("smallmoney", typeof(decimal));
             typeMapping.Add("bit", typeof(bool));
-            typeMapping.Add("float", typeof(float));
-            typeMapping.Add("real", typeof(double));
+            typeMapping.Add("float", typeof(double));
+            typeMapping.Add("real", typeof(float));
             typeMapping.Add("datetime2", typeof(DateTime));
             typeMapping.Add("datetime", typeof(DateTime));
             typeMapping.Add("smalldatetime", typeof(DateTime));
@@ -215,8 +215,8 @@ namespace SqlSiphon.SqlServer
 
             reverseTypeMapping.Add(typeof(decimal?), "decimal");
             reverseTypeMapping.Add(typeof(bool?), "bit");
-            reverseTypeMapping.Add(typeof(float?), "float");
-            reverseTypeMapping.Add(typeof(double?), "real");
+            reverseTypeMapping.Add(typeof(float?), "real");
+            reverseTypeMapping.Add(typeof(double?), "float");
             reverseTypeMapping.Add(typeof(DateTime?), "datetime2");
             reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
         }
