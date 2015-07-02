@@ -149,6 +149,11 @@ namespace SqlSiphon.Mapping
             return (T)this.originalProperty.GetValue(obj, null);
         }
 
+        public object GetValue(object obj)
+        {
+            return this.originalProperty.GetValue(obj, null);
+        }
+
         public ParameterAttribute ToParameter()
         {
             var p = new ParameterAttribute

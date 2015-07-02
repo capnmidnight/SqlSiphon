@@ -747,7 +747,7 @@ namespace SqlSiphon.Postgres
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
         {
             var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var parameterSection = string.Join(", ", routine.Parameters.Select(this.MakeSqlTypeString));
+            var parameterSection = this.MakeParameterSection(routine);
             return string.Format(@"{0}({1})", identifier, parameterSection);
         }
 
@@ -762,8 +762,7 @@ namespace SqlSiphon.Postgres
             {
                 returnType = "setof " + returnType.Substring(0, returnType.Length - 2);
             }
-            var parameters = routine.Parameters.Select(this.MakeParameterString).ToList();
-            var parameterSection = string.Join(", ", parameters);
+            var parameterSection = this.MakeParameterSection(routine);
             var query = string.Format(
 @"create or replace function {0}({1})
 returns {2} 

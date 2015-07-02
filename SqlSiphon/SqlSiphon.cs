@@ -838,6 +838,13 @@ namespace SqlSiphon
             routine.Query = routineText;
         }
 
+        protected string MakeParameterSection(RoutineAttribute info)
+        {
+            var parameters = info.Parameters.Select(this.MakeParameterString);
+            var parameterSection = string.Join(", ", parameters);
+            return parameterSection;
+        }
+
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(ParameterAttribute p);

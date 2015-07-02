@@ -276,8 +276,7 @@ end catch;", transactionName);
                 query = string.Join(Environment.NewLine, transactionBegin, query, transactionEnd);
             }
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
-            var parameters = info.Parameters.Select(this.MakeParameterString);
-            var parameterSection = string.Join(", ", parameters);
+            var parameterSection = this.MakeParameterSection(info);
             var withRecompile = info.GetAttribute<SqlServerWithRecompileAttribute>() != null;
             return string.Format(
 @"create procedure {0}

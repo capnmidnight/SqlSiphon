@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples", "SqlSi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ssp", "ssp\ssp.csproj", "{23A145B5-8FA0-4F14-80B9-DF6D23B46093}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.OleDB", "SqlSiphon.OleDB\SqlSiphon.OleDB.csproj", "{CDBFA667-30DD-403F-B265-7FD5210CBA13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +119,18 @@ Global
 		{23A145B5-8FA0-4F14-80B9-DF6D23B46093}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{23A145B5-8FA0-4F14-80B9-DF6D23B46093}.Release|x64.ActiveCfg = Release|Any CPU
 		{23A145B5-8FA0-4F14-80B9-DF6D23B46093}.Release|x86.ActiveCfg = Release|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|x64.ActiveCfg = Release|Any CPU
+		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
