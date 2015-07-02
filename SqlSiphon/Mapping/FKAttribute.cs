@@ -61,7 +61,7 @@ namespace SqlSiphon.Mapping
             var properties = t.GetProperties();
             foreach (var property in properties)
             {
-                var columnDef = DatabaseObjectAttribute.GetAttribute<ColumnAttribute>(property);
+                var columnDef = DatabaseObjectAttribute.GetAttribute<ColumnAttribute>(property) ?? new ColumnAttribute();
                 columnDef.InferProperties(property);
 
                 var includeFKAttrs = DatabaseObjectAttribute.GetAttributes<FKAttribute>(property);
