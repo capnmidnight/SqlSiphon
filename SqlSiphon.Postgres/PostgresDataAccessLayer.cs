@@ -52,11 +52,8 @@ namespace SqlSiphon.Postgres
         private static Dictionary<Type, string> reverseTypeMapping;
 
         public const string DATABASE_TYPE_NAME = "PostgreSQL";
-
-        public override string DatabaseType
-        {
-            get { return DATABASE_TYPE_NAME; }
-        }
+        public override string DatabaseType { get { return DATABASE_TYPE_NAME; } }
+        public override string DataSource { get { return this.Connection.DataSource; } }
 
         static PostgresDataAccessLayer()
         {

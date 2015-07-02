@@ -41,10 +41,8 @@ namespace SqlSiphon.OleDB
     public class OleDBDataAccessLayer : SqlSiphon<OleDbConnection, OleDbCommand, OleDbParameter, OleDbDataAdapter, OleDbDataReader>
     {
         public const string DATABASE_TYPE_NAME = "Microsoft Access 97";
-        public override string DatabaseType
-        {
-            get { return DATABASE_TYPE_NAME; }
-        }
+        public override string DatabaseType { get { return DATABASE_TYPE_NAME; } }
+        public override string DataSource { get { return this.Connection.DataSource; } }
 
         private static Dictionary<string, Type> typeMapping;
         private static Dictionary<Type, string> reverseTypeMapping;
@@ -121,6 +119,15 @@ namespace SqlSiphon.OleDB
             }
         }
 
+        private void FillInFile()
+        {
+            if (!System.IO.File.Exists(this.DataSource))
+            {
+                ADOX.Catalog cat = new ADOX.Catalog();
+                cat.Create(string.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0}; Jet OLEDB:Engine Type=5", this.DataSource));
+            }
+        }
+
         /// <summary>
         /// creates a new connection to an MS Access database and automatically
         /// opens the connection. 
@@ -129,26 +136,50 @@ namespace SqlSiphon.OleDB
         public OleDBDataAccessLayer(string fileName)
             : base(string.Format("Provider=Microsoft.Jet.OleDb.4.0;Data Source={0}", fileName))
         {
-            if (!System.IO.File.Exists(fileName))
-            {
-                ADOX.Catalog cat = new ADOX.Catalog();
-                cat.Create(string.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0}; Jet OLEDB:Engine Type=5", fileName));
-            }
+            FillInFile();
+        }
+
+        public OleDBDataAccessLayer(string server, string database, string user, string password)
+            : base(server, database, user, password)
+        {
+            FillInFile();
         }
 
         public OleDBDataAccessLayer(OleDbConnection connection)
             : base(connection)
         {
+            FillInFile();
         }
 
         public OleDBDataAccessLayer(OleDBDataAccessLayer database)
             : base(database)
         {
+            FillInFile();
         }
 
         protected OleDBDataAccessLayer()
             : base()
         {
+            FillInFile();
+        }
+
+        public override string MakeConnectionString(string server, string database, string user, string password)
+        {
+            FillInFile();
+            var builder = new OleDbConnectionStringBuilder
+            {
+                Provider = "Microsoft.Jet.OleDb.4.0",
+                FileName = server
+            };
+            if (!string.IsNullOrEmpty(user))
+            {
+                builder.Add("User Id", user);
+                if (!string.IsNullOrEmpty(password))
+                {
+                    builder.Add("Password", password);
+                }
+            }
+            return builder.ConnectionString;
         }
 
         private T[] GetSchemaRowValues<T>(Guid objectID, string columnName)
@@ -400,17 +431,8 @@ namespace SqlSiphon.OleDB
             }
             return value;
         }
-
-        public void Insert<T>(IEnumerable<T> data, bool insertDefaultColumns)
-        {
-            var t = typeof(T);
-            if (data != null)
-            {
-                Insert(t, data, insertDefaultColumns);
-            }
-        }
-
-        public void Insert(Type t, System.Collections.IEnumerable data, bool insertDefaultColumns)
+        
+        public override void InsertAll(Type t, System.Collections.IEnumerable data)
         {
             // temporarily close the connection to the file
             bool wasOpen = false;
@@ -448,15 +470,12 @@ namespace SqlSiphon.OleDB
                 recordSet.AddNew();
                 for (int j = 0; j < fields.Length; ++j)
                 {
-                    if (!props[j].IsIdentity || insertDefaultColumns)
+                    var value = props[j].GetValue(obj);
+                    if (props[j].SystemType == typeof(Guid))
                     {
-                        var value = props[j].GetValue(obj);
-                        if (props[j].SystemType == typeof(Guid))
-                        {
-                            value = string.Format("{{{0}}}", value);
-                        }
-                        fields[j].Value = value;
+                        value = string.Format("{{{0}}}", value);
                     }
+                    fields[j].Value = value;
                 }
                 recordSet.Update();
             }
@@ -482,11 +501,6 @@ namespace SqlSiphon.OleDB
                     routine_name = name
                 })
                 .ToList();
-        }
-
-        public override string MakeConnectionString(string server, string database, string user, string password)
-        {
-            throw new NotImplementedException();
         }
 
         public override string MakeRoutineIdentifier(RoutineAttribute routine)

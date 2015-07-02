@@ -90,15 +90,8 @@ namespace SqlSiphon
 
                 FindTables(type, dal);
 
-                var fks = DatabaseObjectAttribute.GetAttributes<FKAttribute>(type);
-                if (fks != null)
-                {
-                    foreach (var fk in fks)
-                    {
-                        relationships.Add(fk.MakeRelationshipObject(type));
-                    }
-                }
-
+                relationships.AddRange(FKAttribute.GetRelationships(type));
+                
                 var publicStatic = BindingFlags.Public | BindingFlags.Static;
                 var fields = type.GetFields(publicStatic);
                 foreach (var field in fields)

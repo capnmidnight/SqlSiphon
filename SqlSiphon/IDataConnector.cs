@@ -10,6 +10,7 @@ namespace SqlSiphon
     public interface IDataConnector : IDisposable
     {
         string DatabaseType { get; }
+        string DataSource { get; }
         void Execute(params object[] parameters);
         EntityT Return<EntityT>(params object[] parameters);
         EntityT Get<EntityT>(params object[] parameters);
@@ -17,19 +18,19 @@ namespace SqlSiphon
         DataSet GetDataSet(params object[] parameters);
         DbDataReader GetReader(params object[] parameters);
         IEnumerable<EntityT> GetEnumerator<EntityT>(params object[] parameters);
-        void InsertAll<T>(IEnumerable<T> data);
+        void InsertAll(Type t, System.Collections.IEnumerable data);
     }
 
     public static class IDataConnectorExt
     {
-        public static void InsertAll<T>(this IDataConnector connector, params T[] data)
+        public static void InsertAll<T>(this IDataConnector connector, IEnumerable<T> data)
         {
-            connector.InsertAll(data);
+            connector.InsertAll(typeof(T), data);
         }
 
-        public static void InsertAll<T>(this IDataConnector connector, List<T> data)
+        public static void InsertOne<T>(this IDataConnector connector, T obj)
         {
-            connector.InsertAll(data.ToArray());
+            connector.InsertAll(typeof(T), new T[] { obj });
         }
     }
 }

@@ -49,10 +49,8 @@ namespace SqlSiphon.SqlServer
     public class SqlServerDataAccessLayer : SqlSiphon<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
         public const string DATABASE_TYPE_NAME = "Microsoft SQL Server";
-        public override string DatabaseType
-        {
-            get { return DATABASE_TYPE_NAME; }
-        }
+        public override string DatabaseType { get { return DATABASE_TYPE_NAME; } }
+        public override string DataSource { get { return this.Connection.DataSource; } }
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
         /// opens the connection. 
@@ -277,7 +275,7 @@ end catch;", transactionName);
             }
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
-            var withRecompile = info.GetAttribute<SqlServerWithRecompileAttribute>() != null;
+            var withRecompile = info.GetOtherAttribute<SqlServerWithRecompileAttribute>() != null;
             return string.Format(
 @"create procedure {0}
     {1}
@@ -882,11 +880,10 @@ where constraint_schema != 'information_schema';")]
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
-        public override void InsertAll<T>(IEnumerable<T> data)
+        public override void InsertAll(Type t, System.Collections.IEnumerable data)
         {
             if (data != null)
             {
-                var t = typeof(T);
                 var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
                 if (attr == null)
                 {
@@ -900,7 +897,7 @@ where constraint_schema != 'information_schema';")]
                 var usesVarBinary = tableData.Columns.Cast<DataColumn>().Any(c => c.DataType == typeof(byte[]));
                 if (IsOnMonoRuntime && usesVarBinary)
                 {
-                    base.InsertAll(data);
+                    base.InsertAll(t, data);
                 }
                 else
                 {

@@ -248,7 +248,7 @@ namespace SqlSiphon
         {
             if (script.ScriptType == ScriptType.InitializeData)
             {
-                this.InsertAll(script);
+                this.InsertOne(script);
             }
         }
 
@@ -259,11 +259,10 @@ namespace SqlSiphon
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
-        public virtual void InsertAll<T>(IEnumerable<T> data)
+        public virtual void InsertAll(Type t, System.Collections.IEnumerable data)
         {
             if (data != null)
             {
-                var t = typeof(T);
                 var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
                 if (attr == null)
                 {
@@ -289,7 +288,7 @@ namespace SqlSiphon
 
                 using (var command = BuildCommand(query, CommandType.Text, methParams))
                 {
-                    foreach (T obj in data)
+                    foreach (object obj in data)
                     {
                         var parameterValues = new object[columns.Length];
                         for (int i = 0; i < columns.Length; ++i)
@@ -871,6 +870,8 @@ namespace SqlSiphon
         public abstract string MakeCreateIndexScript(Index index);
 
         public abstract string DatabaseType { get; }
+
+        public abstract string DataSource { get; }
 
         public abstract bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query);
     }

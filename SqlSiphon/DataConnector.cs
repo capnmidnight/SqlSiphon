@@ -46,6 +46,14 @@ namespace SqlSiphon
             }
         }
 
+        public string DataSource
+        {
+            get
+            {
+                return this.Connection.DataSource;
+            }
+        }
+
         protected DataConnector(IDataConnector connection)
         {
             this.Connection = connection;
@@ -108,9 +116,9 @@ namespace SqlSiphon
             return this.Connection.GetEnumerator<EntityT>(parameters);
         }
 
-        public void InsertAll<T>(IEnumerable<T> data)
+        public void InsertAll(Type t, System.Collections.IEnumerable data)
         {
-            this.Connection.InsertAll(data);
+            this.Connection.InsertAll(t, data);
         }
     }
 }

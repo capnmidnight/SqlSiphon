@@ -52,7 +52,7 @@ namespace SqlSiphon.Mapping
         AllowMultiple = false)]
     public abstract class DatabaseObjectAttribute : Attribute
     {
-        public ICustomAttributeProvider SourceObject { get; private set; }
+        public ICustomAttributeProvider SourceObject { get; internal set; }
 
         /// <summary>
         /// Get or set a schema name for objects in the database. Defaults to
@@ -112,7 +112,16 @@ namespace SqlSiphon.Mapping
         {
             return obj
                 .GetCustomAttributes(typeof(T), false)
-                .Cast<T>();
+                .Cast<T>()
+                .Select(attr =>
+                {
+                    var mappingAttribute = attr as DatabaseObjectAttribute;
+                    if (mappingAttribute != null)
+                    {
+                        mappingAttribute.SourceObject = obj;
+                    }
+                    return attr;
+                });
         }
 
         /// <summary>
@@ -125,16 +134,10 @@ namespace SqlSiphon.Mapping
         public static T GetAttribute<T>(ICustomAttributeProvider obj)
             where T : Attribute, new()
         {
-            var attr = GetAttributes<T>(obj).FirstOrDefault();
-            var mappingAttribute = attr as DatabaseObjectAttribute;
-            if (mappingAttribute != null)
-            {
-                mappingAttribute.SourceObject = obj;
-            }
-            return attr;
+            return GetAttributes<T>(obj).FirstOrDefault();
         }
 
-        public T GetAttribute<T>()
+        public T GetOtherAttribute<T>()
             where T : Attribute, new()
         {
             if (this.SourceObject != null)
