@@ -108,5 +108,10 @@ namespace SqlSiphon.Mapping
                 this.To.PrimaryKey.GetName(dal))
                 .Replace("__", "_");
         }
+
+        public override string ToString()
+        {
+            return string.Format("FK: {0} from {1} to {2}", this.Name, this.From.Name, this.To.Name);
+        }
     }
 }

@@ -75,7 +75,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public List<ParameterAttribute> Parameters { get; private set; }
 
-        private MethodInfo originalMethod;
+        private MethodInfo originalMethod { get { return (MethodInfo)this.SourceObject; } }
 
         /// <summary>
         /// Default constructor to set default values;
@@ -146,7 +146,6 @@ namespace SqlSiphon.Mapping
         public override void InferProperties(MethodInfo obj)
         {
             base.InferProperties(obj);
-            this.originalMethod = obj;
             if (obj.ReturnType != typeof(void))
             {
                 this.SystemType = obj.ReturnType;

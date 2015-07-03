@@ -162,20 +162,25 @@ namespace SqlSiphon.Mapping
             base.InferProperties(obj);
             if (obj.IsEnum)
             {
-                this.Properties.Add(new ColumnAttribute
+                var valueColumn = new ColumnAttribute
                 {
                     Table = this,
                     IncludeInPrimaryKey = true,
                     Name = "Value",
                     SqlType = "int"
-                });
+                };
 
-                this.Properties.Add(new ColumnAttribute
+                var descriptionColumn = new ColumnAttribute
                 {
                     Table = this,
                     Name = "Description",
                     SqlType = "nvarchar(max)"
-                });
+                };
+
+                descriptionColumn.InferProperties(this, null);
+
+                this.Properties.Add(valueColumn);
+                this.Properties.Add(descriptionColumn);
 
                 var names = obj.GetEnumNames();
                 foreach (var name in names)
@@ -184,16 +189,16 @@ namespace SqlSiphon.Mapping
             else
             {
                 var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                for (var i = 0; i < props.Length; ++i)
+                foreach (var prop in props)
                 {
-                    var columnDescription = GetAttribute<ColumnAttribute>(props[i]) ?? new ColumnAttribute();
-                    columnDescription.InferProperties(this, props[i]);
+                    var columnDescription = DatabaseObjectAttribute.GetAttribute<ColumnAttribute>(prop) ?? new ColumnAttribute();
+                    columnDescription.InferProperties(this, prop);
                     if (columnDescription.Include)
                     {
                         this.Properties.Add(columnDescription);
                     }
 
-                    var indexInclusions = GetAttributes<IncludeInIndexAttribute>(props[i]);
+                    var indexInclusions = GetAttributes<IncludeInIndexAttribute>(prop);
                     foreach (var idxInc in indexInclusions)
                     {
                         if (!this.Indexes.ContainsKey(idxInc.Name))

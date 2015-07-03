@@ -46,7 +46,6 @@ namespace SqlSiphon.Mapping
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public class ColumnAttribute : DatabaseObjectAttribute
     {
-        private PropertyInfo originalProperty;
         /// <summary>
         /// Gets or sets whether or not this column holds an
         /// auto-incrementing integer value. Defaults to false.
@@ -99,8 +98,9 @@ namespace SqlSiphon.Mapping
         {
             this.InferProperties(obj);
             this.Table = table;
-            this.originalProperty = obj;
         }
+
+        private PropertyInfo originalProperty { get { return (PropertyInfo)this.SourceObject; } }
 
         public void SetValue(object obj, object value)
         {

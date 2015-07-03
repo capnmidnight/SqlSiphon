@@ -29,6 +29,7 @@ namespace InitDB
         {
             typeof(SqlSiphon.SqlServer.SqlServerDataConnectorFactory),
             typeof(SqlSiphon.Postgres.PostgresDataConnectorFactory),
+            typeof(SqlSiphon.OleDB.OleDBDataConnectorFactory),
         };
 
         static string UnrollStackTrace(Exception e)
@@ -55,11 +56,13 @@ namespace InitDB
         private Dictionary<string, string> options;
         private BindingList<string> names;
         private OptionsDialog optionsDialog = new OptionsDialog();
-
+        
         public MainForm()
         {
             InitializeComponent();
-            this.databaseTypeList.DataSource = MainForm.CONNECTION_TYPES;
+            this.databaseTypeList.DataSource = MainForm.CONNECTION_TYPES
+                .Select(t => t.Name.Replace("DataConnectorFactory", ""))
+                .ToArray();
             this.pendingScriptsGV.AutoGenerateColumns = false;
             this.initialScriptsGV.AutoGenerateColumns = false;
             this.finalScriptsGV.AutoGenerateColumns = false;
@@ -104,7 +107,7 @@ namespace InitDB
                 {
                     SyncUI(() =>
                     {
-                        var factoryType = (Type)this.databaseTypeList.SelectedValue;
+                        var factoryType = CONNECTION_TYPES[this.databaseTypeList.SelectedIndex];
                         var factoryConstructor = factoryType.GetConstructor(System.Type.EmptyTypes);
                         var factory = (IDataConnectorFactory)factoryConstructor.Invoke(System.Type.EmptyTypes);
                         constructorArgs = new object[] { factory, this.serverTB.Text, this.databaseTB.Text, this.adminUserTB.Text, this.adminPassTB.Text };

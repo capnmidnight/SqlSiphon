@@ -43,86 +43,87 @@ namespace SqlSiphon.Mapping
 
         public string Prefix { get; private set; }
 
-        private string columnName;
-
-        public FKAttribute(Type target) : this(target, null) { }
-
-        public FKAttribute(Type target, string columnName)
+        public FKAttribute(Type target)
         {
             this.Target = target;
-            this.columnName = columnName;
+        }
+
+        private void InferProperties(ColumnAttribute columnDef)
+        {
+            if (this.Prefix == null)
+            {
+                var targetTableDef = DatabaseObjectAttribute.GetAttribute<TableAttribute>(this.Target) ?? new TableAttribute();
+                targetTableDef.InferProperties(this.Target);
+
+                foreach (var targetColumnDef in targetTableDef.Properties)
+                {
+                    if (columnDef.Name.ToLowerInvariant().EndsWith(targetColumnDef.Name.ToLowerInvariant()))
+                    {
+                        if (columnDef.Name.Length > targetColumnDef.Name.Length)
+                        {
+                            this.Prefix = columnDef.Name.Substring(0, columnDef.Name.Length - targetColumnDef.Name.Length);
+                        }
+                        break;
+                    }
+                }
+
+                if (this.Prefix == null)
+                {
+                    this.Prefix = string.Empty;
+                }
+            }
+
+            if (this.Name == null)
+            {
+                this.Name = this.Prefix + columnDef.Name;
+            }
         }
 
         internal static List<Relationship> GetRelationships(Type t)
         {
             List<Relationship> fks = new List<Relationship>();
             var tableDef = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
-            var fkOrganizer = new Dictionary<Type, Dictionary<string, List<string>>>();
-            var properties = t.GetProperties();
-            foreach (var property in properties)
+            if (tableDef != null)
             {
-                var columnDef = DatabaseObjectAttribute.GetAttribute<ColumnAttribute>(property) ?? new ColumnAttribute();
-                columnDef.InferProperties(property);
-
-                var includeFKAttrs = DatabaseObjectAttribute.GetAttributes<FKAttribute>(property);
-
-                foreach (var attr in includeFKAttrs)
+                tableDef.InferProperties(t);
+                var fkOrganizer = new Dictionary<Type, Dictionary<string, List<string>>>();
+                foreach (var columnDef in tableDef.Properties)
                 {
-                    if (!fkOrganizer.ContainsKey(attr.Target))
+                    var fkDefs = columnDef.GetOtherAttributes<FKAttribute>();
+
+                    foreach (var fkDef in fkDefs)
                     {
-                        fkOrganizer.Add(attr.Target, new Dictionary<string, List<string>>());
+                        fkDef.InferProperties(columnDef);
+
+                        if (!fkOrganizer.ContainsKey(fkDef.Target))
+                        {
+                            fkOrganizer.Add(fkDef.Target, new Dictionary<string, List<string>>());
+                        }
+
+                        var target = fkOrganizer[fkDef.Target];
+
+                        if (!target.ContainsKey(fkDef.Prefix))
+                        {
+                            target.Add(fkDef.Prefix, new List<string>());
+                        }
+
+                        target[fkDef.Prefix].Add(fkDef.Name);
                     }
-
-                    var target = fkOrganizer[attr.Target];
-
-                    InferPrefix(columnDef, attr);
-                    var pre = attr.Prefix ?? "";
-
-                    if (!target.ContainsKey(pre))
-                    {
-                        target.Add(pre, new List<string>());
-                    }
-
-                    target[pre].Add(attr.columnName);
                 }
-            }
 
-            foreach (var targetType in fkOrganizer.Keys)
-            {
-                foreach (var prefix in fkOrganizer[targetType].Keys)
+                foreach (var targetType in fkOrganizer.Keys)
                 {
-                    var columns = fkOrganizer[targetType][prefix];
-                    var r = new Relationship(prefix, t, targetType, columns.ToArray());
-                    r.Schema = tableDef.Schema;
-                    fks.Add(r);
+                    foreach (var prefix in fkOrganizer[targetType].Keys)
+                    {
+                        var columns = fkOrganizer[targetType][prefix];
+                        var r = new Relationship(prefix, t, targetType, columns.ToArray());
+                        r.Schema = tableDef.Schema;
+                        fks.Add(r);
+                    }
                 }
             }
 
             return fks;
-        }
-
-        private static void InferPrefix(ColumnAttribute columnDef, FKAttribute attr)
-        {
-            if (attr.Prefix == null)
-            {
-                var targetProperties = attr.Target
-                    .GetProperties()
-                    .OrderBy(p => p.Name.Length)
-                    .ToList();
-                foreach (var targetProperty in targetProperties)
-                {
-                    var targetColumnDef = DatabaseObjectAttribute.GetAttribute<ColumnAttribute>(targetProperty);
-                    targetColumnDef.InferProperties(targetProperty);
-                    if (columnDef.Name.EndsWith(targetColumnDef.Name))
-                    {
-                        if (columnDef.Name.Length > targetColumnDef.Name.Length)
-                        {
-                            attr.Prefix = columnDef.Name.Substring(0, columnDef.Name.Length - targetColumnDef.Name.Length);
-                        }
-                        break;
-                    }
-                }
-            }
         }
     }
 }

@@ -132,19 +132,25 @@ namespace SqlSiphon.Mapping
         /// <returns>The attribute instance, or null if no such
         /// attribute exists</returns>
         public static T GetAttribute<T>(ICustomAttributeProvider obj)
-            where T : Attribute, new()
+            where T : Attribute
         {
             return GetAttributes<T>(obj).FirstOrDefault();
         }
 
-        public T GetOtherAttribute<T>()
-            where T : Attribute, new()
+        public System.Collections.Generic.IEnumerable<T> GetOtherAttributes<T>()
+            where T : Attribute
         {
             if (this.SourceObject != null)
             {
-                return DatabaseObjectAttribute.GetAttribute<T>(this.SourceObject);
+                return DatabaseObjectAttribute.GetAttributes<T>(this.SourceObject);
             }
-            return default(T);
+            return new T[] { };
+        }
+
+        public T GetOtherAttribute<T>()
+            where T : Attribute
+        {
+            return this.GetOtherAttributes<T>().FirstOrDefault();
         }
 
         /// <summary>
@@ -263,6 +269,7 @@ namespace SqlSiphon.Mapping
         /// <param name="obj">The object to InferProperties</param>
         public virtual void InferProperties(MethodInfo obj)
         {
+            this.SourceObject = obj;
             this.SetName(obj.Name);
             this.SetSystemType(obj.ReturnType);
         }
@@ -276,6 +283,7 @@ namespace SqlSiphon.Mapping
         /// <param name="obj">The object to InferProperties</param>
         public virtual void InferProperties(PropertyInfo obj)
         {
+            this.SourceObject = obj;
             this.SetName(obj.Name);
             this.SetSystemType(obj.PropertyType);
         }
@@ -289,6 +297,7 @@ namespace SqlSiphon.Mapping
         /// <param name="obj">The object to InferProperties</param>
         public virtual void InferProperties(ParameterInfo obj)
         {
+            this.SourceObject = obj;
             this.SetName(obj.Name);
             this.SetSystemType(obj.ParameterType);
         }
@@ -302,6 +311,7 @@ namespace SqlSiphon.Mapping
         /// <param name="obj">The object to InferProperties</param>
         public virtual void InferProperties(Type obj)
         {
+            this.SourceObject = obj;
             this.SetName(obj.Name);
             this.SetSystemType(obj);
         }
