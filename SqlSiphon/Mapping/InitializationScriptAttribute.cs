@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SqlSiphon.Mapping
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = false, AllowMultiple = true)]
     public class InitializationScriptAttribute : Attribute
     {
         public string Query { get; private set; }

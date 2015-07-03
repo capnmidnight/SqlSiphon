@@ -121,14 +121,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlSiphon.MySql\SqlSiphon.MySql.csproj">
-      <Project>{c103798d-9cbb-402c-bf99-32a7a150fd4b}</Project>
-      <Name>SqlSiphon.MySql</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlSiphon.ODBC\SqlSiphon.ODBC.csproj">
-      <Project>{e493a431-5f12-4d34-8cc4-6df0d97ed388}</Project>
-      <Name>SqlSiphon.ODBC</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SqlSiphon.OleDB\SqlSiphon.OleDB.csproj">
       <Project>{cdbfa667-30dd-403f-b265-7fd5210cba13}</Project>
       <Name>SqlSiphon.OleDB</Name>
