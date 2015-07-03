@@ -38,14 +38,6 @@ namespace SqlSiphon
             }
         }
 
-        public string DatabaseType
-        {
-            get
-            {
-                return this.Connection.DatabaseType;
-            }
-        }
-
         public string DataSource
         {
             get

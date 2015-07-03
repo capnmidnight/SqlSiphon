@@ -285,10 +285,7 @@ namespace SqlSiphon
                                     var uniqueTableColumns = columns[dal.MakeIdentifier(uniqueConstraint.table_schema, uniqueConstraint.table_name)];
                                     if (constraint.constraint_type == "FOREIGN KEY")
                                     {
-                                        this.Relationships.Add(constraintName.ToLowerInvariant(), new Relationship(
-                                            constraint, constraintColumns, tableColumns,
-                                            uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns,
-                                            dal));
+                                        this.Relationships.Add(constraintName.ToLowerInvariant(), new Relationship(tableColumns, constraint, constraintColumns, uniqueTableColumns, uniqueConstraint, uniqueConstraintColumns, dal));
                                     }
                                     else if (constraint.constraint_type == "PRIMARY KEY")
                                     {

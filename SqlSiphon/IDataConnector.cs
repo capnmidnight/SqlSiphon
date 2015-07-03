@@ -9,7 +9,6 @@ namespace SqlSiphon
 {
     public interface IDataConnector : IDisposable
     {
-        string DatabaseType { get; }
         string DataSource { get; }
         void Execute(params object[] parameters);
         EntityT Return<EntityT>(params object[] parameters);

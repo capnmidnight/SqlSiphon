@@ -1,5 +1,6 @@
 ﻿namespace SqlSiphon.Postgres
 {
+    [DatabaseVendorName("PostgreSQL")]
     public class PostgresDataConnectorFactory : IDataConnectorFactory
     {
         public IDataConnector MakeConnector(string connectionString)

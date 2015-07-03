@@ -34,14 +34,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Data.OleDb;
+using SqlSiphon;
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.OleDB
 {
     public class OleDBDataAccessLayer : SqlSiphon<OleDbConnection, OleDbCommand, OleDbParameter, OleDbDataAdapter, OleDbDataReader>
     {
-        public const string DATABASE_TYPE_NAME = "Microsoft Access 97";
-        public override string DatabaseType { get { return DATABASE_TYPE_NAME; } }
         public override string DataSource { get { return this.Connection.DataSource; } }
 
         private static Dictionary<string, Type> typeMapping;

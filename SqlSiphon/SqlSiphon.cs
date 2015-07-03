@@ -869,8 +869,6 @@ namespace SqlSiphon
         public abstract string MakeDropIndexScript(Index index);
         public abstract string MakeCreateIndexScript(Index index);
 
-        public abstract string DatabaseType { get; }
-
         public abstract string DataSource { get; }
 
         public abstract bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query);

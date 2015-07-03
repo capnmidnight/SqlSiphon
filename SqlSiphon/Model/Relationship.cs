@@ -20,28 +20,20 @@ namespace SqlSiphon.Mapping
 
         public string Prefix { get; private set; }
 
-        internal Relationship(
-            InformationSchema.TableConstraints constraint,
-            InformationSchema.KeyColumnUsage[] constraintColumns,
-            InformationSchema.Columns[] tableColumns,
-            InformationSchema.TableConstraints uniqueConstraint,
-            InformationSchema.ConstraintColumnUsage[] uniqueConstraintColumns,
-            InformationSchema.Columns[] uniqueTableColumns,
-            IDatabaseStateReader dal)
+        internal Relationship(InformationSchema.Columns[] fromTableColumns, InformationSchema.TableConstraints fromTableFKConstraint, InformationSchema.KeyColumnUsage[] fromTableFKConstraintColumns, InformationSchema.Columns[] toTableColumns, InformationSchema.TableConstraints toTablePKConstraint, InformationSchema.ConstraintColumnUsage[] toTablePKConstraintColumns, IDatabaseStateReader dal)
         {
-            this.Schema = constraint.constraint_schema;
-            this.Name = constraint.constraint_name;
-            this.To = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, constraintColumns, uniqueConstraintColumns, null, dal);
-            this.To.PrimaryKey = new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal);
-            this.From = new TableAttribute(tableColumns, new InformationSchema.TableConstraints[] { constraint }, constraintColumns, null, null, dal);
-            var columns = tableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
-            var uniqueColumns = uniqueTableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
-            this.FromColumns = constraintColumns.Select(c => new ColumnAttribute(this.From, columns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
+            this.Schema = fromTableFKConstraint.constraint_schema;
+            this.Name = fromTableFKConstraint.constraint_name;
+            this.To = new TableAttribute(toTableColumns, new InformationSchema.TableConstraints[] { toTablePKConstraint }, fromTableFKConstraintColumns, toTablePKConstraintColumns, null, dal);
+            this.To.PrimaryKey = new PrimaryKey(fromTableFKConstraint, toTablePKConstraint, toTablePKConstraintColumns, toTableColumns, dal);
+            this.From = new TableAttribute(fromTableColumns, new InformationSchema.TableConstraints[] { fromTableFKConstraint }, fromTableFKConstraintColumns, null, null, dal);
+            var fromColumns = fromTableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
+            this.FromColumns = fromTableFKConstraintColumns.Select(c => new ColumnAttribute(this.From, fromColumns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
         }
 
         internal Relationship(string prefix, Type fromType, Type toType, bool autoCreateIndex, string[] fromColumns)
         {
-            this.Prefix = prefix ?? "";
+            this.Prefix = prefix;
             this.toType = toType;
             this.fromType = fromType;
             this.AutoCreateIndex = autoCreateIndex;

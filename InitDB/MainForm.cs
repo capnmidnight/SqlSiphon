@@ -61,7 +61,10 @@ namespace InitDB
         {
             InitializeComponent();
             this.databaseTypeList.DataSource = MainForm.CONNECTION_TYPES
-                .Select(t => t.Name.Replace("DataConnectorFactory", ""))
+                .Select(t => {
+                    var attr = t.GetCustomAttribute<DatabaseVendorNameAttribute>();
+                    return attr != null ? attr.Name : null;
+                })
                 .ToArray();
             this.pendingScriptsGV.AutoGenerateColumns = false;
             this.initialScriptsGV.AutoGenerateColumns = false;
@@ -734,11 +737,11 @@ namespace InitDB
 
         private string GetExecutable(IDataConnector connector)
         {
-            if (connector.DatabaseType == SqlSiphon.Postgres.PostgresDataAccessLayer.DATABASE_TYPE_NAME)
+            if (connector is SqlSiphon.Postgres.PostgresDataAccessLayer)
             {
                 return this.optionsDialog.PSQLPath;
             }
-            else if (connector.DatabaseType == SqlSiphon.SqlServer.SqlServerDataAccessLayer.DATABASE_TYPE_NAME)
+            else if (connector is SqlSiphon.SqlServer.SqlServerDataAccessLayer)
             {
                 return this.optionsDialog.SQLCMDPath;
             }

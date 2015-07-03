@@ -48,8 +48,6 @@ namespace SqlSiphon.SqlServer
     /// </summary>
     public class SqlServerDataAccessLayer : SqlSiphon<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
-        public const string DATABASE_TYPE_NAME = "Microsoft SQL Server";
-        public override string DatabaseType { get { return DATABASE_TYPE_NAME; } }
         public override string DataSource { get { return this.Connection.DataSource; } }
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically

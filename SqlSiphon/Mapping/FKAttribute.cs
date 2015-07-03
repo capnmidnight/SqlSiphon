@@ -45,6 +45,10 @@ namespace SqlSiphon.Mapping
 
         public bool AutoCreateIndex { get; set; }
 
+        public string FromColumnName { get; set; }
+
+        public string ToColumnName { get; set; }
+
         public FKAttribute(Type target)
         {
             this.Target = target;
@@ -53,32 +57,34 @@ namespace SqlSiphon.Mapping
 
         private void InferProperties(ColumnAttribute columnDef)
         {
-            if (this.Prefix == null)
+            if (this.FromColumnName == null)
             {
-                var targetTableDef = DatabaseObjectAttribute.GetAttribute<TableAttribute>(this.Target) ?? new TableAttribute();
-                targetTableDef.InferProperties(this.Target);
+                this.FromColumnName = columnDef.Name;
+            }
 
-                foreach (var targetColumnDef in targetTableDef.Properties)
+            var targetTableDef = DatabaseObjectAttribute.GetAttribute<TableAttribute>(this.Target) ?? new TableAttribute();
+            targetTableDef.InferProperties(this.Target);
+
+            foreach (var targetColumnDef in targetTableDef.Properties)
+            {
+                if (columnDef.Name.ToLowerInvariant().EndsWith(targetColumnDef.Name.ToLowerInvariant()))
                 {
-                    if (columnDef.Name.ToLowerInvariant().EndsWith(targetColumnDef.Name.ToLowerInvariant()))
+                    if (this.ToColumnName == null)
                     {
-                        if (columnDef.Name.Length > targetColumnDef.Name.Length)
-                        {
-                            this.Prefix = columnDef.Name.Substring(0, columnDef.Name.Length - targetColumnDef.Name.Length);
-                        }
-                        break;
+                        this.ToColumnName = targetColumnDef.Name;
                     }
-                }
 
-                if (this.Prefix == null)
-                {
-                    this.Prefix = string.Empty;
+                    if (this.Prefix == null)
+                    {
+                        this.Prefix = columnDef.Name.Substring(0, columnDef.Name.Length - targetColumnDef.Name.Length);
+                    }
+                    break;
                 }
             }
 
-            if (this.Name == null)
+            if (this.Prefix == null)
             {
-                this.Name = columnDef.Name;
+                this.Prefix = string.Empty;
             }
         }
 
@@ -112,10 +118,10 @@ namespace SqlSiphon.Mapping
                         }
                         else if (fkDef.AutoCreateIndex != autoCreateIndex[fkDef.Target][fkDef.Prefix])
                         {
-                            throw new Exceptions.InconsistentRelationshipDefinitionException(fkDef.Name);
+                            throw new Exceptions.InconsistentRelationshipDefinitionException(fkDef.FromColumnName);
                         }
 
-                        fkOrganizer[fkDef.Target][fkDef.Prefix].Add(fkDef.Name);
+                        fkOrganizer[fkDef.Target][fkDef.Prefix].Add(fkDef.FromColumnName);
                     }
                 }
 
