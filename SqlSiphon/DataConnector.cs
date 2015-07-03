@@ -120,5 +120,21 @@ namespace SqlSiphon
         {
             this.Connection.InsertAll(t, data);
         }
+
+        protected void ExecuteScriptsOfType(ScriptType scriptType)
+        {
+            var ss = (ISqlSiphon)this.Connection;
+            var initial = new DatabaseState("Access", null, ss);
+            var final = new DatabaseState(new Type[] { this.GetType() }, ss, ss, null, null);
+            var diff = final.Diff(initial, ss, ss);
+            var scripts = diff.Scripts
+                .Where(script => (script.ScriptType & scriptType) == scriptType)
+                .OrderBy(script => script.ScriptType);
+            foreach (var script in scripts)
+            {
+                script.Run = true;
+                ss.AlterDatabase(script);
+            }
+        }
     }
 }

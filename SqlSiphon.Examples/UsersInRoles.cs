@@ -4,13 +4,12 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon.Examples
 {
     [Table]
-    [FK(typeof(Users))]
-    [FK(typeof(Roles))]
     public class UsersInRoles
     {
-        [PK]
+        [PK, FK(typeof(Users))]
         public Guid UserID { get; set; }
-        [PK]
+
+        [PK, FK(typeof(Roles))]
         public Guid RoleID { get; set; }
     }
 }

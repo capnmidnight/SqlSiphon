@@ -116,7 +116,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns></returns>
-        private ParameterAttribute ToMappedParameter(ParameterInfo parameter)
+        private ParameterAttribute ToColumn(ParameterInfo parameter)
         {
             var attr = GetAttribute<ParameterAttribute>(parameter)
                 ?? new ParameterAttribute();
@@ -152,7 +152,7 @@ namespace SqlSiphon.Mapping
                 this.SystemType = obj.ReturnType;
             }
             this.Parameters.AddRange(obj.GetParameters()
-                .Select(this.ToMappedParameter));
+                .Select(this.ToColumn));
         }
 
         public override string ToString()
