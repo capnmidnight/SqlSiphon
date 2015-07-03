@@ -9,7 +9,7 @@ namespace SqlSiphon.Examples
         [PK, FK(typeof(Users))]
         public Guid UserID { get; set; }
 
-        [FK(typeof(Applications))]
+        [FK(typeof(Applications), AutoCreateIndex = false)]
         public Guid ApplicationID { get; set; }
 
         [Column(Size = 128)]

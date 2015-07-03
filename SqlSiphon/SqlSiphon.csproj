@@ -100,6 +100,7 @@
     <Compile Include="DatabaseDelta.cs" />
     <Compile Include="DataConnector.cs" />
     <Compile Include="Exceptions\IndexExistsException.cs" />
+    <Compile Include="Exceptions\InconsistentRelationshipDefinitionException.cs" />
     <Compile Include="Exceptions\RelationShipExistsException.cs" />
     <Compile Include="IAssemblyStateReader.cs" />
     <Compile Include="IDataConnector.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="InformationSchema\Typed.cs" />
     <Compile Include="InformationSchema\IndexColumnUsage.cs" />
     <Compile Include="InformationSchema\Columns.cs" />
+    <Compile Include="Mapping\InitializationScriptAttribute.cs" />
     <Compile Include="SqlSiphon.cs" />
     <Compile Include="DataProgressEventArgs.cs" />
     <Compile Include="InformationSchema\KeyColumnUsage.cs" />

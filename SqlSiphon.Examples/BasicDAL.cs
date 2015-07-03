@@ -8,6 +8,10 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Examples
 {
+    [InitializationScript(
+@"insert into Applications
+(ApplicationName, LoweredApplicationName, Description) values
+('Test Application', 'test application', 'this is just a test');")]
     public class BasicDAL : DataConnector
     {
         public BasicDAL(IDataConnectorFactory factory, string server, string database, string userName, string password) :

@@ -41,11 +41,14 @@ namespace SqlSiphon.Mapping
     {
         public Type Target { get; private set; }
 
-        public string Prefix { get; private set; }
+        public string Prefix { get; set; }
+
+        public bool AutoCreateIndex { get; set; }
 
         public FKAttribute(Type target)
         {
             this.Target = target;
+            this.AutoCreateIndex = true;
         }
 
         private void InferProperties(ColumnAttribute columnDef)
@@ -75,7 +78,7 @@ namespace SqlSiphon.Mapping
 
             if (this.Name == null)
             {
-                this.Name = this.Prefix + columnDef.Name;
+                this.Name = columnDef.Name;
             }
         }
 
@@ -87,6 +90,7 @@ namespace SqlSiphon.Mapping
             {
                 tableDef.InferProperties(t);
                 var fkOrganizer = new Dictionary<Type, Dictionary<string, List<string>>>();
+                var autoCreateIndex = new Dictionary<Type, Dictionary<string, bool>>();
                 foreach (var columnDef in tableDef.Properties)
                 {
                     var fkDefs = columnDef.GetOtherAttributes<FKAttribute>();
@@ -98,16 +102,20 @@ namespace SqlSiphon.Mapping
                         if (!fkOrganizer.ContainsKey(fkDef.Target))
                         {
                             fkOrganizer.Add(fkDef.Target, new Dictionary<string, List<string>>());
+                            autoCreateIndex.Add(fkDef.Target, new Dictionary<string, bool>());
                         }
 
-                        var target = fkOrganizer[fkDef.Target];
-
-                        if (!target.ContainsKey(fkDef.Prefix))
+                        if (!fkOrganizer[fkDef.Target].ContainsKey(fkDef.Prefix))
                         {
-                            target.Add(fkDef.Prefix, new List<string>());
+                            fkOrganizer[fkDef.Target].Add(fkDef.Prefix, new List<string>());
+                            autoCreateIndex[fkDef.Target].Add(fkDef.Prefix, fkDef.AutoCreateIndex);
+                        }
+                        else if (fkDef.AutoCreateIndex != autoCreateIndex[fkDef.Target][fkDef.Prefix])
+                        {
+                            throw new Exceptions.InconsistentRelationshipDefinitionException(fkDef.Name);
                         }
 
-                        target[fkDef.Prefix].Add(fkDef.Name);
+                        fkOrganizer[fkDef.Target][fkDef.Prefix].Add(fkDef.Name);
                     }
                 }
 
@@ -116,7 +124,7 @@ namespace SqlSiphon.Mapping
                     foreach (var prefix in fkOrganizer[targetType].Keys)
                     {
                         var columns = fkOrganizer[targetType][prefix];
-                        var r = new Relationship(prefix, t, targetType, columns.ToArray());
+                        var r = new Relationship(prefix, t, targetType, autoCreateIndex[targetType][prefix], columns.ToArray());
                         r.Schema = tableDef.Schema;
                         fks.Add(r);
                     }

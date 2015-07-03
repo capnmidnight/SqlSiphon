@@ -11,8 +11,12 @@ namespace SqlSiphon.Mapping
         private string[] fromColumnNames;
 
         public TableAttribute To { get; private set; }
+
         public TableAttribute From { get; private set; }
+
         public ColumnAttribute[] FromColumns { get; private set; }
+
+        public bool AutoCreateIndex { get; private set; }
 
         public string Prefix { get; private set; }
 
@@ -27,7 +31,7 @@ namespace SqlSiphon.Mapping
         {
             this.Schema = constraint.constraint_schema;
             this.Name = constraint.constraint_name;
-            this.To = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[]{uniqueConstraint}, constraintColumns, uniqueConstraintColumns, null, dal);
+            this.To = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, constraintColumns, uniqueConstraintColumns, null, dal);
             this.To.PrimaryKey = new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal);
             this.From = new TableAttribute(tableColumns, new InformationSchema.TableConstraints[] { constraint }, constraintColumns, null, null, dal);
             var columns = tableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
@@ -35,15 +39,13 @@ namespace SqlSiphon.Mapping
             this.FromColumns = constraintColumns.Select(c => new ColumnAttribute(this.From, columns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
         }
 
-        internal Relationship(string prefix, Type fromType, Type toType, params string[] fromColumns)
+        internal Relationship(string prefix, Type fromType, Type toType, bool autoCreateIndex, string[] fromColumns)
         {
             this.Prefix = prefix ?? "";
             this.toType = toType;
             this.fromType = fromType;
-            if (fromColumns != null && fromColumns.Length > 0)
-            {
-                this.fromColumnNames = fromColumns;
-            }
+            this.AutoCreateIndex = autoCreateIndex;
+            this.fromColumnNames = fromColumns;
         }
 
         public void ResolveColumns(Dictionary<string, TableAttribute> tables, IDatabaseScriptGenerator dal)
@@ -96,6 +98,7 @@ namespace SqlSiphon.Mapping
                         a.SystemType.Name, b.SystemType.Name));
                 }
             }
+            this.Name = this.GetName(dal);
         }
 
         public string GetName(IDatabaseScriptGenerator dal)

@@ -104,7 +104,7 @@ namespace SqlSiphon
             ProcessFunctions(final.Functions, initial.Functions, asm, gen);
             this.Scripts.AddRange(final.InitScripts
                 .Where(s => !initial.InitScripts.Contains(s))
-                .Select((s, i) => new ScriptStatus(ScriptType.InitializeData, "init", s)));
+                .Select(s => new ScriptStatus(ScriptType.InitializeData, "init", s)));
             this.Scripts.Sort();
             this.Initial.Sort();
             this.Final.Sort();

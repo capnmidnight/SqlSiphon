@@ -91,20 +91,9 @@ namespace SqlSiphon
                 FindTables(type, dal);
 
                 relationships.AddRange(FKAttribute.GetRelationships(type));
-                
+
                 var publicStatic = BindingFlags.Public | BindingFlags.Static;
-                var fields = type.GetFields(publicStatic);
-                foreach (var field in fields)
-                {
-                    if (field.FieldType == typeof(Relationship))
-                    {
-                        relationships.Add((Relationship)field.GetValue(null));
-                    }
-                    else if (field.FieldType == typeof(string[]) && field.Name == "InitScripts")
-                    {
-                        this.InitScripts.AddRange((string[])field.GetValue(null));
-                    }
-                }
+                this.InitScripts.AddRange(type.GetCustomAttributes<InitializationScriptAttribute>().Select(attr => attr.Query));
 
                 var methods = type.GetMethods(publicStatic);
                 foreach (var method in methods)
@@ -156,7 +145,7 @@ namespace SqlSiphon
             foreach (var relationship in relationships)
             {
                 relationship.ResolveColumns(this.Tables, dal);
-                var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.GetName(dal));
+                var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.Name);
                 if (this.Relationships.ContainsKey(id))
                 {
                     throw new RelationshipExistsException(id);
@@ -164,6 +153,12 @@ namespace SqlSiphon
                 else
                 {
                     this.Relationships.Add(id.ToLowerInvariant(), relationship);
+                    if (relationship.AutoCreateIndex)
+                    {
+                        var fkIndex = new Index(relationship.From, "IDX_" + relationship.Name);
+                        fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
+                        this.Indexes.Add(fkIndex.Name.ToLowerInvariant(), fkIndex);
+                    }
                 }
             }
         }
