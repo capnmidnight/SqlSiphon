@@ -123,7 +123,7 @@ namespace SqlSiphon
 
         protected void ExecuteScriptsOfType(ScriptType scriptType)
         {
-            var ss = (ISqlSiphon)this.Connection;
+            var ss = this.GetSqlSiphon();
             var initial = new DatabaseState("Access", null, ss);
             var final = new DatabaseState(new Type[] { this.GetType() }, ss, ss, null, null);
             var diff = final.Diff(initial, ss, ss);

@@ -56,7 +56,7 @@ namespace InitDB
         private Dictionary<string, string> options;
         private BindingList<string> names;
         private OptionsDialog optionsDialog = new OptionsDialog();
-        
+
         public MainForm()
         {
             InitializeComponent();
@@ -87,11 +87,7 @@ namespace InitDB
         public DataConnector MakeDatabaseConnection()
         {
             var constructorParams = new[] { 
-                typeof(IDataConnectorFactory),
-                typeof(string), 
-                typeof(string), 
-                typeof(string), 
-                typeof(string) 
+                typeof(IDataConnector)
             };
             if (File.Exists(this.assemblyTB.Text))
             {
@@ -110,7 +106,8 @@ namespace InitDB
                         var factoryType = CONNECTION_TYPES[this.databaseTypeList.SelectedIndex];
                         var factoryConstructor = factoryType.GetConstructor(System.Type.EmptyTypes);
                         var factory = (IDataConnectorFactory)factoryConstructor.Invoke(System.Type.EmptyTypes);
-                        constructorArgs = new object[] { factory, this.serverTB.Text, this.databaseTB.Text, this.adminUserTB.Text, this.adminPassTB.Text };
+                        var connector = factory.MakeConnector(this.serverTB.Text, this.databaseTB.Text, this.adminUserTB.Text, this.adminPassTB.Text);
+                        constructorArgs = new object[] { connector };
                         constructor = type.GetConstructor(constructorParams);
                     });
 
@@ -261,49 +258,57 @@ namespace InitDB
 
         private void SetupDB()
         {
-            WithErrorCapture(() =>
+            try
             {
-                bool succeeded = false;
-                using (var db = this.MakeDatabaseConnection())
+                WithErrorCapture(() =>
                 {
-                    var ss = db.GetSqlSiphon();
-                    var delta = CreateDelta(ss);
-                    DisplayDelta(delta);
-                    var t = db.GetType();
-                    this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
-
-                    succeeded = RunScripts(delta.Scripts, ss);
-                    try
+                    bool succeeded = false;
+                    using (var db = this.MakeDatabaseConnection())
                     {
-                        if (delta.PostExecute != null)
+                        var ss = db.GetSqlSiphon();
+                        var delta = CreateDelta(ss);
+                        DisplayDelta(delta);
+                        var t = db.GetType();
+                        this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
+
+                        succeeded = RunScripts(delta.Scripts, ss);
+                        try
                         {
-                            foreach (var post in delta.PostExecute)
+                            if (delta.PostExecute != null)
                             {
-                                post(db);
+                                foreach (var post in delta.PostExecute)
+                                {
+                                    post(db);
+                                }
                             }
                         }
-                    }
-                    catch (Exception exp)
-                    {
-                        succeeded = false;
-                        this.ToError(exp);
-                    }
+                        catch (Exception exp)
+                        {
+                            succeeded = false;
+                            this.ToError(exp);
+                        }
 
-                    if (succeeded)
-                    {
-                        this.ToOutput("All done", true);
-                    }
-                    else
-                    {
-                        this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
-                    }
+                        if (succeeded)
+                        {
+                            this.ToOutput("All done", true);
+                        }
+                        else
+                        {
+                            this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
+                        }
 
-                    delta = CreateDelta(ss);
-                    DisplayDelta(delta);
-                    this.SyncUI(() => runToolStripMenuItem.Enabled = true);
-                }
-                return succeeded;
-            });
+                        delta = CreateDelta(ss);
+                        DisplayDelta(delta);
+                        this.SyncUI(() => runToolStripMenuItem.Enabled = true);
+                    }
+                    return succeeded;
+                });
+            }
+            catch (ConnectionFailedException exp)
+            {
+                this.ToOutput("failed");
+                this.ToError(exp.Message);
+            }
         }
 
         private bool PathsAreCorrect()
@@ -323,13 +328,22 @@ namespace InitDB
         private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
         {
             var succeeded = true;
-            foreach (var script in scripts)
+            try
             {
-                if (script.Run)
+                foreach (var script in scripts)
                 {
-                    succeeded = WithErrorCapture(() => RunScript(script, false, db)) && succeeded;
+                    if (script.Run)
+                    {
+                        succeeded = WithErrorCapture(() => RunScript(script, false, db)) && succeeded;
+                    }
                 }
-            };
+            }
+            catch (ConnectionFailedException exp)
+            {
+                this.ToOutput("failed");
+                this.ToError(exp.Message);
+                succeeded = false;
+            }
             return succeeded;
         }
 
@@ -603,50 +617,61 @@ namespace InitDB
             if (gv != null)
             {
                 gv.Enabled = false;
-                WithErrorCapture(() =>
+                try
                 {
-                    var row = gv.Rows[e.RowIndex];
-                    var scriptObject = (ScriptStatus)row.DataBoundItem;
-                    var selectedCell = row.Cells[e.ColumnIndex];
-                    var stringValue = selectedCell.Value as string;
-                    bool succeeded = true;
-                    Application.DoEvents();
-                    if (stringValue == scriptObject.Script)
+                    WithErrorCapture(() =>
                     {
-                        var sv = new ScriptView();
-                        if (gv == pendingScriptsGV)
+                        var row = gv.Rows[e.RowIndex];
+                        var scriptObject = (ScriptStatus)row.DataBoundItem;
+                        var selectedCell = row.Cells[e.ColumnIndex];
+                        var stringValue = selectedCell.Value as string;
+                        bool succeeded = true;
+                        Application.DoEvents();
+                        if (stringValue == scriptObject.Script)
                         {
-                            sv.Prompt(scriptObject.Script, s => selectedCell.Value = s);
+                            var sv = new ScriptView();
+                            if (gv == pendingScriptsGV)
+                            {
+                                sv.Prompt(scriptObject.Script, s => selectedCell.Value = s);
+                            }
+                            else
+                            {
+                                sv.Prompt(scriptObject.Script);
+                            }
+                            // forms get disposed when they get closed, no need to dispose them here.
                         }
-                        else
+                        else if (gv == pendingScriptsGV && stringValue == "run")
                         {
-                            sv.Prompt(scriptObject.Script);
+                            using (var db = this.MakeDatabaseConnection())
+                            {
+                                succeeded = RunScript(scriptObject, true, db.GetSqlSiphon());
+                            }
+                            gv.Rows.RemoveAt(e.RowIndex);
                         }
-                        // forms get disposed when they get closed, no need to dispose them here.
-                    }
-                    else if (gv == pendingScriptsGV && stringValue == "run")
+                        else if (gv == pendingScriptsGV && stringValue == "skip")
+                        {
+                            using (var db = this.MakeDatabaseConnection())
+                            {
+                                db.GetSqlSiphon().MarkScriptAsRan(scriptObject);
+                            }
+                            gv.Rows.RemoveAt(e.RowIndex);
+                        }
+                        return succeeded;
+                    }, (exp) =>
                     {
-                        using (var db = this.MakeDatabaseConnection())
-                        {
-                            succeeded = RunScript(scriptObject, true, db.GetSqlSiphon());
-                        }
-                        gv.Rows.RemoveAt(e.RowIndex);
-                    }
-                    else if (gv == pendingScriptsGV && stringValue == "skip")
-                    {
-                        using (var db = this.MakeDatabaseConnection())
-                        {
-                            db.GetSqlSiphon().MarkScriptAsRan(scriptObject);
-                        }
-                        gv.Rows.RemoveAt(e.RowIndex);
-                    }
-                    return succeeded;
-                }, (exp) =>
+                        this.tabControl1.SelectedTab = this.tabStatus;
+                        return string.Format("{0}: {1}", exp.GetType().Name, exp.Message);
+                    });
+                }
+                catch (ConnectionFailedException exp)
                 {
-                    this.tabControl1.SelectedTab = this.tabStatus;
-                    return string.Format("{0}: {1}", exp.GetType().Name, exp.Message);
-                });
-                gv.Enabled = true;
+                    this.ToOutput("failed");
+                    this.ToError(exp.Message);
+                }
+                finally
+                {
+                    gv.Enabled = true;
+                }
             }
         }
 
@@ -729,6 +754,10 @@ namespace InitDB
             try
             {
                 return act();
+            }
+            catch (ConnectionFailedException)
+            {
+                throw;
             }
             catch (Exception exp)
             {
