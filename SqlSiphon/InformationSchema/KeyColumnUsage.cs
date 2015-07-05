@@ -24,5 +24,10 @@ namespace SqlSiphon.InformationSchema
         public string constraint_name { get; set; }
         public int? ordinal_position { get; set; }
         public int? position_in_unique_constraint { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("KeyColumnUsage: {0} {1}({2}.{3})", this.ordinal_position, this.constraint_name, this.table_name, this.column_name);
+        }
     }
 }

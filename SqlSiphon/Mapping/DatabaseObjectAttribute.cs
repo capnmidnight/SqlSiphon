@@ -59,7 +59,7 @@ namespace SqlSiphon.Mapping
         /// null, which causes the data access system to use whatever is
         /// defined as the default value for the database vendor.
         /// </summary>
-        public string Schema { get; set; }
+        public virtual string Schema { get; set; }
 
         /// <summary>
         /// A property to override the default interpretation
@@ -68,7 +68,7 @@ namespace SqlSiphon.Mapping
         /// mapping, but in some cases we will want to override
         /// this behavior.
         /// </summary>
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
 
         /// <summary>
         /// A property to turn on or off the inclusion of the

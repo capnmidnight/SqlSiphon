@@ -655,13 +655,13 @@ namespace SqlSiphon
             }
         }
 
-        public virtual bool RoutineChanged(RoutineAttribute a, RoutineAttribute b)
+        public virtual string RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
             var scriptA = this.MakeCreateRoutineScript(a);
             var scriptB = this.MakeCreateRoutineScript(b, false);
             if (scriptA == scriptB)
             {
-                return false;
+                return null;
             }
             else
             {
@@ -690,11 +690,59 @@ namespace SqlSiphon
                 bool changedQuery = finalScript != initialScript;
                 var changed = changedParameters
                     || changedQuery;
-                return changed;
+                return changed ? "IDK" : null;
             }
         }
 
-        public virtual bool RelationshipChanged(Relationship a, Relationship b)
+        public virtual string ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
+        {
+            string changeReason = null;
+            var finalType = final.SystemType;
+            if (finalType.IsEnum)
+            {
+                finalType = typeof(int);
+            }
+            if (final.Include && !initial.Include)
+            {
+                changeReason = "Column doesn't exist";
+            }
+            else if (!final.Include && initial.Include)
+            {
+                changeReason = "Column no longer exists";
+            }
+            else if (final.IsOptional && !initial.IsOptional)
+            {
+                changeReason = "Column is now optional";
+            }
+            else if (!final.IsOptional && initial.IsOptional)
+            {
+                changeReason = "Column is no longer optional";
+            }
+            else if (final.Name.ToLowerInvariant() != initial.Name.ToLowerInvariant())
+            {
+                // this should never happen, because we match columns by name anyway
+                changeReason = string.Format("Column name has changed. Was {0}, now {1}", initial.Name, final.Name);
+            }
+            else if (finalType != initial.SystemType)
+            {
+                changeReason = string.Format("Column type has changed. Was {0}, now {1}.", initial.SystemType.Name, finalType.Name);
+            }
+            else if (final.Size != initial.Size)
+            {
+                changeReason = string.Format("Column size has changed. Was {0}, now {1}.", initial.Size, final.Size);
+            }
+            else if (final.Precision != initial.Precision)
+            {
+                changeReason = string.Format("Column precision has changed. Was {0}, now {1}.", initial.Precision, final.Precision);
+            }
+            else if (final.DefaultValue != initial.DefaultValue)
+            {
+                changeReason = CheckDefaultValueDifference(final, initial);
+            }
+            return changeReason;
+        }
+
+        public virtual string RelationshipChanged(Relationship a, Relationship b)
         {
             var aFromTableName = this.MakeIdentifier(a.From.Schema, a.From.Name).ToLowerInvariant();
             var aFromColumnNames = a.FromColumns.Select(c => c.Name.ToLowerInvariant());
@@ -706,10 +754,10 @@ namespace SqlSiphon
                 || aToTableName != bToTableName
                 || aFromColumnNames.Any(c => !bFromColumnNames.Contains(c))
                 || bFromColumnNames.Any(c => !aFromColumnNames.Contains(c));
-            return changed;
+            return changed ? "IDK" : null;
         }
 
-        public virtual bool IndexChanged(Index a, Index b)
+        public virtual string IndexChanged(Index a, Index b)
         {
             var aTableName = this.MakeIdentifier(a.Table.Schema, a.Table.Name).ToLowerInvariant();
             var bTableName = this.MakeIdentifier(b.Table.Schema, b.Table.Name).ToLowerInvariant();
@@ -718,15 +766,31 @@ namespace SqlSiphon
             var changed = aTableName != bTableName
                 || aColumnNames.Any(c => !bColumnNames.Contains(c))
                 || bColumnNames.Any(c => !aColumnNames.Contains(c));
-            return changed;
+            return changed ? "IDK" : null;
         }
 
-        public virtual bool KeyChanged(PrimaryKey final, PrimaryKey initial)
+        public virtual string KeyChanged(PrimaryKey final, PrimaryKey initial)
         {
-            var f = this.MakeCreatePrimaryKeyScript(final);
-            var i = this.MakeCreatePrimaryKeyScript(initial);
-            var changed = f.ToLowerInvariant() != i.ToLowerInvariant();
-            return changed;
+            if (final.Name.ToLowerInvariant() != initial.Name.ToLowerInvariant())
+            {
+                return "Primary key name changed";
+            }
+            else if (final.KeyColumns.Length < initial.KeyColumns.Length)
+            {
+                return "Primary key columns were removed";
+            }
+            else if (final.KeyColumns.Length > initial.KeyColumns.Length)
+            {
+                return "Primary key columns were added";
+            }
+            else
+            {
+                var mismatchedColumns = final.KeyColumns
+                    .Select((f, i) => ColumnChanged(f, initial.KeyColumns[i]))
+                    .Where(r => r != null)
+                    .ToArray();
+                return mismatchedColumns.Length > 0 ? string.Join(", ", mismatchedColumns) : null;
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -831,7 +895,7 @@ namespace SqlSiphon
         public abstract int DefaultTypePrecision(string typeName, int testPrecision);
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
-        public abstract bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
+        protected abstract string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial);
         public virtual void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {
             routine.Query = routineText;

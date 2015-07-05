@@ -180,7 +180,7 @@ namespace SqlSiphon.SqlServer
             typeMapping.Add("uniqueidentifier", typeof(Guid));
 
             defaultTypePrecisions = new Dictionary<string, int>();
-            defaultTypePrecisions.Add("nvarchar", 0); 
+            defaultTypePrecisions.Add("nvarchar", 0);
             defaultTypePrecisions.Add("int", 10);
             defaultTypePrecisions.Add("real", 24);
             defaultTypePrecisions.Add("datetime2", 27);
@@ -304,12 +304,9 @@ end",
             var identifier = this.MakeIdentifier(schema, info.Name);
             var columnSection = this.MakeColumnSection(info, false);
             return string.Format(
-@"if not exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
-create table {2}(
-    {3}
+@"create table {0}(
+    {1}
 );",
-                schema,
-                info.Name,
                 identifier,
                 columnSection);
         }
@@ -320,11 +317,9 @@ create table {2}(
             var identifier = this.MakeIdentifier(schema, info.Name);
             var columnSection = this.MakeColumnSection(info, false);
             return string.Format(
-@"if not exists(select * from sys.table_types tt inner join sys.schemas s on s.schema_id = tt.schema_id where s.name = '{0}' and tt.name = '{1}') create type {2} as table(
-    {3}
-)",
-                schema,
-                info.Name,
+@"create type {0} as table(
+    {1}
+);",
                 identifier,
                 columnSection);
         }
@@ -333,30 +328,21 @@ create table {2}(
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
-            return string.Format(
-@"if exists(select * from information_schema.tables where table_schema = '{0}' and table_name = '{1}')
-    drop table {2};",
-                schema,
-                info.Name,
-                identifier);
+            return string.Format(@"drop table {0};", identifier);
         }
 
         internal string MakeDropUDTTScript(TableAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
-            return string.Format(
-@"if exists(select * from sys.table_types tt inner join sys.schemas s on s.schema_id = tt.schema_id where s.name = '{0}' and tt.name = '{1}')
-    drop type {2}", schema, info.Name, identifier);
+            return string.Format(@"drop type {0};", identifier);
         }
 
         public override string MakeCreateIndexScript(Index idx)
         {
             var columnSection = string.Join(",", idx.Columns);
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
-            return string.Format(
-@"if not exists(select * from sys.indexes where name = '{0}')
-CREATE NONCLUSTERED INDEX {0} ON {1}({2});",
+            return string.Format(@"create unclustered index {0} on {1}({2});",
                 idx.Name,
                 tableName,
                 columnSection);
@@ -365,9 +351,7 @@ CREATE NONCLUSTERED INDEX {0} ON {1}({2});",
         public override string MakeDropIndexScript(Index idx)
         {
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
-            return string.Format(
-@"if exists(select * from sys.indexes where name = '{0}')
-DROP INDEX {0} ON {1};",
+            return string.Format(@"drop index {0} on {1};",
                 idx.Name,
                 tableName);
         }
@@ -403,9 +387,9 @@ DROP INDEX {0} ON {1};",
             var typeStr = MakeSqlTypeString(p);
             var defaultString = "";
             if (p.DefaultValue != null)
-                defaultString = string.Format("DEFAULT ({0})", GetDefaultValue(p));
+                defaultString = string.Format("default ({0})", GetDefaultValue(p));
             else if (p.IsIdentity)
-                defaultString = "IDENTITY(1, 1)";
+                defaultString = "identity(1, 1)";
 
             return string.Format("{0} {1} {2} {3}",
                 p.Name,
@@ -429,66 +413,46 @@ DROP INDEX {0} ON {1};",
                 this.MakeIdentifier(prop.Name));
         }
 
-        public override bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
+        protected override string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial)
         {
-            var finalType = final.SystemType;
-            if (finalType.IsEnum)
+            bool valuesMatch = false;
+            if (final.DefaultValue != null && initial.DefaultValue != null)
             {
-                finalType = typeof(int);
-            }
-            var tests = new bool[]{
-                final.Include != initial.Include,
-                final.IsOptional != initial.IsOptional,
-                final.Name.ToLowerInvariant() != initial.Name.ToLowerInvariant(),
-                finalType != initial.SystemType,
-                final.Table == null || initial.Table == null || final.Table.Schema.ToLowerInvariant() != initial.Table.Schema.ToLowerInvariant(),
-                final.Table == null || initial.Table == null || final.Table.Name.ToLowerInvariant() != initial.Table.Name.ToLowerInvariant()
-            };
-            var changed = tests.Aggregate((a, b) => a || b);
-            if (!changed)
-            {
-                changed = final.DefaultValue != initial.DefaultValue;
-                if (changed
-                    && final.DefaultValue != null
-                    && initial.DefaultValue != null)
+                if (final.SystemType == typeof(bool))
                 {
-                    bool valuesMatch = true;
-                    if (final.SystemType == typeof(bool))
-                    {
-                        var xb = final.DefaultValue.Replace("'", "").ToLowerInvariant();
-                        var xbb = xb == "true" || xb == "1";
-                        var yb = initial.DefaultValue
-                            .Replace("'", "")
-                            .Replace("((", "")
-                            .Replace("))", "")
-                            .ToLowerInvariant();
-                        var ybb = yb == "true" || yb == "1";
-                        valuesMatch = xbb == ybb;
-                    }
-                    else if (final.SystemType == typeof(DateTime)
-                        || final.SystemType == typeof(double)
-                        || final.SystemType == typeof(int))
-                    {
-                        valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
-                            || initial.DefaultValue == "(" + final.DefaultValue + ")"
-                            || final.DefaultValue == "((" + initial.DefaultValue + "))"
-                            || initial.DefaultValue == "((" + final.DefaultValue + "))"
-                            || final.DefaultValue == "('" + initial.DefaultValue + "')"
-                            || initial.DefaultValue == "('" + final.DefaultValue + "')"; ;
-                    }
+                    var xb = final.DefaultValue.Replace("'", "").ToLowerInvariant();
+                    var xbb = xb == "true" || xb == "1";
+                    var yb = initial.DefaultValue
+                        .Replace("'", "")
+                        .Replace("((", "")
+                        .Replace("))", "")
+                        .ToLowerInvariant();
+                    var ybb = yb == "true" || yb == "1";
+                    valuesMatch = xbb == ybb;
+                }
+                else if (final.SystemType == typeof(DateTime)
+                    || final.SystemType == typeof(double)
+                    || final.SystemType == typeof(int))
+                {
+                    // this is junk.
+                    valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
+                        || initial.DefaultValue == "(" + final.DefaultValue + ")"
+                        || final.DefaultValue == "((" + initial.DefaultValue + "))"
+                        || initial.DefaultValue == "((" + final.DefaultValue + "))"
+                        || final.DefaultValue == "('" + initial.DefaultValue + "')"
+                        || initial.DefaultValue == "('" + final.DefaultValue + "')"; ;
+                }
+            }
 
-                    if (valuesMatch)
-                    {
-                        initial.DefaultValue = final.DefaultValue;
-                    }
-                    changed = !valuesMatch;
-                }
-                else if (final.Size != initial.Size)
-                {
-                    changed = true;
-                }
+            if (valuesMatch)
+            {
+                initial.DefaultValue = final.DefaultValue;
+                return null;
             }
-            return changed;
+            else
+            {
+                return string.Format("Column default value has changed. Was {0}, now {1}.", initial.DefaultValue, final.DefaultValue);
+            }
         }
 
         public override string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial)
@@ -671,7 +635,7 @@ DROP INDEX {0} ON {1};",
         {
             return string.Format(@"alter table {0} drop constraint {1};",
                 this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
-                this.MakeIdentifier(key.GetName(this)));
+                this.MakeIdentifier(key.Name));
         }
 
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
@@ -679,7 +643,7 @@ DROP INDEX {0} ON {1};",
             var keys = string.Join(", ", key.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
             return string.Format(@"alter table {0} add constraint {1} primary key({2});",
                 this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
-                this.MakeIdentifier(key.GetName(this)),
+                this.MakeIdentifier(key.Name),
                 keys);
         }
 
@@ -698,11 +662,11 @@ DROP INDEX {0} ON {1};",
 
         public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
         {
-            return string.Format(@"CREATE LOGIN {0} WITH PASSWORD = '{1}', DEFAULT_DATABASE={2};
-USE {2};
-CREATE USER {0} FOR LOGIN {0};
-ALTER USER {0} WITH DEFAULT_SCHEMA=dbo;
-ALTER ROLE db_owner ADD MEMBER {0};", userName, password, database);
+            return string.Format(@"create login {0} with password = '{1}', default_database = {2};
+use {2};
+create user {0} for login {0};
+alter user {0} with default_schema = dbo;
+alter role db_owner add member {0};", userName, password, database);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -782,17 +746,17 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
 	s.name as table_schema,
 	t.name as table_name,
 	ind.name as index_name,
-	col.name as column_name
+	col.name as column_name,
+	ind.is_primary_key,
+	ind.is_unique,
+	ind.is_unique_constraint
 FROM sys.indexes ind
 INNER JOIN sys.index_columns ic ON ind.object_id = ic.object_id and ind.index_id = ic.index_id 
 INNER JOIN sys.columns col ON ic.object_id = col.object_id and ic.column_id = col.column_id 
 INNER JOIN sys.tables t ON ind.object_id = t.object_id 
 INNER JOIN sys.schemas s on t.schema_id = s.schema_id
 WHERE 
-     ind.is_primary_key = 0 
-     AND ind.is_unique = 0 
-     AND ind.is_unique_constraint = 0 
-     AND t.is_ms_shipped = 0 
+     t.is_ms_shipped = 0 
 ORDER BY 
      t.name, ind.name, ind.index_id, ic.index_column_id;")]
         public override List<InformationSchema.IndexColumnUsage> GetIndexColumns()
@@ -867,7 +831,8 @@ where constraint_schema != 'information_schema';")]
         [Routine(CommandType = CommandType.Text, Query =
 @"select * 
 from information_schema.key_column_usage
-where constraint_schema != 'information_schema';")]
+where constraint_schema != 'information_schema'
+order by ordinal_position;")]
         public override List<InformationSchema.KeyColumnUsage> GetKeyColumns()
         {
             return GetList<InformationSchema.KeyColumnUsage>();

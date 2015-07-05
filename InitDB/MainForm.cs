@@ -723,7 +723,7 @@ namespace InitDB
                 {
                     script = script.Substring(this.generalScriptTB.SelectionStart, this.generalScriptTB.SelectionLength);
                 }
-                var scriptObj = new ScriptStatus(ScriptType.InstallExtension, "none", script);
+                var scriptObj = new ScriptStatus(ScriptType.InstallExtension, "none", script, null);
 
                 using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
                 {

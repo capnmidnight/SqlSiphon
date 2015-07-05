@@ -506,11 +506,11 @@ namespace SqlSiphon.Postgres
                 this.MakeIdentifier(prop.Name));
         }
 
-        public override bool RoutineChanged(RoutineAttribute a, RoutineAttribute b)
+        public override string RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
             var typeA = this.MakeSqlTypeString(a) ?? "void";
             bool changedReturnType = typeA != b.SqlType;
-            return changedReturnType || base.RoutineChanged(a, b);
+            return changedReturnType ? "IDK" : base.RoutineChanged(a, b);
         }
 
         private string MakeComplexSqlTypeString(Type systemType)
@@ -614,69 +614,42 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        public override bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
+
+        protected override string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial)
         {
-            var finalType = final.SystemType;
-            if (finalType.IsEnum)
+            bool valuesMatch = true;
+            if (final.SystemType == typeof(bool))
             {
-                finalType = typeof(int);
+                var xb = final.DefaultValue.Replace("'", "").ToLower();
+                var xbb = xb == "true" || xb == "1";
+                var yb = initial.DefaultValue.Replace("'", "").ToLower();
+                var ybb = yb == "true" || yb == "1";
+                valuesMatch = xbb == ybb;
             }
-            var tests = new bool[]{
-                final.Include != initial.Include,
-                final.IsIdentity != initial.IsIdentity,
-                final.IsOptional != initial.IsOptional,
-                final.Name.ToLower() != initial.Name.ToLower(),
-                finalType != initial.SystemType,
-                final.Table.Schema.ToLower() != initial.Table.Schema.ToLower(),
-                final.Table.Name.ToLower() != initial.Table.Name.ToLower()
-            };
-            var changed = tests.Any(a => a);
-            if (final.SystemType == initial.SystemType)
+            else if (final.SystemType == typeof(DateTime))
             {
-                if (final.DefaultValue != null
-                    && initial.DefaultValue != null
-                    && final.DefaultValue != initial.DefaultValue)
-                {
-                    bool valuesMatch = true;
-                    if (final.SystemType == typeof(bool))
-                    {
-                        var xb = final.DefaultValue.Replace("'", "").ToLower();
-                        var xbb = xb == "true" || xb == "1";
-                        var yb = initial.DefaultValue.Replace("'", "").ToLower();
-                        var ybb = yb == "true" || yb == "1";
-                        valuesMatch = xbb == ybb;
-                    }
-                    else if (final.SystemType == typeof(DateTime))
-                    {
-                        valuesMatch = final.DefaultValue == "'9999/12/31 23:59:59.99999'" && initial.DefaultValue == "'9999-12-31'::date"
-                                || final.DefaultValue == "getdate()" && initial.DefaultValue == "('now'::text)::date";
-                    }
-                    else if (final.SystemType == typeof(double))
-                    {
-                        valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
-                            || initial.DefaultValue == "(" + final.DefaultValue + ")";
-                    }
-                    else if (final.DefaultValue != "newid()" || initial.DefaultValue != "uuid_generate_v4()")
-                    {
-                        valuesMatch = false;
-                    }
-
-                    if (valuesMatch)
-                    {
-                        initial.DefaultValue = final.DefaultValue;
-                    }
-                    changed = changed || !valuesMatch;
-                }
-
-                if (final.Size != initial.Size)
-                {
-                    if (final.SystemType != typeof(double) || final.IsSizeSet || initial.Size != this.DefaultTypePrecision(final.SqlType, initial.Size))
-                    {
-                        changed = true;
-                    }
-                }
+                valuesMatch = final.DefaultValue == "'9999/12/31 23:59:59.99999'" && initial.DefaultValue == "'9999-12-31'::date"
+                        || final.DefaultValue == "getdate()" && initial.DefaultValue == "('now'::text)::date";
             }
-            return changed;
+            else if (final.SystemType == typeof(double))
+            {
+                valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
+                    || initial.DefaultValue == "(" + final.DefaultValue + ")";
+            }
+            else if (final.DefaultValue != "newid()" || initial.DefaultValue != "uuid_generate_v4()")
+            {
+                valuesMatch = false;
+            }
+
+            if (valuesMatch)
+            {
+                initial.DefaultValue = final.DefaultValue;
+                return null;
+            }
+            else
+            {
+                return string.Format("Column default value has changed. Was {0}, now {1}.", initial.DefaultValue, final.DefaultValue);
+            }
         }
 
         protected override string MakeParameterString(ParameterAttribute param)
@@ -922,8 +895,8 @@ end;",
             return string.Format(@"alter table if exists {0} drop constraint if exists {1};
 drop index if exists {2};",
                 this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
-                this.MakeIdentifier(key.GetName(this)),
-                this.MakeIdentifier("idx_" + key.GetName(this)));
+                this.MakeIdentifier(key.Name),
+                this.MakeIdentifier("idx_" + key.Name));
         }
 
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
@@ -932,10 +905,10 @@ drop index if exists {2};",
             return string.Format(
 @"create unique index {0} on {1} ({2});
 alter table {1} add constraint {3} primary key using index {0};",
-                this.MakeIdentifier("idx_" + key.GetName(this)),
+                this.MakeIdentifier("idx_" + key.Name),
                 this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
                 keys,
-                this.MakeIdentifier(key.GetName(this)));
+                this.MakeIdentifier(key.Name));
         }
 
         public override string MakeCreateIndexScript(Index idx)

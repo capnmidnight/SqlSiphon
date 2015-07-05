@@ -182,6 +182,8 @@ namespace SqlSiphon.Mapping
                 this.Properties.Add(valueColumn);
                 this.Properties.Add(descriptionColumn);
 
+                this.PrimaryKey = new PrimaryKey(this);
+
                 var names = obj.GetEnumNames();
                 foreach (var name in names)
                     EnumValues.Add((int)Enum.Parse(obj, name), name);
@@ -189,6 +191,7 @@ namespace SqlSiphon.Mapping
             else
             {
                 var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                bool hasPK = false;
                 foreach (var prop in props)
                 {
                     var columnDescription = DatabaseObjectAttribute.GetAttribute<ColumnAttribute>(prop) ?? new ColumnAttribute();
@@ -196,24 +199,33 @@ namespace SqlSiphon.Mapping
                     if (columnDescription.Include)
                     {
                         this.Properties.Add(columnDescription);
-                    }
-
-                    var indexInclusions = GetAttributes<IncludeInIndexAttribute>(prop);
-                    foreach (var idxInc in indexInclusions)
-                    {
-                        if (!this.Indexes.ContainsKey(idxInc.Name))
+                        if (columnDescription.IncludeInPrimaryKey)
                         {
-                            this.Indexes.Add(idxInc.Name, new Index(this, idxInc.Name));
+                            hasPK = true;
                         }
-                        this.Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
+
+                        var indexInclusions = GetAttributes<IncludeInIndexAttribute>(prop);
+                        foreach (var idxInc in indexInclusions)
+                        {
+                            if (!this.Indexes.ContainsKey(idxInc.Name))
+                            {
+                                this.Indexes.Add(idxInc.Name, new Index(this, idxInc.Name));
+                            }
+                            this.Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
+                        }
                     }
+                }
+
+                if (hasPK)
+                {
+                    this.PrimaryKey = new PrimaryKey(this);
                 }
             }
         }
 
         public override string ToString()
         {
-            return "TABLE " + base.ToString();
+            return string.Format("Table: {0}.{1}", this.Schema, this.Name);
         }
     }
 }

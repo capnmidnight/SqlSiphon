@@ -41,11 +41,11 @@ namespace SqlSiphon.SqlServer
                 initialUDTTs,
                 (UDTTName, initialUDTT) =>
                 {
-                    delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT)));
+                    delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type no longer exists"));
                 },
                 (UDTTName, finalUDTT) =>
                 {
-                    delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT)));
+                    delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist"));
                 },
                 (UDTTName, finalUDTT, initialUDTT) =>
                 {
@@ -67,12 +67,12 @@ namespace SqlSiphon.SqlServer
                         (columnName, finalColumn, initialColumn) =>
                         {
                             var colDiff = asm.ColumnChanged(finalColumn, initialColumn);
-                            changed = changed || asm.ColumnChanged(finalColumn, initialColumn);
+                            changed = changed || colDiff != null;
                         });
                     if (changed)
                     {
-                        delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT)));
-                        delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT)));
+                        delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type has changed"));
+                        delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type has changed"));
                     }
                 });
         }

@@ -66,5 +66,10 @@ namespace SqlSiphon.InformationSchema
         public DateTime created { get; set; }
         public DateTime last_altered { get; set; }
 */
+
+        public override string ToString()
+        {
+            return "Routine: " + this.routine_name;
+        }
     }
 }

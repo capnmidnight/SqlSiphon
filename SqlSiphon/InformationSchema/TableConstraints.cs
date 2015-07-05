@@ -24,5 +24,10 @@ namespace SqlSiphon.InformationSchema
         public string constraint_type { get; set; }
         public string is_deferrable { get; set; }
         public string initially_deferred { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("TableConstraint: {2}.{0}:({1})", constraint_name, constraint_type, table_name);
+        }
     }
 }

@@ -562,7 +562,7 @@ namespace SqlSiphon.OleDB
             throw new NotImplementedException();
         }
 
-        public override bool ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
+        protected override string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial)
         {
             throw new NotImplementedException();
         }

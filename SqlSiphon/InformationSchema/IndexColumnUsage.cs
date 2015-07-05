@@ -46,5 +46,13 @@ namespace SqlSiphon.InformationSchema
         public string table_name { get; set; }
         public string index_name { get; set; }
         public string column_name { get; set; }
+        public bool is_primary_key { get; set; }
+        public bool is_unique { get; set; }
+        public bool is_unique_constraint { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("IndexColumnUsage: {0}({1}.{2})", this.index_name, this.table_name, this.column_name);
+        }
     }
 }

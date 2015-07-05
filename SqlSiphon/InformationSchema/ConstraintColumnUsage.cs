@@ -22,5 +22,10 @@ namespace SqlSiphon.InformationSchema
         public string constraint_catalog { get; set; }
         public string constraint_schema { get; set; }
         public string constraint_name { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("ConstraintColumnUsage: {0}({1}.{2})", this.constraint_name, this.table_name, this.column_name);
+        }
     }
 }

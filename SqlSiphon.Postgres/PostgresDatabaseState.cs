@@ -36,7 +36,8 @@ namespace SqlSiphon.Postgres
             delta.Scripts.Add(new ScriptStatus(
                 ScriptType.AlterSettings, 
                 "set schema search path", 
-                string.Format("set search_path = {0},public;", string.Join(",", this.Schemata.Select(s=>dal.MakeIdentifier(s))))));
+                string.Format("set search_path = {0},public;", string.Join(",", this.Schemata.Select(s=>dal.MakeIdentifier(s)))),
+                "Schema search path needs to be set"));
 
             delta.Scripts.Sort();
             delta.Initial.Sort();
@@ -77,14 +78,16 @@ namespace SqlSiphon.Postgres
                         string.Format("{0} v{1}", ext.Key, ext.Value.Version),
                         string.Format("create extension if not exists \"{0}\" with schema {1};",
                             ext.Key,
-                            schemaName)));
+                            schemaName),
+                            "Extension needs to be installed"));
                 }
                 else if (extensions[ext.Key].Version < ext.Value.Version)
                 {
                     delta.Scripts.Add(new ScriptStatus(
                         ScriptType.InstallExtension,
                         string.Format("{0} v{1}", ext.Key, ext.Value.Version),
-                        string.Format("alter extension \"{0}\" update;", ext.Key)));
+                        string.Format("alter extension \"{0}\" update;", ext.Key),
+                        string.Format("Extension needs to be upgraded. Was v{0}, now v{1}", extensions[ext.Key].Version, ext.Value.Version)));
                 }
             }
         }

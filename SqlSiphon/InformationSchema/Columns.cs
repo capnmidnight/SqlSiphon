@@ -52,5 +52,10 @@ namespace SqlSiphon.InformationSchema
         public int? is_identity { get; set; }
         public string udt_catalog { get; set; }
         public string udt_schema { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("Column: {0}.{1}:({2})", this.table_name, this.column_name, this.data_type);
+        }
     }
 }

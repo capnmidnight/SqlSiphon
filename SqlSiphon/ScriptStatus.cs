@@ -50,6 +50,9 @@ namespace SqlSiphon
         [Exclude]
         public bool Run { get { return Get<bool>(); } set { Set(value); } }
 
+        [Exclude]
+        public string Reason { get; private set; }
+
         /// <summary>
         /// Default constructor enables automatic construction.
         /// </summary>
@@ -62,11 +65,12 @@ namespace SqlSiphon
         /// <param name="name">Usually the fully-qualified name of the object being modified, plus the script type, used as
         /// user-friendly description of the script.</param>
         /// <param name="script">The thing that does the work.</param>
-        public ScriptStatus(ScriptType type, string name, string script)
+        public ScriptStatus(ScriptType type, string name, string script, string reason)
         {
             this.ScriptType = type;
             this.Name = name;
             this.Script = script;
+            this.Reason = reason;
         }
 
         public int CompareTo(ScriptStatus obj)

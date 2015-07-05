@@ -28,21 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.objFilterTB = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabScripts = new System.Windows.Forms.TabPage();
             this.pendingScriptsGV = new System.Windows.Forms.DataGridView();
-            this.pendingScriptRunChoiceColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.pendingScriptTypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pendingScriptNameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pendingScriptScriptColumn = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.pendingScriptRunButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tabInitialState = new System.Windows.Forms.TabPage();
             this.initialScriptsGV = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -97,6 +92,12 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.pendingScriptRunChoiceColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.pendingScriptTypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pendingScriptNameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pendingScriptReasonColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pendingScriptScriptColumn = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.pendingScriptRunButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
             this.tableLayoutPanel1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabScripts.SuspendLayout();
@@ -213,6 +214,7 @@
             this.pendingScriptRunChoiceColumn,
             this.pendingScriptTypeColumn,
             this.pendingScriptNameColumn,
+            this.pendingScriptReasonColumn,
             this.pendingScriptScriptColumn,
             this.pendingScriptRunButtonColumn});
             this.pendingScriptsGV.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -222,49 +224,6 @@
             this.pendingScriptsGV.Size = new System.Drawing.Size(805, 389);
             this.pendingScriptsGV.TabIndex = 4;
             this.pendingScriptsGV.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.scriptGV_CellContentClick);
-            // 
-            // pendingScriptRunChoiceColumn
-            // 
-            this.pendingScriptRunChoiceColumn.DataPropertyName = "Run";
-            this.pendingScriptRunChoiceColumn.HeaderText = "run";
-            this.pendingScriptRunChoiceColumn.Name = "pendingScriptRunChoiceColumn";
-            this.pendingScriptRunChoiceColumn.ReadOnly = true;
-            // 
-            // pendingScriptTypeColumn
-            // 
-            this.pendingScriptTypeColumn.DataPropertyName = "ScriptType";
-            this.pendingScriptTypeColumn.HeaderText = "type";
-            this.pendingScriptTypeColumn.Name = "pendingScriptTypeColumn";
-            this.pendingScriptTypeColumn.ReadOnly = true;
-            // 
-            // pendingScriptNameColumn
-            // 
-            this.pendingScriptNameColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.pendingScriptNameColumn.DataPropertyName = "Name";
-            this.pendingScriptNameColumn.HeaderText = "name";
-            this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
-            this.pendingScriptNameColumn.ReadOnly = true;
-            this.pendingScriptNameColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // pendingScriptScriptColumn
-            // 
-            this.pendingScriptScriptColumn.DataPropertyName = "Script";
-            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
-            this.pendingScriptScriptColumn.DefaultCellStyle = dataGridViewCellStyle11;
-            this.pendingScriptScriptColumn.HeaderText = "script";
-            this.pendingScriptScriptColumn.Name = "pendingScriptScriptColumn";
-            this.pendingScriptScriptColumn.ReadOnly = true;
-            this.pendingScriptScriptColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.pendingScriptScriptColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.pendingScriptScriptColumn.Width = 200;
-            // 
-            // pendingScriptRunButtonColumn
-            // 
-            this.pendingScriptRunButtonColumn.HeaderText = "";
-            this.pendingScriptRunButtonColumn.Name = "pendingScriptRunButtonColumn";
-            this.pendingScriptRunButtonColumn.ReadOnly = true;
-            this.pendingScriptRunButtonColumn.Text = "run";
-            this.pendingScriptRunButtonColumn.UseColumnTextForButtonValue = true;
             // 
             // tabInitialState
             // 
@@ -305,8 +264,8 @@
             // dataGridViewButtonColumn1
             // 
             this.dataGridViewButtonColumn1.DataPropertyName = "Name";
-            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn1.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn1.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewButtonColumn1.HeaderText = "name";
             this.dataGridViewButtonColumn1.Name = "dataGridViewButtonColumn1";
             this.dataGridViewButtonColumn1.ReadOnly = true;
@@ -317,8 +276,8 @@
             // 
             this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.dataGridViewTextBoxColumn2.DataPropertyName = "Script";
-            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
-            this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle13;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
+            this.dataGridViewTextBoxColumn2.DefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridViewTextBoxColumn2.HeaderText = "script";
             this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
             this.dataGridViewTextBoxColumn2.ReadOnly = true;
@@ -363,8 +322,8 @@
             // dataGridViewButtonColumn2
             // 
             this.dataGridViewButtonColumn2.DataPropertyName = "Name";
-            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridViewButtonColumn2.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewButtonColumn2.HeaderText = "name";
             this.dataGridViewButtonColumn2.Name = "dataGridViewButtonColumn2";
             this.dataGridViewButtonColumn2.ReadOnly = true;
@@ -375,8 +334,8 @@
             // 
             this.dataGridViewTextBoxColumn4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.dataGridViewTextBoxColumn4.DataPropertyName = "Script";
-            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
-            this.dataGridViewTextBoxColumn4.DefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
+            this.dataGridViewTextBoxColumn4.DefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridViewTextBoxColumn4.HeaderText = "script";
             this.dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
             this.dataGridViewTextBoxColumn4.ReadOnly = true;
@@ -802,6 +761,54 @@
             this.saveFileDialog1.DefaultExt = "sql";
             this.saveFileDialog1.Filter = "SQL files|*.sql";
             // 
+            // pendingScriptRunChoiceColumn
+            // 
+            this.pendingScriptRunChoiceColumn.DataPropertyName = "Run";
+            this.pendingScriptRunChoiceColumn.HeaderText = "run";
+            this.pendingScriptRunChoiceColumn.Name = "pendingScriptRunChoiceColumn";
+            this.pendingScriptRunChoiceColumn.ReadOnly = true;
+            // 
+            // pendingScriptTypeColumn
+            // 
+            this.pendingScriptTypeColumn.DataPropertyName = "ScriptType";
+            this.pendingScriptTypeColumn.HeaderText = "type";
+            this.pendingScriptTypeColumn.Name = "pendingScriptTypeColumn";
+            this.pendingScriptTypeColumn.ReadOnly = true;
+            // 
+            // pendingScriptNameColumn
+            // 
+            this.pendingScriptNameColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.pendingScriptNameColumn.DataPropertyName = "Name";
+            this.pendingScriptNameColumn.HeaderText = "name";
+            this.pendingScriptNameColumn.Name = "pendingScriptNameColumn";
+            this.pendingScriptNameColumn.ReadOnly = true;
+            // 
+            // pendingScriptReasonColumn
+            // 
+            this.pendingScriptReasonColumn.DataPropertyName = "Reason";
+            this.pendingScriptReasonColumn.HeaderText = "reason";
+            this.pendingScriptReasonColumn.Name = "pendingScriptReasonColumn";
+            this.pendingScriptReasonColumn.ReadOnly = true;
+            // 
+            // pendingScriptScriptColumn
+            // 
+            this.pendingScriptScriptColumn.DataPropertyName = "Script";
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
+            this.pendingScriptScriptColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            this.pendingScriptScriptColumn.HeaderText = "script";
+            this.pendingScriptScriptColumn.Name = "pendingScriptScriptColumn";
+            this.pendingScriptScriptColumn.ReadOnly = true;
+            this.pendingScriptScriptColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.pendingScriptScriptColumn.Width = 200;
+            // 
+            // pendingScriptRunButtonColumn
+            // 
+            this.pendingScriptRunButtonColumn.HeaderText = "";
+            this.pendingScriptRunButtonColumn.Name = "pendingScriptRunButtonColumn";
+            this.pendingScriptRunButtonColumn.ReadOnly = true;
+            this.pendingScriptRunButtonColumn.Text = "run";
+            this.pendingScriptRunButtonColumn.UseColumnTextForButtonValue = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -889,11 +896,6 @@
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabScripts;
         private System.Windows.Forms.DataGridView pendingScriptsGV;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn pendingScriptRunChoiceColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptTypeColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptNameColumn;
-        private System.Windows.Forms.DataGridViewButtonColumn pendingScriptScriptColumn;
-        private System.Windows.Forms.DataGridViewButtonColumn pendingScriptRunButtonColumn;
         private System.Windows.Forms.TabPage tabInitialState;
         private System.Windows.Forms.DataGridView initialScriptsGV;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
@@ -908,6 +910,12 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TextBox generalScriptTB;
         private System.Windows.Forms.RichTextBox statusRTB;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn pendingScriptRunChoiceColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptTypeColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptNameColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn pendingScriptReasonColumn;
+        private System.Windows.Forms.DataGridViewButtonColumn pendingScriptScriptColumn;
+        private System.Windows.Forms.DataGridViewButtonColumn pendingScriptRunButtonColumn;
     }
 }
 

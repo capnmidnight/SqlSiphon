@@ -20,7 +20,15 @@ namespace SqlSiphon.Mapping
 
         public string Prefix { get; private set; }
 
-        internal Relationship(InformationSchema.Columns[] fromTableColumns, InformationSchema.TableConstraints fromTableFKConstraint, InformationSchema.KeyColumnUsage[] fromTableFKConstraintColumns, InformationSchema.Columns[] toTableColumns, InformationSchema.TableConstraints toTablePKConstraint, InformationSchema.ConstraintColumnUsage[] toTablePKConstraintColumns, IDatabaseStateReader dal)
+        internal Relationship(
+            InformationSchema.Columns[] fromTableColumns, 
+            InformationSchema.TableConstraints fromTableFKConstraint, 
+            InformationSchema.KeyColumnUsage[] fromTableFKConstraintColumns, 
+            InformationSchema.Columns[] toTableColumns, 
+            InformationSchema.TableConstraints toTablePKConstraint,
+            InformationSchema.ConstraintColumnUsage[] toTablePKConstraintColumns,
+            InformationSchema.KeyColumnUsage[] toTableKeyColumns,
+            IDatabaseStateReader dal)
         {
             this.Schema = fromTableFKConstraint.constraint_schema;
             this.Name = fromTableFKConstraint.constraint_name;
@@ -100,7 +108,7 @@ namespace SqlSiphon.Mapping
                 this.Prefix,
                 this.From.Schema ?? dal.DefaultSchemaName,
                 this.From.Name,
-                this.To.PrimaryKey.GetName(dal))
+                this.To.PrimaryKey.Name)
                 .Replace("__", "_");
         }
 

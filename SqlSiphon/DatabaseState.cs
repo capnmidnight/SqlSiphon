@@ -116,103 +116,6 @@ namespace SqlSiphon
             this.Schemata.AddRange(this.GetSchemata(dal));
         }
 
-        private void CreateRoutines(List<Type> routineDefTypes, IDatabaseScriptGenerator dal)
-        {
-            foreach (var type in routineDefTypes)
-            {
-                var methods = type.GetMethods();
-                foreach (var method in methods)
-                {
-                    var function = RoutineAttribute.GetCommandDescription(method);
-                    if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
-                    {
-                        var functionName = dal.MakeRoutineIdentifier(function);
-                        if (this.Functions.ContainsKey(functionName))
-                        {
-
-                        }
-                        else
-                        {
-                            this.Functions.Add(functionName.ToLowerInvariant(), function);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void CreateRelationships(List<Relationship> relationships, IDatabaseScriptGenerator dal)
-        {
-            foreach (var relationship in relationships)
-            {
-                relationship.ResolveColumns(this.Tables, dal);
-                var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.Name);
-                if (this.Relationships.ContainsKey(id))
-                {
-                    throw new RelationshipExistsException(id);
-                }
-                else
-                {
-                    this.Relationships.Add(id.ToLowerInvariant(), relationship);
-                    if (relationship.AutoCreateIndex)
-                    {
-                        var fkIndex = new Index(relationship.From, "IDX_" + relationship.Name);
-                        fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
-                        this.Indexes.Add(fkIndex.Name.ToLowerInvariant(), fkIndex);
-                    }
-                }
-            }
-        }
-
-        private void FindTables(Type type, IDatabaseScriptGenerator dal)
-        {
-            var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
-            if (table != null)
-            {
-                AddTable(this.Tables, type, dal, table);
-            }
-        }
-
-        public void AddTable(Dictionary<string, TableAttribute> tableCollection, Type type, IDatabaseScriptGenerator dal, TableAttribute table)
-        {
-            if (type != null)
-            {
-                table.InferProperties(type);
-            }
-            table.Schema = table.Schema ?? dal.DefaultSchemaName;
-            if (table.Include)
-            {
-                tableCollection.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant(), table);
-                if (type != null && table.Properties.Any(p => p.IncludeInPrimaryKey))
-                {
-                    table.PrimaryKey = new PrimaryKey(type);
-                    this.PrimaryKeys.Add(dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.GetName(dal)).ToLowerInvariant(), table.PrimaryKey);
-                }
-                foreach (var index in table.Indexes)
-                {
-                    if (this.Indexes.ContainsKey(index.Key))
-                    {
-                        throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, this.Indexes[index.Key].Table.Name);
-                    }
-                    else
-                    {
-                        this.Indexes.Add(index.Key.ToLowerInvariant(), index.Value);
-                    }
-                }
-            }
-        }
-
-        private List<string> GetSchemata(IDatabaseScriptGenerator dal)
-        {
-            var schemata = this.Tables.Values.Select(t => t.Schema)
-                .Union(this.Functions.Values.Select(f => f.Schema))
-                .Union(this.Relationships.Values.Select(r => r.Schema))
-                .Union(this.PrimaryKeys.Values.Select(r => r.Schema))
-                .Where(s => !string.IsNullOrWhiteSpace(s) && !this.Schemata.Contains(s) && s != dal.DefaultSchemaName)
-                .Distinct()
-                .ToList();
-            return schemata;
-        }
-
         /// <summary>
         /// Scans a database for tables and stored procedures
         /// </summary>
@@ -282,14 +185,31 @@ namespace SqlSiphon
                                     var uniqueConstraintName = constraint.constraint_type == "FOREIGN KEY" ? xref[constraintName] : constraintName;
                                     var uniqueConstraint = constraintsByName[uniqueConstraintName];
                                     var uniqueConstraintColumns = constraintsColumnsByName[uniqueConstraintName];
-                                    var uniqueTableColumns = columns[dal.MakeIdentifier(uniqueConstraint.table_schema, uniqueConstraint.table_name)];
+                                    var uniqueTableName = dal.MakeIdentifier(uniqueConstraint.table_schema, uniqueConstraint.table_name);
+                                    var uniqueTableColumns = columns[uniqueTableName];
+                                    var uniqueTableKeyColumns = keyColumnsByTable[uniqueTableName];
                                     if (constraint.constraint_type == "FOREIGN KEY")
                                     {
-                                        this.Relationships.Add(constraintName.ToLowerInvariant(), new Relationship(tableColumns, constraint, constraintColumns, uniqueTableColumns, uniqueConstraint, uniqueConstraintColumns, dal));
+                                        this.Relationships.Add(
+                                            constraintName.ToLowerInvariant(),
+                                            new Relationship(
+                                                tableColumns,
+                                                constraint,
+                                                constraintColumns,
+                                                uniqueTableColumns,
+                                                uniqueConstraint,
+                                                uniqueConstraintColumns,
+                                                uniqueTableKeyColumns,
+                                                dal));
                                     }
                                     else if (constraint.constraint_type == "PRIMARY KEY")
                                     {
-                                        table.PrimaryKey = new PrimaryKey(constraint, uniqueConstraint, uniqueConstraintColumns, uniqueTableColumns, dal);
+                                        table.PrimaryKey = new PrimaryKey(
+                                            constraint,
+                                            uniqueConstraint,
+                                            uniqueConstraintColumns,
+                                            uniqueTableColumns,
+                                            dal);
                                         this.PrimaryKeys.Add(constraintName.ToLowerInvariant(), table.PrimaryKey);
                                     }
                                 }
@@ -327,15 +247,16 @@ namespace SqlSiphon
 
                 foreach (var idxName in indexedColumnsByName.Keys)
                 {
+                    var idxKey = dal.MakeIdentifier(dal.DefaultSchemaName, idxName).ToLowerInvariant();
                     var idx = indexedColumnsByName[idxName];
-                    var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name);
+                    var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name).ToLowerInvariant();
                     if (this.Tables.ContainsKey(tableName))
                     {
                         var table = this.Tables[tableName];
-                        this.Indexes.Add(idxName.ToLowerInvariant(), new Index(table, idxName));
+                        this.Indexes.Add(idxKey, new Index(table, idxName));
                         foreach (var idxCol in idx)
                         {
-                            this.Indexes[idxName].Columns.Add(idxCol.column_name);
+                            this.Indexes[idxKey].Columns.Add(idxCol.column_name);
                         }
                     }
                 }
@@ -354,6 +275,107 @@ namespace SqlSiphon
                 this.CatalogueExists = false;
             }
         }
+
+        private List<string> GetSchemata(IDatabaseScriptGenerator dal)
+        {
+            var schemata = this.Tables.Values.Select(t => t.Schema)
+                .Union(this.Functions.Values.Select(f => f.Schema))
+                .Union(this.Relationships.Values.Select(r => r.Schema))
+                .Union(this.PrimaryKeys.Values.Select(r => r.Schema))
+                .Where(s => !string.IsNullOrWhiteSpace(s) && !this.Schemata.Contains(s) && s != dal.DefaultSchemaName)
+                .Distinct()
+                .ToList();
+            return schemata;
+        }
+
+        private void CreateRoutines(List<Type> routineDefTypes, IDatabaseScriptGenerator dal)
+        {
+            foreach (var type in routineDefTypes)
+            {
+                var methods = type.GetMethods();
+                foreach (var method in methods)
+                {
+                    var function = RoutineAttribute.GetCommandDescription(method);
+                    if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
+                    {
+                        var functionName = dal.MakeRoutineIdentifier(function);
+                        if (this.Functions.ContainsKey(functionName))
+                        {
+
+                        }
+                        else
+                        {
+                            this.Functions.Add(functionName.ToLowerInvariant(), function);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CreateRelationships(List<Relationship> relationships, IDatabaseScriptGenerator dal)
+        {
+            foreach (var relationship in relationships)
+            {
+                relationship.ResolveColumns(this.Tables, dal);
+                var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.Name);
+                if (this.Relationships.ContainsKey(id))
+                {
+                    throw new RelationshipExistsException(id);
+                }
+                else
+                {
+                    this.Relationships.Add(id.ToLowerInvariant(), relationship);
+                    if (relationship.AutoCreateIndex)
+                    {
+                        var fkIndex = new Index(relationship.From, "IDX_" + relationship.Name);
+                        fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
+                        var fkIndexNameKey = dal.MakeIdentifier(relationship.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
+                        this.Indexes.Add(fkIndexNameKey, fkIndex);
+                    }
+                }
+            }
+        }
+
+        private void FindTables(Type type, IDatabaseScriptGenerator dal)
+        {
+            var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
+            if (table != null)
+            {
+                AddTable(this.Tables, type, dal, table);
+            }
+        }
+
+        public void AddTable(Dictionary<string, TableAttribute> tableCollection, Type type, IDatabaseScriptGenerator dal, TableAttribute table)
+        {
+            if (type != null)
+            {
+                table.InferProperties(type);
+            }
+            table.Schema = table.Schema ?? dal.DefaultSchemaName;
+            if (table.Include)
+            {
+                tableCollection.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant(), table);
+                if (type != null && table.Properties.Any(p => p.IncludeInPrimaryKey))
+                {
+                    var pkNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.Name).ToLowerInvariant();
+                    this.PrimaryKeys.Add(pkNameKey, table.PrimaryKey);
+                    this.Indexes.Add(pkNameKey, table.PrimaryKey.ToIndex());
+                }
+                foreach (var index in table.Indexes)
+                {
+                    if (this.Indexes.ContainsKey(index.Key))
+                    {
+                        throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, this.Indexes[index.Key].Table.Name);
+                    }
+                    else
+                    {
+                        var idxNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, index.Key).ToLowerInvariant();
+                        this.Indexes.Add(idxNameKey, index.Value);
+                    }
+                }
+            }
+        }
+
 
         public virtual DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {

@@ -24,5 +24,10 @@ namespace SqlSiphon.InformationSchema
         public string match_option { get; set; }
         public string update_rule { get; set; }
         public string delete_rule { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("ReferentialConstraint: {0} to {2}", constraint_name, unique_constraint_name);
+        }
     }
 }

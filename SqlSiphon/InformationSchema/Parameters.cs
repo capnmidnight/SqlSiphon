@@ -30,5 +30,10 @@ namespace SqlSiphon.InformationSchema
         public string scope_catalog { get; set; }
         public string scope_schema { get; set; }
         public string scope_name { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("Parameter: {0}:({1})", this.parameter_name, this.data_type);
+        }
     }
 }
