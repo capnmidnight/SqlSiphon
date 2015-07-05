@@ -84,6 +84,7 @@
     <Compile Include="MembershipUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Roles.cs" />
+    <Compile Include="TestEntity1.cs" />
     <Compile Include="Users.cs" />
     <Compile Include="RoleHierarchy.cs" />
     <Compile Include="UsersInRoles.cs" />

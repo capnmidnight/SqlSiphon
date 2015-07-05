@@ -204,7 +204,7 @@ namespace SqlSiphon.Mapping
                             hasPK = true;
                         }
 
-                        var indexInclusions = GetAttributes<IncludeInIndexAttribute>(prop);
+                        var indexInclusions = GetAttributes<IndexAttribute>(prop);
                         foreach (var idxInc in indexInclusions)
                         {
                             if (!this.Indexes.ContainsKey(idxInc.Name))

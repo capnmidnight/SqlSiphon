@@ -6,10 +6,10 @@ using System.Text;
 namespace SqlSiphon.Mapping
 {
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
-    public class IncludeInIndexAttribute : Attribute
+    public class IndexAttribute : Attribute
     {
         public string Name { get; private set; }
-        public IncludeInIndexAttribute(string name)
+        public IndexAttribute(string name)
         {
             this.Name = name;
         }
