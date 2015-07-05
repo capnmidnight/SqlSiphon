@@ -4,11 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using System.Data.Common;
+using System.Reflection;
 
 namespace SqlSiphon
 {
     public abstract class DataConnector : IDataConnector
     {
+        public static string GetDatabaseTypeName(Type t)
+        {
+            var attr = t.GetCustomAttribute<DatabaseVendorNameAttribute>();
+            return attr != null ? attr.Name : null;
+        }
+
         public static bool IsTypePrimitive(Type type)
         {
             return type.IsPrimitive

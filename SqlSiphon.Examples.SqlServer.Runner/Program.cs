@@ -24,13 +24,14 @@ namespace SqlSiphon.Examples.SqlServer.Runner
             var db = new BasicDAL();
             foreach (var factory in factories)
             {
+                var dbTypeName = DataConnector.GetDatabaseTypeName(factory.GetType());
                 var server = "localhost";
                 if(factory is SqlSiphon.SqlServer.SqlServerDataConnectorFactory){
                     server += "\\SQLEXPRESS";
                 }
                 using (db.Connection = factory.MakeConnector(server, "TestDB", "TestDBUser", "TestDBPassword"))
                 {
-                    Console.WriteLine("Getting data from {0}", db.DatabaseType);
+                    Console.WriteLine("Getting data from {0}", dbTypeName);
                     Console.WriteLine(string.Join(", ", db.GetAllRoles()));
                 }
             }
