@@ -22,7 +22,7 @@ namespace SqlSiphon.Examples
         public int? ColumnC { get; set; }
 
         [Column(Name = "renamedColumnD")]
-        public int ColumnD { get; set; }
+        public long ColumnD { get; set; }
 
         [Index("idx_tp")]
         public YesNo ColumnE { get; set; }

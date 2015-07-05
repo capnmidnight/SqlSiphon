@@ -506,7 +506,7 @@ end",
                 || final.Precision != initial.Precision)
             {
                 return string.Format(
-                    "{0} alter column {1} set data type {2};",
+                    "{0} alter column {1} {2};",
                     preamble,
                     this.MakeIdentifier(final.Name),
                     this.MakeSqlTypeString(final));
