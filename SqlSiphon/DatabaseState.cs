@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using SqlSiphon.Mapping;
+using SqlSiphon.Model;
 using SqlSiphon.Exceptions;
 
 namespace SqlSiphon

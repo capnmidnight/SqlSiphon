@@ -39,6 +39,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using SqlSiphon.Mapping;
+using SqlSiphon.Model;
 
 namespace SqlSiphon
 {

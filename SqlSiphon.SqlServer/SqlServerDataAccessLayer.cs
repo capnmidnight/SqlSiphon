@@ -39,6 +39,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using SqlSiphon.Mapping;
+using SqlSiphon.Model;
 
 namespace SqlSiphon.SqlServer
 {
@@ -342,10 +343,11 @@ end",
         {
             var columnSection = string.Join(",", idx.Columns);
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
-            return string.Format(@"create unclustered index {0} on {1}({2});",
+            return string.Format(@"create {3}clustered index {0} on {1}({2});",
                 idx.Name,
                 tableName,
-                columnSection);
+                columnSection,
+                idx.IsClustered ? "" : "non");
         }
 
         public override string MakeDropIndexScript(TableIndex idx)

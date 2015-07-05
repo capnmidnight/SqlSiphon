@@ -38,6 +38,7 @@ using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using Npgsql;
 using SqlSiphon.Mapping;
+using SqlSiphon.Model;
 
 namespace SqlSiphon.Postgres
 {

@@ -36,6 +36,7 @@ using System.Runtime.CompilerServices;
 using System.Data.OleDb;
 using SqlSiphon;
 using SqlSiphon.Mapping;
+using SqlSiphon.Model;
 
 namespace SqlSiphon.OleDB
 {

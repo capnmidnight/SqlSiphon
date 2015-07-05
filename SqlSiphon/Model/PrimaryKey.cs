@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SqlSiphon.Mapping;
 
-namespace SqlSiphon.Mapping
+namespace SqlSiphon.Model
 {
     public class PrimaryKey : DatabaseObjectAttribute
     {
@@ -75,6 +76,7 @@ namespace SqlSiphon.Mapping
         internal TableIndex ToIndex()
         {
             var idx = new TableIndex(this.Table, this.Name);
+            idx.IsClustered = true;
             foreach (var column in this.KeyColumns)
             {
                 idx.Columns.Add(column.Name);
