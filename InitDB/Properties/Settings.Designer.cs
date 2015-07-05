@@ -22,5 +22,17 @@ namespace InitDB.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
+        public int LastSelectedSession {
+            get {
+                return ((int)(this["LastSelectedSession"]));
+            }
+            set {
+                this["LastSelectedSession"] = value;
+            }
+        }
     }
 }

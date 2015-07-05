@@ -61,10 +61,7 @@ namespace InitDB
         {
             InitializeComponent();
             this.databaseTypeList.DataSource = MainForm.CONNECTION_TYPES
-                .Select(t => {
-                    var attr = t.GetCustomAttribute<DatabaseVendorNameAttribute>();
-                    return attr != null ? attr.Name : null;
-                })
+                .Select(DataConnector.GetDatabaseTypeName)
                 .ToArray();
             this.pendingScriptsGV.AutoGenerateColumns = false;
             this.initialScriptsGV.AutoGenerateColumns = false;
@@ -829,6 +826,20 @@ by Sean T. McBeth (v1) (sean@seanmcbeth.com)",
                 var initial = db.GetInitialState(this.databaseTB.Text, ObjectFilter);
                 initial.WriteCodeFiles(@"D:\\Sean\\Desktop", "TestProject.Data", "TestConnector");
             }
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            if (0 <= Properties.Settings.Default.LastSelectedSession && Properties.Settings.Default.LastSelectedSession < this.names.Count)
+            {
+                this.savedSessionList.SelectedIndex = Properties.Settings.Default.LastSelectedSession;
+            }
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Properties.Settings.Default.LastSelectedSession = savedSessionList.SelectedIndex;
+            Properties.Settings.Default.Save();
         }
     }
 }
