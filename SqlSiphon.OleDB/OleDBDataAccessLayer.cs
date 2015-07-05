@@ -612,12 +612,12 @@ namespace SqlSiphon.OleDB
             throw new NotImplementedException();
         }
 
-        public override string MakeDropIndexScript(Index index)
+        public override string MakeDropIndexScript(TableIndex index)
         {
             throw new NotImplementedException();
         }
 
-        public override string MakeCreateIndexScript(Index index)
+        public override string MakeCreateIndexScript(TableIndex index)
         {
             throw new NotImplementedException();
         }

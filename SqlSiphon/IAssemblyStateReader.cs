@@ -14,6 +14,6 @@ namespace SqlSiphon
         string RoutineChanged(RoutineAttribute final, RoutineAttribute initial);
         string KeyChanged(PrimaryKey final, PrimaryKey initial);
         string RelationshipChanged(Relationship finalRelation, Relationship initialRelation);
-        string IndexChanged(Index finalIndex, Index initialIndex);
+        string IndexChanged(TableIndex finalIndex, TableIndex initialIndex);
     }
 }

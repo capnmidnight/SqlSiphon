@@ -757,7 +757,7 @@ namespace SqlSiphon
             return changed ? "IDK" : null;
         }
 
-        public virtual string IndexChanged(Index a, Index b)
+        public virtual string IndexChanged(TableIndex a, TableIndex b)
         {
             var aTableName = this.MakeIdentifier(a.Table.Schema, a.Table.Name).ToLowerInvariant();
             var bTableName = this.MakeIdentifier(b.Table.Schema, b.Table.Name).ToLowerInvariant();
@@ -930,8 +930,8 @@ namespace SqlSiphon
 
         public abstract string MakeDropPrimaryKeyScript(PrimaryKey key);
         public abstract string MakeCreatePrimaryKeyScript(PrimaryKey key);
-        public abstract string MakeDropIndexScript(Index index);
-        public abstract string MakeCreateIndexScript(Index index);
+        public abstract string MakeDropIndexScript(TableIndex index);
+        public abstract string MakeCreateIndexScript(TableIndex index);
 
         public abstract string DataSource { get; }
 

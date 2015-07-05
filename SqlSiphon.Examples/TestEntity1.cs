@@ -24,6 +24,7 @@ namespace SqlSiphon.Examples
         [Column(Name = "renamedColumnD")]
         public int ColumnD { get; set; }
 
+        [Index("idx_tp")]
         public YesNo ColumnE { get; set; }
     }
 }

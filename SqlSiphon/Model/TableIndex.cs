@@ -5,12 +5,12 @@ using System.Text;
 
 namespace SqlSiphon.Mapping
 {
-    public class Index : DatabaseObjectAttribute
+    public class TableIndex : DatabaseObjectAttribute
     {
         public TableAttribute Table { get; private set; }
         public List<string> Columns { get; private set; }
 
-        internal Index(TableAttribute table, string name)
+        internal TableIndex(TableAttribute table, string name)
         {
             this.Name = name;
             this.Table = table;

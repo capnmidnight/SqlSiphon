@@ -14,7 +14,7 @@ namespace SqlSiphon
         public bool? CatalogueExists { get; private set; }
         public string CatalogueName { get; private set; }
         public Dictionary<string, TableAttribute> Tables { get; private set; }
-        public Dictionary<string, Index> Indexes { get; private set; }
+        public Dictionary<string, TableIndex> Indexes { get; private set; }
         public Dictionary<string, RoutineAttribute> Functions { get; private set; }
         public Dictionary<string, Relationship> Relationships { get; private set; }
         public Dictionary<string, PrimaryKey> PrimaryKeys { get; private set; }
@@ -33,7 +33,7 @@ namespace SqlSiphon
         /// <param name="pks"></param>
         /// <param name="schemata"></param>
         /// <param name="logins"></param>
-        private DatabaseState(Dictionary<string, TableAttribute> tables, Dictionary<string, Index> indexes,
+        private DatabaseState(Dictionary<string, TableAttribute> tables, Dictionary<string, TableIndex> indexes,
             Dictionary<string, RoutineAttribute> routines, Dictionary<string, Relationship> relationships,
             Dictionary<string, PrimaryKey> pks, List<string> schemata, Dictionary<string, string> logins,
             List<string> initScripts, List<Action<IDataConnector>> postExecute, string catalogueName, bool? catalogueExists)
@@ -52,7 +52,7 @@ namespace SqlSiphon
         }
 
         private DatabaseState()
-            : this(new Dictionary<string, TableAttribute>(), new Dictionary<string, Index>(), new Dictionary<string, RoutineAttribute>(),
+            : this(new Dictionary<string, TableAttribute>(), new Dictionary<string, TableIndex>(), new Dictionary<string, RoutineAttribute>(),
             new Dictionary<string, Relationship>(), new Dictionary<string, PrimaryKey>(), new List<string>(), new Dictionary<string, string>(),
             new List<string>(), null, null, null)
         {
@@ -253,7 +253,7 @@ namespace SqlSiphon
                     if (this.Tables.ContainsKey(tableName))
                     {
                         var table = this.Tables[tableName];
-                        this.Indexes.Add(idxKey, new Index(table, idxName));
+                        this.Indexes.Add(idxKey, new TableIndex(table, idxName));
                         foreach (var idxCol in idx)
                         {
                             this.Indexes[idxKey].Columns.Add(idxCol.column_name);
@@ -327,7 +327,7 @@ namespace SqlSiphon
                     this.Relationships.Add(id.ToLowerInvariant(), relationship);
                     if (relationship.AutoCreateIndex)
                     {
-                        var fkIndex = new Index(relationship.From, "IDX_" + relationship.Name);
+                        var fkIndex = new TableIndex(relationship.From, "IDX_" + relationship.Name);
                         fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
                         var fkIndexNameKey = dal.MakeIdentifier(relationship.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
                         this.Indexes.Add(fkIndexNameKey, fkIndex);

@@ -911,7 +911,7 @@ alter table {1} add constraint {3} primary key using index {0};",
                 this.MakeIdentifier(key.Name));
         }
 
-        public override string MakeCreateIndexScript(Index idx)
+        public override string MakeCreateIndexScript(TableIndex idx)
         {
             var columnSection = string.Join(",", idx.Columns);
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
@@ -922,7 +922,7 @@ alter table {1} add constraint {3} primary key using index {0};",
                 columnSection);
         }
 
-        public override string MakeDropIndexScript(Index idx)
+        public override string MakeDropIndexScript(TableIndex idx)
         {
             return string.Format(@"drop index if exists {0};", idx.Name);
         }

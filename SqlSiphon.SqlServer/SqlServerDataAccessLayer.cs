@@ -338,7 +338,7 @@ end",
             return string.Format(@"drop type {0};", identifier);
         }
 
-        public override string MakeCreateIndexScript(Index idx)
+        public override string MakeCreateIndexScript(TableIndex idx)
         {
             var columnSection = string.Join(",", idx.Columns);
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
@@ -348,7 +348,7 @@ end",
                 columnSection);
         }
 
-        public override string MakeDropIndexScript(Index idx)
+        public override string MakeDropIndexScript(TableIndex idx)
         {
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
             return string.Format(@"drop index {0} on {1};",

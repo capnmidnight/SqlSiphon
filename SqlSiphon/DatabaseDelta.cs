@@ -175,7 +175,7 @@ namespace SqlSiphon
                 gen.MakeCreateRelationshipScript);
         }
 
-        private void ProcessIndexes(Dictionary<string, Index> finalIndexes, Dictionary<string, Index> initialIndexes, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        private void ProcessIndexes(Dictionary<string, TableIndex> finalIndexes, Dictionary<string, TableIndex> initialIndexes, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {
             Traverse(
                 "Index",

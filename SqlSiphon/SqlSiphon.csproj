@@ -135,7 +135,7 @@
     <Compile Include="Mapping\ColumnAttribute.cs" />
     <Compile Include="Mapping\ExcludeAttribute.cs" />
     <Compile Include="Mapping\PKAttribute.cs" />
-    <Compile Include="Model\Index.cs" />
+    <Compile Include="Model\TableIndex.cs" />
     <Compile Include="Model\PrimaryKey.cs" />
     <Compile Include="Model\Relationship.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

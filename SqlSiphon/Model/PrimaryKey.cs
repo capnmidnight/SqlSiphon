@@ -72,9 +72,9 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        internal Index ToIndex()
+        internal TableIndex ToIndex()
         {
-            var idx = new Index(this.Table, this.Name);
+            var idx = new TableIndex(this.Table, this.Name);
             foreach (var column in this.KeyColumns)
             {
                 idx.Columns.Add(column.Name);

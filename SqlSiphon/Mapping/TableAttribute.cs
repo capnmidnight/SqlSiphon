@@ -49,13 +49,13 @@ namespace SqlSiphon.Mapping
         public PrimaryKey PrimaryKey { get; set; }
         public List<ColumnAttribute> Properties { get; private set; }
         public Dictionary<int, string> EnumValues { get; private set; }
-        public Dictionary<string, Index> Indexes { get; private set; }
+        public Dictionary<string, TableIndex> Indexes { get; private set; }
 
         public TableAttribute()
         {
             this.Properties = new List<ColumnAttribute>();
             this.EnumValues = new Dictionary<int, string>();
-            this.Indexes = new Dictionary<string, Index>();
+            this.Indexes = new Dictionary<string, TableIndex>();
         }
 
         public TableAttribute(
@@ -125,7 +125,7 @@ namespace SqlSiphon.Mapping
                 {
                     if (!this.Indexes.ContainsKey(idxCol.index_name))
                     {
-                        this.Indexes.Add(idxCol.index_name, new Index(this, idxCol.index_name));
+                        this.Indexes.Add(idxCol.index_name, new TableIndex(this, idxCol.index_name));
                     }
                     this.Indexes[idxCol.index_name].Columns.Add(idxCol.column_name);
                 }
@@ -209,7 +209,7 @@ namespace SqlSiphon.Mapping
                         {
                             if (!this.Indexes.ContainsKey(idxInc.Name))
                             {
-                                this.Indexes.Add(idxInc.Name, new Index(this, idxInc.Name));
+                                this.Indexes.Add(idxInc.Name, new TableIndex(this, idxInc.Name));
                             }
                             this.Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
                         }

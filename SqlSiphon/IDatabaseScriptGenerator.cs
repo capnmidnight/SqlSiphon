@@ -33,7 +33,7 @@ namespace SqlSiphon
         string MakeDropPrimaryKeyScript(PrimaryKey key);
         string MakeCreatePrimaryKeyScript(PrimaryKey key);
 
-        string MakeDropIndexScript(Index key);
-        string MakeCreateIndexScript(Index key);
+        string MakeDropIndexScript(TableIndex key);
+        string MakeCreateIndexScript(TableIndex key);
     }
 }
