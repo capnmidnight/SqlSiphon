@@ -185,6 +185,7 @@ namespace SqlSiphon.SqlServer
             defaultTypePrecisions.Add("int", 10);
             defaultTypePrecisions.Add("real", 24);
             defaultTypePrecisions.Add("datetime2", 27);
+            defaultTypePrecisions.Add("bigint", 19);
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
