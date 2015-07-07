@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace SqlSiphon
 {
-    public class TableHasNoColumnsException : Exception
+    public class PrimaryKeyColumnNotNullableException : TableColumnRulesException
     {
-        public TableHasNoColumnsException(Mapping.TableAttribute table)
-            : base(string.Format("The table `{0}`.`{1}` defined by type `{2}` has no properties that could be mapped to columns.", 
-                table.Schema, 
-                table.Name,
-                ((Type)table.SourceObject).FullName))
+        public PrimaryKeyColumnNotNullableException(Mapping.TableAttribute table, Mapping.ColumnAttribute[] columns)
+            : base(
+                "The table `{0}`.`{1}` defined by type `{2}` has one or more nullable columns in the primary key.{3}{4}", 
+                table,
+                columns)
         {
         }
     }

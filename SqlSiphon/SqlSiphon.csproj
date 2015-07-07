@@ -101,8 +101,10 @@
     <Compile Include="DataConnector.cs" />
     <Compile Include="Exceptions\IndexExistsException.cs" />
     <Compile Include="Exceptions\InconsistentRelationshipDefinitionException.cs" />
+    <Compile Include="Exceptions\MustSetStringSizeInPrimaryKeyException.cs" />
     <Compile Include="Exceptions\RelationShipExistsException.cs" />
     <Compile Include="Exceptions\PrimaryKeyColumnNotNullableException.cs" />
+    <Compile Include="Exceptions\TableColumnRulesException.cs" />
     <Compile Include="Exceptions\TableHasNoColumnsException.cs" />
     <Compile Include="IAssemblyStateReader.cs" />
     <Compile Include="IDataConnector.cs" />

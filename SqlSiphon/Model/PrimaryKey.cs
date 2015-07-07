@@ -33,9 +33,15 @@ namespace SqlSiphon.Model
             this.KeyColumns = table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();
-            if (this.KeyColumns.Any(c => c.IsOptional))
+            var nullableColumns = this.KeyColumns.Where(c => c.IsOptional).ToArray();
+            if (nullableColumns.Length > 0)
             {
-                throw new PrimaryKeyColumnNotNullableException(this.Table);
+                throw new PrimaryKeyColumnNotNullableException(this.Table, nullableColumns);
+            }
+            var tooLongStringColumns = this.KeyColumns.Where(c => c.SystemType == typeof(string) && !c.IsSizeSet).ToArray();
+            if (tooLongStringColumns.Length > 0)
+            {
+                throw new MustSetStringSizeInPrimaryKeyException(this.Table, tooLongStringColumns);
             }
         }
 

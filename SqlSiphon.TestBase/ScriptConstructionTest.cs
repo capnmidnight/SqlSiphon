@@ -61,12 +61,16 @@ namespace SqlSiphon.TestBase
         [ExpectedException(typeof(PrimaryKeyColumnNotNullableException))]
         public abstract void CantCreateNullablePK();
 
+        [ExpectedException(typeof(MustSetStringSizeInPrimaryKeyException))]
+        public abstract void CantCreatePKWithMAXString();
+
         public abstract void CreateSingleColumnTable();
         public abstract void CreateSingleColumnTableWithSchema();
         public abstract void CreateTwoColumnTable();
         public abstract void CreateTwoColumnTableAsChild();
         public abstract void CreateOneNullableColumn();
         public abstract void CreateWithPK();
+        public abstract void CreateLongerPrimaryKey();
         public abstract void CreateWithIdentity();
         public abstract void CreateTableFromEnumeration();
         public abstract void CreateTableWithSimpleIndex();

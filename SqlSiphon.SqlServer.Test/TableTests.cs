@@ -69,16 +69,34 @@ namespace SqlSiphon.SqlServer.Test
         }
 
         [TestMethod]
+        public override void CantCreatePKWithMAXString()
+        {
+            GetScriptFor<TestLongStringPrimaryKey>();
+        }
+
+        [TestMethod]
         public override void CreateWithPK()
         {
             var script = GetScriptFor<TestPrimaryKeyColumn>();
             Assert.AreEqual(
 @"create table [dbo].[TestPrimaryKeyColumn](
-    [KeyColumn] nvarchar(MAX) NOT NULL,
+    [KeyColumn] nvarchar(255) NOT NULL,
     [DateColumn] datetime2 NOT NULL
 );
 --
 alter table [dbo].[TestPrimaryKeyColumn] add constraint [pk_TestPrimaryKeyColumn] primary key([KeyColumn]);", script);
+        }
+
+        [TestMethod]
+        public override void CreateLongerPrimaryKey()
+        {
+            var script = GetScriptFor<TestPrimaryKeyTwoColumns>();
+            Assert.AreEqual(@"create table [dbo].[TestPrimaryKeyTwoColumns](
+    [KeyColumn1] nvarchar(255) NOT NULL,
+    [KeyColumn2] datetime2 NOT NULL
+);
+--
+alter table [dbo].[TestPrimaryKeyTwoColumns] add constraint [pk_TestPrimaryKeyTwoColumns] primary key([KeyColumn1], [KeyColumn2]);", script);
         }
 
         [TestMethod]
@@ -128,15 +146,15 @@ insert into [dbo].[TestEnumeration](Value, Description) values(8, 'rSt');", scri
         {
             var script = GetScriptFor<TestTableWithSimpleIndex>();
             Assert.AreEqual(
-@"create table [dbo].[TestTableWithIndex](
+@"create table [dbo].[TestTableWithSimpleIndex](
     [KeyColumn] int NOT NULL identity(1, 1),
     [NotInIndex] real NOT NULL,
     [FloatColumn] float NOT NULL
 );
 --
-alter table [dbo].[TestTableWithIndex] add constraint [pk_TestTableWithIndex] primary key([KeyColumn]);
+alter table [dbo].[TestTableWithSimpleIndex] add constraint [pk_TestTableWithSimpleIndex] primary key([KeyColumn]);
 --
-create nonclustered index [idx_Test1] on [dbo].[TestTableWithIndex]([FloatColumn]);", script);
+create nonclustered index [idx_Test1] on [dbo].[TestTableWithSimpleIndex]([FloatColumn]);", script);
         }
 
         [TestMethod]
