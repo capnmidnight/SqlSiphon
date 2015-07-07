@@ -530,20 +530,29 @@ namespace SqlSiphon
                         columnTypes[i] = reader.GetFieldType(i);
                     }
 
-                    var useDefaultConstructor = true;
-                    var constructor = type.GetConstructor(Type.EmptyTypes);
+                    var useTypedConstructor = true;
+                    var constructor = type.GetConstructor(columnTypes);
                     if (constructor == null)
                     {
-                        useDefaultConstructor = false;
-                        constructor = type.GetConstructor(columnTypes);
+                        useTypedConstructor = false;
+                        constructor = type.GetConstructor(Type.EmptyTypes);
                         if (constructor == null)
                         {
-                            throw new Exception(string.Format("Entity classes need a default constructor or a constructor that matches the result set. This data reader had columns:\n{0}", 
-                                string.Join("\n", columnNames.Select((n, i)=> string.Format("{0}: {1} {2}", i, n, columnTypes[i].Name)))));
+                            throw new Exception(string.Format("Entity classes need a default constructor or a constructor that matches the result set. This data reader had columns:\n{0}",
+                                string.Join("\n", columnNames.Select((n, i) => string.Format("{0}: {1} {2}", i, n, columnTypes[i].Name)))));
                         }
                     }
 
-                    if (useDefaultConstructor)
+                    if (useTypedConstructor)
+                    {
+                        var values = new object[reader.FieldCount];
+                        getter = delegate()
+                        {
+                            reader.GetValues(values);
+                            return (EntityT)constructor.Invoke(values);
+                        };
+                    }
+                    else
                     {
                         var props = GetProperties(type);
                         getter = delegate()
@@ -555,15 +564,6 @@ namespace SqlSiphon
                                 .ForEach(p => p.SetValue(inst, reader[p.Name.ToUpper()]));
 
                             return inst;
-                        };
-                    }
-                    else
-                    {
-                        var values = new object[reader.FieldCount];
-                        getter = delegate()
-                        {
-                            reader.GetValues(values);
-                            return (EntityT)constructor.Invoke(values);
                         };
                     }
                 }
