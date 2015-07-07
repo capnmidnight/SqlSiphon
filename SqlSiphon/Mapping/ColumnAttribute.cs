@@ -144,12 +144,12 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public T GetValue<T>(object obj)
+        public virtual T GetValue<T>(object obj)
         {
             return (T)this.originalProperty.GetValue(obj, null);
         }
 
-        public object GetValue(object obj)
+        public virtual object GetValue(object obj)
         {
             return this.originalProperty.GetValue(obj, null);
         }

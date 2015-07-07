@@ -349,10 +349,10 @@ end",
 
         public override string MakeCreateIndexScript(TableIndex idx)
         {
-            var columnSection = string.Join(",", idx.Columns);
+            var columnSection = string.Join(",", idx.Columns.Select(c=>this.MakeIdentifier(c)));
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
             return string.Format(@"create {3}clustered index {0} on {1}({2});",
-                idx.Name,
+                this.MakeIdentifier(idx.Name),
                 tableName,
                 columnSection,
                 idx.IsClustered ? "" : "non");
@@ -1019,7 +1019,7 @@ order by ordinal_position;")]
                     }
                     else if (DataConnector.IsTypeQuotedPrimitive(t))
                     {
-                        val = string.Format("'{1}'");
+                        val = string.Format("'{0}'", v);
                     }
                     else
                     {
@@ -1029,7 +1029,7 @@ order by ordinal_position;")]
                 return val;
             }).ToArray();
 
-            return string.Format("insert into {0}({1}) values({2})",
+            return string.Format("insert into {0}({1}) values({2});",
                 this.MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
                 string.Join(", ", columnNames),
                 string.Join(", ", columnValues));

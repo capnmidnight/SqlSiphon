@@ -22,23 +22,33 @@ namespace SqlSiphon.TestBase
             using (var ss = (ISqlSiphon)this.factory.MakeConnector((string)null))
             {
                 var t = typeof(T);
-                var a = DatabaseObjectAttribute.GetAttribute(t);
+                var table = DatabaseObjectAttribute.GetAttribute(t);
                 var sb = new System.Text.StringBuilder();
-                sb.Append(ss.MakeCreateTableScript(a));
-                if (a.PrimaryKey != null)
+                sb.Append(ss.MakeCreateTableScript(table));
+                if (table.PrimaryKey != null)
                 {
                     sb.AppendLine();
                     sb.AppendLine("--");
-                    sb.AppendLine(ss.MakeCreatePrimaryKeyScript(a.PrimaryKey));
+                    sb.Append(ss.MakeCreatePrimaryKeyScript(table.PrimaryKey));
                 }
-                if (a.EnumValues.Count > 0)
+                if (table.EnumValues.Count > 0)
                 {
                     sb.AppendLine();
                     sb.Append("--");
-                    foreach (var val in a.EnumValues)
+                    foreach (var val in table.EnumValues)
                     {
                         sb.AppendLine();
-                        sb.Append(ss.MakeInsertScript(a, val));
+                        sb.Append(ss.MakeInsertScript(table, val));
+                    }
+                }
+                if (table.Indexes.Count > 0)
+                {
+                    sb.AppendLine();
+                    sb.Append("--");
+                    foreach (var val in table.Indexes.Values)
+                    {
+                        sb.AppendLine();
+                        sb.Append(ss.MakeCreateIndexScript(val));
                     }
                 }
                 return sb.ToString();
@@ -59,5 +69,6 @@ namespace SqlSiphon.TestBase
         public abstract void CreateWithPK();
         public abstract void CreateWithIdentity();
         public abstract void CreateTableFromEnumeration();
+        public abstract void CreateTableWithIndex();
     }
 }

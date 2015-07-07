@@ -172,20 +172,10 @@ namespace SqlSiphon.Mapping
             base.InferProperties(obj);
             if (obj.IsEnum)
             {
-                var valueColumn = new ColumnAttribute
-                {
-                    Table = this,
-                    IncludeInPrimaryKey = true,
-                    Name = "Value",
-                    SqlType = "int"
-                };
+                var valueColumn = new EnumerationTableColumn(obj, this, "Value", typeof(int));
+                valueColumn.IncludeInPrimaryKey = true;
 
-                var descriptionColumn = new ColumnAttribute
-                {
-                    Table = this,
-                    Name = "Description",
-                    SqlType = "nvarchar(max)"
-                };
+                var descriptionColumn = new EnumerationTableColumn(obj, this, "Description", typeof(string));
 
                 this.Properties.Add(valueColumn);
                 this.Properties.Add(descriptionColumn);

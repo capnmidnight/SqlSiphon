@@ -107,7 +107,7 @@ alter table [dbo].[TestIdentityColumn] add constraint [pk_TestIdentityColumn] pr
             Assert.AreEqual(
 @"create table [dbo].[TestEnumeration](
     Value int NOT NULL,
-    Description nvarchar(max) NOT NULL
+    Description nvarchar(MAX) NOT NULL
 );
 --
 alter table [dbo].[TestEnumeration] add constraint [pk_TestEnumeration] primary key([Value]);
@@ -121,6 +121,22 @@ insert into [dbo].[TestEnumeration](Value, Description) values(5, 'HIJ');
 insert into [dbo].[TestEnumeration](Value, Description) values(6, 'KLM');
 insert into [dbo].[TestEnumeration](Value, Description) values(7, 'OpQ');
 insert into [dbo].[TestEnumeration](Value, Description) values(8, 'rSt');", script);
+        }
+
+        [TestMethod]
+        public override void CreateTableWithIndex()
+        {
+            var script = GetScriptFor<TestTableWithIndex>();
+            Assert.AreEqual(
+@"create table [dbo].[TestTableWithIndex](
+    KeyColumn int NOT NULL identity(1, 1),
+    NotInIndex real NOT NULL,
+    FloatColumn float NOT NULL
+);
+--
+alter table [dbo].[TestTableWithIndex] add constraint [pk_TestTableWithIndex] primary key([KeyColumn]);
+--
+create nonclustered index [idx_Test1] on [dbo].[TestTableWithIndex]([FloatColumn]);", script);
         }
     }
 }
