@@ -934,9 +934,10 @@ order by ordinal_position;")]
                 {
                     var valueColumn = new ColumnAttribute
                     {
-                        Name = "Value"
+                        Table = attr,
+                        Name = "Value",
                     };
-                    valueColumn.InferProperties(attr, null);
+                    valueColumn.SetSystemType(type);
                     attr.Properties.Add(valueColumn);
                     scanType = null;
                 }
@@ -993,6 +994,45 @@ order by ordinal_position;")]
                 });
             this.OnStandardError -= onStdErrorOutput;
             return complete && succeeded;
+        }
+
+        public override string MakeInsertScript(TableAttribute table, object value)
+        {
+            var columns = table.Properties
+                .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
+                .ToArray();
+
+            var columnNames = columns.Select(c => c.Name).ToArray();
+            var columnValues = columns.Select(c => {
+                var v = c.GetValue(value);
+                string val = null;
+                if (v == null)
+                {
+                    value = "NULL";
+                }
+                else
+                {
+                    var t = v.GetType();
+                    if (DataConnector.IsTypeBarePrimitive(t))
+                    {
+                        val = v.ToString();
+                    }
+                    else if (DataConnector.IsTypeQuotedPrimitive(t))
+                    {
+                        val = string.Format("'{1}'");
+                    }
+                    else
+                    {
+                        throw new Exception("Can't insert value");
+                    }
+                }
+                return val;
+            }).ToArray();
+
+            return string.Format("insert into {0}({1}) values({2})",
+                this.MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
+                string.Join(", ", columnNames),
+                string.Join(", ", columnValues));
         }
     }
 }

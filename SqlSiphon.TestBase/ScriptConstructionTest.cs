@@ -23,23 +23,41 @@ namespace SqlSiphon.TestBase
             {
                 var t = typeof(T);
                 var a = DatabaseObjectAttribute.GetAttribute(t);
-                return ss.MakeCreateTableScript(a);
+                var sb = new System.Text.StringBuilder();
+                sb.Append(ss.MakeCreateTableScript(a));
+                if (a.PrimaryKey != null)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("--");
+                    sb.AppendLine(ss.MakeCreatePrimaryKeyScript(a.PrimaryKey));
+                }
+                if (a.EnumValues.Count > 0)
+                {
+                    sb.AppendLine();
+                    sb.Append("--");
+                    foreach (var val in a.EnumValues)
+                    {
+                        sb.AppendLine();
+                        sb.Append(ss.MakeInsertScript(a, val));
+                    }
+                }
+                return sb.ToString();
             }
         }
         
-        [TestMethod, ExpectedException(typeof(TableHasNoColumnsException))]
+        [ExpectedException(typeof(TableHasNoColumnsException))]
         public abstract void CantCreateEmptyTables();
 
-        [TestMethod]
+        [ExpectedException(typeof(PrimaryKeyColumnNotNullableException))]
+        public abstract void CantCreateNullablePK();
+
         public abstract void CreateSingleColumnTable();
-
-        [TestMethod]
         public abstract void CreateSingleColumnTableWithSchema();
-
-        [TestMethod]
         public abstract void CreateTwoColumnTable();
-
-        [TestMethod]
         public abstract void CreateTwoColumnTableAsChild();
+        public abstract void CreateOneNullableColumn();
+        public abstract void CreateWithPK();
+        public abstract void CreateWithIdentity();
+        public abstract void CreateTableFromEnumeration();
     }
 }

@@ -279,7 +279,7 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        private void SetSystemType(Type type)
+        public void SetSystemType(Type type)
         {
             if (this.SystemType == null)
             {

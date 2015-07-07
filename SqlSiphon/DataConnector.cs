@@ -16,16 +16,28 @@ namespace SqlSiphon
             return attr != null ? attr.Name : null;
         }
 
-        public static bool IsTypePrimitive(Type type)
+        public static bool IsTypeBarePrimitive(Type type)
         {
             return type.IsPrimitive
                 || type == typeof(decimal)
-                || type == typeof(string)
+                || (type.IsGenericType
+                    && DataConnector.IsTypeBarePrimitive(type.GetGenericArguments().First()));
+        }
+
+        public static bool IsTypeQuotedPrimitive(Type type)
+        {
+            return type == typeof(string)
                 || type == typeof(DateTime)
                 || type == typeof(Guid)
                 || type == typeof(byte[])
                 || (type.IsGenericType
-                    && DataConnector.IsTypePrimitive(type.GetGenericArguments().First()));
+                    && DataConnector.IsTypeQuotedPrimitive(type.GetGenericArguments().First()));
+        }
+
+        public static bool IsTypePrimitive(Type type)
+        {
+            return IsTypeBarePrimitive(type)
+                || IsTypeQuotedPrimitive(type);
         }
 
         private IDataConnector connectionInternal;

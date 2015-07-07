@@ -174,6 +174,7 @@ namespace SqlSiphon.Mapping
             {
                 var valueColumn = new ColumnAttribute
                 {
+                    Table = this,
                     IncludeInPrimaryKey = true,
                     Name = "Value",
                     SqlType = "int"
@@ -181,11 +182,10 @@ namespace SqlSiphon.Mapping
 
                 var descriptionColumn = new ColumnAttribute
                 {
+                    Table = this,
                     Name = "Description",
                     SqlType = "nvarchar(max)"
                 };
-
-                descriptionColumn.InferProperties(this, null);
 
                 this.Properties.Add(valueColumn);
                 this.Properties.Add(descriptionColumn);
@@ -212,8 +212,7 @@ namespace SqlSiphon.Mapping
                 bool hasPK = false;
                 foreach (var prop in props)
                 {
-                    var columnDescription = DatabaseObjectAttribute.GetAttribute(prop) ?? new ColumnAttribute();
-                    columnDescription.InferProperties(this, prop);
+                    var columnDescription = DatabaseObjectAttribute.GetAttribute(prop) ?? new ColumnAttribute(prop);
                     if (columnDescription.Include)
                     {
                         this.Properties.Add(columnDescription);

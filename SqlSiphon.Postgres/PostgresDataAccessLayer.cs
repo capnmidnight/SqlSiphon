@@ -1085,5 +1085,10 @@ where constraint_schema != 'information_schema'
         {
             return this.GetList<pg_extension>();
         }
+
+        public override string MakeInsertScript(TableAttribute table, object value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

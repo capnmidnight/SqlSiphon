@@ -626,5 +626,10 @@ namespace SqlSiphon.OleDB
         {
             throw new NotImplementedException();
         }
+
+        public override string MakeInsertScript(TableAttribute table, object value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

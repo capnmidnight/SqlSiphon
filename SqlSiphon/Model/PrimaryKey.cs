@@ -33,6 +33,10 @@ namespace SqlSiphon.Model
             this.KeyColumns = table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();
+            if (this.KeyColumns.Any(c => c.IsOptional))
+            {
+                throw new PrimaryKeyColumnNotNullableException(this.Table);
+            }
         }
 
         public override string Schema

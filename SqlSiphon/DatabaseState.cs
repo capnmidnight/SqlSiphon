@@ -93,7 +93,6 @@ namespace SqlSiphon
                 relationships.AddRange(FKAttribute.GetRelationships(type));
 
                 var publicStatic = BindingFlags.Public | BindingFlags.Static;
-                this.InitScripts.AddRange(type.GetCustomAttributes<InitializationScriptAttribute>().Select(attr => attr.Query));
 
                 var methods = type.GetMethods(publicStatic);
                 foreach (var method in methods)
@@ -357,6 +356,7 @@ namespace SqlSiphon
                     this.PrimaryKeys.Add(pkNameKey, table.PrimaryKey);
                     this.Indexes.Add(pkNameKey, table.PrimaryKey.ToIndex());
                 }
+
                 foreach (var index in table.Indexes)
                 {
                     if (this.Indexes.ContainsKey(index.Key))
@@ -369,6 +369,8 @@ namespace SqlSiphon
                         this.Indexes.Add(idxNameKey, index.Value);
                     }
                 }
+
+                this.InitScripts.AddRange(table.EnumValues.Select(val => dal.MakeInsertScript(table, val)));
             }
         }
 

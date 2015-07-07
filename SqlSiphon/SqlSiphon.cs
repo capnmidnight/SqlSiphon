@@ -907,10 +907,12 @@ namespace SqlSiphon
             return parameterSection;
         }
 
+
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(ParameterAttribute p);
 
+        public abstract string MakeInsertScript(TableAttribute table, object value);
         public abstract string MakeCreateDatabaseLoginScript(string userName, string password, string database);
 
         public abstract string MakeCreateTableScript(TableAttribute table);

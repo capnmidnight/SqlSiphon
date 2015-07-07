@@ -9,6 +9,8 @@ namespace SqlSiphon
 {
     public interface IDatabaseScriptGenerator : IDatabaseObjectHandler
     {
+        string MakeInsertScript(TableAttribute table, object value);
+
         string MakeRoutineIdentifier(RoutineAttribute routine);
 
         string MakeCreateDatabaseLoginScript(string userName, string password, string database);
