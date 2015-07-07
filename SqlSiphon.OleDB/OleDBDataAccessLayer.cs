@@ -443,12 +443,11 @@ namespace SqlSiphon.OleDB
             }
 
             // get the properties of the type we're inserting
-            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
+            var attr = DatabaseObjectAttribute.GetAttribute(t);
             if (attr == null)
             {
                 throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
             }
-            attr.InferProperties(t);
             var props = attr.Properties.Where(p => p.Include).ToArray();
 
             // setup DAO

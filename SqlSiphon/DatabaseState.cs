@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
-using SqlSiphon.Exceptions;
 
 namespace SqlSiphon
 {
@@ -339,7 +338,7 @@ namespace SqlSiphon
 
         private void FindTables(Type type, IDatabaseScriptGenerator dal)
         {
-            var table = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
+            var table = DatabaseObjectAttribute.GetAttribute(type);
             if (table != null)
             {
                 AddTable(this.Tables, type, dal, table);
@@ -348,10 +347,6 @@ namespace SqlSiphon
 
         public void AddTable(Dictionary<string, TableAttribute> tableCollection, Type type, IDatabaseScriptGenerator dal, TableAttribute table)
         {
-            if (type != null)
-            {
-                table.InferProperties(type);
-            }
             table.Schema = table.Schema ?? dal.DefaultSchemaName;
             if (table.Include)
             {

@@ -225,14 +225,11 @@ namespace SqlSiphon.SqlServer
             if (t.IsArray)
                 t = t.GetElementType();
 
-            var attr = DatabaseObjectAttribute.GetAttribute<SqlServerTableAttribute>(t);
+            var attr = DatabaseObjectAttribute.GetAttribute(t) as SqlServerTableAttribute;
             if (attr == null)
             {
-                attr = new SqlServerTableAttribute();
-                attr.Name = t.Name;
+                attr = new SqlServerTableAttribute(t);
             }
-
-            attr.InferProperties(t);
 
             return attr.Name + "UDTT";
         }
@@ -850,12 +847,11 @@ order by ordinal_position;")]
         {
             if (data != null)
             {
-                var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
+                var attr = DatabaseObjectAttribute.GetAttribute(t);
                 if (attr == null)
                 {
                     throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
                 }
-                attr.InferProperties(t);
                 var tableData = MakeDataTable(attr.Name, t, data);
 
                 //should make it using bulk insert when mono-project fix it for varbinary data
@@ -930,7 +926,7 @@ order by ordinal_position;")]
                     {
                         Name = "Value"
                     };
-                    valueColumn.InferProperties(type);
+                    valueColumn.InferProperties(attr, null);
                     attr.Properties.Add(valueColumn);
                     scanType = null;
                 }
@@ -947,7 +943,7 @@ order by ordinal_position;")]
                 t = t.GetElementType();
                 isUDTT = t != typeof(byte) && DataConnector.IsTypePrimitive(t);
             }
-            var attr = Mapping.DatabaseObjectAttribute.GetAttribute<SqlServerTableAttribute>(t);
+            var attr = Mapping.DatabaseObjectAttribute.GetAttribute(t) as SqlServerTableAttribute;
             return (attr != null && attr.IsUploadable) || isUDTT;
         }
 

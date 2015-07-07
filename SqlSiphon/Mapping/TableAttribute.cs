@@ -59,6 +59,12 @@ namespace SqlSiphon.Mapping
             this.Indexes = new Dictionary<string, TableIndex>();
         }
 
+        public TableAttribute(Type t)
+            : this()
+        {
+            this.InferProperties(t);
+        }
+
         public TableAttribute(
             InformationSchema.Columns[] columns,
             IDatabaseStateReader dal)
@@ -143,10 +149,9 @@ namespace SqlSiphon.Mapping
         /// <returns></returns>
         private RoutineAttribute GetMethodDescriptions(MethodInfo method)
         {
-            var attr = GetAttribute<RoutineAttribute>(method);
+            var attr = RoutineAttribute.GetCommandDescription(method);
             if (attr == null || !attr.Include)
                 return null;
-            attr.InferProperties(method);
             return attr;
         }
 
@@ -155,17 +160,20 @@ namespace SqlSiphon.Mapping
         /// default settings for it. The attribute can't find the thing
         /// its attached to on its own, so this can't be done in a
         /// constructor, we have to do it for it.
+        /// 
+        /// This method is not called from the DatabaseObjectAttribute.GetAttribute(s)
+        /// methods because those methods aren't overloaded for different types
+        /// of ICustomAttributeProvider types, but InferProperties is.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
         /// 
-        public override void InferProperties(Type obj)
+        protected override void InferProperties(Type obj)
         {
             base.InferProperties(obj);
             if (obj.IsEnum)
             {
                 var valueColumn = new ColumnAttribute
                 {
-                    Table = this,
                     IncludeInPrimaryKey = true,
                     Name = "Value",
                     SqlType = "int"
@@ -173,7 +181,6 @@ namespace SqlSiphon.Mapping
 
                 var descriptionColumn = new ColumnAttribute
                 {
-                    Table = this,
                     Name = "Description",
                     SqlType = "nvarchar(max)"
                 };
@@ -191,11 +198,21 @@ namespace SqlSiphon.Mapping
             }
             else
             {
-                var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .OrderByDescending(p=>{
+                        int depth = 0;
+                        var top = obj;
+                        while (top != null && p.DeclaringType != top)
+                        {
+                            depth++;
+                            top = top.BaseType;
+                        }
+                        return depth;
+                    }).ToArray();
                 bool hasPK = false;
                 foreach (var prop in props)
                 {
-                    var columnDescription = DatabaseObjectAttribute.GetAttribute<ColumnAttribute>(prop) ?? new ColumnAttribute();
+                    var columnDescription = DatabaseObjectAttribute.GetAttribute(prop) ?? new ColumnAttribute();
                     columnDescription.InferProperties(this, prop);
                     if (columnDescription.Include)
                     {
@@ -205,7 +222,7 @@ namespace SqlSiphon.Mapping
                             hasPK = true;
                         }
 
-                        var indexInclusions = GetAttributes<IndexAttribute>(prop);
+                        var indexInclusions = columnDescription.GetOtherAttributes<IndexAttribute>();
                         foreach (var idxInc in indexInclusions)
                         {
                             if (!this.Indexes.ContainsKey(idxInc.Name))

@@ -69,6 +69,11 @@ namespace SqlSiphon.Mapping
 
         public ParameterAttribute() {}
 
+        public ParameterAttribute(ParameterInfo param)
+        {
+            this.InferProperties(param);
+        }
+
         public ParameterAttribute(InformationSchema.Parameters parameter, IDatabaseStateReader dal)
         {
             this.Include = true;
@@ -98,9 +103,13 @@ namespace SqlSiphon.Mapping
         /// default settings for it. The attribute can't find the thing
         /// its attached to on its own, so this can't be done in a
         /// constructor, we have to do it for it.
+        /// 
+        /// This method is not called from the DatabaseObjectAttribute.GetAttribute(s)
+        /// methods because those methods aren't overloaded for different types
+        /// of ICustomAttributeProvider types, but InferProperties is.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        public override void InferProperties(ParameterInfo parameter)
+        protected override void InferProperties(ParameterInfo parameter)
         {
             base.InferProperties(parameter);
 

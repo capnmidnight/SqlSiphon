@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SqlSiphon.Exceptions
+namespace SqlSiphon
 {
     public class RelationshipExistsException : Exception
     {

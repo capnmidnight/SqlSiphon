@@ -59,7 +59,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public bool IncludeInPrimaryKey { get; set; }
 
-        public TableAttribute Table { get; set; }
+        public TableAttribute Table { get; private set; }
 
         /// <summary>
         /// Specifies the property maps to a column in a table that
@@ -94,6 +94,15 @@ namespace SqlSiphon.Mapping
             this.InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
         }
 
+        /// <summary>
+        /// 
+        /// 
+        /// This method is not called from the DatabaseObjectAttribute.GetAttribute(s)
+        /// methods because those methods aren't overloaded for different types
+        /// of ICustomAttributeProvider types, but InferProperties is.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="obj"></param>
         public void InferProperties(TableAttribute table, System.Reflection.PropertyInfo obj)
         {
             this.InferProperties(obj);

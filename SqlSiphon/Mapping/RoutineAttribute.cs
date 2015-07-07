@@ -118,21 +118,14 @@ namespace SqlSiphon.Mapping
         /// <returns></returns>
         private ParameterAttribute ToColumn(ParameterInfo parameter)
         {
-            var attr = GetAttribute<ParameterAttribute>(parameter)
-                ?? new ParameterAttribute();
-            attr.InferProperties(parameter);
-            return attr;
+            return DatabaseObjectAttribute.GetAttribute(parameter) ?? new ParameterAttribute(parameter);
         }
 
         public static RoutineAttribute GetCommandDescription(MethodInfo method)
         {
-            var meta = DatabaseObjectAttribute.GetAttribute<RoutineAttribute>(method);
-            if (meta != null)
-            {
-                if (meta.CommandType == CommandType.TableDirect)
-                    throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
-                meta.InferProperties(method);
-            }
+            var meta = DatabaseObjectAttribute.GetAttribute(method);
+            if (meta != null && meta.CommandType == CommandType.TableDirect)
+                throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
             return meta;
         }
 
@@ -141,9 +134,13 @@ namespace SqlSiphon.Mapping
         /// parameters and default settings for it. The attribute can't
         /// find the thing its attached to on its own, so this can't 
         /// be done in a constructor, we have to do it for it.
+        /// 
+        /// This method is not called from the DatabaseObjectAttribute.GetAttribute(s)
+        /// methods because those methods aren't overloaded for different types
+        /// of ICustomAttributeProvider types, but InferProperties is.
         /// </summary>
         /// <param name="obj">The method to InferProperties</param>
-        public override void InferProperties(MethodInfo obj)
+        protected override void InferProperties(MethodInfo obj)
         {
             base.InferProperties(obj);
             if (obj.ReturnType != typeof(void))

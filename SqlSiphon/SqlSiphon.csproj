@@ -102,6 +102,7 @@
     <Compile Include="Exceptions\IndexExistsException.cs" />
     <Compile Include="Exceptions\InconsistentRelationshipDefinitionException.cs" />
     <Compile Include="Exceptions\RelationShipExistsException.cs" />
+    <Compile Include="Exceptions\TableHasNoColumnsException.cs" />
     <Compile Include="IAssemblyStateReader.cs" />
     <Compile Include="IDataConnector.cs" />
     <Compile Include="IDatabaseObjectHandler.cs" />

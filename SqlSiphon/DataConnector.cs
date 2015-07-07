@@ -12,7 +12,7 @@ namespace SqlSiphon
     {
         public static string GetDatabaseTypeName(Type t)
         {
-            var attr = t.GetCustomAttribute<DatabaseVendorNameAttribute>();
+            var attr = Mapping.DatabaseObjectAttribute.GetAttribute<DatabaseVendorNameAttribute>(t);
             return attr != null ? attr.Name : null;
         }
 

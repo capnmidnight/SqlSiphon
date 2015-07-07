@@ -12,12 +12,26 @@ namespace SqlSiphon.SqlServer
     public class SqlServerTableAttribute : SqlSiphon.Mapping.TableAttribute
     {
         public bool IsUploadable { get; set; }
+
+        public SqlServerTableAttribute() { }
+
+        public SqlServerTableAttribute(Type t)
+        {
+            this.InferProperties(t);
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = false, AllowMultiple = false)]
     public class UploadableAttribute : SqlServerTableAttribute
     {
         public UploadableAttribute()
+        {
+            this.IsUploadable = true;
+            this.Include = false;
+        }
+
+        public UploadableAttribute(Type t)
+            : base(t)
         {
             this.IsUploadable = true;
             this.Include = false;

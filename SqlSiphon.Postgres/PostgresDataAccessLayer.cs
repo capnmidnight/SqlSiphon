@@ -529,10 +529,9 @@ namespace SqlSiphon.Postgres
                     systemType = systemType.GetGenericArguments().First();
                 }
             }
-            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(systemType);
+            var attr = DatabaseObjectAttribute.GetAttribute(systemType);
             if (attr != null)
             {
-                attr.InferProperties(systemType);
                 if (isCollection)
                 {
                     sqlType = attr.Name + "[]";
@@ -552,8 +551,7 @@ namespace SqlSiphon.Postgres
             }
             else if (systemType != typeof(void))
             {
-                attr = new TableAttribute();
-                attr.InferProperties(systemType);
+                attr = new TableAttribute(systemType);
                 sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
             }
             else

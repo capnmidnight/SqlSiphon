@@ -102,26 +102,19 @@ namespace SqlSiphon.Mapping
 
         /// <summary>
         /// Retrieves all attribute of a certain type from an object.
+        /// 
+        /// Make sure to call InferProperties after calling this method.
         /// </summary>
         /// <typeparam name="T">The type of attribute to find</typeparam>
         /// <param name="obj">The object on which to find the attribute</param>
         /// <returns>The attribute instance, or null if no such
         /// attribute exists</returns>
-        public static System.Collections.Generic.IEnumerable<T> GetAttributes<T>(ICustomAttributeProvider obj)
+        private static System.Collections.Generic.IEnumerable<T> GetAttributes<T>(ICustomAttributeProvider obj)
             where T : Attribute
         {
             return obj
                 .GetCustomAttributes(typeof(T), false)
-                .Cast<T>()
-                .Select(attr =>
-                {
-                    var mappingAttribute = attr as DatabaseObjectAttribute;
-                    if (mappingAttribute != null)
-                    {
-                        mappingAttribute.SourceObject = obj;
-                    }
-                    return attr;
-                });
+                .Cast<T>();
         }
 
         /// <summary>
@@ -130,7 +123,47 @@ namespace SqlSiphon.Mapping
         /// <typeparam name="T">The type of attribute to find</typeparam>
         /// <param name="obj">The object on which to find the attribute</param>
         /// <returns>The attribute instance, or null if no such
-        /// attribute exists</returns>
+        /// attribute exists</returns>                
+        public static RoutineAttribute GetAttribute(MethodInfo obj)
+        {
+            return GetAttributes<RoutineAttribute>(obj)
+                .Select(attr =>
+                {
+                    attr.InferProperties(obj);
+                    return attr;
+                }).FirstOrDefault();
+        }
+
+        public static ColumnAttribute GetAttribute(PropertyInfo obj)
+        {
+            return GetAttributes<ColumnAttribute>(obj)
+                .Select(attr =>
+                {
+                    attr.InferProperties(obj);
+                    return attr;
+                }).FirstOrDefault();
+        }
+
+        public static ParameterAttribute GetAttribute(ParameterInfo obj)
+        {
+            return GetAttributes<ParameterAttribute>(obj)
+                .Select(attr =>
+                {
+                    attr.InferProperties(obj);
+                    return attr;
+                }).FirstOrDefault();
+        }
+
+        public static TableAttribute GetAttribute(Type obj)
+        {
+            return GetAttributes<TableAttribute>(obj)
+                .Select(attr =>
+                {
+                    attr.InferProperties(obj);
+                    return attr;
+                }).FirstOrDefault();
+        }
+
         public static T GetAttribute<T>(ICustomAttributeProvider obj)
             where T : Attribute
         {
@@ -267,7 +300,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        public virtual void InferProperties(MethodInfo obj)
+        protected virtual void InferProperties(MethodInfo obj)
         {
             this.SourceObject = obj;
             this.SetName(obj.Name);
@@ -281,7 +314,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        public virtual void InferProperties(PropertyInfo obj)
+        protected virtual void InferProperties(PropertyInfo obj)
         {
             this.SourceObject = obj;
             this.SetName(obj.Name);
@@ -295,7 +328,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        public virtual void InferProperties(ParameterInfo obj)
+        protected virtual void InferProperties(ParameterInfo obj)
         {
             this.SourceObject = obj;
             this.SetName(obj.Name);
@@ -309,7 +342,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        public virtual void InferProperties(Type obj)
+        protected virtual void InferProperties(Type obj)
         {
             this.SourceObject = obj;
             this.SetName(obj.Name);

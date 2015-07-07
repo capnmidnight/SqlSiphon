@@ -8,17 +8,6 @@ namespace SqlSiphon.Model
 {
     public class PrimaryKey : DatabaseObjectAttribute
     {
-        public static TableAttribute GetAttribute(Type type)
-        {
-            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type);
-            if (attr == null)
-            {
-                throw new Exception(string.Format("Class {0}.{1} is not mapped to a table", type.Namespace, type.Name));
-            }
-            attr.InferProperties(type);
-            return attr;
-        }
-
         public TableAttribute Table { get; private set; }
         public ColumnAttribute[] KeyColumns { get; private set; }
 

@@ -84,9 +84,7 @@ namespace SqlSiphon
 
         protected static List<ColumnAttribute> GetProperties(Type type)
         {
-            var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type)
-                ?? new TableAttribute();
-            attr.InferProperties(type);
+            var attr = DatabaseObjectAttribute.GetAttribute(type) ?? new TableAttribute(type);
             return attr.Properties;
         }
 
@@ -100,7 +98,6 @@ namespace SqlSiphon
 
         private bool isConnectionOwned;
 
-        private TableAttribute meta;
         private Regex FKNameRegex;
 
         protected virtual string IdentifierPartBegin { get { return ""; } }
@@ -120,9 +117,6 @@ namespace SqlSiphon
                 string.Format(@"add constraint \{0}([\w_]+)\{1}", IdentifierPartBegin, IdentifierPartEnd),
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
             this.isConnectionOwned = isConnectionOwned;
-            var type = this.GetType();
-            this.meta = DatabaseObjectAttribute.GetAttribute<TableAttribute>(type) ?? new TableAttribute();
-            this.meta.InferProperties(type);
         }
 
         protected SqlSiphon()
@@ -264,12 +258,11 @@ namespace SqlSiphon
         {
             if (data != null)
             {
-                var attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
+                var attr = DatabaseObjectAttribute.GetAttribute(t);
                 if (attr == null)
                 {
                     throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
                 }
-                attr.InferProperties(t);
 
                 // don't upload auto-incrementing identity columns
                 // or columns that have a default value defined
@@ -323,7 +316,7 @@ namespace SqlSiphon
             var method = (from frame in new StackTrace(2, false).GetFrames()
                           let meth = frame.GetMethod()
                           where meth is MethodInfo
-                            && DatabaseObjectAttribute.GetAttribute<RoutineAttribute>(meth) != null
+                            && RoutineAttribute.GetCommandDescription((MethodInfo)meth) != null
                           select (MethodInfo)meth).FirstOrDefault();
 
             // We absolutely need to find a method with this attribute, because we won't know where in
@@ -623,7 +616,12 @@ namespace SqlSiphon
 
         protected string MakeColumnSection(TableAttribute info, bool isReturnType)
         {
-            return ArgumentList(info.Properties.Where(p => p.Include), p => this.MakeColumnString(p, isReturnType));
+            var columns = info.Properties.Where(p => p.Include).ToArray();
+            if (columns.Length == 0)
+            {
+                throw new TableHasNoColumnsException(info);
+            }
+            return ArgumentList(columns, p => this.MakeColumnString(p, isReturnType).Trim());
         }
 
         protected string MakeSqlTypeString(DatabaseObjectAttribute p)

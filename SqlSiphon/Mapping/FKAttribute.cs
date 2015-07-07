@@ -56,6 +56,14 @@ namespace SqlSiphon.Mapping
             this.AutoCreateIndex = true;
         }
 
+        /// <summary>
+        /// 
+        /// 
+        /// This method is not called from the DatabaseObjectAttribute.GetAttribute(s)
+        /// methods because those methods aren't overloaded for different types
+        /// of ICustomAttributeProvider types, but InferProperties is.
+        /// </summary>
+        /// <param name="columnDef"></param>
         private void InferProperties(ColumnAttribute columnDef)
         {
             if (this.FromColumnName == null)
@@ -63,8 +71,7 @@ namespace SqlSiphon.Mapping
                 this.FromColumnName = columnDef.Name;
             }
 
-            var targetTableDef = DatabaseObjectAttribute.GetAttribute<TableAttribute>(this.Target) ?? new TableAttribute();
-            targetTableDef.InferProperties(this.Target);
+            var targetTableDef = DatabaseObjectAttribute.GetAttribute(this.Target) ?? new TableAttribute(this.Target);
 
             foreach (var targetColumnDef in targetTableDef.Properties)
             {
@@ -92,10 +99,9 @@ namespace SqlSiphon.Mapping
         internal static List<Relationship> GetRelationships(Type t)
         {
             List<Relationship> fks = new List<Relationship>();
-            var tableDef = DatabaseObjectAttribute.GetAttribute<TableAttribute>(t);
+            var tableDef = DatabaseObjectAttribute.GetAttribute(t);
             if (tableDef != null)
             {
-                tableDef.InferProperties(t);
                 var fkOrganizer = new Dictionary<Type, Dictionary<string, List<string>>>();
                 var autoCreateIndex = new Dictionary<Type, Dictionary<string, bool>>();
                 foreach (var columnDef in tableDef.Properties)
@@ -119,7 +125,7 @@ namespace SqlSiphon.Mapping
                         }
                         else if (fkDef.AutoCreateIndex != autoCreateIndex[fkDef.Target][fkDef.Prefix])
                         {
-                            throw new Exceptions.InconsistentRelationshipDefinitionException(fkDef.FromColumnName);
+                            throw new InconsistentRelationshipDefinitionException(fkDef.FromColumnName);
                         }
 
                         fkOrganizer[fkDef.Target][fkDef.Prefix].Add(fkDef.FromColumnName);
