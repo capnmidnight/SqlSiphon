@@ -22,7 +22,7 @@ namespace SqlSiphon.SqlServer.Test
             var script = GetScriptFor<TestOneColumnTable>();
             Assert.AreEqual(
 @"create table [dbo].[TestOneColumnTable](
-    ColumnA int NOT NULL
+    [ColumnA] int NOT NULL
 );", script);
         }
 
@@ -32,7 +32,7 @@ namespace SqlSiphon.SqlServer.Test
             var script = GetScriptFor<TestOneColumnTableWithSchema>();
             Assert.AreEqual(
 @"create table [test].[TestOneColumnTableWithSchema](
-    ColumnA int NOT NULL
+    [ColumnA] int NOT NULL
 );", script);
         }
 
@@ -42,8 +42,8 @@ namespace SqlSiphon.SqlServer.Test
             var script = GetScriptFor<TestTwoColumnTable>();
             Assert.AreEqual(
 @"create table [dbo].[TestTwoColumnTable](
-    ColumnA int NOT NULL,
-    ColumnB int NOT NULL
+    [ColumnA] int NOT NULL,
+    [ColumnB] int NOT NULL
 );", script);
         }
 
@@ -53,8 +53,8 @@ namespace SqlSiphon.SqlServer.Test
             var script = GetScriptFor<TestTwoColumnTableAsChild>();
             Assert.AreEqual(
 @"create table [dbo].[TestTwoColumnTableAsChild](
-    ColumnA int NOT NULL,
-    ColumnB int NOT NULL
+    [ColumnA] int NOT NULL,
+    [ColumnB] int NOT NULL
 );", script);
         }
 
@@ -64,7 +64,7 @@ namespace SqlSiphon.SqlServer.Test
             var script = GetScriptFor<TestOneNullableColumnTable>();
             Assert.AreEqual(
 @"create table [dbo].[TestOneNullableColumnTable](
-    ColumnA int
+    [ColumnA] int
 );", script);
         }
 
@@ -74,8 +74,8 @@ namespace SqlSiphon.SqlServer.Test
             var script = GetScriptFor<TestPrimaryKeyColumn>();
             Assert.AreEqual(
 @"create table [dbo].[TestPrimaryKeyColumn](
-    KeyColumn nvarchar(MAX) NOT NULL,
-    DateColumn datetime2 NOT NULL
+    [KeyColumn] nvarchar(MAX) NOT NULL,
+    [DateColumn] datetime2 NOT NULL
 );
 --
 alter table [dbo].[TestPrimaryKeyColumn] add constraint [pk_TestPrimaryKeyColumn] primary key([KeyColumn]);", script);
@@ -93,8 +93,8 @@ alter table [dbo].[TestPrimaryKeyColumn] add constraint [pk_TestPrimaryKeyColumn
             var script = GetScriptFor<TestIdentityColumn>();
             Assert.AreEqual(
 @"create table [dbo].[TestIdentityColumn](
-    KeyColumn int NOT NULL identity(1, 1),
-    DateColumn datetime2 NOT NULL
+    [KeyColumn] int NOT NULL identity(1, 1),
+    [DateColumn] datetime2 NOT NULL
 );
 --
 alter table [dbo].[TestIdentityColumn] add constraint [pk_TestIdentityColumn] primary key([KeyColumn]);", script);
@@ -106,8 +106,8 @@ alter table [dbo].[TestIdentityColumn] add constraint [pk_TestIdentityColumn] pr
             var script = GetScriptFor<TestEnumeration>();
             Assert.AreEqual(
 @"create table [dbo].[TestEnumeration](
-    Value int NOT NULL,
-    Description nvarchar(MAX) NOT NULL
+    [Value] int NOT NULL,
+    [Description] nvarchar(MAX) NOT NULL
 );
 --
 alter table [dbo].[TestEnumeration] add constraint [pk_TestEnumeration] primary key([Value]);
@@ -124,19 +124,42 @@ insert into [dbo].[TestEnumeration](Value, Description) values(8, 'rSt');", scri
         }
 
         [TestMethod]
-        public override void CreateTableWithIndex()
+        public override void CreateTableWithSimpleIndex()
         {
-            var script = GetScriptFor<TestTableWithIndex>();
+            var script = GetScriptFor<TestTableWithSimpleIndex>();
             Assert.AreEqual(
 @"create table [dbo].[TestTableWithIndex](
-    KeyColumn int NOT NULL identity(1, 1),
-    NotInIndex real NOT NULL,
-    FloatColumn float NOT NULL
+    [KeyColumn] int NOT NULL identity(1, 1),
+    [NotInIndex] real NOT NULL,
+    [FloatColumn] float NOT NULL
 );
 --
 alter table [dbo].[TestTableWithIndex] add constraint [pk_TestTableWithIndex] primary key([KeyColumn]);
 --
 create nonclustered index [idx_Test1] on [dbo].[TestTableWithIndex]([FloatColumn]);", script);
+        }
+
+        [TestMethod]
+        public override void CreateTableWithLongIndex()
+        {
+            var script = GetScriptFor<TestTableWithLongIndex>();
+            Assert.AreEqual(
+@"create table [dbo].[TestTableWithLongIndex](
+    [KeyColumn] int NOT NULL identity(1, 1),
+    [NotInIndex] real NOT NULL,
+    [FloatColumn] float NOT NULL,
+    [IntColumn] int NOT NULL,
+    [ByteColumn] tinyint NOT NULL,
+    [BoolColumn] bit NOT NULL,
+    [LongColumn] bigint NOT NULL,
+    [DecimalColumn] decimal NOT NULL,
+    [CharColumn] tinyint NOT NULL
+);
+--
+alter table [dbo].[TestTableWithLongIndex] add constraint [pk_TestTableWithLongIndex] primary key([KeyColumn]);
+--
+create nonclustered index [idx_Test2] on [dbo].[TestTableWithLongIndex]([FloatColumn],[IntColumn],[BoolColumn]);
+create nonclustered index [idx_Test3] on [dbo].[TestTableWithLongIndex]([LongColumn],[DecimalColumn],[CharColumn]);", script);
         }
     }
 }

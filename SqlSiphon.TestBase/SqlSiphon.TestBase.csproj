@@ -52,7 +52,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestEnumeration.cs" />
-    <Compile Include="TestTableWithIndex.cs" />
+    <Compile Include="TestTableWithLongIndex.cs" />
+    <Compile Include="TestTableWithSimpleIndex.cs" />
     <Compile Include="TestNullablePrimaryKey.cs" />
     <Compile Include="TestPrimaryKeyColumn.cs" />
     <Compile Include="TestIdentityColumn.cs" />

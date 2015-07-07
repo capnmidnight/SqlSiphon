@@ -402,7 +402,7 @@ end",
                 defaultString = "identity(1, 1)";
 
             return string.Format("{0} {1} {2} {3}",
-                p.Name,
+                this.MakeIdentifier(p.Name),
                 typeStr,
                 p.IsOptional ? "" : "NOT NULL",
                 defaultString);

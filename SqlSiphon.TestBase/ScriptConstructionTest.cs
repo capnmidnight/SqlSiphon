@@ -69,6 +69,7 @@ namespace SqlSiphon.TestBase
         public abstract void CreateWithPK();
         public abstract void CreateWithIdentity();
         public abstract void CreateTableFromEnumeration();
-        public abstract void CreateTableWithIndex();
+        public abstract void CreateTableWithSimpleIndex();
+        public abstract void CreateTableWithLongIndex();
     }
 }
