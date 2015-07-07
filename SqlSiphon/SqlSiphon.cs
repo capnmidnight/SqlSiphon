@@ -554,14 +554,18 @@ namespace SqlSiphon
                     }
                     else
                     {
-                        var props = GetProperties(type);
+                        var props = GetProperties(type).ToDictionary(p => p.Name.ToUpperInvariant());
                         getter = delegate()
                         {
                             var inst = (EntityT)constructor.Invoke(null);
 
-                            props.Where(p => columnNames.Contains(p.Name.ToUpper()))
-                                .ToList()
-                                .ForEach(p => p.SetValue(inst, reader[p.Name.ToUpper()]));
+                            for (int i = 0; i < columnNames.Length; ++i)
+                            {
+                                if (props.ContainsKey(columnNames[i]))
+                                {
+                                    props[columnNames[i]].SetValue(inst, reader[columnNames[i]]);
+                                }
+                            }
 
                             return inst;
                         };

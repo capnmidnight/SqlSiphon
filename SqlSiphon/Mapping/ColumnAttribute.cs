@@ -113,7 +113,6 @@ namespace SqlSiphon.Mapping
                 targetType = targetType.GetGenericArguments()[0];
             }
 
-
             if (value != null)
             {
                 if (targetType.IsEnum && value is string)

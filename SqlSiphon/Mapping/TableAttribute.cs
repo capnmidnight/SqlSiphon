@@ -205,6 +205,7 @@ namespace SqlSiphon.Mapping
                     var columnDescription = DatabaseObjectAttribute.GetAttribute(prop) ?? new ColumnAttribute(prop);
                     if (columnDescription.Include)
                     {
+                        columnDescription.Table = this;
                         this.Properties.Add(columnDescription);
                         if (columnDescription.IncludeInPrimaryKey)
                         {
