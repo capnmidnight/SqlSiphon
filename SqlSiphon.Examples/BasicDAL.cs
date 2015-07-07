@@ -110,18 +110,6 @@ where ApplicationName = @applicationName;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"insert into TestEntity1
-(ColumnB, ColumnC, renamedColumnD, ColumnE) select
-ColumnB, ColumnC, renamedColumnD, ColumnE
-from @vals;")]
-        public void UploadTestEntity(TestEntity1[] vals)
-        {
-            this.Execute(vals);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.StoredProcedure,
-            Query =
 @"insert into Applications 
 (ApplicationID, ApplicationName, LoweredApplicationName, Description) values 
 (newid(), @applicationName, lower(@applicationName), @description);")]
@@ -129,7 +117,6 @@ from @vals;")]
         {
             this.Execute(applicationName, description);
         }
-
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,

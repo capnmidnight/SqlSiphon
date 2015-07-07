@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.MySql.Test", "Sql
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.ODBC.Test", "SqlSiphon.ODBC.Test\SqlSiphon.ODBC.Test.csproj", "{074D830A-6D15-490A-B349-4D17CA58C712}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.TestBase", "SqlSiphon.TestBase\SqlSiphon.TestBase.csproj", "{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -204,6 +206,14 @@ Global
 		{074D830A-6D15-490A-B349-4D17CA58C712}.Release|Any CPU.Build.0 = Release|Any CPU
 		{074D830A-6D15-490A-B349-4D17CA58C712}.Release|x64.ActiveCfg = Release|Any CPU
 		{074D830A-6D15-490A-B349-4D17CA58C712}.Release|x86.ActiveCfg = Release|Any CPU
+		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Release|x64.ActiveCfg = Release|Any CPU
+		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -606,7 +606,7 @@ namespace SqlSiphon
             return final;
         }
 
-        private string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
+        protected string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
         {
             var arr = collect.ToArray();
             separator = separator ?? "," + Environment.NewLine + "    ";

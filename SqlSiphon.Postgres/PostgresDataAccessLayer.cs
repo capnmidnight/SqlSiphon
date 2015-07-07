@@ -529,35 +529,26 @@ namespace SqlSiphon.Postgres
                     systemType = systemType.GetGenericArguments().First();
                 }
             }
-            var attr = DatabaseObjectAttribute.GetAttribute(systemType);
-            if (attr != null)
-            {
-                if (isCollection)
-                {
-                    sqlType = attr.Name + "[]";
-                }
-                else
-                {
-                    sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
-                }
-            }
-            else if (reverseTypeMapping.ContainsKey(systemType))
-            {
-                sqlType = reverseTypeMapping[systemType];
-                if (isCollection)
-                {
-                    sqlType += "[]";
-                }
-            }
-            else if (systemType != typeof(void))
-            {
-                attr = new TableAttribute(systemType);
-                sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
-            }
-            else
+
+            if (systemType == typeof(void))
             {
                 sqlType = "void";
             }
+            else if(reverseTypeMapping.ContainsKey(systemType))
+            {
+                sqlType = reverseTypeMapping[systemType];
+            }
+            else
+            {
+                var attr = DatabaseObjectAttribute.GetAttribute(systemType) ?? new TableAttribute(systemType);
+                sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
+            }
+
+            if (isCollection)
+            {
+                sqlType += "[]";
+            }
+
             return sqlType;
         }
 

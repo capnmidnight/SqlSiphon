@@ -310,11 +310,21 @@ end",
                 columnSection);
         }
 
-        internal string MakeCreateUDTTScript(TableAttribute info)
+        public string MakeCreateUDTTScript(TableAttribute info)
         {
+            var columns = info.Properties
+                .Where(p => p.Include
+                && !p.IsIdentity
+                && (p.DefaultValue == null || p.IsIncludeSet))
+                .ToArray();
+            if (columns.Length == 0)
+            {
+                throw new TableHasNoColumnsException(info);
+            }
+            var columnSection = ArgumentList(columns, p => this.MakeColumnString(p, false).Trim());
+
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, info.Name);
-            var columnSection = this.MakeColumnSection(info, false);
             return string.Format(
 @"create type {0} as table(
     {1}

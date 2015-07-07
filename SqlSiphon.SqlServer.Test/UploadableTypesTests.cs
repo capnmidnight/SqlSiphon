@@ -28,18 +28,10 @@ namespace SqlSiphon.SqlServer.Test
         public int IncludedIdentityField { get; set; }
     }
 
-    class MockDB : SqlServerDataAccessLayer
-    {
-        public MockDB()
-            : base((string)null)
-        {
-        }
-    }
-
     [TestClass]
     public class UploadableTypesTests
     {
-        private MockDB testDB = new MockDB();
+        private SqlServerDataAccessLayer testDB = new SqlServerDataAccessLayer((string)null);
 
         private bool FieldTest(string fieldName)
         {
@@ -49,9 +41,9 @@ namespace SqlSiphon.SqlServer.Test
             {
                 throw new Exception("Field " + fieldName + " doesn't exist");
             }
-            //var script = testDB.MakeCreateUDTTScript("TestUploadableClassUDTT", t);
-            //return script.IndexOf(fieldName) > -1;
-            return false;
+            var attr = DatabaseObjectAttribute.GetAttribute(t);
+            var script = testDB.MakeCreateUDTTScript(attr);
+            return script.IndexOf(fieldName) > -1;
         }
 
         [TestMethod]
