@@ -26,8 +26,7 @@ namespace SqlSiphon.TestBase
                 return ss.MakeCreateTableScript(a);
             }
         }
-
-
+        
         [TestMethod, ExpectedException(typeof(TableHasNoColumnsException))]
         public abstract void CantCreateEmptyTables();
 

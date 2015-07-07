@@ -10,7 +10,7 @@ namespace SqlSiphon.SqlServer.Test
     [TestClass]
     public class TableTests : ScriptConstructionTest<SqlServerDataConnectorFactory>
     {
-        [TestMethod, ExpectedException(typeof(TableHasNoColumnsException))]
+        [TestMethod]
         public override void CantCreateEmptyTables()
         {
             var script = GetScriptFor<TestEmptyTable>();
