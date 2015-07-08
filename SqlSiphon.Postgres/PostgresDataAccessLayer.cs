@@ -92,8 +92,6 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("double precision", typeof(double));
             typeMapping.Add("float8", typeof(double));
 
-            typeMapping.Add("byte", typeof(byte));
-
             typeMapping.Add("integer", typeof(int));
             typeMapping.Add("int", typeof(int));
             typeMapping.Add("int4", typeof(int));
@@ -152,12 +150,12 @@ namespace SqlSiphon.Postgres
             reverseTypeMapping.Add(typeof(short?), "smallint");
             reverseTypeMapping.Add(typeof(ushort), "smallint");
             reverseTypeMapping.Add(typeof(ushort?), "smallint");
-
-            reverseTypeMapping.Add(typeof(byte?), "byte");
-            reverseTypeMapping.Add(typeof(sbyte), "byte");
-            reverseTypeMapping.Add(typeof(sbyte?), "byte");
-            reverseTypeMapping.Add(typeof(char), "byte");
-            reverseTypeMapping.Add(typeof(char?), "byte");
+            reverseTypeMapping.Add(typeof(byte), "smallint");
+            reverseTypeMapping.Add(typeof(byte?), "smallint");
+            reverseTypeMapping.Add(typeof(sbyte), "smallint");
+            reverseTypeMapping.Add(typeof(sbyte?), "smallint");
+            reverseTypeMapping.Add(typeof(char), "smallint");
+            reverseTypeMapping.Add(typeof(char?), "smallint");
 
             reverseTypeMapping.Add(typeof(decimal?), "decimal");
             reverseTypeMapping.Add(typeof(bool?), "boolean");

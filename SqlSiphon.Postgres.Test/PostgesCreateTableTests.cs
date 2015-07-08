@@ -172,11 +172,11 @@ create index ""idx_test1"" on ""public"".""testtablewithsimpleindex""(""floatcol
     ""notinindex"" real NOT NULL,
     ""floatcolumn"" double precision NOT NULL,
     ""intcolumn"" integer NOT NULL,
-    ""bytecolumn"" byte NOT NULL,
+    ""bytecolumn"" smallint NOT NULL,
     ""boolcolumn"" boolean NOT NULL,
     ""longcolumn"" bigint NOT NULL,
     ""decimalcolumn"" money NOT NULL,
-    ""charcolumn"" byte NOT NULL
+    ""charcolumn"" smallint NOT NULL
 );
 --
 create unique index ""idx_pk_testtablewithlongindex"" on ""public"".""testtablewithlongindex"" (""keycolumn"");
