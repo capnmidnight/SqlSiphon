@@ -92,6 +92,8 @@ namespace SqlSiphon.Postgres
             typeMapping.Add("double precision", typeof(double));
             typeMapping.Add("float8", typeof(double));
 
+            typeMapping.Add("byte", typeof(byte));
+
             typeMapping.Add("integer", typeof(int));
             typeMapping.Add("int", typeof(int));
             typeMapping.Add("int4", typeof(int));
@@ -151,11 +153,11 @@ namespace SqlSiphon.Postgres
             reverseTypeMapping.Add(typeof(ushort), "smallint");
             reverseTypeMapping.Add(typeof(ushort?), "smallint");
 
-            reverseTypeMapping.Add(typeof(byte?), "character[1]");
-            reverseTypeMapping.Add(typeof(sbyte), "character[1]");
-            reverseTypeMapping.Add(typeof(sbyte?), "character[1]");
-            reverseTypeMapping.Add(typeof(char), "character[1]");
-            reverseTypeMapping.Add(typeof(char?), "character[1]");
+            reverseTypeMapping.Add(typeof(byte?), "byte");
+            reverseTypeMapping.Add(typeof(sbyte), "byte");
+            reverseTypeMapping.Add(typeof(sbyte?), "byte");
+            reverseTypeMapping.Add(typeof(char), "byte");
+            reverseTypeMapping.Add(typeof(char?), "byte");
 
             reverseTypeMapping.Add(typeof(decimal?), "decimal");
             reverseTypeMapping.Add(typeof(bool?), "boolean");
@@ -829,14 +831,14 @@ end;",
             var schema = table.Schema ?? DefaultSchemaName;
             var identifier = this.MakeIdentifier(schema, table.Name);
             var reset = new List<ColumnAttribute>();
-            foreach (var column in table.Properties)
+            foreach (var prop in table.Properties)
             {
-                if (string.IsNullOrWhiteSpace(column.SqlType)
-                    && column.SystemType == typeof(int)
-                    && column.IsIdentity)
+                if (string.IsNullOrWhiteSpace(prop.SqlType)
+                    && prop.SystemType == typeof(int)
+                    && prop.IsIdentity)
                 {
-                    column.SqlType = "serial";
-                    reset.Add(column);
+                    prop.SqlType = "serial";
+                    reset.Add(prop);
                 }
             }
             var columnSection = this.MakeColumnSection(table, false);
@@ -1088,7 +1090,42 @@ where constraint_schema != 'information_schema'
 
         public override string MakeInsertScript(TableAttribute table, object value)
         {
-            throw new NotImplementedException();
+            var columns = table.Properties
+                .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
+                .ToArray();
+
+            var columnNames = columns.Select(c => this.MakeIdentifier(c.Name)).ToArray();
+            var columnValues = columns.Select(c =>
+            {
+                var v = c.GetValue(value);
+                string val = null;
+                if (v == null)
+                {
+                    value = "NULL";
+                }
+                else
+                {
+                    var t = v.GetType();
+                    if (DataConnector.IsTypeBarePrimitive(t))
+                    {
+                        val = v.ToString();
+                    }
+                    else if (DataConnector.IsTypeQuotedPrimitive(t))
+                    {
+                        val = string.Format("'{0}'", v);
+                    }
+                    else
+                    {
+                        throw new Exception("Can't insert value");
+                    }
+                }
+                return val;
+            }).ToArray();
+
+            return string.Format("insert into {0}({1}) values({2});",
+                this.MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
+                string.Join(", ", columnNames),
+                string.Join(", ", columnValues));
         }
     }
 }

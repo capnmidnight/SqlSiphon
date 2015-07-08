@@ -126,22 +126,23 @@ alter table ""public"".""testidentitycolumn"" add constraint ""pk_testidentityco
         {
             var script = GetScriptFor<TestEnumeration>();
             Assert.AreEqual(
-@"create table ""public"".""testenumeration""(
-    ""Value"" int NOT NULL,
-    ""Description"" varchar(MAX) NOT NULL
+@"create table ""public"".""testenumeration"" (
+    ""value"" integer NOT NULL,
+    ""description"" text NOT NULL
 );
 --
-alter table ""public"".""testenumeration"" add constraint ""pk_testenumeration"" primary key([Value]);
+create unique index ""idx_pk_testenumeration"" on ""public"".""testenumeration"" (""value"");
+alter table ""public"".""testenumeration"" add constraint ""pk_testenumeration"" primary key using index ""idx_pk_testenumeration"";
 --
-insert into ""public"".""TestEnumeration""(Value, Description) values(0, 'A');
-insert into ""public"".""TestEnumeration""(Value, Description) values(1, 'B');
-insert into ""public"".""TestEnumeration""(Value, Description) values(2, 'C');
-insert into ""public"".""TestEnumeration""(Value, Description) values(3, 'D');
-insert into ""public"".""TestEnumeration""(Value, Description) values(4, 'EFG');
-insert into ""public"".""TestEnumeration""(Value, Description) values(5, 'HIJ');
-insert into ""public"".""TestEnumeration""(Value, Description) values(6, 'KLM');
-insert into ""public"".""TestEnumeration""(Value, Description) values(7, 'OpQ');
-insert into ""public"".""TestEnumeration""(Value, Description) values(8, 'rSt');", script);
+insert into ""public"".""testenumeration""(""value"", ""description"") values(0, 'A');
+insert into ""public"".""testenumeration""(""value"", ""description"") values(1, 'B');
+insert into ""public"".""testenumeration""(""value"", ""description"") values(2, 'C');
+insert into ""public"".""testenumeration""(""value"", ""description"") values(3, 'D');
+insert into ""public"".""testenumeration""(""value"", ""description"") values(4, 'EFG');
+insert into ""public"".""testenumeration""(""value"", ""description"") values(5, 'HIJ');
+insert into ""public"".""testenumeration""(""value"", ""description"") values(6, 'KLM');
+insert into ""public"".""testenumeration""(""value"", ""description"") values(7, 'OpQ');
+insert into ""public"".""testenumeration""(""value"", ""description"") values(8, 'rSt');", script);
         }
 
         [TestMethod]
@@ -151,8 +152,8 @@ insert into ""public"".""TestEnumeration""(Value, Description) values(8, 'rSt');
             Assert.AreEqual(
 @"create table ""public"".""testtablewithsimpleindex"" (
     ""keycolumn"" serial NOT NULL,
-    ""notinindex"" double NOT NULL,
-    ""floatcolumn"" float precision NOT NULL
+    ""notinindex"" real NOT NULL,
+    ""floatcolumn"" double precision NOT NULL
 );
 --
 create unique index ""idx_pk_testtablewithsimpleindex"" on ""public"".""testtablewithsimpleindex"" (""keycolumn"");
@@ -166,22 +167,23 @@ create index ""idx_test1"" on ""public"".""testtablewithsimpleindex""(""floatcol
         {
             var script = GetScriptFor<TestTableWithLongIndex>();
             Assert.AreEqual(
-@"create table ""public"".""TestTableWithLongIndex""(
-    [KeyColumn] int NOT NULL identity(1, 1),
-    [NotInIndex] real NOT NULL,
-    [FloatColumn] float NOT NULL,
-    [IntColumn] int NOT NULL,
-    [ByteColumn] tinyint NOT NULL,
-    [BoolColumn] bit NOT NULL,
-    [LongColumn] bigint NOT NULL,
-    [DecimalColumn] decimal NOT NULL,
-    [CharColumn] tinyint NOT NULL
+@"create table ""public"".""testtablewithlongindex"" (
+    ""keycolumn"" serial NOT NULL,
+    ""notinindex"" real NOT NULL,
+    ""floatcolumn"" double precision NOT NULL,
+    ""intcolumn"" integer NOT NULL,
+    ""bytecolumn"" byte NOT NULL,
+    ""boolcolumn"" boolean NOT NULL,
+    ""longcolumn"" bigint NOT NULL,
+    ""decimalcolumn"" money NOT NULL,
+    ""charcolumn"" byte NOT NULL
 );
 --
-alter table ""public"".""TestTableWithLongIndex"" add constraint [pk_TestTableWithLongIndex] primary key([KeyColumn]);
+create unique index ""idx_pk_testtablewithlongindex"" on ""public"".""testtablewithlongindex"" (""keycolumn"");
+alter table ""public"".""testtablewithlongindex"" add constraint ""pk_testtablewithlongindex"" primary key using index ""idx_pk_testtablewithlongindex"";
 --
-create nonclustered index [idx_Test2] on ""public"".""TestTableWithLongIndex""([FloatColumn],[IntColumn],[BoolColumn]);
-create nonclustered index [idx_Test3] on ""public"".""TestTableWithLongIndex""([LongColumn],[DecimalColumn],[CharColumn]);", script);
+create index ""idx_test2"" on ""public"".""testtablewithlongindex""(""floatcolumn"",""intcolumn"",""boolcolumn"");
+create index ""idx_test3"" on ""public"".""testtablewithlongindex""(""longcolumn"",""decimalcolumn"",""charcolumn"");", script);
         }
 
         [TestMethod]
