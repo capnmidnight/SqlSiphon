@@ -16,12 +16,12 @@ namespace SqlSiphon.OleDB.Test
 
         public void SyncProcs()
         {
-            ExecuteScriptsOfType(ScriptType.DropRoutine | ScriptType.CreateRoutine);
+            ExecuteScriptsOfType(ScriptType.CreateRoutine);
         }
 
         public void CreateTables()
         {
-            ExecuteScriptsOfType(ScriptType.DropTable | ScriptType.CreateTable);
+            ExecuteScriptsOfType(ScriptType.CreateTable);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]

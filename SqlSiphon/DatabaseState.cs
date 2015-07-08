@@ -119,156 +119,159 @@ namespace SqlSiphon
         public DatabaseState(string catalogueName, Regex filter, ISqlSiphon dal)
             : this()
         {
-            bool hasScriptStatusTable = false;
-            string scriptStatusName = dal.MakeIdentifier(dal.DefaultSchemaName, "ScriptStatus");
-            this.CatalogueName = catalogueName;
-            try
+            if (dal != null)
             {
-                foreach (var name in dal.GetDatabaseLogins())
+                bool hasScriptStatusTable = false;
+                string scriptStatusName = dal.MakeIdentifier(dal.DefaultSchemaName, "ScriptStatus");
+                this.CatalogueName = catalogueName;
+                try
                 {
-                    this.DatabaseLogins.Add(name.ToLowerInvariant(), null);
-                }
-                this.CatalogueExists = true;
-                var schemas = dal.GetSchemata();
-                if (schemas.Count > 0)
-                {
-                    this.Schemata.AddRange(schemas);
-                }
-                var columns = dal.GetColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
-                var constraints = dal.GetTableConstraints();
-                var constraintsByTable = constraints.ToHash(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name));
-                var constraintsByName = constraints.ToDictionary(cst => dal.MakeIdentifier(cst.constraint_schema, cst.constraint_name));
-
-                var keyColumns = dal.GetKeyColumns();
-                var keyColumnsByTable = keyColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
-                var keyColumnsByName = keyColumns.ToHash(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name));
-
-                var xref = dal.GetReferentialConstraints()
-                    .GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
-                    .ToDictionary(g => g.Key, g => g.Select(q => dal.MakeIdentifier(q.unique_constraint_schema, q.unique_constraint_name)).First());
-
-                var constraintsColumns = dal.GetConstraintColumns();
-                var constraintsColumnsByTable = constraintsColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
-                var constraintsColumnsByName = constraintsColumns.ToHash(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name));
-
-                var indexedColumns = dal.GetIndexColumns();
-                var indexedColumnsByTable = indexedColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
-                var indexedColumnsByName = indexedColumns.ToHash(col => col.index_name);
-
-                foreach (var tableName in columns.Keys)
-                {
-                    if (tableName == scriptStatusName)
+                    foreach (var name in dal.GetDatabaseLogins())
                     {
-                        hasScriptStatusTable = true;
+                        this.DatabaseLogins.Add(name.ToLowerInvariant(), null);
                     }
-                    var tableColumns = columns[tableName];
-                    if (filter == null || !filter.IsMatch(tableColumns[0].table_name))
+                    this.CatalogueExists = true;
+                    var schemas = dal.GetSchemata();
+                    if (schemas.Count > 0)
                     {
-                        var tableConstraints = constraintsByTable.ContainsKey(tableName) ? constraintsByTable[tableName] : new InformationSchema.TableConstraints[] { };
-                        var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : new InformationSchema.KeyColumnUsage[] { };
-                        var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : new InformationSchema.ConstraintColumnUsage[] { };
-                        var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : new InformationSchema.IndexColumnUsage[] { };
-                        var table = new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal);
-                        this.Tables.Add(tableName.ToLowerInvariant(), table);
-                        if (tableConstraints != null)
+                        this.Schemata.AddRange(schemas);
+                    }
+                    var columns = dal.GetColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                    var constraints = dal.GetTableConstraints();
+                    var constraintsByTable = constraints.ToHash(cst => dal.MakeIdentifier(cst.table_schema, cst.table_name));
+                    var constraintsByName = constraints.ToDictionary(cst => dal.MakeIdentifier(cst.constraint_schema, cst.constraint_name));
+
+                    var keyColumns = dal.GetKeyColumns();
+                    var keyColumnsByTable = keyColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                    var keyColumnsByName = keyColumns.ToHash(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name));
+
+                    var xref = dal.GetReferentialConstraints()
+                        .GroupBy(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name))
+                        .ToDictionary(g => g.Key, g => g.Select(q => dal.MakeIdentifier(q.unique_constraint_schema, q.unique_constraint_name)).First());
+
+                    var constraintsColumns = dal.GetConstraintColumns();
+                    var constraintsColumnsByTable = constraintsColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                    var constraintsColumnsByName = constraintsColumns.ToHash(col => dal.MakeIdentifier(col.constraint_schema, col.constraint_name));
+
+                    var indexedColumns = dal.GetIndexColumns();
+                    var indexedColumnsByTable = indexedColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                    var indexedColumnsByName = indexedColumns.ToHash(col => col.index_name);
+
+                    foreach (var tableName in columns.Keys)
+                    {
+                        if (tableName == scriptStatusName)
                         {
-                            foreach (var constraint in tableConstraints)
+                            hasScriptStatusTable = true;
+                        }
+                        var tableColumns = columns[tableName];
+                        if (filter == null || !filter.IsMatch(tableColumns[0].table_name))
+                        {
+                            var tableConstraints = constraintsByTable.ContainsKey(tableName) ? constraintsByTable[tableName] : new InformationSchema.TableConstraints[] { };
+                            var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : new InformationSchema.KeyColumnUsage[] { };
+                            var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : new InformationSchema.ConstraintColumnUsage[] { };
+                            var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : new InformationSchema.IndexColumnUsage[] { };
+                            var table = new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal);
+                            this.Tables.Add(tableName.ToLowerInvariant(), table);
+                            if (tableConstraints != null)
                             {
-                                var constraintName = dal.MakeIdentifier(constraint.constraint_schema, constraint.constraint_name);
-                                if (keyColumnsByName.ContainsKey(constraintName))
+                                foreach (var constraint in tableConstraints)
                                 {
-                                    var constraintColumns = keyColumnsByName[constraintName];
-                                    var uniqueConstraintName = constraint.constraint_type == "FOREIGN KEY" ? xref[constraintName] : constraintName;
-                                    var uniqueConstraint = constraintsByName[uniqueConstraintName];
-                                    var uniqueConstraintColumns = constraintsColumnsByName[uniqueConstraintName];
-                                    var uniqueTableName = dal.MakeIdentifier(uniqueConstraint.table_schema, uniqueConstraint.table_name);
-                                    var uniqueTableColumns = columns[uniqueTableName];
-                                    var uniqueTableKeyColumns = keyColumnsByTable[uniqueTableName];
-                                    if (constraint.constraint_type == "FOREIGN KEY")
+                                    var constraintName = dal.MakeIdentifier(constraint.constraint_schema, constraint.constraint_name);
+                                    if (keyColumnsByName.ContainsKey(constraintName))
                                     {
-                                        this.Relationships.Add(
-                                            constraintName.ToLowerInvariant(),
-                                            new Relationship(
-                                                tableColumns,
+                                        var constraintColumns = keyColumnsByName[constraintName];
+                                        var uniqueConstraintName = constraint.constraint_type == "FOREIGN KEY" ? xref[constraintName] : constraintName;
+                                        var uniqueConstraint = constraintsByName[uniqueConstraintName];
+                                        var uniqueConstraintColumns = constraintsColumnsByName[uniqueConstraintName];
+                                        var uniqueTableName = dal.MakeIdentifier(uniqueConstraint.table_schema, uniqueConstraint.table_name);
+                                        var uniqueTableColumns = columns[uniqueTableName];
+                                        var uniqueTableKeyColumns = keyColumnsByTable[uniqueTableName];
+                                        if (constraint.constraint_type == "FOREIGN KEY")
+                                        {
+                                            this.Relationships.Add(
+                                                constraintName.ToLowerInvariant(),
+                                                new Relationship(
+                                                    tableColumns,
+                                                    constraint,
+                                                    constraintColumns,
+                                                    uniqueTableColumns,
+                                                    uniqueConstraint,
+                                                    uniqueConstraintColumns,
+                                                    uniqueTableKeyColumns,
+                                                    dal));
+                                        }
+                                        else if (constraint.constraint_type == "PRIMARY KEY")
+                                        {
+                                            table.PrimaryKey = new PrimaryKey(
                                                 constraint,
-                                                constraintColumns,
-                                                uniqueTableColumns,
                                                 uniqueConstraint,
                                                 uniqueConstraintColumns,
-                                                uniqueTableKeyColumns,
-                                                dal));
-                                    }
-                                    else if (constraint.constraint_type == "PRIMARY KEY")
-                                    {
-                                        table.PrimaryKey = new PrimaryKey(
-                                            constraint,
-                                            uniqueConstraint,
-                                            uniqueConstraintColumns,
-                                            uniqueTableColumns,
-                                            dal);
-                                        this.PrimaryKeys.Add(constraintName.ToLowerInvariant(), table.PrimaryKey);
+                                                uniqueTableColumns,
+                                                dal);
+                                            this.PrimaryKeys.Add(constraintName.ToLowerInvariant(), table.PrimaryKey);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                var xxx = dal.GetRoutines()
-                    .Where(r => filter == null || !filter.IsMatch(r.routine_name))
-                    .ToList();
-                var routines = new Dictionary<string, InformationSchema.Routines>();
-                foreach (var prm in xxx)
-                {
-                    var ident = dal.MakeIdentifier(prm.specific_schema, prm.specific_name);
-                    if (!routines.ContainsKey(ident))
+                    var xxx = dal.GetRoutines()
+                        .Where(r => filter == null || !filter.IsMatch(r.routine_name))
+                        .ToList();
+                    var routines = new Dictionary<string, InformationSchema.Routines>();
+                    foreach (var prm in xxx)
                     {
-                        routines.Add(ident.ToLowerInvariant(), prm);
-                    }
-                }
-                var parameters = dal.GetParameters()
-                    .GroupBy(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name).ToLowerInvariant())
-                    .ToDictionary(g => g.Key, g => g.ToArray());
-                foreach (var key in routines.Keys)
-                {
-                    var routine = routines[key];
-                    var routineParameters = parameters.ContainsKey(key) ? parameters[key] : null;
-                    var function = new RoutineAttribute(routine, routineParameters, dal);
-                    var ident = dal.MakeRoutineIdentifier(function);
-                    if (!this.Functions.ContainsKey(ident))
-                    {
-                        this.Functions.Add(ident.ToLowerInvariant(), function);
-                    }
-                }
-
-                foreach (var idxName in indexedColumnsByName.Keys)
-                {
-                    var idxKey = dal.MakeIdentifier(dal.DefaultSchemaName, idxName).ToLowerInvariant();
-                    var idx = indexedColumnsByName[idxName];
-                    var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name).ToLowerInvariant();
-                    if (this.Tables.ContainsKey(tableName))
-                    {
-                        var table = this.Tables[tableName];
-                        this.Indexes.Add(idxKey, new TableIndex(table, idxName));
-                        foreach (var idxCol in idx)
+                        var ident = dal.MakeIdentifier(prm.specific_schema, prm.specific_name);
+                        if (!routines.ContainsKey(ident))
                         {
-                            this.Indexes[idxKey].Columns.Add(idxCol.column_name);
+                            routines.Add(ident.ToLowerInvariant(), prm);
+                        }
+                    }
+                    var parameters = dal.GetParameters()
+                        .GroupBy(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name).ToLowerInvariant())
+                        .ToDictionary(g => g.Key, g => g.ToArray());
+                    foreach (var key in routines.Keys)
+                    {
+                        var routine = routines[key];
+                        var routineParameters = parameters.ContainsKey(key) ? parameters[key] : null;
+                        var function = new RoutineAttribute(routine, routineParameters, dal);
+                        var ident = dal.MakeRoutineIdentifier(function);
+                        if (!this.Functions.ContainsKey(ident))
+                        {
+                            this.Functions.Add(ident.ToLowerInvariant(), function);
+                        }
+                    }
+
+                    foreach (var idxName in indexedColumnsByName.Keys)
+                    {
+                        var idxKey = dal.MakeIdentifier(dal.DefaultSchemaName, idxName).ToLowerInvariant();
+                        var idx = indexedColumnsByName[idxName];
+                        var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name).ToLowerInvariant();
+                        if (this.Tables.ContainsKey(tableName))
+                        {
+                            var table = this.Tables[tableName];
+                            this.Indexes.Add(idxKey, new TableIndex(table, idxName));
+                            foreach (var idxCol in idx)
+                            {
+                                this.Indexes[idxKey].Columns.Add(idxCol.column_name);
+                            }
+                        }
+                    }
+
+                    if (hasScriptStatusTable)
+                    {
+                        var scripts = dal.GetScriptStatus();
+                        if (scripts.Count > 0)
+                        {
+                            this.InitScripts.AddRange(scripts);
                         }
                     }
                 }
-
-                if (hasScriptStatusTable)
+                catch (ConnectionFailedException)
                 {
-                    var scripts = dal.GetScriptStatus();
-                    if (scripts.Count > 0)
-                    {
-                        this.InitScripts.AddRange(scripts);
-                    }
+                    this.CatalogueExists = false;
                 }
-            }
-            catch (ConnectionFailedException)
-            {
-                this.CatalogueExists = false;
             }
         }
 
@@ -339,10 +342,17 @@ namespace SqlSiphon
 
         private void FindTables(Type type, IDatabaseScriptGenerator dal)
         {
-            var table = DatabaseObjectAttribute.GetAttribute(type);
-            if (table != null)
+            var queue = new Queue<Type>();
+            queue.Enqueue(type);
+            type.Assembly.GetTypes().ToList().ForEach(queue.Enqueue);
+            while (queue.Count > 0)
             {
-                AddTable(this.Tables, type, dal, table);
+                type = queue.Dequeue();
+                var table = DatabaseObjectAttribute.GetAttribute(type);
+                if (table != null)
+                {
+                    AddTable(this.Tables, type, dal, table);
+                }
             }
         }
 

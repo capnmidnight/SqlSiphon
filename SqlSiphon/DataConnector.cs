@@ -135,7 +135,7 @@ namespace SqlSiphon
         protected void ExecuteScriptsOfType(ScriptType scriptType)
         {
             var ss = this.GetSqlSiphon();
-            var initial = new DatabaseState("Access", null, ss);
+            var initial = new DatabaseState("Access", null, null);
             var final = new DatabaseState(new Type[] { this.GetType() }, ss, ss, null, null);
             var diff = final.Diff(initial, ss, ss);
             var scripts = diff.Scripts

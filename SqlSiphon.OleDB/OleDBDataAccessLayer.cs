@@ -614,7 +614,7 @@ namespace SqlSiphon.OleDB
 
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public override string MakeDropIndexScript(TableIndex index)
@@ -624,7 +624,7 @@ namespace SqlSiphon.OleDB
 
         public override string MakeCreateIndexScript(TableIndex index)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
