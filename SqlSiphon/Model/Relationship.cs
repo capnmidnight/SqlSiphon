@@ -8,7 +8,7 @@ namespace SqlSiphon.Model
 {
     public class Relationship : DatabaseObjectAttribute
     {
-        private Type toType, fromType;
+        public Type ToType { get; private set; }
         private string[] fromColumnNames;
 
         public TableAttribute To { get; private set; }
@@ -22,10 +22,10 @@ namespace SqlSiphon.Model
         public string Prefix { get; private set; }
 
         internal Relationship(
-            InformationSchema.Columns[] fromTableColumns, 
-            InformationSchema.TableConstraints fromTableFKConstraint, 
-            InformationSchema.KeyColumnUsage[] fromTableFKConstraintColumns, 
-            InformationSchema.Columns[] toTableColumns, 
+            InformationSchema.Columns[] fromTableColumns,
+            InformationSchema.TableConstraints fromTableFKConstraint,
+            InformationSchema.KeyColumnUsage[] fromTableFKConstraintColumns,
+            InformationSchema.Columns[] toTableColumns,
             InformationSchema.TableConstraints toTablePKConstraint,
             InformationSchema.ConstraintColumnUsage[] toTablePKConstraintColumns,
             InformationSchema.KeyColumnUsage[] toTableKeyColumns,
@@ -40,19 +40,18 @@ namespace SqlSiphon.Model
             this.FromColumns = fromTableFKConstraintColumns.Select(c => new ColumnAttribute(this.From, fromColumns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
         }
 
-        internal Relationship(string prefix, Type fromType, Type toType, bool autoCreateIndex, string[] fromColumns)
+        internal Relationship(string prefix, TableAttribute from, Type toType, bool autoCreateIndex, string[] fromColumns)
         {
             this.Prefix = prefix;
-            this.toType = toType;
-            this.fromType = fromType;
+            this.ToType = toType;
+            this.From = from;
             this.AutoCreateIndex = autoCreateIndex;
             this.fromColumnNames = fromColumns;
         }
 
-        public void ResolveColumns(Dictionary<string, TableAttribute> tables, IDatabaseScriptGenerator dal)
+        public void ResolveColumns(Dictionary<Type, TableAttribute> tables, IDatabaseScriptGenerator dal)
         {
-            this.To = tables.Values.Where(t => t.SystemType == this.toType).FirstOrDefault();
-            this.From = tables.Values.Where(t => t.SystemType == this.fromType).FirstOrDefault();
+            this.To = tables[this.ToType];
             if (this.To.PrimaryKey == null)
             {
                 throw new Exception(string.Format("The target table {0} does not have a primary key defined.", dal.MakeIdentifier(this.To.Schema, this.To.Name)));
@@ -105,7 +104,7 @@ namespace SqlSiphon.Model
         public string GetName(IDatabaseScriptGenerator dal)
         {
             return this.Name ?? string.Format(
-                "fk_{0}_from_{1}_{2}_{3}",
+                "fk_{0}_from_{1}_{2}_to_{3}",
                 this.Prefix,
                 this.From.Schema ?? dal.DefaultSchemaName,
                 this.From.Name,

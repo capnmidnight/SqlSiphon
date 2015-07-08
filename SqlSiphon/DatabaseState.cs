@@ -77,7 +77,6 @@ namespace SqlSiphon
                 this.DatabaseLogins.Add(userName.ToLowerInvariant(), password);
             }
 
-            var relationships = new List<Relationship>();
             var routineDefTypes = new List<Type>();
 
             foreach (var type in types)
@@ -89,8 +88,6 @@ namespace SqlSiphon
                 }
 
                 FindTables(type, dal);
-
-                relationships.AddRange(FKAttribute.GetRelationships(type));
 
                 var publicStatic = BindingFlags.Public | BindingFlags.Static;
 
@@ -108,7 +105,7 @@ namespace SqlSiphon
                 }
             }
 
-            CreateRelationships(relationships, dal);
+            CreateRelationships(dal);
 
             CreateRoutines(routineDefTypes, dal);
 
@@ -311,25 +308,30 @@ namespace SqlSiphon
             }
         }
 
-        private void CreateRelationships(List<Relationship> relationships, IDatabaseScriptGenerator dal)
+        private void CreateRelationships(IDatabaseScriptGenerator dal)
         {
-            foreach (var relationship in relationships)
+            var tablesBySystemType = this.Tables.Values.ToDictionary(t => t.SystemType);
+            foreach (var table in this.Tables.Values)
             {
-                relationship.ResolveColumns(this.Tables, dal);
-                var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.Name);
-                if (this.Relationships.ContainsKey(id))
+                var relationships = table.GetRelationships();
+                foreach (var relationship in relationships)
                 {
-                    throw new RelationshipExistsException(id);
-                }
-                else
-                {
-                    this.Relationships.Add(id.ToLowerInvariant(), relationship);
-                    if (relationship.AutoCreateIndex)
+                    relationship.ResolveColumns(tablesBySystemType, dal);
+                    var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.Name);
+                    if (this.Relationships.ContainsKey(id))
                     {
-                        var fkIndex = new TableIndex(relationship.From, "IDX_" + relationship.Name);
-                        fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
-                        var fkIndexNameKey = dal.MakeIdentifier(relationship.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
-                        this.Indexes.Add(fkIndexNameKey, fkIndex);
+                        throw new RelationshipExistsException(id);
+                    }
+                    else
+                    {
+                        this.Relationships.Add(id.ToLowerInvariant(), relationship);
+                        if (relationship.AutoCreateIndex)
+                        {
+                            var fkIndex = new TableIndex(relationship.From, "IDX_" + relationship.Name);
+                            fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
+                            var fkIndexNameKey = dal.MakeIdentifier(relationship.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
+                            this.Indexes.Add(fkIndexNameKey, fkIndex);
+                        }
                     }
                 }
             }

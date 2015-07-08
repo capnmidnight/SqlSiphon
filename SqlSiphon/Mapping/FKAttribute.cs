@@ -64,7 +64,7 @@ namespace SqlSiphon.Mapping
         /// of ICustomAttributeProvider types, but InferProperties is.
         /// </summary>
         /// <param name="columnDef"></param>
-        private void InferProperties(ColumnAttribute columnDef)
+        public void InferProperties(ColumnAttribute columnDef)
         {
             if (this.FromColumnName == null)
             {
@@ -94,57 +94,6 @@ namespace SqlSiphon.Mapping
             {
                 this.Prefix = string.Empty;
             }
-        }
-
-        internal static List<Relationship> GetRelationships(Type t)
-        {
-            List<Relationship> fks = new List<Relationship>();
-            var tableDef = DatabaseObjectAttribute.GetAttribute(t);
-            if (tableDef != null)
-            {
-                var fkOrganizer = new Dictionary<Type, Dictionary<string, List<string>>>();
-                var autoCreateIndex = new Dictionary<Type, Dictionary<string, bool>>();
-                foreach (var columnDef in tableDef.Properties)
-                {
-                    var fkDefs = columnDef.GetOtherAttributes<FKAttribute>();
-
-                    foreach (var fkDef in fkDefs)
-                    {
-                        fkDef.InferProperties(columnDef);
-
-                        if (!fkOrganizer.ContainsKey(fkDef.Target))
-                        {
-                            fkOrganizer.Add(fkDef.Target, new Dictionary<string, List<string>>());
-                            autoCreateIndex.Add(fkDef.Target, new Dictionary<string, bool>());
-                        }
-
-                        if (!fkOrganizer[fkDef.Target].ContainsKey(fkDef.Prefix))
-                        {
-                            fkOrganizer[fkDef.Target].Add(fkDef.Prefix, new List<string>());
-                            autoCreateIndex[fkDef.Target].Add(fkDef.Prefix, fkDef.AutoCreateIndex);
-                        }
-                        else if (fkDef.AutoCreateIndex != autoCreateIndex[fkDef.Target][fkDef.Prefix])
-                        {
-                            throw new InconsistentRelationshipDefinitionException(fkDef.FromColumnName);
-                        }
-
-                        fkOrganizer[fkDef.Target][fkDef.Prefix].Add(fkDef.FromColumnName);
-                    }
-                }
-
-                foreach (var targetType in fkOrganizer.Keys)
-                {
-                    foreach (var prefix in fkOrganizer[targetType].Keys)
-                    {
-                        var columns = fkOrganizer[targetType][prefix];
-                        var r = new Relationship(prefix, t, targetType, autoCreateIndex[targetType][prefix], columns.ToArray());
-                        r.Schema = tableDef.Schema;
-                        fks.Add(r);
-                    }
-                }
-            }
-
-            return fks;
         }
     }
 }

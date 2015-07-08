@@ -13,7 +13,7 @@ namespace SqlSiphon
                 template, 
                 table.Schema, 
                 table.Name,
-                ((Type)table.SourceObject).FullName,
+                table.SystemType.FullName,
                 Environment.NewLine,
                 string.Join(",", columns.Select(c=>c.Name))))
         {

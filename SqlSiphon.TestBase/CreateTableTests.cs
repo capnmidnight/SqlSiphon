@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SqlSiphon;
 using SqlSiphon.Mapping;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -35,10 +36,17 @@ namespace SqlSiphon.TestBase
                 var relationships = table.GetRelationships();
                 if (relationships.Count > 0)
                 {
+                    var tables = new Dictionary<Type, TableAttribute>();
+                    tables.Add(t, table);
                     sb.AppendLine();
                     sb.Append("--");
                     foreach (var rel in relationships)
                     {
+                        if (!tables.ContainsKey(rel.ToType))
+                        {
+                            tables.Add(rel.ToType, DatabaseObjectAttribute.GetAttribute(rel.ToType));
+                        }
+                        rel.ResolveColumns(tables, ss);
                         sb.AppendLine();
                         sb.Append(ss.MakeCreateRelationshipScript(rel));
                     }

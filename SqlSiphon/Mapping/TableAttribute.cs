@@ -72,6 +72,18 @@ namespace SqlSiphon.Mapping
         {
         }
 
+        public override Type SystemType
+        {
+            get
+            {
+                return base.SystemType ?? (Type)this.SourceObject;
+            }
+            protected set
+            {
+                base.SystemType = value;
+            }
+        }
+
         public TableAttribute(
             InformationSchema.Columns[] columns,
             InformationSchema.TableConstraints[] constraints,
@@ -189,7 +201,8 @@ namespace SqlSiphon.Mapping
             else
             {
                 var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .OrderByDescending(p=>{
+                    .OrderByDescending(p =>
+                    {
                         int depth = 0;
                         var top = obj;
                         while (top != null && p.DeclaringType != top)
@@ -229,6 +242,53 @@ namespace SqlSiphon.Mapping
                     this.PrimaryKey = new PrimaryKey(this);
                 }
             }
+        }
+
+        public List<Relationship> GetRelationships()
+        {
+            List<Relationship> fks = new List<Relationship>();
+            var fkOrganizer = new Dictionary<Type, Dictionary<string, List<string>>>();
+            var autoCreateIndex = new Dictionary<Type, Dictionary<string, bool>>();
+            foreach (var columnDef in this.Properties)
+            {
+                var fkDefs = columnDef.GetOtherAttributes<FKAttribute>();
+
+                foreach (var fkDef in fkDefs)
+                {
+                    fkDef.InferProperties(columnDef);
+
+                    if (!fkOrganizer.ContainsKey(fkDef.Target))
+                    {
+                        fkOrganizer.Add(fkDef.Target, new Dictionary<string, List<string>>());
+                        autoCreateIndex.Add(fkDef.Target, new Dictionary<string, bool>());
+                    }
+
+                    if (!fkOrganizer[fkDef.Target].ContainsKey(fkDef.Prefix))
+                    {
+                        fkOrganizer[fkDef.Target].Add(fkDef.Prefix, new List<string>());
+                        autoCreateIndex[fkDef.Target].Add(fkDef.Prefix, fkDef.AutoCreateIndex);
+                    }
+                    else if (fkDef.AutoCreateIndex != autoCreateIndex[fkDef.Target][fkDef.Prefix])
+                    {
+                        throw new InconsistentRelationshipDefinitionException(fkDef.FromColumnName);
+                    }
+
+                    fkOrganizer[fkDef.Target][fkDef.Prefix].Add(fkDef.FromColumnName);
+                }
+            }
+
+            foreach (var targetType in fkOrganizer.Keys)
+            {
+                foreach (var prefix in fkOrganizer[targetType].Keys)
+                {
+                    var columns = fkOrganizer[targetType][prefix];
+                    var r = new Relationship(prefix, this, targetType, autoCreateIndex[targetType][prefix], columns.ToArray());
+                    r.Schema = this.Schema;
+                    fks.Add(r);
+                }
+            }
+
+            return fks;
         }
 
         public override string ToString()

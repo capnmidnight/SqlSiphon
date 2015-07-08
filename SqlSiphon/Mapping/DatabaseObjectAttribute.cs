@@ -52,7 +52,7 @@ namespace SqlSiphon.Mapping
         AllowMultiple = false)]
     public abstract class DatabaseObjectAttribute : Attribute
     {
-        public ICustomAttributeProvider SourceObject { get; internal set; }
+        protected ICustomAttributeProvider SourceObject { get; set; }
 
         /// <summary>
         /// Get or set a schema name for objects in the database. Defaults to
@@ -201,7 +201,7 @@ namespace SqlSiphon.Mapping
         /// <summary>
         /// The .NET type to which this database object is going to map
         /// </summary>
-        public Type SystemType { get; protected set; }
+        public virtual Type SystemType { get; protected set; }
 
         /// <summary>
         /// The Database type to which this .NET type is going to map
@@ -278,6 +278,8 @@ namespace SqlSiphon.Mapping
                 isOptionalField = value;
             }
         }
+
+
 
         public void SetSystemType(Type type)
         {

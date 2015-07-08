@@ -935,7 +935,7 @@ order by ordinal_position;")]
                     var valueColumn = new ColumnAttribute
                     {
                         Table = attr,
-                        Name = "Value",
+                        Name = "Value"
                     };
                     valueColumn.SetSystemType(type);
                     attr.Properties.Add(valueColumn);
