@@ -65,7 +65,8 @@
     <Compile Include="TestOneColumnTableWithSchema.cs" />
     <Compile Include="TestTwoColumnTable.cs" />
     <Compile Include="TestTwoColumnTableAsChild.cs" />
-    <Compile Include="ScriptConstructionTest.cs" />
+    <Compile Include="CreateTableTests.cs" />
+    <Compile Include="TestWithFK.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj">

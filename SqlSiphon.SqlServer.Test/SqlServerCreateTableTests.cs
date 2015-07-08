@@ -8,7 +8,7 @@ using SqlSiphon.TestBase;
 namespace SqlSiphon.SqlServer.Test
 {
     [TestClass]
-    public class TableTests : ScriptConstructionTest<SqlServerDataConnectorFactory>
+    public class SqlServerCreateTableTests : CreateTableTests<SqlServerDataConnectorFactory>
     {
         [TestMethod]
         public override void CantCreateEmptyTables()
@@ -178,6 +178,14 @@ alter table [dbo].[TestTableWithLongIndex] add constraint [pk_TestTableWithLongI
 --
 create nonclustered index [idx_Test2] on [dbo].[TestTableWithLongIndex]([FloatColumn],[IntColumn],[BoolColumn]);
 create nonclustered index [idx_Test3] on [dbo].[TestTableWithLongIndex]([LongColumn],[DecimalColumn],[CharColumn]);", script);
+        }
+
+        [TestMethod]
+        public override void CreateTableWithFK()
+        {
+            var script = GetScriptFor<TestWithFK>();
+            Assert.AreEqual(
+@"", script);
         }
     }
 }

@@ -88,7 +88,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="TableTests.cs" />
+    <Compile Include="SqlServerCreateTableTests.cs" />
     <Compile Include="UploadableTypesTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

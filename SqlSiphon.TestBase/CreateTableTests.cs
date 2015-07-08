@@ -6,11 +6,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SqlSiphon.TestBase
 {
     [TestClass]
-    public abstract class ScriptConstructionTest<DataConnectorFactoryType>
+    public abstract class CreateTableTests<DataConnectorFactoryType>
         where DataConnectorFactoryType : IDataConnectorFactory, new()
     {
         private DataConnectorFactoryType factory;
-        public ScriptConstructionTest()
+        public CreateTableTests()
         {
             factory = new DataConnectorFactoryType();
         }
@@ -31,16 +31,19 @@ namespace SqlSiphon.TestBase
                     sb.AppendLine("--");
                     sb.Append(ss.MakeCreatePrimaryKeyScript(table.PrimaryKey));
                 }
-                if (table.EnumValues.Count > 0)
+                
+                var relationships = table.GetRelationships();
+                if (relationships.Count > 0)
                 {
                     sb.AppendLine();
                     sb.Append("--");
-                    foreach (var val in table.EnumValues)
+                    foreach (var rel in relationships)
                     {
                         sb.AppendLine();
-                        sb.Append(ss.MakeInsertScript(table, val));
+                        sb.Append(ss.MakeCreateRelationshipScript(rel));
                     }
                 }
+
                 if (table.Indexes.Count > 0)
                 {
                     sb.AppendLine();
@@ -49,6 +52,16 @@ namespace SqlSiphon.TestBase
                     {
                         sb.AppendLine();
                         sb.Append(ss.MakeCreateIndexScript(val));
+                    }
+                }
+                if (table.EnumValues.Count > 0)
+                {
+                    sb.AppendLine();
+                    sb.Append("--");
+                    foreach (var val in table.EnumValues)
+                    {
+                        sb.AppendLine();
+                        sb.Append(ss.MakeInsertScript(table, val));
                     }
                 }
                 return sb.ToString();
@@ -75,5 +88,6 @@ namespace SqlSiphon.TestBase
         public abstract void CreateTableFromEnumeration();
         public abstract void CreateTableWithSimpleIndex();
         public abstract void CreateTableWithLongIndex();
+        public abstract void CreateTableWithFK();
     }
 }
