@@ -185,7 +185,18 @@ create nonclustered index [idx_Test3] on [dbo].[TestTableWithLongIndex]([LongCol
         {
             var script = GetScriptFor<TestWithFK>();
             Assert.AreEqual(
-@"", script);
+@"create table [dbo].[TestWithFK](
+    [Stuff] int NOT NULL,
+    [KeyColumn] nvarchar(255) NOT NULL
+);
+--
+alter table [dbo].[TestWithFK] add constraint [pk_TestWithFK] primary key([Stuff]);
+--
+alter table [dbo].[TestWithFK] add constraint [fk_from_dbo_TestWithFK_to_pk_TestPrimaryKeyColumn]
+    foreign key([KeyColumn])
+    references [dbo].[TestPrimaryKeyColumn]([KeyColumn])
+--
+create nonclustered index [idx_fk_from_dbo_TestWithFK_to_pk_TestPrimaryKeyColumn] on [dbo].[TestWithFK]([KeyColumn]);", script);
         }
     }
 }

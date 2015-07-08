@@ -504,27 +504,32 @@ namespace SqlSiphon.OleDB
 
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
         {
-            throw new NotImplementedException();
+            return routine.Name;
         }
 
         public override List<string> GetDatabaseLogins()
         {
-            throw new NotImplementedException();
+            return new List<string>();
+        }
+
+        public override List<string> GetSchemata()
+        {
+            return new List<string>();
         }
 
         public override List<InformationSchema.IndexColumnUsage> GetIndexColumns()
         {
-            throw new NotImplementedException();
+            return new List<InformationSchema.IndexColumnUsage>();
         }
 
         public override List<InformationSchema.TableConstraints> GetTableConstraints()
         {
-            throw new NotImplementedException();
+            return new List<InformationSchema.TableConstraints>();
         }
 
         public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
         {
-            throw new NotImplementedException();
+            return new List<InformationSchema.ReferentialConstraints>();
         }
 
         public override List<InformationSchema.Parameters> GetParameters()
@@ -534,17 +539,17 @@ namespace SqlSiphon.OleDB
 
         public override List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns()
         {
-            throw new NotImplementedException();
+            return new List<InformationSchema.ConstraintColumnUsage>();
         }
 
         public override List<InformationSchema.KeyColumnUsage> GetKeyColumns()
         {
-            throw new NotImplementedException();
+            return new List<InformationSchema.KeyColumnUsage>();
         }
 
         public override string DefaultSchemaName
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public override int DefaultTypePrecision(string typeName, int testPrecision)

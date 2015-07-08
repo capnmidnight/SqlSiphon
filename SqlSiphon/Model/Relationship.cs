@@ -99,6 +99,13 @@ namespace SqlSiphon.Model
                 }
             }
             this.Name = this.GetName(dal);
+            if(this.AutoCreateIndex)
+            {
+                var fkIndex = new TableIndex(this.From, "idx_" + this.Name);
+                fkIndex.Columns.AddRange(this.FromColumns.Select(c => c.Name));
+                var fkIndexNameKey = dal.MakeIdentifier(this.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
+                this.From.Indexes.Add(fkIndexNameKey, fkIndex);
+            }
         }
 
         public string GetName(IDatabaseScriptGenerator dal)
