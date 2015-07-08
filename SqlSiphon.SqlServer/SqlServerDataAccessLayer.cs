@@ -349,7 +349,7 @@ end",
 
         public override string MakeCreateIndexScript(TableIndex idx)
         {
-            var columnSection = string.Join(",", idx.Columns.Select(c=>this.MakeIdentifier(c)));
+            var columnSection = string.Join(",", idx.Columns.Select(c => this.MakeIdentifier(c)));
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
             return string.Format(@"create {3}clustered index {0} on {1}({2});",
                 this.MakeIdentifier(idx.Name),
@@ -1003,7 +1003,8 @@ order by ordinal_position;")]
                 .ToArray();
 
             var columnNames = columns.Select(c => c.Name).ToArray();
-            var columnValues = columns.Select(c => {
+            var columnValues = columns.Select(c =>
+            {
                 var v = c.GetValue(value);
                 string val = null;
                 if (v == null)
