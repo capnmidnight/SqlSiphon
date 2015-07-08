@@ -96,11 +96,16 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PostgesCreateTableTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj">
       <Project>{175a4d4a-2c9d-4edd-b9cc-7adc3322cc1c}</Project>
       <Name>SqlSiphon.Postgres</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlSiphon.TestBase\SqlSiphon.TestBase.csproj">
+      <Project>{4ab6e77a-2fa1-4a30-b3fb-b09d3da91127}</Project>
+      <Name>SqlSiphon.TestBase</Name>
     </ProjectReference>
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj">
       <Project>{136933a4-27e3-4cbf-84f8-8898447a3d8c}</Project>

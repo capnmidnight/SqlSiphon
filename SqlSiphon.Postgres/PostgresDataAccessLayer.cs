@@ -382,7 +382,7 @@ namespace SqlSiphon.Postgres
                     goodParts[i] = goodParts[i].Substring(0, 63 - lengthLength) + len;
                 }
             }
-            return base.MakeIdentifier(goodParts).ToLower();
+            return base.MakeIdentifier(goodParts).ToLowerInvariant();
         }
 
         public override Type GetSystemType(string sqlType)
@@ -534,7 +534,7 @@ namespace SqlSiphon.Postgres
             {
                 sqlType = "void";
             }
-            else if(reverseTypeMapping.ContainsKey(systemType))
+            else if (reverseTypeMapping.ContainsKey(systemType))
             {
                 sqlType = reverseTypeMapping[systemType];
             }
@@ -691,7 +691,7 @@ namespace SqlSiphon.Postgres
             }
 
             return string.Format("{0} {1} {2} {3}",
-                column.Name,
+                this.MakeIdentifier(column.Name),
                 typeStr,
                 nullString,
                 defaultString).Trim();
@@ -844,7 +844,7 @@ end;",
             {
                 column.SqlType = null;
             }
-            return string.Format(@"create table if not exists {0} (
+            return string.Format(@"create table {0} (
     {1}
 );",
                 identifier,
@@ -903,11 +903,11 @@ alter table {1} add constraint {3} primary key using index {0};",
 
         public override string MakeCreateIndexScript(TableIndex idx)
         {
-            var columnSection = string.Join(",", idx.Columns);
+            var columnSection = string.Join(",", idx.Columns.Select(c => this.MakeIdentifier(c)));
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
             return string.Format(
 @"create index {0} on {1}({2});",
-                idx.Name,
+                this.MakeIdentifier(idx.Name),
                 tableName,
                 columnSection);
         }
