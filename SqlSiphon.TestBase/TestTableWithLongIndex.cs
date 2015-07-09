@@ -12,7 +12,7 @@ namespace SqlSiphon.TestBase
         public float NotInIndex { get; set; }
 
         [Index("idx_Test2")]
-        public double FloatColumn { get; set; }
+        public double DoubleColumn { get; set; }
 
         [Index("idx_Test2")]
         public int IntColumn { get; set; }

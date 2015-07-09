@@ -626,7 +626,7 @@ end",
             return string.Format(
 @"alter table {0} add constraint {1}
     foreign key({2})
-    references {3}({4})",
+    references {3}({4});",
                     this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
                     this.MakeIdentifier(relation.GetName(this)),
                     fromColumns,

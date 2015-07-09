@@ -1,15 +1,16 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSiphon;
-using SqlSiphon.Mapping;
-using SqlSiphon.SqlServer;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSiphon.TestBase;
 
 namespace SqlSiphon.SqlServer.Test
 {
     [TestClass]
-    public class SqlServerCreateTableTests : CreateTableTests<SqlServerDataConnectorFactory>
+    public class SqlServerCreateTableTests : CreateTableTests
     {
+        protected override ISqlSiphon MakeConnector()
+        {
+            return new SqlServerDataAccessLayer((string)null);
+        }
+
         [TestMethod]
         public override void CantCreateEmptyTables()
         {
@@ -149,12 +150,12 @@ insert into [dbo].[TestEnumeration](Value, Description) values(8, 'rSt');", scri
 @"create table [dbo].[TestTableWithSimpleIndex](
     [KeyColumn] int NOT NULL identity(1, 1),
     [NotInIndex] real NOT NULL,
-    [FloatColumn] float NOT NULL
+    [DoubleColumn] float NOT NULL
 );
 --
 alter table [dbo].[TestTableWithSimpleIndex] add constraint [pk_TestTableWithSimpleIndex] primary key([KeyColumn]);
 --
-create nonclustered index [idx_Test1] on [dbo].[TestTableWithSimpleIndex]([FloatColumn]);", script);
+create nonclustered index [idx_Test1] on [dbo].[TestTableWithSimpleIndex]([DoubleColumn]);", script);
         }
 
         [TestMethod]
@@ -165,7 +166,7 @@ create nonclustered index [idx_Test1] on [dbo].[TestTableWithSimpleIndex]([Float
 @"create table [dbo].[TestTableWithLongIndex](
     [KeyColumn] int NOT NULL identity(1, 1),
     [NotInIndex] real NOT NULL,
-    [FloatColumn] float NOT NULL,
+    [DoubleColumn] float NOT NULL,
     [IntColumn] int NOT NULL,
     [ByteColumn] tinyint NOT NULL,
     [BoolColumn] bit NOT NULL,
@@ -176,7 +177,7 @@ create nonclustered index [idx_Test1] on [dbo].[TestTableWithSimpleIndex]([Float
 --
 alter table [dbo].[TestTableWithLongIndex] add constraint [pk_TestTableWithLongIndex] primary key([KeyColumn]);
 --
-create nonclustered index [idx_Test2] on [dbo].[TestTableWithLongIndex]([FloatColumn],[IntColumn],[BoolColumn]);
+create nonclustered index [idx_Test2] on [dbo].[TestTableWithLongIndex]([DoubleColumn],[IntColumn],[BoolColumn]);
 create nonclustered index [idx_Test3] on [dbo].[TestTableWithLongIndex]([LongColumn],[DecimalColumn],[CharColumn]);", script);
         }
 
@@ -194,7 +195,7 @@ alter table [dbo].[TestWithFK] add constraint [pk_TestWithFK] primary key([Stuff
 --
 alter table [dbo].[TestWithFK] add constraint [fk_from_dbo_TestWithFK_to_pk_TestPrimaryKeyColumn]
     foreign key([KeyColumn])
-    references [dbo].[TestPrimaryKeyColumn]([KeyColumn])
+    references [dbo].[TestPrimaryKeyColumn]([KeyColumn]);
 --
 create nonclustered index [idx_fk_from_dbo_TestWithFK_to_pk_TestPrimaryKeyColumn] on [dbo].[TestWithFK]([KeyColumn]);", script);
         }

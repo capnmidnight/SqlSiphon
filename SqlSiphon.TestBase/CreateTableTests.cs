@@ -7,20 +7,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SqlSiphon.TestBase
 {
     [TestClass]
-    public abstract class CreateTableTests<DataConnectorFactoryType>
-        where DataConnectorFactoryType : IDataConnectorFactory, new()
+    public abstract class CreateTableTests
     {
-        private DataConnectorFactoryType factory;
-        public CreateTableTests()
-        {
-            factory = new DataConnectorFactoryType();
-        }
+        protected abstract ISqlSiphon MakeConnector();
 
         protected string GetScriptFor<T>()
         {
             // We aren't opening a connection, we're just trying to generate scripts
             // so it shouldn't be a problem to provide no connection string.
-            using (var ss = (ISqlSiphon)this.factory.MakeConnector((string)null))
+            using (var ss = this.MakeConnector())
             {
                 var t = typeof(T);
                 var table = DatabaseObjectAttribute.GetAttribute(t);

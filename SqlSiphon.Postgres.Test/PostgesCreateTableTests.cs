@@ -5,11 +5,15 @@ using SqlSiphon.Mapping;
 using SqlSiphon.Postgres;
 using SqlSiphon.TestBase;
 
-namespace SqlSiphon.SqlServer.Test
+namespace SqlSiphon.Postgres.Test
 {
     [TestClass]
-    public class SqlServerCreateTableTests : CreateTableTests<PostgresDataConnectorFactory>
+    public class PostgresCreateTableTests : CreateTableTests
     {
+        protected override ISqlSiphon MakeConnector()
+        {
+            return new PostgresDataAccessLayer((string)null);
+        }
         [TestMethod]
         public override void CantCreateEmptyTables()
         {
@@ -153,13 +157,13 @@ insert into ""public"".""testenumeration""(""value"", ""description"") values(8,
 @"create table ""public"".""testtablewithsimpleindex"" (
     ""keycolumn"" serial NOT NULL,
     ""notinindex"" real NOT NULL,
-    ""floatcolumn"" double precision NOT NULL
+    ""doublecolumn"" double precision NOT NULL
 );
 --
 create unique index ""idx_pk_testtablewithsimpleindex"" on ""public"".""testtablewithsimpleindex"" (""keycolumn"");
 alter table ""public"".""testtablewithsimpleindex"" add constraint ""pk_testtablewithsimpleindex"" primary key using index ""idx_pk_testtablewithsimpleindex"";
 --
-create index ""idx_test1"" on ""public"".""testtablewithsimpleindex""(""floatcolumn"");", script);
+create index ""idx_test1"" on ""public"".""testtablewithsimpleindex""(""doublecolumn"");", script);
         }
 
         [TestMethod]
@@ -170,7 +174,7 @@ create index ""idx_test1"" on ""public"".""testtablewithsimpleindex""(""floatcol
 @"create table ""public"".""testtablewithlongindex"" (
     ""keycolumn"" serial NOT NULL,
     ""notinindex"" real NOT NULL,
-    ""floatcolumn"" double precision NOT NULL,
+    ""doublecolumn"" double precision NOT NULL,
     ""intcolumn"" integer NOT NULL,
     ""bytecolumn"" smallint NOT NULL,
     ""boolcolumn"" boolean NOT NULL,
@@ -182,7 +186,7 @@ create index ""idx_test1"" on ""public"".""testtablewithsimpleindex""(""floatcol
 create unique index ""idx_pk_testtablewithlongindex"" on ""public"".""testtablewithlongindex"" (""keycolumn"");
 alter table ""public"".""testtablewithlongindex"" add constraint ""pk_testtablewithlongindex"" primary key using index ""idx_pk_testtablewithlongindex"";
 --
-create index ""idx_test2"" on ""public"".""testtablewithlongindex""(""floatcolumn"",""intcolumn"",""boolcolumn"");
+create index ""idx_test2"" on ""public"".""testtablewithlongindex""(""doublecolumn"",""intcolumn"",""boolcolumn"");
 create index ""idx_test3"" on ""public"".""testtablewithlongindex""(""longcolumn"",""decimalcolumn"",""charcolumn"");", script);
         }
 

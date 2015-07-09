@@ -212,6 +212,23 @@ namespace SqlSiphon.OleDB
             FillInFile();
         }
 
+        public event EventHandler Disposed;
+
+        public override void Dispose()
+        {
+            try
+            {
+                base.Dispose();
+            }
+            finally
+            {
+                if (this.Disposed != null)
+                {
+                    this.Disposed(this, EventArgs.Empty);
+                }
+            }
+        }
+
         public override string MakeConnectionString(string server, string database, string user, string password)
         {
             FillInFile();
@@ -308,25 +325,14 @@ namespace SqlSiphon.OleDB
         public override string MakeCreateTableScript(TableAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
-            var identifier = this.MakeIdentifier(schema, info.Name);
+            var identifier = this.MakeIdentifier("_".Combine(schema, info.Name));
             var columnSection = this.MakeColumnSection(info, false);
-            var pk = info.Properties.Where(p => p.IncludeInPrimaryKey).ToArray();
-            var pkString = "";
-            if (pk.Length > 0)
-            {
-                pkString = string.Format(",{3}    constraint PK_{0}_{1} primary key({2}){3}",
-                    schema,
-                    info.Name,
-                    string.Join(",", pk.Select(c => c.Name)),
-                    Environment.NewLine);
-            }
             return string.Format(
 @"create table {0}(
-    {1}{2}
-)",
+    {1}
+);",
                 identifier,
-                columnSection,
-                pkString);
+                columnSection);
         }
 
         protected override string MakeParameterString(ParameterAttribute p)
@@ -343,7 +349,7 @@ namespace SqlSiphon.OleDB
                 typeStr = "autoincrement";
             }
             return string.Join(" ",
-                p.Name,
+                this.MakeIdentifier(p.Name),
                 typeStr,
                 p.IsOptional || p.IncludeInPrimaryKey ? "" : "NOT NULL")
                 .Trim();
@@ -708,7 +714,15 @@ namespace SqlSiphon.OleDB
 
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
-            throw new NotImplementedException();
+            var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
+            var toColumns = string.Join(", ", relation.To.PrimaryKey.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
+
+            return string.Format(@"alter table {0} add foreign key({2}) references {3}({4});",
+                    this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
+                    this.MakeIdentifier(relation.GetName(this)),
+                    fromColumns,
+                    this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
+                    toColumns);
         }
 
         public override string MakeDropPrimaryKeyScript(PrimaryKey key)
@@ -716,19 +730,25 @@ namespace SqlSiphon.OleDB
             throw new NotImplementedException();
         }
 
+        public override string MakeCreateIndexScript(TableIndex index)
+        {
+            return string.Format("create index {0} on {1}({2});",
+                this.MakeIdentifier(index.Name),
+                this.MakeIdentifier(index.Table.Name),
+                string.Join(", ", index.Columns.Select(k => this.MakeIdentifier(k))));
+        }
+
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
         {
-            return null;
+            return string.Format("create index {0} on {1}({2}) with primary;",
+                this.MakeIdentifier(key.Name),
+                this.MakeIdentifier(key.Table.Name),
+                string.Join(", ", key.KeyColumns.Select(k => this.MakeIdentifier(k.Name))));
         }
 
         public override string MakeDropIndexScript(TableIndex index)
         {
             throw new NotImplementedException();
-        }
-
-        public override string MakeCreateIndexScript(TableIndex index)
-        {
-            return null;
         }
 
         public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
@@ -738,7 +758,42 @@ namespace SqlSiphon.OleDB
 
         public override string MakeInsertScript(TableAttribute table, object value)
         {
-            throw new NotImplementedException();
+            var columns = table.Properties
+                .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
+                .ToArray();
+
+            var columnNames = columns.Select(c => this.MakeIdentifier(c.Name)).ToArray();
+            var columnValues = columns.Select(c =>
+            {
+                var v = c.GetValue(value);
+                string val = null;
+                if (v == null)
+                {
+                    value = "NULL";
+                }
+                else
+                {
+                    var t = v.GetType();
+                    if (DataConnector.IsTypeBarePrimitive(t))
+                    {
+                        val = v.ToString();
+                    }
+                    else if (DataConnector.IsTypeQuotedPrimitive(t))
+                    {
+                        val = string.Format("'{0}'", v);
+                    }
+                    else
+                    {
+                        throw new Exception("Can't insert value");
+                    }
+                }
+                return val;
+            }).ToArray();
+
+            return string.Format("insert into {0}({1}) values({2});",
+                this.MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
+                string.Join(", ", columnNames),
+                string.Join(", ", columnValues));
         }
     }
 }
