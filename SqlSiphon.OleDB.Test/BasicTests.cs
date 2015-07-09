@@ -12,9 +12,9 @@ namespace SqlSiphon.OleDB.Test
     [TestClass]
     public class BasicTests
     {
-        private TestDatabase d;
-        [TestInitialize]
-        public void Init()
+        private static TestDatabase d;
+        [ClassInitialize]
+        public static void Init(TestContext context)
         {
             if (!System.IO.File.Exists("Test.mdb"))
             {
@@ -30,11 +30,12 @@ namespace SqlSiphon.OleDB.Test
             }
         }
 
-        [TestCleanup]
-        public void Done()
+        [ClassCleanup]
+        public static void Done()
         {
             d.Dispose();
             d = null;
+            System.Diagnostics.Process.Start("cmd", "/C del Test.mdb");
         }
 
         [TestMethod]

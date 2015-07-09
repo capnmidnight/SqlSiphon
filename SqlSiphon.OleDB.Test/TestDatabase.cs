@@ -14,13 +14,12 @@ namespace SqlSiphon.OleDB.Test
         {
         }
 
-        protected void ExecuteScriptsOfType(ScriptType scriptType, bool adding)
+        protected void ExecuteScriptsOfType(ScriptType scriptType)
         {
             var ss = this.GetSqlSiphon();
-            var initial = new DatabaseState(null, null, ss);
             var final = new DatabaseState(new Type[] { this.GetType() }, ss, ss, null, null);
-            var diff = final.MakeScripts(initial, ss, ss);
-            var scripts = (adding ? diff.Final : diff.Initial)
+            var diff = final.MakeScripts(null, ss, ss);
+            var scripts = diff.Final
                 .Where(script => (script.ScriptType & scriptType) == scriptType)
                 .OrderBy(script => script.ScriptType);
             foreach (var script in scripts)
@@ -30,24 +29,14 @@ namespace SqlSiphon.OleDB.Test
             }
         }
 
-        public void DropProcedures()
-        {
-            ExecuteScriptsOfType(ScriptType.DropRoutine, false);
-        }
-
-        public void DropTables()
-        {
-            ExecuteScriptsOfType(ScriptType.DropTable, false);
-        }
-
         public void CreateProcedures()
         {
-            ExecuteScriptsOfType(ScriptType.CreateRoutine, true);
+            ExecuteScriptsOfType(ScriptType.CreateRoutine);
         }
 
         public void CreateTables()
         {
-            ExecuteScriptsOfType(ScriptType.CreateTable, true);
+            ExecuteScriptsOfType(ScriptType.CreateTable);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
