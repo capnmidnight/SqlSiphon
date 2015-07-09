@@ -14,32 +14,42 @@ namespace SqlSiphon
             Dictionary<string, T> initial,
             Action<string, T> remove,
             Action<string, T> add,
-            Action<string, T, T> change)
+            Action<string, T, T> change,
+            bool makeChangeScripts)
         {
-            var all = initial.Keys
-                .Union(final.Keys)
-                .Distinct()
-                .ToArray();
-            foreach (var key in all)
+            if (initial != null)
             {
-                if (final.ContainsKey(key) && initial.ContainsKey(key))
+                var all = initial.Keys
+                    .Union(final.Keys)
+                    .Distinct()
+                    .ToArray();
+                foreach (var key in all)
                 {
-                    change(key, final[key], initial[key]);
-                }
-                else if (final.ContainsKey(key))
-                {
-                    add(key, final[key]);
-                }
-                else
-                {
-                    remove(key, initial[key]);
+                    if (final.ContainsKey(key) && initial.ContainsKey(key))
+                    {
+                        if (makeChangeScripts)
+                        {
+                            change(key, final[key], initial[key]);
+                        }
+                    }
+                    else if (final.ContainsKey(key))
+                    {
+                        add(key, final[key]);
+                    }
+                    else
+                    {
+                        remove(key, initial[key]);
+                    }
                 }
             }
         }
 
         public static void DumpAll<T>(List<ScriptStatus> outCollect, Dictionary<string, T> inCollect, ScriptType type, Func<T, string> makeScript)
         {
-            outCollect.AddRange(inCollect.Select(i => new ScriptStatus(type, i.Key, makeScript(i.Value), null)));
+            if (inCollect != null)
+            {
+                outCollect.AddRange(inCollect.Select(i => new ScriptStatus(type, i.Key, makeScript(i.Value), null)));
+            }
         }
 
         internal void Traverse<T>(
@@ -51,7 +61,8 @@ namespace SqlSiphon
             Func<T, T, string> isChanged,
             Func<T, string> makeDropScript,
             Func<T, string> makeCreateScript,
-            Func<T, string> altMakeCreateScript = null)
+            Func<T, string> altMakeCreateScript,
+            bool makeChangeScripts)
         {
             DumpAll(this.Initial, initial, createType, altMakeCreateScript ?? makeCreateScript);
             DumpAll(this.Final, final, createType, makeCreateScript);
@@ -82,7 +93,8 @@ namespace SqlSiphon
                         this.Scripts.Add(new ScriptStatus(dropType, key, makeDropScript(i), changeReason));
                         this.Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), changeReason));
                     }
-                });
+                },
+                makeChangeScripts);
         }
 
         public List<ScriptStatus> Scripts { get; private set; }
@@ -90,25 +102,26 @@ namespace SqlSiphon
         public List<ScriptStatus> Final { get; private set; }
         public List<Action<IDataConnector>> PostExecute { get; private set; }
 
-        public DatabaseDelta(DatabaseState final, DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        public DatabaseDelta(DatabaseState final, DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
             this.Scripts = new List<ScriptStatus>();
             this.Initial = new List<ScriptStatus>();
             this.Final = new List<ScriptStatus>();
 
-            if (initial.CatalogueExists == false)
+            if (initial != null && initial.CatalogueExists == false)
             {
-                this.Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, initial.CatalogueName, gen.MakeCreateCatalogueScript(initial.CatalogueName), "Database doesn't exist"));
+                this.Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, final.CatalogueName, gen.MakeCreateCatalogueScript(final.CatalogueName), "Database doesn't exist"));
             }
-            ProcessDatabaseLogins(final.DatabaseLogins, initial.DatabaseLogins.Keys.ToList(), initial.CatalogueName, asm, gen);
-            ProcessSchemas(final.Schemata.ToDictionary(k => k), initial.Schemata.ToDictionary(k => k), asm, gen);
-            ProcessTables(final.Tables, initial.Tables, asm, gen);
-            ProcessIndexes(final.Indexes, initial.Indexes, asm, gen);
-            ProcessRelationships(final.Relationships, initial.Relationships, asm, gen);
-            ProcessPrimaryKeys(final.PrimaryKeys, initial.PrimaryKeys, asm, gen);
-            ProcessRoutines(final.Functions, initial.Functions, asm, gen);
+
+            ProcessDatabaseLogins(final.DatabaseLogins, initial == null ? null : initial.DatabaseLogins.Keys.ToList(), final.CatalogueName, asm, gen);
+            ProcessSchemas(final.Schemata.ToDictionary(k => k), initial == null ? null : initial.Schemata.ToDictionary(k => k), asm, gen, makeChangeScripts);
+            ProcessTables(final.Tables, initial == null ? null : initial.Tables, asm, gen, makeChangeScripts);
+            ProcessIndexes(final.Indexes, initial == null ? null : initial.Indexes, asm, gen, makeChangeScripts);
+            ProcessRelationships(final.Relationships, initial == null ? null : initial.Relationships, asm, gen, makeChangeScripts);
+            ProcessPrimaryKeys(final.PrimaryKeys, initial == null ? null : initial.PrimaryKeys, asm, gen, makeChangeScripts);
+            ProcessRoutines(final.Functions, initial == null ? null : initial.Functions, asm, gen, makeChangeScripts);
             this.Scripts.AddRange(final.InitScripts
-                .Where(s => !initial.InitScripts.Contains(s))
+                .Where(s => initial == null || !initial.InitScripts.Contains(s))
                 .Select(s => new ScriptStatus(ScriptType.InitializeData, "init", s, "Initialize data in database")));
             this.Scripts.Sort();
             this.Initial.Sort();
@@ -118,13 +131,13 @@ namespace SqlSiphon
 
         private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {
-            var names = initial.Select(s => s.ToLowerInvariant()).ToArray();
+            var names = initial == null ? null : initial.Select(s => s.ToLowerInvariant()).ToArray();
             this.Scripts.AddRange(final
-                .Where(u => !names.Contains(u.Key.ToLowerInvariant()))
+                .Where(u => names == null || !names.Contains(u.Key.ToLowerInvariant()))
                 .Select(u => new ScriptStatus(ScriptType.CreateDatabaseLogin, u.Key, gen.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName), "Database login doesn't exist")));
         }
 
-        private void ProcessSchemas(Dictionary<string, string> finalSchemas, Dictionary<string, string> initialSchemas, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        private void ProcessSchemas(Dictionary<string, string> finalSchemas, Dictionary<string, string> initialSchemas, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
             Traverse(
                 "Schema",
@@ -134,10 +147,12 @@ namespace SqlSiphon
                 ScriptType.CreateSchema,
                 (a, b) => null,
                 gen.MakeDropSchemaScript,
-                gen.MakeCreateSchemaScript);
+                gen.MakeCreateSchemaScript,
+                null,
+                makeChangeScripts);
         }
 
-        private void ProcessRoutines(Dictionary<string, RoutineAttribute> finalRoutines, Dictionary<string, RoutineAttribute> initialRoutines, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        private void ProcessRoutines(Dictionary<string, RoutineAttribute> finalRoutines, Dictionary<string, RoutineAttribute> initialRoutines, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
             Traverse(
                 "Routine",
@@ -148,10 +163,11 @@ namespace SqlSiphon
                 asm.RoutineChanged,
                 gen.MakeDropRoutineScript,
                 f => gen.MakeCreateRoutineScript(f, true),
-                f => gen.MakeCreateRoutineScript(f, false));
+                f => gen.MakeCreateRoutineScript(f, false),
+                makeChangeScripts);
         }
 
-        private void ProcessPrimaryKeys(Dictionary<string, PrimaryKey> finalKeys, Dictionary<string, PrimaryKey> initialKeys, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        private void ProcessPrimaryKeys(Dictionary<string, PrimaryKey> finalKeys, Dictionary<string, PrimaryKey> initialKeys, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
             Traverse(
                 "Primary key",
@@ -161,10 +177,12 @@ namespace SqlSiphon
                 ScriptType.CreatePrimaryKey,
                 asm.KeyChanged,
                 gen.MakeDropPrimaryKeyScript,
-                gen.MakeCreatePrimaryKeyScript);
+                gen.MakeCreatePrimaryKeyScript,
+                null,
+                makeChangeScripts);
         }
 
-        private void ProcessRelationships(Dictionary<string, Relationship> finalRelations, Dictionary<string, Relationship> initialRelations, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        private void ProcessRelationships(Dictionary<string, Relationship> finalRelations, Dictionary<string, Relationship> initialRelations, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
             Traverse(
                 "Relationship",
@@ -174,10 +192,12 @@ namespace SqlSiphon
                 ScriptType.CreateRelationship,
                 asm.RelationshipChanged,
                 gen.MakeDropRelationshipScript,
-                gen.MakeCreateRelationshipScript);
+                gen.MakeCreateRelationshipScript,
+                null,
+                makeChangeScripts);
         }
 
-        private void ProcessIndexes(Dictionary<string, TableIndex> finalIndexes, Dictionary<string, TableIndex> initialIndexes, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        private void ProcessIndexes(Dictionary<string, TableIndex> finalIndexes, Dictionary<string, TableIndex> initialIndexes, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
             Traverse(
                 "Index",
@@ -187,13 +207,16 @@ namespace SqlSiphon
                 ScriptType.CreateIndex,
                 asm.IndexChanged,
                 gen.MakeDropIndexScript,
-                gen.MakeCreateIndexScript);
+                gen.MakeCreateIndexScript,
+                null,
+                makeChangeScripts);
         }
 
-        private void ProcessTables(Dictionary<string, TableAttribute> finalTables, Dictionary<string, TableAttribute> initialTables, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        private void ProcessTables(Dictionary<string, TableAttribute> finalTables, Dictionary<string, TableAttribute> initialTables, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
             DumpAll(this.Initial, initialTables, ScriptType.CreateTable, gen.MakeCreateTableScript);
             DumpAll(this.Final, finalTables, ScriptType.CreateTable, gen.MakeCreateTableScript);
+
             Traverse(
                 finalTables,
                 initialTables,
@@ -208,7 +231,7 @@ namespace SqlSiphon
                 (tableName, finalTable, initialTable) =>
                 {
                     var finalColumns = finalTable.Properties.ToDictionary(p => gen.MakeIdentifier(finalTable.Schema ?? gen.DefaultSchemaName, finalTable.Name, p.Name).ToLowerInvariant());
-                    var initialColumns = initialTable.Properties.ToDictionary(p => gen.MakeIdentifier(initialTable.Schema ?? gen.DefaultSchemaName, initialTable.Name, p.Name).ToLowerInvariant());
+                    var initialColumns = initialTable == null ? null : initialTable.Properties.ToDictionary(p => gen.MakeIdentifier(initialTable.Schema ?? gen.DefaultSchemaName, initialTable.Name, p.Name).ToLowerInvariant());
 
                     Traverse(
                         finalColumns,
@@ -228,8 +251,8 @@ namespace SqlSiphon
                             {
                                 this.Scripts.Add(new ScriptStatus(ScriptType.AlterColumn, columnName, gen.MakeAlterColumnScript(finalColumn, initialColumn), reason));
                             }
-                        });
-                });
+                        }, makeChangeScripts);
+                }, makeChangeScripts);
         }
     }
 }

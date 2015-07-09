@@ -10,15 +10,15 @@ namespace SqlSiphon.InformationSchema
     [Table(Include = false, Schema = "information_schema")]
     public class Routines
     {
-        public string specific_catalog { get; set; }
         public string specific_schema { get; set; }
         public string specific_name { get; set; }
-        public string routine_catalog { get; set; }
         public string routine_schema { get; set; }
         public string routine_name { get; set; }
         public string routine_definition { get; set; }
         public string data_type { get; set; }
         /*
+        public string specific_catalog { get; set; }
+        public string routine_catalog { get; set; }
         public string routine_body { get; set; }
         public string routine_type { get; set; }
         public string module_catalog { get; set; }

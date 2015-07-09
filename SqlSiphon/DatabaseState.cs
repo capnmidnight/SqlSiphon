@@ -389,7 +389,12 @@ namespace SqlSiphon
 
         public virtual DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {
-            return new DatabaseDelta(this, initial, asm, gen);
+            return new DatabaseDelta(this, initial, asm, gen, true);
+        }
+
+        public virtual DatabaseDelta MakeScripts(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        {
+            return new DatabaseDelta(this, initial, asm, gen, false);
         }
 
         public bool TypeExists<T>()

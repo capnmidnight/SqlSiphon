@@ -44,55 +44,104 @@ namespace SqlSiphon.OleDB
     {
         public override string DataSource { get { return this.Connection.DataSource; } }
 
-        private static Dictionary<string, Type> typeMapping;
-        private static Dictionary<Type, string> reverseTypeMapping;
+        private static Dictionary<short, string> PARAMETER_MODES;
+
+        private static Dictionary<string, Type> stringToType;
+        private static Dictionary<Type, string> typeToString;
+        private static Dictionary<short, Type> shortToType;
+        private static Dictionary<Type, short> typeToShort;
+        private static Dictionary<short, string> shortToString;
+        private static Dictionary<string, short> stringToShort;
+
+        private static void _(DAO.DataTypeEnum val, string name, Type type)
+        {
+            var sVal = (short)val;
+            if (!stringToType.ContainsKey(name)) { stringToType.Add(name, type); }
+            if (!typeToString.ContainsKey(type)) { typeToString.Add(type, name); }
+            if (!shortToType.ContainsKey(sVal)) { shortToType.Add(sVal, type); }
+            if (!typeToShort.ContainsKey(type)) { typeToShort.Add(type, sVal); }
+            if (!shortToString.ContainsKey(sVal)) { shortToString.Add(sVal, name); }
+            if (!stringToShort.ContainsKey(name)) { stringToShort.Add(name, sVal); }
+        }
 
         static OleDBDataAccessLayer()
         {
-            typeMapping = new Dictionary<string, Type>();
-            typeMapping.Add("varbinary", typeof(byte[]));
-            typeMapping.Add("longbinary", typeof(byte[]));
-            typeMapping.Add("binary", typeof(byte[]));
-            typeMapping.Add("bit", typeof(bool));
-            typeMapping.Add("currency", typeof(decimal));
-            typeMapping.Add("numeric", typeof(decimal));
-            typeMapping.Add("datetime", typeof(DateTime));
-            typeMapping.Add("date", typeof(DateTime));
-            typeMapping.Add("guid", typeof(Guid));
-            typeMapping.Add("text", typeof(string));
-            typeMapping.Add("varchar", typeof(string));
-            typeMapping.Add("longtext", typeof(string));
-            typeMapping.Add("single", typeof(float));
-            typeMapping.Add("double", typeof(double));
-            typeMapping.Add("unsigned byte", typeof(byte));
-            typeMapping.Add("short", typeof(short));
-            typeMapping.Add("long", typeof(int));
-            typeMapping.Add("autoincrement", typeof(int));
-            typeMapping.Add("counter", typeof(int));
+            stringToType = new Dictionary<string, Type>();
+            typeToString = new Dictionary<Type, string>();
+            shortToType = new Dictionary<short, Type>();
+            typeToShort = new Dictionary<Type, short>();
+            shortToString = new Dictionary<short, string>();
+            stringToShort = new Dictionary<string, short>();
 
-            reverseTypeMapping = typeMapping
-                .GroupBy(kv => kv.Value, kv => kv.Key)
-                .ToDictionary(g => g.Key, g => g.First());
+            _((DAO.DataTypeEnum)0, "void", typeof(void));
+            _((DAO.DataTypeEnum)48, "void", typeof(void));
 
-            reverseTypeMapping.Add(typeof(int?), "long");
-            reverseTypeMapping.Add(typeof(uint), "long");
-            reverseTypeMapping.Add(typeof(uint?), "long");
+            _(DAO.DataTypeEnum.dbBinary, "binary", typeof(byte[]));
+            _(DAO.DataTypeEnum.dbLongBinary, "longbinary", typeof(byte[]));
+            _(DAO.DataTypeEnum.dbVarBinary, "varbinary", typeof(byte[]));
 
-            reverseTypeMapping.Add(typeof(short?), "short");
-            reverseTypeMapping.Add(typeof(ushort), "short");
-            reverseTypeMapping.Add(typeof(ushort?), "short");
+            _(DAO.DataTypeEnum.dbBoolean, "bit", typeof(bool));
+            _(DAO.DataTypeEnum.dbBoolean, "bit", typeof(bool?));
 
-            reverseTypeMapping.Add(typeof(byte?), "byte");
-            reverseTypeMapping.Add(typeof(sbyte), "byte");
-            reverseTypeMapping.Add(typeof(sbyte?), "byte");
+            _(DAO.DataTypeEnum.dbByte, "byte", typeof(byte));
+            _(DAO.DataTypeEnum.dbByte, "byte", typeof(byte?));
+            _(DAO.DataTypeEnum.dbByte, "byte", typeof(sbyte));
+            _(DAO.DataTypeEnum.dbByte, "byte", typeof(sbyte?));
 
-            reverseTypeMapping.Add(typeof(double?), "double");
-            reverseTypeMapping.Add(typeof(float?), "single");
-            reverseTypeMapping.Add(typeof(decimal?), "currency");
+            _(DAO.DataTypeEnum.dbChar, "char", typeof(char));
+            _(DAO.DataTypeEnum.dbChar, "char", typeof(char?));
 
-            reverseTypeMapping.Add(typeof(DateTime?), "datetime");
+            _(DAO.DataTypeEnum.dbGUID, "guid", typeof(Guid));
+            _(DAO.DataTypeEnum.dbGUID, "guid", typeof(Guid?));
 
-            reverseTypeMapping.Add(typeof(bool?), "bit");
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(int));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(int?));
+            _(DAO.DataTypeEnum.dbBigInt, "int", typeof(int));
+            _(DAO.DataTypeEnum.dbBigInt, "int", typeof(int?));
+            _(DAO.DataTypeEnum.dbLong, "int", typeof(int));
+            _(DAO.DataTypeEnum.dbLong, "int", typeof(int?));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(uint));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(uint?));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(short));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(short?));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(ushort));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(ushort?));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(long));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(long?));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(ulong));
+            _(DAO.DataTypeEnum.dbInteger, "int", typeof(ulong?));
+
+            _(DAO.DataTypeEnum.dbCurrency, "currency", typeof(decimal));
+            _(DAO.DataTypeEnum.dbCurrency, "currency", typeof(decimal?));
+            _(DAO.DataTypeEnum.dbDecimal, "decimal", typeof(decimal));
+            _(DAO.DataTypeEnum.dbDecimal, "decimal", typeof(decimal?));
+            _(DAO.DataTypeEnum.dbNumeric, "numeric", typeof(decimal));
+            _(DAO.DataTypeEnum.dbNumeric, "numeric", typeof(decimal?));
+
+            _(DAO.DataTypeEnum.dbDouble, "double", typeof(double));
+            _(DAO.DataTypeEnum.dbDouble, "double", typeof(double?));
+
+            _(DAO.DataTypeEnum.dbFloat, "float", typeof(float));
+            _(DAO.DataTypeEnum.dbFloat, "float", typeof(float?));
+            _(DAO.DataTypeEnum.dbSingle, "single", typeof(float));
+            _(DAO.DataTypeEnum.dbSingle, "single", typeof(float?));
+
+            _(DAO.DataTypeEnum.dbText, "text", typeof(string));
+            _(DAO.DataTypeEnum.dbMemo, "memo", typeof(string));
+
+            _(DAO.DataTypeEnum.dbDate, "datetime", typeof(DateTime));
+            _(DAO.DataTypeEnum.dbDate, "datetime", typeof(DateTime?));
+            _(DAO.DataTypeEnum.dbTime, "time", typeof(DateTime));
+            _(DAO.DataTypeEnum.dbTime, "time", typeof(DateTime?));
+            _(DAO.DataTypeEnum.dbTimeStamp, "timestamp", typeof(DateTime));
+            _(DAO.DataTypeEnum.dbTimeStamp, "timestamp", typeof(DateTime?));
+
+            PARAMETER_MODES = new Dictionary<short, string>();
+            PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamInput, "IN");
+            PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamInputOutput, "INOUT");
+            PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamOutput, "OUT");
+            PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamReturnValue, "RETURN");
+
         }
 
         protected override string IdentifierPartBegin
@@ -302,9 +351,9 @@ namespace SqlSiphon.OleDB
 
         protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
         {
-            if (string.IsNullOrEmpty(sqlType) && reverseTypeMapping.ContainsKey(systemType))
+            if (string.IsNullOrEmpty(sqlType) && typeToString.ContainsKey(systemType))
             {
-                sqlType = reverseTypeMapping[systemType];
+                sqlType = typeToString[systemType];
             }
 
             if (sqlType != null)
@@ -337,42 +386,29 @@ namespace SqlSiphon.OleDB
             }
         }
 
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
-        [Routine(CommandType = CommandType.Text, Query = "SELECT * FROM Columns")]
-        protected virtual DataSet GetColumns2()
-        {
-            return GetDataSet();
-        }
-
-        Type[] TYPE_CODE_CACHE = new Type[1000];
         public override List<InformationSchema.Columns> GetColumns()
         {
-            if (this.Connection.State != ConnectionState.Open)
+            return WithDAO(db =>
             {
-                this.Connection.Open();
-            }
-
-            var columnSchema = this.Connection.GetSchema("Columns");
-            var columnInfoType = typeof(InformationSchema.Columns);
-            var columnInfoProperties = columnInfoType.GetProperties();
-            var columns = columnSchema.Rows.OfType<DataRow>()
-                .Select(r =>
+                return db.TableDefs.Cast<DAO.TableDef>().SelectMany(table =>
                 {
-                    var col = new InformationSchema.Columns();
-                    foreach (var prop in columnInfoProperties)
+                    return table.Fields.Cast<DAO.Field>().Select(field =>
                     {
-                        var value = r[prop.Name.ToUpperInvariant()];
-                        if (value != DBNull.Value)
+                        var attr = (DAO.FieldAttributeEnum)field.Attributes;
+                        return new InformationSchema.Columns
                         {
-                            value = TranslateValue(value, value.GetType(), GetBaseType(prop.PropertyType));
-                            prop.SetValue(col, value);
-                        }
-                    }
-                    return col;
+                            table_name = table.Name,
+                            column_name = field.Name,
+                            data_type = shortToString[field.Type],
+                            ordinal_position = field.OrdinalPosition,
+                            is_nullable = field.Required ? "no" : "yes",
+                            column_default = field.DefaultValue.ToString(),
+                            character_maximum_length = field.Size,
+                            is_identity = ((attr & DAO.FieldAttributeEnum.dbAutoIncrField) == DAO.FieldAttributeEnum.dbAutoIncrField) ? 1 : 0
+                        };
+                    });
                 }).ToList();
-
-            return columns;
+            });
         }
 
         private static Type GetBaseType(Type t)
@@ -392,7 +428,6 @@ namespace SqlSiphon.OleDB
             {
                 if (sourceType == typeof(int))
                 {
-                    TYPE_CODE_CACHE[(int)value] = targetType;
                     if (targetType == typeof(string))
                     {
                         value = targetType.Name;
@@ -400,6 +435,10 @@ namespace SqlSiphon.OleDB
                     else if (targetType == typeof(byte))
                     {
                         value = (byte)(int)value;
+                    }
+                    else if (targetType == typeof(short))
+                    {
+                        value = (short)(int)value;
                     }
                     else
                     {
@@ -431,8 +470,8 @@ namespace SqlSiphon.OleDB
             }
             return value;
         }
-        
-        public override void InsertAll(Type t, System.Collections.IEnumerable data)
+
+        private T WithDAO<T>(Func<DAO.Database, T> thunk)
         {
             // temporarily close the connection to the file
             bool wasOpen = false;
@@ -442,64 +481,92 @@ namespace SqlSiphon.OleDB
                 this.Connection.Close();
             }
 
-            // get the properties of the type we're inserting
-            var attr = DatabaseObjectAttribute.GetAttribute(t);
-            if (attr == null)
-            {
-                throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
-            }
-            var props = attr.Properties.Where(p => p.Include).ToArray();
-
             // setup DAO
             var engine = new DAO.DBEngine();
             var db = engine.OpenDatabase(this.Connection.DataSource);
-            var recordSet = db.OpenRecordset(attr.Name);
-            var fields = new DAO.Field[props.Length];
-            var fieldNames = recordSet.Fields
-                .OfType<DAO.Field>()
-                .Select(f => f.Name);
-            for (int i = 0; i < fields.Length; ++i)
-            {
-                fields[i] = recordSet.Fields[props[i].Name];
-            }
 
-            // copy
-            foreach (var obj in data)
+            try
             {
-                recordSet.AddNew();
-                for (int j = 0; j < fields.Length; ++j)
+                return thunk(db);
+            }
+            finally
+            {
+                db.Close();
+                // reopen the connection, if the user is expecting it.
+                if (wasOpen)
                 {
-                    var value = props[j].GetValue(obj);
-                    if (props[j].SystemType == typeof(Guid))
-                    {
-                        value = string.Format("{{{0}}}", value);
-                    }
-                    fields[j].Value = value;
+                    this.Connection.Open();
                 }
-                recordSet.Update();
             }
+        }
 
-            // clean up
-            recordSet.Clone();
-            db.Close();
-
-            // reopen the connection, if the user is expecting it.
-            if (wasOpen)
+        private void WithDAO(Action<DAO.Database> thunk)
+        {
+            WithDAO(db =>
             {
-                this.Connection.Open();
-            }
+                thunk(db);
+                return 0;
+            });
+        }
+
+        public override void InsertAll(Type t, System.Collections.IEnumerable data)
+        {
+            WithDAO(db =>
+            {
+                // get the properties of the type we're inserting
+                var attr = DatabaseObjectAttribute.GetAttribute(t);
+                if (attr == null)
+                {
+                    throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
+                }
+                var props = attr.Properties.Where(p => p.Include && !p.IsIdentity).ToArray();
+                var recordSet = db.OpenRecordset(attr.Name);
+                var fields = new DAO.Field[props.Length];
+                var fieldNames = recordSet.Fields
+                    .OfType<DAO.Field>()
+                    .Select(f => f.Name);
+
+                for (int i = 0; i < fields.Length; ++i)
+                {
+                    fields[i] = recordSet.Fields[props[i].Name];
+                }
+
+                // copy
+                foreach (var obj in data)
+                {
+                    recordSet.AddNew();
+                    for (int j = 0; j < fields.Length; ++j)
+                    {
+                        var value = props[j].GetValue(obj);
+                        if (props[j].SystemType == typeof(Guid))
+                        {
+                            value = string.Format("{{{0}}}", value);
+                        }
+                        fields[j].Value = value;
+                    }
+                    recordSet.Update();
+                }
+
+                // clean up
+                recordSet.Close();
+            });
         }
 
         public override List<InformationSchema.Routines> GetRoutines()
         {
-            var procedureColumns = GetSchemaColumnNames(OleDbSchemaGuid.Procedures);
-            return GetSchemaRowValues<string>(OleDbSchemaGuid.Procedures, "PROCEDURE_NAME")
-                .Union(GetSchemaRowValues<string>(OleDbSchemaGuid.Views, "TABLE_NAME"))
-                .Select(name => new InformationSchema.Routines
+            return WithDAO(db =>
+            {
+                return db.QueryDefs.Cast<DAO.QueryDef>().Select(query =>
                 {
-                    routine_name = name
-                })
-                .ToList();
+                    return new InformationSchema.Routines
+                    {
+                        data_type = shortToString[query.Type],
+                        routine_definition = query.SQL,
+                        routine_name = query.Name,
+                        specific_name = query.Name
+                    };
+                }).ToList();
+            });
         }
 
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
@@ -529,12 +596,28 @@ namespace SqlSiphon.OleDB
 
         public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
         {
-            return new List<InformationSchema.ReferentialConstraints>();
-        }
-
-        public override List<InformationSchema.Parameters> GetParameters()
-        {
-            throw new NotImplementedException();
+            return WithDAO(db =>
+            {
+                return db.Relations.Cast<DAO.Relation>().Select(rel =>
+                {
+                    var a = (DAO.RelationAttributeEnum)rel.Attributes;
+                    var b = rel.Fields.Cast<DAO.Field>().Select(f =>
+                    {
+                        var c = f.Name;
+                        var d = f.Type;
+                        return f;
+                    }).ToArray();
+                    var e = rel.ForeignTable;
+                    var g = rel.Name;
+                    var h = rel.PartialReplica;
+                    var i = rel.Table;
+                    return new InformationSchema.ReferentialConstraints
+                    {
+                        constraint_name = rel.Name,
+                        unique_constraint_name = rel.ForeignTable
+                    };
+                }).ToList();
+            });
         }
 
         public override List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns()
@@ -552,6 +635,27 @@ namespace SqlSiphon.OleDB
             get { return null; }
         }
 
+        public override List<InformationSchema.Parameters> GetParameters()
+        {
+            return WithDAO<List<InformationSchema.Parameters>>(db =>
+            {
+                return db.QueryDefs.Cast<DAO.QueryDef>().SelectMany(query =>
+                {
+                    return query.Parameters.Cast<DAO.Parameter>().Select(param =>
+                    {
+                        return new InformationSchema.Parameters
+                        {
+                            specific_schema = null,
+                            specific_name = query.Name,
+                            parameter_name = param.Name,
+                            parameter_mode = PARAMETER_MODES[param.Direction],
+                            data_type = typeToString[shortToType[param.Type]]
+                        };
+                    });
+                }).ToList();
+            });
+        }
+
         public override int DefaultTypePrecision(string typeName, int testPrecision)
         {
             throw new NotImplementedException();
@@ -559,12 +663,12 @@ namespace SqlSiphon.OleDB
 
         public override Type GetSystemType(string sqlType)
         {
-            throw new NotImplementedException();
+            return stringToType.ContainsKey(sqlType) ? stringToType[sqlType] : null;
         }
 
         public override bool DescribesIdentity(InformationSchema.Columns column)
         {
-            throw new NotImplementedException();
+            return false;
         }
 
         protected override string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial)

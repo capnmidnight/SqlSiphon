@@ -14,14 +14,40 @@ namespace SqlSiphon.OleDB.Test
         {
         }
 
-        public void SyncProcs()
+        protected void ExecuteScriptsOfType(ScriptType scriptType, bool adding)
         {
-            ExecuteScriptsOfType(ScriptType.CreateRoutine);
+            var ss = this.GetSqlSiphon();
+            var initial = new DatabaseState(null, null, ss);
+            var final = new DatabaseState(new Type[] { this.GetType() }, ss, ss, null, null);
+            var diff = final.MakeScripts(initial, ss, ss);
+            var scripts = (adding ? diff.Final : diff.Initial)
+                .Where(script => (script.ScriptType & scriptType) == scriptType)
+                .OrderBy(script => script.ScriptType);
+            foreach (var script in scripts)
+            {
+                script.Run = true;
+                ss.AlterDatabase(script);
+            }
+        }
+
+        public void DropProcedures()
+        {
+            ExecuteScriptsOfType(ScriptType.DropRoutine, false);
+        }
+
+        public void DropTables()
+        {
+            ExecuteScriptsOfType(ScriptType.DropTable, false);
+        }
+
+        public void CreateProcedures()
+        {
+            ExecuteScriptsOfType(ScriptType.CreateRoutine, true);
         }
 
         public void CreateTables()
         {
-            ExecuteScriptsOfType(ScriptType.CreateTable);
+            ExecuteScriptsOfType(ScriptType.CreateTable, true);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
@@ -45,19 +71,10 @@ namespace SqlSiphon.OleDB.Test
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         [Routine(
             CommandType = CommandType.Text,
-            Query = "select * from test_table order by id")]
-        public List<string> GetNamesPrimitiveByName()
-        {
-            return this.GetList<string>("name");
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
-        [Routine(
-            CommandType = CommandType.Text,
-            Query = "select * from test_table order by id")]
+            Query = "select name from test_table order by id")]
         public List<string> GetNamesPrimitiveByIndex()
         {
-            return this.GetList<string>(1);
+            return this.GetList<string>();
         }
 
         [Routine(
@@ -77,24 +94,6 @@ namespace SqlSiphon.OleDB.Test
         public TestEntity FindName(int userid)
         {
             return this.Get<TestEntity>(userid);
-        }
-
-        [Routine(
-            CommandType = CommandType.Text,
-            Query = "select * from test_table where id = userid")]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
-        public string GetNamePrimitiveByName(int userid)
-        {
-            return this.Get<string>("name", userid);
-        }
-
-        [Routine(
-            CommandType = CommandType.Text,
-            Query = "select * from test_table where id = userid")]
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
-        public string GetNamePrimitiveByIndex(int userid)
-        {
-            return this.Get<string>(1, userid);
         }
 
         [Routine(

@@ -16,12 +16,18 @@ namespace SqlSiphon.OleDB.Test
         [TestInitialize]
         public void Init()
         {
-            System.Diagnostics.Process.Start("cmd", "/C del Test.mdb");
-            d = new TestDatabase("Test.mdb");
-            d.CreateTables();
-            d.SyncProcs();
-            var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            foreach (var name in expected) d.InsertName(name);
+            if (!System.IO.File.Exists("Test.mdb"))
+            {
+                d = new TestDatabase("Test.mdb");
+                d.CreateTables();
+                d.CreateProcedures();
+                var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
+                foreach (var name in expected) d.InsertName(name);
+            }
+            else
+            {
+                d = new TestDatabase("Test.mdb");
+            }
         }
 
         [TestCleanup]
@@ -36,24 +42,9 @@ namespace SqlSiphon.OleDB.Test
         {
             var names = d.GetNames();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(expected.Length, names.Count);
             for (int i = 0; i < expected.Length; ++i)
             {
-                if (i < expected.Length - 1)
-                    Assert.AreEqual(i + 1, names[i].id);
                 Assert.AreEqual(expected[i], names[i].name);
-            }
-        }
-
-        [TestMethod]
-        public void GetListPrimitiveByName()
-        {
-            var names = d.GetNamesPrimitiveByName();
-            var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(expected.Length, names.Count);
-            for (int i = 0; i < expected.Length; ++i)
-            {
-                Assert.AreEqual(expected[i], names[i]);
             }
         }
 
@@ -62,7 +53,6 @@ namespace SqlSiphon.OleDB.Test
         {
             var names = d.GetNamesPrimitiveByIndex();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            Assert.AreEqual(expected.Length, names.Count);
             for (int i = 0; i < expected.Length; ++i)
             {
                 Assert.AreEqual(expected[i], names[i]);
@@ -75,20 +65,6 @@ namespace SqlSiphon.OleDB.Test
             var name = d.GetName(3);
             Assert.AreEqual(3, name.id);
             Assert.AreEqual("mike", name.name);
-        }
-
-        [TestMethod]
-        public void GetOnePrimitiveByName()
-        {
-            var name = d.GetNamePrimitiveByName(3);
-            Assert.AreEqual("mike", name);
-        }
-
-        [TestMethod]
-        public void GetOnePrimitiveByIndex()
-        {
-            var name = d.GetNamePrimitiveByIndex(3);
-            Assert.AreEqual("mike", name);
         }
 
         [TestMethod]

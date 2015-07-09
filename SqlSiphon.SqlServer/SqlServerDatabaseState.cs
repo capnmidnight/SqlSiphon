@@ -68,13 +68,14 @@ namespace SqlSiphon.SqlServer
                         {
                             var colDiff = asm.ColumnChanged(finalColumn, initialColumn);
                             changed = changed || colDiff != null;
-                        });
+                        }, true);
                     if (changed)
                     {
                         delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type has changed"));
                         delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type has changed"));
                     }
-                });
+                },
+                true);
         }
     }
 }
