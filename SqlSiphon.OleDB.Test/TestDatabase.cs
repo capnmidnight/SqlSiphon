@@ -14,29 +14,24 @@ namespace SqlSiphon.OleDB.Test
         {
         }
 
-        protected void ExecuteScriptsOfType(ScriptType scriptType)
+        protected void GenerateAndExecuteScripts<T>(Func<DatabaseState, Dictionary<string, T>> getter, Func<IDatabaseScriptGenerator, T, string> maker)
         {
             var ss = this.GetSqlSiphon();
             var final = new DatabaseState(new Type[] { this.GetType() }, ss, ss, null, null);
-            var diff = final.MakeScripts(null, ss, ss);
-            var scripts = diff.Final
-                .Where(script => (script.ScriptType & scriptType) == scriptType)
-                .OrderBy(script => script.ScriptType);
-            foreach (var script in scripts)
+            foreach (var o in getter(final))
             {
-                script.Run = true;
-                ss.AlterDatabase(script);
+                ss.AlterDatabase(new ScriptStatus(ScriptType.None, null, maker(ss, o.Value), null));
             }
         }
 
         public void CreateProcedures()
         {
-            ExecuteScriptsOfType(ScriptType.CreateRoutine);
+            GenerateAndExecuteScripts(f => f.Functions, (ss, o) => ss.MakeCreateRoutineScript(o));
         }
 
         public void CreateTables()
         {
-            ExecuteScriptsOfType(ScriptType.CreateTable);
+            GenerateAndExecuteScripts(f => f.Tables, (ss, o) => ss.MakeCreateTableScript(o));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
