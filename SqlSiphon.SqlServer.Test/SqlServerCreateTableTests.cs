@@ -172,7 +172,7 @@ create nonclustered index [idx_Test1] on [dbo].[SimpleIndexTable]([DoubleColumn]
     [BoolColumn] bit NOT NULL,
     [LongColumn] bigint NOT NULL,
     [DecimalColumn] decimal NOT NULL,
-    [CharColumn] tinyint NOT NULL
+    [CharColumn] smallint NOT NULL
 );
 --
 alter table [dbo].[LongIndexTable] add constraint [pk_LongIndexTable] primary key([KeyColumn]);

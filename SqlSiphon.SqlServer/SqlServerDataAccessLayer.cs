@@ -102,15 +102,6 @@ namespace SqlSiphon.SqlServer
         protected override string IdentifierPartBegin { get { return "["; } }
         protected override string IdentifierPartEnd { get { return "]"; } }
         public override string DefaultSchemaName { get { return "dbo"; } }
-        private static Dictionary<string, int> defaultTypePrecisions;
-        public override int DefaultTypePrecision(string typeName, int testPrecision)
-        {
-            if (!defaultTypePrecisions.ContainsKey(typeName))
-            {
-                throw new Exception(string.Format("I don't know the default precision for type `{0}`. Perhaps it is {1}?", typeName, testPrecision));
-            }
-            return defaultTypePrecisions[typeName];
-        }
 
         private const SqlServerOptions STANDARD_OPTIONS = SqlServerOptions.ANSI_WARNINGS | SqlServerOptions.ANSI_PADDING | SqlServerOptions.ANSI_NULLS | SqlServerOptions.ARITHABORT | SqlServerOptions.QUOTED_IDENTIFIER | SqlServerOptions.ANSI_NULL_DFLT_ON | SqlServerOptions.CONCAT_NULL_YIELDS_NULL;
 
@@ -146,79 +137,102 @@ namespace SqlSiphon.SqlServer
             }
         }
 
-        private static Dictionary<string, Type> typeMapping;
-        private static Dictionary<Type, string> reverseTypeMapping;
-        static SqlServerDataAccessLayer()
+        private static Dictionary<string, Type> stringToType;
+        private static Dictionary<Type, string> typeToString;
+        private static Dictionary<string, int> defaultTypePrecisions;
+
+
+        private static void SetTypeMappings<T>(string name, int? defaultPrecision = null)
         {
-            typeMapping = new Dictionary<string, Type>();
-            typeMapping.Add("bigint", typeof(long));
-            typeMapping.Add("int", typeof(int));
-            typeMapping.Add("smallint", typeof(short));
-            typeMapping.Add("tinyint", typeof(byte));
-            typeMapping.Add("decimal", typeof(decimal));
-            typeMapping.Add("numeric", typeof(decimal));
-            typeMapping.Add("money", typeof(decimal));
-            typeMapping.Add("smallmoney", typeof(decimal));
-            typeMapping.Add("bit", typeof(bool));
-            typeMapping.Add("float", typeof(double));
-            typeMapping.Add("real", typeof(float));
-            typeMapping.Add("datetime2", typeof(DateTime));
-            typeMapping.Add("datetime", typeof(DateTime));
-            typeMapping.Add("smalldatetime", typeof(DateTime));
-            typeMapping.Add("date", typeof(DateTime));
-            typeMapping.Add("datetimeoffset", typeof(DateTime));
-            typeMapping.Add("time", typeof(DateTime));
-            typeMapping.Add("timestamp", typeof(DateTime));
-            typeMapping.Add("nvarchar", typeof(string));
-            typeMapping.Add("char", typeof(string));
-            typeMapping.Add("varchar", typeof(string));
-            typeMapping.Add("text", typeof(string));
-            typeMapping.Add("nchar", typeof(string));
-            typeMapping.Add("ntext", typeof(string));
-            typeMapping.Add("varbinary", typeof(byte[]));
-            typeMapping.Add("binary", typeof(byte[]));
-            typeMapping.Add("image", typeof(byte[]));
-            typeMapping.Add("uniqueidentifier", typeof(Guid));
-
-            defaultTypePrecisions = new Dictionary<string, int>();
-            defaultTypePrecisions.Add("nvarchar", 0);
-            defaultTypePrecisions.Add("int", 10);
-            defaultTypePrecisions.Add("real", 24);
-            defaultTypePrecisions.Add("datetime2", 27);
-            defaultTypePrecisions.Add("bigint", 19);
-
-            reverseTypeMapping = typeMapping
-                .GroupBy(kv => kv.Value, kv => kv.Key)
-                .ToDictionary(g => g.Key, g => g.First());
-
-            reverseTypeMapping.Add(typeof(char[]), "nchar");
-
-            reverseTypeMapping.Add(typeof(int?), "int");
-            reverseTypeMapping.Add(typeof(uint), "int");
-            reverseTypeMapping.Add(typeof(uint?), "int");
-
-            reverseTypeMapping.Add(typeof(long?), "bigint");
-            reverseTypeMapping.Add(typeof(ulong), "bigint");
-            reverseTypeMapping.Add(typeof(ulong?), "bigint");
-
-            reverseTypeMapping.Add(typeof(short?), "smallint");
-            reverseTypeMapping.Add(typeof(ushort), "smallint");
-            reverseTypeMapping.Add(typeof(ushort?), "smallint");
-
-            reverseTypeMapping.Add(typeof(byte?), "tinyint");
-            reverseTypeMapping.Add(typeof(sbyte), "tinyint");
-            reverseTypeMapping.Add(typeof(sbyte?), "tinyint");
-            reverseTypeMapping.Add(typeof(char), "tinyint");
-            reverseTypeMapping.Add(typeof(char?), "tinyint");
-
-            reverseTypeMapping.Add(typeof(decimal?), "decimal");
-            reverseTypeMapping.Add(typeof(bool?), "bit");
-            reverseTypeMapping.Add(typeof(float?), "real");
-            reverseTypeMapping.Add(typeof(double?), "float");
-            reverseTypeMapping.Add(typeof(DateTime?), "datetime2");
-            reverseTypeMapping.Add(typeof(Guid?), "uniqueidentifier");
+            SetTypeMappings(typeof(T), name, defaultPrecision);
         }
 
+        private static void SetTypeMappings(Type type, string name, int? defaultPrecision = null)
+        {
+            if (!stringToType.ContainsKey(name)) { stringToType.Add(name, type); }
+            if (!typeToString.ContainsKey(type)) { typeToString.Add(type, name); }
+            if (defaultPrecision.HasValue && !defaultTypePrecisions.ContainsKey(name)) { defaultTypePrecisions.Add(name, defaultPrecision.Value); }
+        }
+
+        static SqlServerDataAccessLayer()
+        {
+            stringToType = new Dictionary<string, Type>();
+            typeToString = new Dictionary<Type, string>();
+            defaultTypePrecisions = new Dictionary<string, int>();
+
+            SetTypeMappings<string>("nvarchar", 0); 
+            SetTypeMappings<string>("char");
+            SetTypeMappings<string>("varchar");
+            SetTypeMappings<string>("text");
+            SetTypeMappings<string>("nchar");
+            SetTypeMappings<string>("ntext");
+            
+
+            SetTypeMappings<int>("int", 10);
+            SetTypeMappings<int?>("int");
+            SetTypeMappings<uint>("int");
+            SetTypeMappings<uint?>("int");
+
+            SetTypeMappings<float>("real", 24);
+            SetTypeMappings<float?>("real");
+
+            SetTypeMappings<double>("float", 53);
+            SetTypeMappings<double?>("float", 53);
+
+            SetTypeMappings<DateTime>("datetime2", 27);
+            SetTypeMappings<DateTime?>("datetime2");
+            SetTypeMappings<DateTime>("datetime");
+            SetTypeMappings<DateTime?>("datetime");
+            SetTypeMappings<DateTime>("date");
+            SetTypeMappings<DateTime?>("date");
+            SetTypeMappings<DateTime>("time");
+            SetTypeMappings<DateTime?>("time");
+            SetTypeMappings<DateTime>("timestamp");
+            SetTypeMappings<DateTime?>("timestamp");
+            SetTypeMappings<DateTime>("smalldatetime");
+            SetTypeMappings<DateTime?>("smalldatetime");
+            SetTypeMappings<DateTime>("datetimeoffset");
+            SetTypeMappings<DateTime?>("datetimeoffset");
+
+
+            SetTypeMappings<long>("bigint", 19);
+            SetTypeMappings<long?>("bigint");
+            SetTypeMappings<ulong>("bigint");
+            SetTypeMappings<ulong?>("bigint");
+
+            SetTypeMappings<short>("smallint");
+            SetTypeMappings<short?>("smallint");
+            SetTypeMappings<ushort>("smallint");
+            SetTypeMappings<ushort?>("smallint");
+            SetTypeMappings<char>("smallint");
+            SetTypeMappings<char?>("smallint");
+
+            SetTypeMappings<byte>("tinyint");
+            SetTypeMappings<byte?>("tinyint");
+            SetTypeMappings<sbyte>("tinyint");
+            SetTypeMappings<sbyte?>("tinyint");
+
+            SetTypeMappings<char[]>("nchar");
+
+            SetTypeMappings<decimal>("decimal");
+            SetTypeMappings<decimal?>("decimal");
+            SetTypeMappings<decimal>("numeric");
+            SetTypeMappings<decimal?>("numeric");
+            SetTypeMappings<decimal>("money");
+            SetTypeMappings<decimal?>("money");
+            SetTypeMappings<decimal>("smallmoney");
+            SetTypeMappings<decimal?>("smallmoney");
+
+            SetTypeMappings<bool>("bit");
+            SetTypeMappings<bool?>("bit");
+
+            SetTypeMappings<Guid>("uniqueidentifier");
+            SetTypeMappings<Guid?>("uniqueidentifier");
+
+            SetTypeMappings<byte[]>("varbinary");
+            SetTypeMappings<byte[]>("binary");
+            SetTypeMappings<byte[]>("image");            
+        }
 
         public static string MakeUDTTName(Type t)
         {
@@ -232,6 +246,15 @@ namespace SqlSiphon.SqlServer
             }
 
             return attr.Name + "UDTT";
+        }
+
+        public override int DefaultTypePrecision(string typeName, int testPrecision)
+        {
+            if (!defaultTypePrecisions.ContainsKey(typeName))
+            {
+                throw new Exception(string.Format("I don't know the default precision for type `{0}`. Perhaps it is {1}?", typeName, testPrecision));
+            }
+            return defaultTypePrecisions[typeName];
         }
 
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
@@ -530,8 +553,8 @@ end",
         {
             if (sqlType == null)
             {
-                if (reverseTypeMapping.ContainsKey(systemType))
-                    sqlType = reverseTypeMapping[systemType];
+                if (typeToString.ContainsKey(systemType))
+                    sqlType = typeToString[systemType];
                 else if (IsUDTT(systemType))
                     sqlType = MakeUDTTName(systemType);
             }
@@ -569,7 +592,7 @@ end",
 
         private string MaybeMakeColumnTypeString(ColumnAttribute attr, bool skipDefault = false)
         {
-            if (reverseTypeMapping.ContainsKey(attr.SystemType))
+            if (typeToString.ContainsKey(attr.SystemType))
             {
                 var typeStr = MakeSqlTypeString(attr);
                 return string.Format("{0} {1} {2}NULL {3}",
@@ -584,7 +607,7 @@ end",
         private static DataTable MakeDataTable(string tableName, Type t, System.Collections.IEnumerable array)
         {
             var table = new DataTable(tableName);
-            if (reverseTypeMapping.ContainsKey(t))
+            if (typeToString.ContainsKey(t))
             {
                 table.Columns.Add("Value", t);
                 foreach (object obj in array)
@@ -890,7 +913,7 @@ order by ordinal_position;")]
 
         public override Type GetSystemType(string sqlType)
         {
-            return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
+            return stringToType.ContainsKey(sqlType) ? stringToType[sqlType] : null;
         }
 
         public override DatabaseState GetInitialState(string catalogueName, Regex filter)
