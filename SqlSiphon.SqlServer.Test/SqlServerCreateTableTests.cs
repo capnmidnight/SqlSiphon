@@ -14,15 +14,15 @@ namespace SqlSiphon.SqlServer.Test
         [TestMethod]
         public override void CantCreateEmptyTables()
         {
-            GetScriptFor<TestEmptyTable>();
+            GetScriptFor<EmptyTable>();
         }
 
         [TestMethod]
         public override void CreateSingleColumnTable()
         {
-            var script = GetScriptFor<TestOneColumnTable>();
+            var script = GetScriptFor<OneColumnTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestOneColumnTable](
+@"create table [dbo].[OneColumnTable](
     [ColumnA] int NOT NULL
 );", script);
         }
@@ -30,9 +30,9 @@ namespace SqlSiphon.SqlServer.Test
         [TestMethod]
         public override void CreateSingleColumnTableWithSchema()
         {
-            var script = GetScriptFor<TestOneColumnTableWithSchema>();
+            var script = GetScriptFor<OneColumnTableWithSchema>();
             Assert.AreEqual(
-@"create table [test].[TestOneColumnTableWithSchema](
+@"create table [test].[OneColumnTableWithSchema](
     [ColumnA] int NOT NULL
 );", script);
         }
@@ -40,9 +40,9 @@ namespace SqlSiphon.SqlServer.Test
         [TestMethod]
         public override void CreateTwoColumnTable()
         {
-            var script = GetScriptFor<TestTwoColumnTable>();
+            var script = GetScriptFor<TwoColumnTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestTwoColumnTable](
+@"create table [dbo].[TwoColumnTable](
     [ColumnA] int NOT NULL,
     [ColumnB] int NOT NULL
 );", script);
@@ -51,9 +51,9 @@ namespace SqlSiphon.SqlServer.Test
         [TestMethod]
         public override void CreateTwoColumnTableAsChild()
         {
-            var script = GetScriptFor<TestTwoColumnTableAsChild>();
+            var script = GetScriptFor<TwoColumnTableAsChild>();
             Assert.AreEqual(
-@"create table [dbo].[TestTwoColumnTableAsChild](
+@"create table [dbo].[TwoColumnTableAsChild](
     [ColumnA] int NOT NULL,
     [ColumnB] int NOT NULL
 );", script);
@@ -62,9 +62,9 @@ namespace SqlSiphon.SqlServer.Test
         [TestMethod]
         public override void CreateOneNullableColumn()
         {
-            var script = GetScriptFor<TestOneNullableColumnTable>();
+            var script = GetScriptFor<OneNullableColumnTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestOneNullableColumnTable](
+@"create table [dbo].[OneNullableColumnTable](
     [ColumnA] int
 );", script);
         }
@@ -72,98 +72,98 @@ namespace SqlSiphon.SqlServer.Test
         [TestMethod]
         public override void CantCreatePKWithMAXString()
         {
-            GetScriptFor<TestLongStringPrimaryKey>();
+            GetScriptFor<LongStringPrimaryKeyTable>();
         }
 
         [TestMethod]
         public override void CreateWithPK()
         {
-            var script = GetScriptFor<TestPrimaryKeyColumn>();
+            var script = GetScriptFor<PrimaryKeyColumnTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestPrimaryKeyColumn](
+@"create table [dbo].[PrimaryKeyColumnTable](
     [KeyColumn] nvarchar(255) NOT NULL,
     [DateColumn] datetime2 NOT NULL
 );
 --
-alter table [dbo].[TestPrimaryKeyColumn] add constraint [pk_TestPrimaryKeyColumn] primary key([KeyColumn]);", script);
+alter table [dbo].[PrimaryKeyColumnTable] add constraint [pk_PrimaryKeyColumnTable] primary key([KeyColumn]);", script);
         }
 
         [TestMethod]
         public override void CreateLongerPrimaryKey()
         {
-            var script = GetScriptFor<TestPrimaryKeyTwoColumns>();
-            Assert.AreEqual(@"create table [dbo].[TestPrimaryKeyTwoColumns](
+            var script = GetScriptFor<PrimaryKeyTwoColumnsTable>();
+            Assert.AreEqual(@"create table [dbo].[PrimaryKeyTwoColumnsTable](
     [KeyColumn1] nvarchar(255) NOT NULL,
     [KeyColumn2] datetime2 NOT NULL
 );
 --
-alter table [dbo].[TestPrimaryKeyTwoColumns] add constraint [pk_TestPrimaryKeyTwoColumns] primary key([KeyColumn1], [KeyColumn2]);", script);
+alter table [dbo].[PrimaryKeyTwoColumnsTable] add constraint [pk_PrimaryKeyTwoColumnsTable] primary key([KeyColumn1], [KeyColumn2]);", script);
         }
 
         [TestMethod]
         public override void CantCreateNullablePK()
         {
-            GetScriptFor<TestNullablePrimaryKey>();
+            GetScriptFor<NullablePrimaryKeyTable>();
         }
 
         [TestMethod]
         public override void CreateWithIdentity()
         {
-            var script = GetScriptFor<TestIdentityColumn>();
+            var script = GetScriptFor<IdentityColumnTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestIdentityColumn](
+@"create table [dbo].[IdentityColumnTable](
     [KeyColumn] int NOT NULL identity(1, 1),
     [DateColumn] datetime2 NOT NULL
 );
 --
-alter table [dbo].[TestIdentityColumn] add constraint [pk_TestIdentityColumn] primary key([KeyColumn]);", script);
+alter table [dbo].[IdentityColumnTable] add constraint [pk_IdentityColumnTable] primary key([KeyColumn]);", script);
         }
 
         [TestMethod]
         public override void CreateTableFromEnumeration()
         {
-            var script = GetScriptFor<TestEnumeration>();
+            var script = GetScriptFor<EnumerationTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestEnumeration](
+@"create table [dbo].[EnumerationTable](
     [Value] int NOT NULL,
     [Description] nvarchar(MAX) NOT NULL
 );
 --
-alter table [dbo].[TestEnumeration] add constraint [pk_TestEnumeration] primary key([Value]);
+alter table [dbo].[EnumerationTable] add constraint [pk_EnumerationTable] primary key([Value]);
 --
-insert into [dbo].[TestEnumeration](Value, Description) values(0, 'A');
-insert into [dbo].[TestEnumeration](Value, Description) values(1, 'B');
-insert into [dbo].[TestEnumeration](Value, Description) values(2, 'C');
-insert into [dbo].[TestEnumeration](Value, Description) values(3, 'D');
-insert into [dbo].[TestEnumeration](Value, Description) values(4, 'EFG');
-insert into [dbo].[TestEnumeration](Value, Description) values(5, 'HIJ');
-insert into [dbo].[TestEnumeration](Value, Description) values(6, 'KLM');
-insert into [dbo].[TestEnumeration](Value, Description) values(7, 'OpQ');
-insert into [dbo].[TestEnumeration](Value, Description) values(8, 'rSt');", script);
+insert into [dbo].[EnumerationTable](Value, Description) values(0, 'A');
+insert into [dbo].[EnumerationTable](Value, Description) values(1, 'B');
+insert into [dbo].[EnumerationTable](Value, Description) values(2, 'C');
+insert into [dbo].[EnumerationTable](Value, Description) values(3, 'D');
+insert into [dbo].[EnumerationTable](Value, Description) values(4, 'EFG');
+insert into [dbo].[EnumerationTable](Value, Description) values(5, 'HIJ');
+insert into [dbo].[EnumerationTable](Value, Description) values(6, 'KLM');
+insert into [dbo].[EnumerationTable](Value, Description) values(7, 'OpQ');
+insert into [dbo].[EnumerationTable](Value, Description) values(8, 'rSt');", script);
         }
 
         [TestMethod]
         public override void CreateTableWithSimpleIndex()
         {
-            var script = GetScriptFor<TestTableWithSimpleIndex>();
+            var script = GetScriptFor<SimpleIndexTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestTableWithSimpleIndex](
+@"create table [dbo].[SimpleIndexTable](
     [KeyColumn] int NOT NULL identity(1, 1),
     [NotInIndex] real NOT NULL,
     [DoubleColumn] float NOT NULL
 );
 --
-alter table [dbo].[TestTableWithSimpleIndex] add constraint [pk_TestTableWithSimpleIndex] primary key([KeyColumn]);
+alter table [dbo].[SimpleIndexTable] add constraint [pk_SimpleIndexTable] primary key([KeyColumn]);
 --
-create nonclustered index [idx_Test1] on [dbo].[TestTableWithSimpleIndex]([DoubleColumn]);", script);
+create nonclustered index [idx_Test1] on [dbo].[SimpleIndexTable]([DoubleColumn]);", script);
         }
 
         [TestMethod]
         public override void CreateTableWithLongIndex()
         {
-            var script = GetScriptFor<TestTableWithLongIndex>();
+            var script = GetScriptFor<LongIndexTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestTableWithLongIndex](
+@"create table [dbo].[LongIndexTable](
     [KeyColumn] int NOT NULL identity(1, 1),
     [NotInIndex] real NOT NULL,
     [DoubleColumn] float NOT NULL,
@@ -175,29 +175,35 @@ create nonclustered index [idx_Test1] on [dbo].[TestTableWithSimpleIndex]([Doubl
     [CharColumn] tinyint NOT NULL
 );
 --
-alter table [dbo].[TestTableWithLongIndex] add constraint [pk_TestTableWithLongIndex] primary key([KeyColumn]);
+alter table [dbo].[LongIndexTable] add constraint [pk_LongIndexTable] primary key([KeyColumn]);
 --
-create nonclustered index [idx_Test2] on [dbo].[TestTableWithLongIndex]([DoubleColumn],[IntColumn],[BoolColumn]);
-create nonclustered index [idx_Test3] on [dbo].[TestTableWithLongIndex]([LongColumn],[DecimalColumn],[CharColumn]);", script);
+create nonclustered index [idx_Test2] on [dbo].[LongIndexTable]([DoubleColumn],[IntColumn],[BoolColumn]);
+create nonclustered index [idx_Test3] on [dbo].[LongIndexTable]([LongColumn],[DecimalColumn],[CharColumn]);", script);
         }
 
         [TestMethod]
         public override void CreateTableWithFK()
         {
-            var script = GetScriptFor<TestWithFK>();
+            var script = GetScriptFor<FKTable>();
             Assert.AreEqual(
-@"create table [dbo].[TestWithFK](
+@"create table [dbo].[FKTable](
     [Stuff] int NOT NULL,
     [KeyColumn] nvarchar(255) NOT NULL
 );
 --
-alter table [dbo].[TestWithFK] add constraint [pk_TestWithFK] primary key([Stuff]);
+alter table [dbo].[FKTable] add constraint [pk_FKTable] primary key([Stuff]);
 --
-alter table [dbo].[TestWithFK] add constraint [fk_from_dbo_TestWithFK_to_pk_TestPrimaryKeyColumn]
+alter table [dbo].[FKTable] add constraint [fk_from_dbo_FKTable_to_pk_PrimaryKeyColumnTable]
     foreign key([KeyColumn])
-    references [dbo].[TestPrimaryKeyColumn]([KeyColumn]);
+    references [dbo].[PrimaryKeyColumnTable]([KeyColumn]);
 --
-create nonclustered index [idx_fk_from_dbo_TestWithFK_to_pk_TestPrimaryKeyColumn] on [dbo].[TestWithFK]([KeyColumn]);", script);
+create nonclustered index [idx_fk_from_dbo_FKTable_to_pk_PrimaryKeyColumnTable] on [dbo].[FKTable]([KeyColumn]);", script);
+        }
+
+        [TestMethod]
+        public override void CreateTableWithLongFK()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

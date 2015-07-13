@@ -24,15 +24,15 @@ namespace SqlSiphon.OleDB.Test
         [TestMethod]
         public override void CantCreateEmptyTables()
         {
-            GetScriptFor<TestEmptyTable>();
+            GetScriptFor<EmptyTable>();
         }
 
         [TestMethod]
         public override void CreateSingleColumnTable()
         {
-            var script = GetScriptFor<TestOneColumnTable>();
+            var script = GetScriptFor<OneColumnTable>();
             Assert.AreEqual(
-@"create table [TestOneColumnTable](
+@"create table [OneColumnTable](
     [ColumnA] int NOT NULL
 );", script);
         }
@@ -40,9 +40,9 @@ namespace SqlSiphon.OleDB.Test
         [TestMethod]
         public override void CreateSingleColumnTableWithSchema()
         {
-            var script = GetScriptFor<TestOneColumnTableWithSchema>();
+            var script = GetScriptFor<OneColumnTableWithSchema>();
             Assert.AreEqual(
-@"create table [test_TestOneColumnTableWithSchema](
+@"create table [test_OneColumnTableWithSchema](
     [ColumnA] int NOT NULL
 );", script);
         }
@@ -50,9 +50,9 @@ namespace SqlSiphon.OleDB.Test
         [TestMethod]
         public override void CreateTwoColumnTable()
         {
-            var script = GetScriptFor<TestTwoColumnTable>();
+            var script = GetScriptFor<TwoColumnTable>();
             Assert.AreEqual(
-@"create table [TestTwoColumnTable](
+@"create table [TwoColumnTable](
     [ColumnA] int NOT NULL,
     [ColumnB] int NOT NULL
 );", script);
@@ -61,9 +61,9 @@ namespace SqlSiphon.OleDB.Test
         [TestMethod]
         public override void CreateTwoColumnTableAsChild()
         {
-            var script = GetScriptFor<TestTwoColumnTableAsChild>();
+            var script = GetScriptFor<TwoColumnTableAsChild>();
             Assert.AreEqual(
-@"create table [TestTwoColumnTableAsChild](
+@"create table [TwoColumnTableAsChild](
     [ColumnA] int NOT NULL,
     [ColumnB] int NOT NULL
 );", script);
@@ -72,9 +72,9 @@ namespace SqlSiphon.OleDB.Test
         [TestMethod]
         public override void CreateOneNullableColumn()
         {
-            var script = GetScriptFor<TestOneNullableColumnTable>();
+            var script = GetScriptFor<OneNullableColumnTable>();
             Assert.AreEqual(
-@"create table [TestOneNullableColumnTable](
+@"create table [OneNullableColumnTable](
     [ColumnA] int
 );", script);
         }
@@ -82,98 +82,98 @@ namespace SqlSiphon.OleDB.Test
         [TestMethod]
         public override void CantCreatePKWithMAXString()
         {
-            GetScriptFor<TestLongStringPrimaryKey>();
+            GetScriptFor<LongStringPrimaryKeyTable>();
         }
 
         [TestMethod]
         public override void CreateWithPK()
         {
-            var script = GetScriptFor<TestPrimaryKeyColumn>();
+            var script = GetScriptFor<PrimaryKeyColumnTable>();
             Assert.AreEqual(
-@"create table [TestPrimaryKeyColumn](
+@"create table [PrimaryKeyColumnTable](
     [KeyColumn] text,
     [DateColumn] datetime NOT NULL
 );
 --
-create index [pk_TestPrimaryKeyColumn] on [TestPrimaryKeyColumn]([KeyColumn]) with primary;", script);
+create index [pk_PrimaryKeyColumnTable] on [PrimaryKeyColumnTable]([KeyColumn]) with primary;", script);
         }
 
         [TestMethod]
         public override void CreateLongerPrimaryKey()
         {
-            var script = GetScriptFor<TestPrimaryKeyTwoColumns>();
-            Assert.AreEqual(@"create table [TestPrimaryKeyTwoColumns](
+            var script = GetScriptFor<PrimaryKeyTwoColumnsTable>();
+            Assert.AreEqual(@"create table [PrimaryKeyTwoColumnsTable](
     [KeyColumn1] text,
     [KeyColumn2] datetime
 );
 --
-create index [pk_TestPrimaryKeyTwoColumns] on [TestPrimaryKeyTwoColumns]([KeyColumn1], [KeyColumn2]) with primary;", script);
+create index [pk_PrimaryKeyTwoColumnsTable] on [PrimaryKeyTwoColumnsTable]([KeyColumn1], [KeyColumn2]) with primary;", script);
         }
 
         [TestMethod]
         public override void CantCreateNullablePK()
         {
-            GetScriptFor<TestNullablePrimaryKey>();
+            GetScriptFor<NullablePrimaryKeyTable>();
         }
 
         [TestMethod]
         public override void CreateWithIdentity()
         {
-            var script = GetScriptFor<TestIdentityColumn>();
+            var script = GetScriptFor<IdentityColumnTable>();
             Assert.AreEqual(
-@"create table [TestIdentityColumn](
+@"create table [IdentityColumnTable](
     [KeyColumn] autoincrement,
     [DateColumn] datetime NOT NULL
 );
 --
-create index [pk_TestIdentityColumn] on [TestIdentityColumn]([KeyColumn]) with primary;", script);
+create index [pk_IdentityColumnTable] on [IdentityColumnTable]([KeyColumn]) with primary;", script);
         }
 
         [TestMethod]
         public override void CreateTableFromEnumeration()
         {
-            var script = GetScriptFor<TestEnumeration>();
+            var script = GetScriptFor<EnumerationTable>();
             Assert.AreEqual(
-@"create table [TestEnumeration](
+@"create table [EnumerationTable](
     [Value] int,
     [Description] text NOT NULL
 );
 --
-create index [pk_TestEnumeration] on [TestEnumeration]([Value]) with primary;
+create index [pk_EnumerationTable] on [EnumerationTable]([Value]) with primary;
 --
-insert into [TestEnumeration]([Value], [Description]) values(0, 'A');
-insert into [TestEnumeration]([Value], [Description]) values(1, 'B');
-insert into [TestEnumeration]([Value], [Description]) values(2, 'C');
-insert into [TestEnumeration]([Value], [Description]) values(3, 'D');
-insert into [TestEnumeration]([Value], [Description]) values(4, 'EFG');
-insert into [TestEnumeration]([Value], [Description]) values(5, 'HIJ');
-insert into [TestEnumeration]([Value], [Description]) values(6, 'KLM');
-insert into [TestEnumeration]([Value], [Description]) values(7, 'OpQ');
-insert into [TestEnumeration]([Value], [Description]) values(8, 'rSt');", script);
+insert into [EnumerationTable]([Value], [Description]) values(0, 'A');
+insert into [EnumerationTable]([Value], [Description]) values(1, 'B');
+insert into [EnumerationTable]([Value], [Description]) values(2, 'C');
+insert into [EnumerationTable]([Value], [Description]) values(3, 'D');
+insert into [EnumerationTable]([Value], [Description]) values(4, 'EFG');
+insert into [EnumerationTable]([Value], [Description]) values(5, 'HIJ');
+insert into [EnumerationTable]([Value], [Description]) values(6, 'KLM');
+insert into [EnumerationTable]([Value], [Description]) values(7, 'OpQ');
+insert into [EnumerationTable]([Value], [Description]) values(8, 'rSt');", script);
         }
 
         [TestMethod]
         public override void CreateTableWithSimpleIndex()
         {
-            var script = GetScriptFor<TestTableWithSimpleIndex>();
+            var script = GetScriptFor<SimpleIndexTable>();
             Assert.AreEqual(
-@"create table [TestTableWithSimpleIndex](
+@"create table [SimpleIndexTable](
     [KeyColumn] autoincrement,
     [NotInIndex] float NOT NULL,
     [DoubleColumn] double NOT NULL
 );
 --
-create index [pk_TestTableWithSimpleIndex] on [TestTableWithSimpleIndex]([KeyColumn]) with primary;
+create index [pk_SimpleIndexTable] on [SimpleIndexTable]([KeyColumn]) with primary;
 --
-create index [idx_Test1] on [TestTableWithSimpleIndex]([DoubleColumn]);", script);
+create index [idx_Test1] on [SimpleIndexTable]([DoubleColumn]);", script);
         }
 
         [TestMethod]
         public override void CreateTableWithLongIndex()
         {
-            var script = GetScriptFor<TestTableWithLongIndex>();
+            var script = GetScriptFor<LongIndexTable>();
             Assert.AreEqual(
-@"create table [TestTableWithLongIndex](
+@"create table [LongIndexTable](
     [KeyColumn] autoincrement,
     [NotInIndex] float NOT NULL,
     [DoubleColumn] double NOT NULL,
@@ -185,27 +185,33 @@ create index [idx_Test1] on [TestTableWithSimpleIndex]([DoubleColumn]);", script
     [CharColumn] char NOT NULL
 );
 --
-create index [pk_TestTableWithLongIndex] on [TestTableWithLongIndex]([KeyColumn]) with primary;
+create index [pk_LongIndexTable] on [LongIndexTable]([KeyColumn]) with primary;
 --
-create index [idx_Test2] on [TestTableWithLongIndex]([DoubleColumn], [IntColumn], [BoolColumn]);
-create index [idx_Test3] on [TestTableWithLongIndex]([LongColumn], [DecimalColumn], [CharColumn]);", script);
+create index [idx_Test2] on [LongIndexTable]([DoubleColumn], [IntColumn], [BoolColumn]);
+create index [idx_Test3] on [LongIndexTable]([LongColumn], [DecimalColumn], [CharColumn]);", script);
         }
 
         [TestMethod]
         public override void CreateTableWithFK()
         {
-            var script = GetScriptFor<TestWithFK>();
+            var script = GetScriptFor<FKTable>();
             Assert.AreEqual(
-@"create table [TestWithFK](
+@"create table [FKTable](
     [Stuff] int,
     [KeyColumn] text NOT NULL
 );
 --
-create index [pk_TestWithFK] on [TestWithFK]([Stuff]) with primary;
+create index [pk_FKTable] on [FKTable]([Stuff]) with primary;
 --
-alter table [TestWithFK] add foreign key([KeyColumn]) references [TestPrimaryKeyColumn]([KeyColumn]);
+alter table [FKTable] add foreign key([KeyColumn]) references [PrimaryKeyColumnTable]([KeyColumn]);
 --
-create index [idx_fk_from_TestWithFK_to_pk_TestPrimaryKeyColumn] on [TestWithFK]([KeyColumn]);", script);
+create index [idx_fk_from_FKTable_to_pk_PrimaryKeyColumnTable] on [FKTable]([KeyColumn]);", script);
+        }
+
+        [TestMethod]
+        public override void CreateTableWithLongFK()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

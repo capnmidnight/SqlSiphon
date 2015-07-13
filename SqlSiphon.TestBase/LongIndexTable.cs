@@ -4,7 +4,7 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon.TestBase
 {
     [Table]
-    public class TestTableWithLongIndex
+    public class LongIndexTable
     {
         [AutoPK]
         public int KeyColumn { get; set; }

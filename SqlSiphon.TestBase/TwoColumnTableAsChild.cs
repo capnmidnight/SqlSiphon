@@ -3,7 +3,7 @@
 namespace SqlSiphon.TestBase
 {
     [Table]
-    public class TestTwoColumnTableAsChild : TestOneColumnTable
+    public class TwoColumnTableAsChild : OneColumnTable
     {
         public int ColumnB { get; set; }
     }

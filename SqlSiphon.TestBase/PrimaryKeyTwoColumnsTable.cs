@@ -4,7 +4,7 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon.TestBase
 {
     [Table]
-    public class TestPrimaryKeyTwoColumns
+    public class PrimaryKeyTwoColumnsTable
     {
         [PK(Size=255)]
         public string KeyColumn1 { get; set; }

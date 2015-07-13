@@ -2,10 +2,10 @@
 
 namespace SqlSiphon.TestBase
 {
-
-    [Table(Schema = "test")]
-    public class TestOneColumnTableWithSchema
+    [Table]
+    public class TwoColumnTable
     {
         public int ColumnA { get; set; }
+        public int ColumnB { get; set; }
     }
 }

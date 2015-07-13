@@ -3,5 +3,5 @@
 namespace SqlSiphon.TestBase
 {
     [Table]
-    public class TestEmptyTable { }
+    public class EmptyTable { }
 }

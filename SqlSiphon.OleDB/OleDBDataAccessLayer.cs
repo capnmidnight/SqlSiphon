@@ -712,6 +712,11 @@ namespace SqlSiphon.OleDB
             throw new NotImplementedException();
         }
 
+        public override string MakeDropPrimaryKeyScript(PrimaryKey key)
+        {
+            throw new NotImplementedException();
+        }
+
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
             var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
@@ -723,11 +728,6 @@ namespace SqlSiphon.OleDB
                     fromColumns,
                     this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
                     toColumns);
-        }
-
-        public override string MakeDropPrimaryKeyScript(PrimaryKey key)
-        {
-            throw new NotImplementedException();
         }
 
         public override string MakeCreateIndexScript(TableIndex index)
@@ -747,11 +747,6 @@ namespace SqlSiphon.OleDB
         }
 
         public override string MakeDropIndexScript(TableIndex index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
         {
             throw new NotImplementedException();
         }
@@ -794,6 +789,11 @@ namespace SqlSiphon.OleDB
                 this.MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
                 string.Join(", ", columnNames),
                 string.Join(", ", columnValues));
+        }
+
+        public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
+        {
+            throw new InvalidOperationException("MS Access cannot be queried from the command line");
         }
     }
 }

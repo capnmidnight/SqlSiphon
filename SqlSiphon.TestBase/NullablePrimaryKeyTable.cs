@@ -4,7 +4,7 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon.TestBase
 {
     [Table]
-    public class TestNullablePrimaryKey
+    public class NullablePrimaryKeyTable
     {
         [PK]
         public int? KeyColumn { get; set; }

@@ -92,5 +92,6 @@ namespace SqlSiphon.TestBase
         public abstract void CreateTableWithSimpleIndex();
         public abstract void CreateTableWithLongIndex();
         public abstract void CreateTableWithFK();
+        public abstract void CreateTableWithLongFK();
     }
 }

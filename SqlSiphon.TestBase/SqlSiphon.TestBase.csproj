@@ -51,22 +51,22 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestEnumeration.cs" />
-    <Compile Include="TestLongStringPrimaryKey.cs" />
-    <Compile Include="TestPrimaryKeyTwoColumns.cs" />
-    <Compile Include="TestTableWithLongIndex.cs" />
-    <Compile Include="TestTableWithSimpleIndex.cs" />
-    <Compile Include="TestNullablePrimaryKey.cs" />
-    <Compile Include="TestPrimaryKeyColumn.cs" />
-    <Compile Include="TestIdentityColumn.cs" />
-    <Compile Include="TestEmptyTable.cs" />
-    <Compile Include="TestOneNullableColumnTable.cs" />
-    <Compile Include="TestOneColumnTable.cs" />
-    <Compile Include="TestOneColumnTableWithSchema.cs" />
-    <Compile Include="TestTwoColumnTable.cs" />
-    <Compile Include="TestTwoColumnTableAsChild.cs" />
+    <Compile Include="EnumerationTable.cs" />
+    <Compile Include="LongStringPrimaryKeyTable.cs" />
+    <Compile Include="PrimaryKeyTwoColumnsTable.cs" />
+    <Compile Include="LongIndexTable.cs" />
+    <Compile Include="SimpleIndexTable.cs" />
+    <Compile Include="NullablePrimaryKeyTable.cs" />
+    <Compile Include="PrimaryKeyColumnTable.cs" />
+    <Compile Include="IdentityColumnTable.cs" />
+    <Compile Include="EmptyTable.cs" />
+    <Compile Include="OneNullableColumnTable.cs" />
+    <Compile Include="OneColumnTable.cs" />
+    <Compile Include="OneColumnTableWithSchema.cs" />
+    <Compile Include="TwoColumnTable.cs" />
+    <Compile Include="TwoColumnTableAsChild.cs" />
     <Compile Include="CreateTableTests.cs" />
-    <Compile Include="TestWithFK.cs" />
+    <Compile Include="FKTable.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj">

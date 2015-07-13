@@ -3,8 +3,8 @@
 namespace SqlSiphon.TestBase
 {
     [Table]
-    public class TestOneNullableColumnTable
+    public class OneColumnTable
     {
-        public int? ColumnA { get; set; }
+        public int ColumnA { get; set; }
     }
 }

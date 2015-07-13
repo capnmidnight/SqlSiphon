@@ -3,7 +3,7 @@
 namespace SqlSiphon.TestBase
 {
     [Table]
-    public enum TestEnumeration {
+    public enum EnumerationTable {
         A,
         B,
         C,

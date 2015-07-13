@@ -4,9 +4,9 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon.TestBase
 {
     [Table]
-    public class TestPrimaryKeyColumn
+    public class LongStringPrimaryKeyTable
     {
-        [PK(Size=255)]
+        [PK]
         public string KeyColumn { get; set; }
 
         public DateTime DateColumn { get; set; }
