@@ -89,6 +89,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="SqlServerCreateTableTests.cs" />
+    <Compile Include="SqlServerCreateProcedureTests.cs" />
     <Compile Include="UploadableTypesTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
