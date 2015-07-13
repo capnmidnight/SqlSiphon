@@ -53,7 +53,12 @@ namespace SqlSiphon.OleDB
         private static Dictionary<short, string> shortToString;
         private static Dictionary<string, short> stringToShort;
 
-        private static void _(DAO.DataTypeEnum val, string name, Type type)
+        private static void SetTypeMappings<T>(string name, DAO.DataTypeEnum val)
+        {
+            SetTypeInformation(typeof(T), name, val);
+        }
+
+        private static void SetTypeInformation(Type type, string name, DAO.DataTypeEnum val)
         {
             var sVal = (short)val;
             if (!stringToType.ContainsKey(name)) { stringToType.Add(name, type); }
@@ -73,68 +78,68 @@ namespace SqlSiphon.OleDB
             shortToString = new Dictionary<short, string>();
             stringToShort = new Dictionary<string, short>();
 
-            _((DAO.DataTypeEnum)0, "void", typeof(void));
-            _((DAO.DataTypeEnum)48, "void", typeof(void));
+            SetTypeInformation(typeof(void), "void", (DAO.DataTypeEnum)0);
+            SetTypeInformation(typeof(void), "void", (DAO.DataTypeEnum)48);
 
-            _(DAO.DataTypeEnum.dbBinary, "binary", typeof(byte[]));
-            _(DAO.DataTypeEnum.dbLongBinary, "longbinary", typeof(byte[]));
-            _(DAO.DataTypeEnum.dbVarBinary, "varbinary", typeof(byte[]));
+            SetTypeMappings<byte[]>("binary", DAO.DataTypeEnum.dbBinary);
+            SetTypeMappings<byte[]>("longbinary", DAO.DataTypeEnum.dbLongBinary);
+            SetTypeMappings<byte[]>("varbinary", DAO.DataTypeEnum.dbVarBinary);
 
-            _(DAO.DataTypeEnum.dbBoolean, "bit", typeof(bool));
-            _(DAO.DataTypeEnum.dbBoolean, "bit", typeof(bool?));
+            SetTypeMappings<bool>("bit", DAO.DataTypeEnum.dbBoolean);
+            SetTypeMappings<bool?>("bit", DAO.DataTypeEnum.dbBoolean);
 
-            _(DAO.DataTypeEnum.dbByte, "byte", typeof(byte));
-            _(DAO.DataTypeEnum.dbByte, "byte", typeof(byte?));
-            _(DAO.DataTypeEnum.dbByte, "byte", typeof(sbyte));
-            _(DAO.DataTypeEnum.dbByte, "byte", typeof(sbyte?));
+            SetTypeMappings<byte>("byte", DAO.DataTypeEnum.dbByte);
+            SetTypeMappings<byte?>("byte", DAO.DataTypeEnum.dbByte);
+            SetTypeMappings<sbyte>("byte", DAO.DataTypeEnum.dbByte);
+            SetTypeMappings<sbyte?>("byte", DAO.DataTypeEnum.dbByte);
 
-            _(DAO.DataTypeEnum.dbChar, "char", typeof(char));
-            _(DAO.DataTypeEnum.dbChar, "char", typeof(char?));
+            SetTypeMappings<char>("char", DAO.DataTypeEnum.dbChar);
+            SetTypeMappings<char?>("char", DAO.DataTypeEnum.dbChar);
 
-            _(DAO.DataTypeEnum.dbGUID, "guid", typeof(Guid));
-            _(DAO.DataTypeEnum.dbGUID, "guid", typeof(Guid?));
+            SetTypeMappings<Guid>("guid", DAO.DataTypeEnum.dbGUID);
+            SetTypeMappings<Guid?>("guid", DAO.DataTypeEnum.dbGUID);
 
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(int));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(int?));
-            _(DAO.DataTypeEnum.dbBigInt, "int", typeof(int));
-            _(DAO.DataTypeEnum.dbBigInt, "int", typeof(int?));
-            _(DAO.DataTypeEnum.dbLong, "int", typeof(int));
-            _(DAO.DataTypeEnum.dbLong, "int", typeof(int?));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(uint));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(uint?));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(short));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(short?));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(ushort));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(ushort?));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(long));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(long?));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(ulong));
-            _(DAO.DataTypeEnum.dbInteger, "int", typeof(ulong?));
+            SetTypeMappings<int>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<int?>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<int>("int", DAO.DataTypeEnum.dbBigInt);
+            SetTypeMappings<int?>("int", DAO.DataTypeEnum.dbBigInt);
+            SetTypeMappings<int>("int", DAO.DataTypeEnum.dbLong);
+            SetTypeMappings<int?>("int", DAO.DataTypeEnum.dbLong);
+            SetTypeMappings<uint>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<uint?>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<short>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<short?>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<ushort>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<ushort?>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<long>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<long?>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<ulong>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<ulong?>("int", DAO.DataTypeEnum.dbInteger);
 
-            _(DAO.DataTypeEnum.dbCurrency, "currency", typeof(decimal));
-            _(DAO.DataTypeEnum.dbCurrency, "currency", typeof(decimal?));
-            _(DAO.DataTypeEnum.dbDecimal, "decimal", typeof(decimal));
-            _(DAO.DataTypeEnum.dbDecimal, "decimal", typeof(decimal?));
-            _(DAO.DataTypeEnum.dbNumeric, "numeric", typeof(decimal));
-            _(DAO.DataTypeEnum.dbNumeric, "numeric", typeof(decimal?));
+            SetTypeMappings<decimal>("currency", DAO.DataTypeEnum.dbCurrency);
+            SetTypeMappings<decimal?>("currency", DAO.DataTypeEnum.dbCurrency);
+            SetTypeMappings<decimal>("decimal", DAO.DataTypeEnum.dbDecimal);
+            SetTypeMappings<decimal?>("decimal", DAO.DataTypeEnum.dbDecimal);
+            SetTypeMappings<decimal>("numeric", DAO.DataTypeEnum.dbNumeric);
+            SetTypeMappings<decimal?>("numeric", DAO.DataTypeEnum.dbNumeric);
 
-            _(DAO.DataTypeEnum.dbDouble, "double", typeof(double));
-            _(DAO.DataTypeEnum.dbDouble, "double", typeof(double?));
+            SetTypeMappings<double>("double", DAO.DataTypeEnum.dbDouble);
+            SetTypeMappings<double?>("double", DAO.DataTypeEnum.dbDouble);
 
-            _(DAO.DataTypeEnum.dbFloat, "float", typeof(float));
-            _(DAO.DataTypeEnum.dbFloat, "float", typeof(float?));
-            _(DAO.DataTypeEnum.dbSingle, "single", typeof(float));
-            _(DAO.DataTypeEnum.dbSingle, "single", typeof(float?));
+            SetTypeMappings<float>("float", DAO.DataTypeEnum.dbFloat);
+            SetTypeMappings<float?>("float", DAO.DataTypeEnum.dbFloat);
+            SetTypeMappings<float>("single", DAO.DataTypeEnum.dbSingle);
+            SetTypeMappings<float?>("single", DAO.DataTypeEnum.dbSingle);
 
-            _(DAO.DataTypeEnum.dbText, "text", typeof(string));
-            _(DAO.DataTypeEnum.dbMemo, "memo", typeof(string));
+            SetTypeMappings<string>("text", DAO.DataTypeEnum.dbText);
+            SetTypeMappings<string>("memo", DAO.DataTypeEnum.dbMemo);
 
-            _(DAO.DataTypeEnum.dbDate, "datetime", typeof(DateTime));
-            _(DAO.DataTypeEnum.dbDate, "datetime", typeof(DateTime?));
-            _(DAO.DataTypeEnum.dbTime, "time", typeof(DateTime));
-            _(DAO.DataTypeEnum.dbTime, "time", typeof(DateTime?));
-            _(DAO.DataTypeEnum.dbTimeStamp, "timestamp", typeof(DateTime));
-            _(DAO.DataTypeEnum.dbTimeStamp, "timestamp", typeof(DateTime?));
+            SetTypeMappings<DateTime>("datetime", DAO.DataTypeEnum.dbDate);
+            SetTypeMappings<DateTime?>("datetime", DAO.DataTypeEnum.dbDate);
+            SetTypeMappings<DateTime>("time", DAO.DataTypeEnum.dbTime);
+            SetTypeMappings<DateTime?>("time", DAO.DataTypeEnum.dbTime);
+            SetTypeMappings<DateTime>("timestamp", DAO.DataTypeEnum.dbTimeStamp);
+            SetTypeMappings<DateTime?>("timestamp", DAO.DataTypeEnum.dbTimeStamp);
 
             PARAMETER_MODES = new Dictionary<short, string>();
             PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamInput, "IN");
