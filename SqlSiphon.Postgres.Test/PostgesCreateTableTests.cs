@@ -213,7 +213,22 @@ create index ""idx_fk_from_public_fktable_to_pk_primarykeycolumntable"" on ""pub
         [TestMethod]
         public override void CreateTableWithLongFK()
         {
-            throw new System.NotImplementedException();
+            var script = GetScriptFor<LongFKTable>();
+            Assert.AreEqual(
+@"create table ""public"".""longfktable"" (
+    ""stuff"" integer NOT NULL,
+    ""keycolumn1"" varchar(255) NOT NULL,
+    ""keycolumn2"" date NOT NULL
+);
+--
+create unique index ""idx_pk_longfktable"" on ""public"".""longfktable"" (""stuff"");
+alter table ""public"".""longfktable"" add constraint ""pk_longfktable"" primary key using index ""idx_pk_longfktable"";
+--
+alter table ""public"".""longfktable"" add constraint ""fk_from_public_longfktable_to_pk_primarykeytwocolumnstable""
+    foreign key(""keycolumn1"", ""keycolumn2"")
+    references ""public"".""primarykeytwocolumnstable""(""keycolumn1"", ""keycolumn2"");
+--
+create index ""idx_fk_from_public_longfktable_to_pk_primarykeytwocolumnstable"" on ""public"".""longfktable""(""keycolumn1"",""keycolumn2"");", script);
         }
     }
 }

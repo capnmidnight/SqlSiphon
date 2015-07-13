@@ -203,7 +203,21 @@ create nonclustered index [idx_fk_from_dbo_FKTable_to_pk_PrimaryKeyColumnTable] 
         [TestMethod]
         public override void CreateTableWithLongFK()
         {
-            throw new System.NotImplementedException();
+            var script = GetScriptFor<LongFKTable>();
+            Assert.AreEqual(
+@"create table [dbo].[LongFKTable](
+    [Stuff] int NOT NULL,
+    [KeyColumn1] nvarchar(255) NOT NULL,
+    [KeyColumn2] datetime2 NOT NULL
+);
+--
+alter table [dbo].[LongFKTable] add constraint [pk_LongFKTable] primary key([Stuff]);
+--
+alter table [dbo].[LongFKTable] add constraint [fk_from_dbo_LongFKTable_to_pk_PrimaryKeyTwoColumnsTable]
+    foreign key([KeyColumn1], [KeyColumn2])
+    references [dbo].[PrimaryKeyTwoColumnsTable]([KeyColumn1], [KeyColumn2]);
+--
+create nonclustered index [idx_fk_from_dbo_LongFKTable_to_pk_PrimaryKeyTwoColumnsTable] on [dbo].[LongFKTable]([KeyColumn1],[KeyColumn2]);", script);
         }
     }
 }

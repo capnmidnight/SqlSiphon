@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="LongFKTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EnumerationTable.cs" />
     <Compile Include="LongStringPrimaryKeyTable.cs" />

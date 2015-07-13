@@ -211,7 +211,19 @@ create index [idx_fk_from_FKTable_to_pk_PrimaryKeyColumnTable] on [FKTable]([Key
         [TestMethod]
         public override void CreateTableWithLongFK()
         {
-            throw new System.NotImplementedException();
+            var script = GetScriptFor<LongFKTable>();
+            Assert.AreEqual(
+@"create table [LongFKTable](
+    [Stuff] int,
+    [KeyColumn1] text NOT NULL,
+    [KeyColumn2] datetime NOT NULL
+);
+--
+create index [pk_LongFKTable] on [LongFKTable]([Stuff]) with primary;
+--
+alter table [LongFKTable] add foreign key([KeyColumn1], [KeyColumn2]) references [PrimaryKeyTwoColumnsTable]([KeyColumn1], [KeyColumn2]);
+--
+create index [idx_fk_from_LongFKTable_to_pk_PrimaryKeyTwoColumnsTable] on [LongFKTable]([KeyColumn1], [KeyColumn2]);", script);
         }
     }
 }
