@@ -90,8 +90,6 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public bool Ignore { get { return !Include; } set { Include = !value; } }
-
         /// <summary>
         /// As this class is abstract, it can't be instantiated.
         /// </summary>
@@ -285,12 +283,10 @@ namespace SqlSiphon.Mapping
         {
             if (this.SystemType == null)
             {
-                this.SystemType = type;
-                if (type.IsGenericType)
+                this.SystemType = DataConnector.CoallesceNullableValueType(type);
+                if (DataConnector.IsNullableValueType(type) && !this.IsOptionalSet)
                 {
-                    this.SystemType = type.GetGenericArguments()[0];
-                    if (type.Name.StartsWith("Nullable") && !this.IsOptionalSet)
-                        this.IsOptional = true;
+                    this.IsOptional = true;
                 }
             }
         }

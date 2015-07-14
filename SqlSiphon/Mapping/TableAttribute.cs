@@ -241,6 +241,11 @@ namespace SqlSiphon.Mapping
                 {
                     this.PrimaryKey = new PrimaryKey(this);
                 }
+
+                if (this.Properties.All(f => !f.Include))
+                {
+                    throw new TableHasNoColumnsException(this);
+                }
             }
         }
 

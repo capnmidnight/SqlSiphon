@@ -647,16 +647,12 @@ namespace SqlSiphon
         protected string MakeColumnSection(TableAttribute info, bool isReturnType)
         {
             var columns = info.Properties.Where(p => p.Include).ToArray();
-            if (columns.Length == 0)
-            {
-                throw new TableHasNoColumnsException(info);
-            }
             return ArgumentList(columns, p => this.MakeColumnString(p, isReturnType).Trim());
         }
 
         protected string MakeSqlTypeString(DatabaseObjectAttribute p)
         {
-            if (p.Include)
+            if (p != null && p.Include)
             {
                 var isIdentity = p is ColumnAttribute && ((ColumnAttribute)p).IsIdentity;
                 var systemType = p.SystemType;

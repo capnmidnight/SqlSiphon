@@ -562,12 +562,8 @@ namespace {0}
                 }
                 var routineSectionStr = string.Join("", this.Functions.Values.Select(f =>
                 {
-                    bool isCollection = f.SystemType != null && f.SystemType.GetInterface("IEnumerable") != null;
-                    var type = f.SystemType;
-                    if (isCollection)
-                    {
-
-                    }
+                    bool isCollection = DataConnector.IsTypeCollection(f.SystemType);
+                    var type = DataConnector.CoallesceCollectionType(f.SystemType);
                     var retTypeStr = TypeName(type) ?? "void";
                     if (isCollection)
                     {

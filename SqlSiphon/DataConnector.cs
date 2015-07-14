@@ -16,28 +16,61 @@ namespace SqlSiphon
             return attr != null ? attr.Name : null;
         }
 
+        public static bool IsNullableValueType(Type type)
+        {
+            return type != null 
+                && type.IsGenericType 
+                && type.Namespace == "System" 
+                && type.Name.StartsWith("Nullable");
+        }
+
+        public static Type CoallesceNullableValueType(Type type)
+        {
+            return IsNullableValueType(type) ? type.GetGenericArguments().First() : type;
+        }
+
         public static bool IsTypeBarePrimitive(Type type)
         {
+            type = CoallesceNullableValueType(type);
             return type.IsPrimitive
-                || type == typeof(decimal)
-                || (type.IsGenericType
-                    && DataConnector.IsTypeBarePrimitive(type.GetGenericArguments().First()));
+                || type == typeof(decimal);
         }
 
         public static bool IsTypeQuotedPrimitive(Type type)
         {
+            type = CoallesceNullableValueType(type);
             return type == typeof(string)
                 || type == typeof(DateTime)
                 || type == typeof(Guid)
-                || type == typeof(byte[])
-                || (type.IsGenericType
-                    && DataConnector.IsTypeQuotedPrimitive(type.GetGenericArguments().First()));
+                || type == typeof(byte[]);
         }
 
         public static bool IsTypePrimitive(Type type)
         {
             return IsTypeBarePrimitive(type)
                 || IsTypeQuotedPrimitive(type);
+        }
+
+        public static bool IsTypeCollection(Type type)
+        {
+            return type != null && type.GetInterfaces().Contains(typeof(System.Collections.IEnumerable));
+        }
+
+        public static Type CoallesceCollectionType(Type type)
+        {
+            type = CoallesceNullableValueType(type);
+            if (IsTypeCollection(type))
+            {
+                if (type.IsArray)
+                {
+                    type = type.GetElementType();
+                }
+                else if (type.IsGenericType)
+                {
+                    type = type.GetGenericArguments().First();
+                }
+            }
+            return type;
         }
 
         private IDataConnector connectionInternal;

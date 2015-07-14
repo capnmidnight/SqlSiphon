@@ -13,7 +13,7 @@ namespace SqlSiphon.SqlServer.Test
         }
 
         [TestMethod]
-        public void EmptyStoredProcedure()
+        public override void EmptyStoredProcedure()
         {
             var script = this.GetScript();
             Assert.AreEqual(
@@ -23,6 +23,12 @@ as begin
     set nocount on;
     -- nothing here
 end", script);
+        }
+
+        [TestMethod]
+        public override void GetEmptyTable() 
+        {
+            var script = this.GetScript();
         }
     }
 }

@@ -422,17 +422,6 @@ namespace SqlSiphon.OleDB
             });
         }
 
-        private static Type GetBaseType(Type t)
-        {
-            var targetType = t;
-            if (targetType.IsGenericType
-                && targetType.Name.StartsWith("Nullable"))
-            {
-                targetType = targetType.GetGenericArguments()[0];
-            }
-            return targetType;
-        }
-
         private object TranslateValue(object value, Type sourceType, Type targetType)
         {
             if (sourceType != targetType)

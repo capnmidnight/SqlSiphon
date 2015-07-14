@@ -269,6 +269,11 @@ namespace SqlSiphon.SqlServer
 
         public override string MakeRoutineBody(RoutineAttribute info)
         {
+            if (info.SystemType != null)
+            {
+                var table = DatabaseObjectAttribute.GetAttribute(DataConnector.CoallesceCollectionType(info.SystemType));
+            }
+
             var query = info.Query.Replace("into returnValue", "")
                 .Replace("return query ", "")
                 .Replace("perform ", "select ");

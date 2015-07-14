@@ -106,13 +106,8 @@ namespace SqlSiphon.Mapping
         {
             if (value == DBNull.Value)
                 value = null;
-            var targetType = this.originalProperty.PropertyType;
-            if (targetType.IsGenericType
-                && targetType.Name.StartsWith("Nullable"))
-            {
-                targetType = targetType.GetGenericArguments()[0];
-            }
-
+            var targetType = DataConnector.CoallesceNullableValueType(this.originalProperty.PropertyType);
+            
             if (value != null)
             {
                 if (targetType.IsEnum && value is string)

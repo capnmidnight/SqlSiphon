@@ -28,5 +28,10 @@ namespace SqlSiphon.TestBase
                 return ss.MakeCreateRoutineScript(methodInfo);
             }
         }
+
+        [ExpectedException(typeof(TableHasNoColumnsException))]
+        public abstract void GetEmptyTable();
+
+        public abstract void EmptyStoredProcedure();
     }
 }

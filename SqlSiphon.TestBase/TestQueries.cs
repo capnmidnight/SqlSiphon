@@ -22,5 +22,13 @@ namespace SqlSiphon.TestBase
         {
             this.Execute();
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.StoredProcedure,
+            Query = @"select * from EmptyTable")]
+        public List<EmptyTable> GetEmptyTable()
+        {
+            return this.GetList<EmptyTable>();
+        }
     }
 }

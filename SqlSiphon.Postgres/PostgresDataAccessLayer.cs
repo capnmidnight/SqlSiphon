@@ -464,13 +464,7 @@ namespace SqlSiphon.Postgres
 
         private string MakeBasicSqlTypeString(Type t)
         {
-            if (t.IsGenericType)
-            {
-                var subTypes = t.GetGenericArguments();
-                if (subTypes.Length > 1)
-                    throw new Exception("Type is too complex!");
-                t = subTypes.First();
-            }
+            //t = DataConnector.CoallesceNullableValueType(t);
             if (reverseTypeMapping.ContainsKey(t))
             {
                 return reverseTypeMapping[t];
@@ -517,34 +511,23 @@ namespace SqlSiphon.Postgres
         private string MakeComplexSqlTypeString(Type systemType)
         {
             string sqlType = null;
-            var isCollection = systemType.GetInterfaces().Contains(typeof(IEnumerable));
-            if (isCollection)
-            {
-                if (systemType.IsArray)
-                {
-                    systemType = systemType.GetElementType();
-                }
-                else if (systemType.IsGenericType)
-                {
-                    systemType = systemType.GetGenericArguments().First();
-                }
-            }
+            var baseType = DataConnector.CoallesceCollectionType(systemType);
 
-            if (systemType == typeof(void))
+            if (baseType == typeof(void))
             {
                 sqlType = "void";
             }
-            else if (reverseTypeMapping.ContainsKey(systemType))
+            else if (reverseTypeMapping.ContainsKey(baseType))
             {
-                sqlType = reverseTypeMapping[systemType];
+                sqlType = reverseTypeMapping[baseType];
             }
             else
             {
-                var attr = DatabaseObjectAttribute.GetAttribute(systemType) ?? new TableAttribute(systemType);
+                var attr = DatabaseObjectAttribute.GetAttribute(baseType) ?? new TableAttribute(baseType);
                 sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
             }
 
-            if (isCollection)
+            if (DataConnector.IsTypeCollection(systemType))
             {
                 sqlType += "[]";
             }
