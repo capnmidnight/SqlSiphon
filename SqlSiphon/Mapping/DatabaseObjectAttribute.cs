@@ -283,7 +283,7 @@ namespace SqlSiphon.Mapping
         {
             if (this.SystemType == null)
             {
-                this.SystemType = DataConnector.CoallesceNullableValueType(type);
+                this.SystemType = DataConnector.CoalesceNullableValueType(type);
                 if (DataConnector.IsNullableValueType(type) && !this.IsOptionalSet)
                 {
                     this.IsOptional = true;

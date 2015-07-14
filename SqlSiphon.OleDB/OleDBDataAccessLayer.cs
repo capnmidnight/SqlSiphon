@@ -303,7 +303,7 @@ namespace SqlSiphon.OleDB
             if (info.SystemType != null)
             {
                 // validates the return type
-                DatabaseObjectAttribute.GetAttribute(DataConnector.CoallesceCollectionType(info.SystemType));
+                DatabaseObjectAttribute.GetAttribute(DataConnector.CoalesceCollectionType(info.SystemType));
             }
 
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);

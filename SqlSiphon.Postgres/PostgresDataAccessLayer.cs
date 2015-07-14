@@ -426,7 +426,11 @@ namespace SqlSiphon.Postgres
             }
             else if (systemType != null)
             {
-                typeName = MakeBasicSqlTypeString(systemType);
+                if (reverseTypeMapping.ContainsKey(systemType))
+                {
+                    typeName = reverseTypeMapping[systemType];
+                }
+
                 if (typeName == null)
                 {
                     typeName = MakeComplexSqlTypeString(systemType);
@@ -460,19 +464,6 @@ namespace SqlSiphon.Postgres
                 }
             }
             return typeName;
-        }
-
-        private string MakeBasicSqlTypeString(Type t)
-        {
-            //t = DataConnector.CoallesceNullableValueType(t);
-            if (reverseTypeMapping.ContainsKey(t))
-            {
-                return reverseTypeMapping[t];
-            }
-            else
-            {
-                return null;
-            }
         }
 
         public override bool DescribesIdentity(InformationSchema.Columns column)
@@ -511,7 +502,7 @@ namespace SqlSiphon.Postgres
         private string MakeComplexSqlTypeString(Type systemType)
         {
             string sqlType = null;
-            var baseType = DataConnector.CoallesceCollectionType(systemType);
+            var baseType = DataConnector.CoalesceCollectionType(systemType);
 
             if (baseType == typeof(void))
             {

@@ -567,7 +567,7 @@ namespace {0}
                 var routineSectionStr = string.Join("", this.Functions.Values.Select(f =>
                 {
                     bool isCollection = DataConnector.IsTypeCollection(f.SystemType);
-                    var type = DataConnector.CoallesceCollectionType(f.SystemType);
+                    var type = DataConnector.CoalesceCollectionType(f.SystemType);
                     var retTypeStr = TypeName(type) ?? "void";
                     if (isCollection)
                     {

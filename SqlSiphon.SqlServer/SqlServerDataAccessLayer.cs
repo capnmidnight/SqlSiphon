@@ -271,7 +271,7 @@ namespace SqlSiphon.SqlServer
         {
             if (info.SystemType != null)
             {
-                var table = DatabaseObjectAttribute.GetAttribute(DataConnector.CoallesceCollectionType(info.SystemType));
+                var table = DatabaseObjectAttribute.GetAttribute(DataConnector.CoalesceCollectionType(info.SystemType));
             }
 
             var query = info.Query.Replace("into returnValue", "")

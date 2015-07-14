@@ -24,21 +24,21 @@ namespace SqlSiphon
                 && type.Name.StartsWith("Nullable");
         }
 
-        public static Type CoallesceNullableValueType(Type type)
+        public static Type CoalesceNullableValueType(Type type)
         {
             return IsNullableValueType(type) ? type.GetGenericArguments().First() : type;
         }
 
         public static bool IsTypeBarePrimitive(Type type)
         {
-            type = CoallesceNullableValueType(type);
+            type = CoalesceNullableValueType(type);
             return type.IsPrimitive
                 || type == typeof(decimal);
         }
 
         public static bool IsTypeQuotedPrimitive(Type type)
         {
-            type = CoallesceNullableValueType(type);
+            type = CoalesceNullableValueType(type);
             return type == typeof(string)
                 || type == typeof(DateTime)
                 || type == typeof(Guid)
@@ -56,9 +56,9 @@ namespace SqlSiphon
             return type != null && type.GetInterfaces().Contains(typeof(System.Collections.IEnumerable));
         }
 
-        public static Type CoallesceCollectionType(Type type)
+        public static Type CoalesceCollectionType(Type type)
         {
-            type = CoallesceNullableValueType(type);
+            type = CoalesceNullableValueType(type);
             if (IsTypeCollection(type))
             {
                 if (type.IsArray)

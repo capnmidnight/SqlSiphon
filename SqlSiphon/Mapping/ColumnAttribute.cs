@@ -106,7 +106,7 @@ namespace SqlSiphon.Mapping
         {
             if (value == DBNull.Value)
                 value = null;
-            var targetType = DataConnector.CoallesceNullableValueType(this.originalProperty.PropertyType);
+            var targetType = DataConnector.CoalesceNullableValueType(this.originalProperty.PropertyType);
             
             if (value != null)
             {
