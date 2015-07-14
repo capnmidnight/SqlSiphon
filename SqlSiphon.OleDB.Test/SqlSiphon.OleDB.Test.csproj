@@ -93,6 +93,7 @@
     </Compile>
     <Compile Include="OleDBCreateTableTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="OleDBCreateProcedureTests.cs" />
     <Compile Include="TestDatabase.cs" />
     <Compile Include="TestEntity.cs" />
   </ItemGroup>

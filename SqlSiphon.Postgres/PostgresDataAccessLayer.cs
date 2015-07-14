@@ -705,7 +705,7 @@ namespace SqlSiphon.Postgres
             }
             var parameterSection = this.MakeParameterSection(routine);
             var query = string.Format(
-@"create or replace function {0}({1})
+@"create function {0}({1})
 returns {2} 
 as $$
 {3}

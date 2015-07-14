@@ -175,7 +175,8 @@ namespace SqlSiphon.OleDB
 
         private void FillInFile()
         {
-            if (!System.IO.File.Exists(this.DataSource))
+            if (!string.IsNullOrEmpty(this.DataSource)
+                && !System.IO.File.Exists(this.DataSource))
             {
                 ADOX.Catalog cat = new ADOX.Catalog();
                 cat.Create(string.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0}; Jet OLEDB:Engine Type=5", this.DataSource));
@@ -299,6 +300,12 @@ namespace SqlSiphon.OleDB
 
         public override string MakeCreateRoutineScript(RoutineAttribute info, bool createBody = true)
         {
+            if (info.SystemType != null)
+            {
+                // validates the return type
+                DatabaseObjectAttribute.GetAttribute(DataConnector.CoallesceCollectionType(info.SystemType));
+            }
+
             var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = this.MakeParameterSection(info);
             if (parameterSection.Length > 0)
@@ -306,7 +313,7 @@ namespace SqlSiphon.OleDB
                 parameterSection = string.Format("({0})", parameterSection);
             }
             return string.Format(
-@"CREATE PROCEDURE {0} {1} AS {2}",
+@"create procedure {0}{1} as {2}",
                 identifier,
                 parameterSection,
                 info.Query);
