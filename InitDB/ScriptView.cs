@@ -49,14 +49,15 @@ namespace InitDB
             this.scintilla.Margins[0].Width = 16;
         }
 
-        public void Prompt(string text)
+        public void Prompt(string title, string text)
         {
+            this.Text = title;
             this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.scintilla.Text = text;
             this.Show();
         }
 
-        public void Prompt(string text, Action<string> callback)
+        public void Prompt(string title, string text, Action<string> callback)
         {
             this.FormClosing += (o, e) =>
             {
@@ -65,7 +66,7 @@ namespace InitDB
                     callback(this.scintilla.Text);
                 }
             };
-            this.Prompt(text);
+            this.Prompt(title, text);
         }
 
         private void button1_Click(object sender, EventArgs e)

@@ -632,11 +632,11 @@ namespace InitDB
                             var sv = new ScriptView();
                             if (gv == pendingScriptsGV)
                             {
-                                sv.Prompt(scriptObject.Script, s => selectedCell.Value = s);
+                                sv.Prompt(scriptObject.Name, scriptObject.Script, s => selectedCell.Value = s);
                             }
                             else
                             {
-                                sv.Prompt(scriptObject.Script);
+                                sv.Prompt(scriptObject.Name, scriptObject.Script);
                             }
                             // forms get disposed when they get closed, no need to dispose them here.
                         }

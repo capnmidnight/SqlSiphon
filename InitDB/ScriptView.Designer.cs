@@ -97,10 +97,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(756, 470);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Name = "ScriptView";
             this.ShowIcon = false;
-            this.ShowInTaskbar = false;
             this.Text = "ScriptView";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
