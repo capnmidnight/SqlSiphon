@@ -344,7 +344,7 @@ namespace SqlSiphon
         {
             var queue = new Queue<Type>();
             queue.Enqueue(type);
-            type.Assembly.GetTypes().ToList().ForEach(queue.Enqueue);
+            type.Assembly.GetTypes().Distinct().ToList().ForEach(queue.Enqueue);
             while (queue.Count > 0)
             {
                 type = queue.Dequeue();
@@ -361,28 +361,32 @@ namespace SqlSiphon
             table.Schema = table.Schema ?? dal.DefaultSchemaName;
             if (table.Include)
             {
-                tableCollection.Add(dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant(), table);
-                if (type != null && table.Properties.Any(p => p.IncludeInPrimaryKey))
+                var tableKey = dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant();
+                if (!tableCollection.ContainsKey(tableKey))
                 {
-                    var pkNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.Name).ToLowerInvariant();
-                    this.PrimaryKeys.Add(pkNameKey, table.PrimaryKey);
-                    this.Indexes.Add(pkNameKey, table.PrimaryKey.ToIndex());
-                }
-
-                foreach (var index in table.Indexes)
-                {
-                    if (this.Indexes.ContainsKey(index.Key))
+                    tableCollection.Add(tableKey, table);
+                    if (type != null && table.Properties.Any(p => p.IncludeInPrimaryKey))
                     {
-                        throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, this.Indexes[index.Key].Table.Name);
+                        var pkNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.Name).ToLowerInvariant();
+                        this.PrimaryKeys.Add(pkNameKey, table.PrimaryKey);
+                        this.Indexes.Add(pkNameKey, table.PrimaryKey.ToIndex());
                     }
-                    else
-                    {
-                        var idxNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, index.Key).ToLowerInvariant();
-                        this.Indexes.Add(idxNameKey, index.Value);
-                    }
-                }
 
-                this.InitScripts.AddRange(table.EnumValues.Select(val => dal.MakeInsertScript(table, val)));
+                    foreach (var index in table.Indexes)
+                    {
+                        if (this.Indexes.ContainsKey(index.Key))
+                        {
+                            throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, this.Indexes[index.Key].Table.Name);
+                        }
+                        else
+                        {
+                            var idxNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, index.Key).ToLowerInvariant();
+                            this.Indexes.Add(idxNameKey, index.Value);
+                        }
+                    }
+
+                    this.InitScripts.AddRange(table.EnumValues.Select(val => dal.MakeInsertScript(table, val)));
+                }
             }
         }
 
