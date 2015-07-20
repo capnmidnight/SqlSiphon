@@ -9,7 +9,7 @@ namespace SqlSiphon.OleDB.Test
     {
         protected override ISqlSiphon MakeConnector()
         {
-            return new OleDBDataAccessLayer((string)null);
+            return new OleDBDataAccessLayer("Test.mbd");
         }
 
         [TestMethod]

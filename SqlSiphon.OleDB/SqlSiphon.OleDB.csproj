@@ -83,15 +83,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="ADOX">
-      <Guid>{00000600-0000-0010-8000-00AA006D2EA4}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>8</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
     <COMReference Include="DAO">
       <Guid>{00025E01-0000-0000-C000-000000000046}</Guid>
       <VersionMajor>5</VersionMajor>
@@ -99,7 +90,7 @@
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

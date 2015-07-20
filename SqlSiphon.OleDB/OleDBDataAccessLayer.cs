@@ -37,12 +37,13 @@ using System.Data.OleDb;
 using SqlSiphon;
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
+using DAO;
 
 namespace SqlSiphon.OleDB
 {
     public class OleDBDataAccessLayer : SqlSiphon<OleDbConnection, OleDbCommand, OleDbParameter, OleDbDataAdapter, OleDbDataReader>
     {
-        public override string DataSource { get { return this.Connection.DataSource; } }
+        public override string DataSource { get { return System.IO.Path.GetFullPath(this.Connection.DataSource); } }
 
         private static Dictionary<short, string> PARAMETER_MODES;
 
@@ -53,12 +54,12 @@ namespace SqlSiphon.OleDB
         private static Dictionary<short, string> shortToString;
         private static Dictionary<string, short> stringToShort;
 
-        private static void SetTypeMappings<T>(string name, DAO.DataTypeEnum val)
+        private static void SetTypeMappings<T>(string name, DataTypeEnum val)
         {
             SetTypeInformation(typeof(T), name, val);
         }
 
-        private static void SetTypeInformation(Type type, string name, DAO.DataTypeEnum val)
+        private static void SetTypeInformation(Type type, string name, DataTypeEnum val)
         {
             var sVal = (short)val;
             if (!stringToType.ContainsKey(name)) { stringToType.Add(name, type); }
@@ -78,74 +79,74 @@ namespace SqlSiphon.OleDB
             shortToString = new Dictionary<short, string>();
             stringToShort = new Dictionary<string, short>();
 
-            SetTypeInformation(typeof(void), "void", (DAO.DataTypeEnum)0);
-            SetTypeInformation(typeof(void), "void", (DAO.DataTypeEnum)48);
+            SetTypeInformation(typeof(void), "void", (DataTypeEnum)0);
+            SetTypeInformation(typeof(void), "void", (DataTypeEnum)48);
 
-            SetTypeMappings<byte[]>("binary", DAO.DataTypeEnum.dbBinary);
-            SetTypeMappings<byte[]>("longbinary", DAO.DataTypeEnum.dbLongBinary);
-            SetTypeMappings<byte[]>("varbinary", DAO.DataTypeEnum.dbVarBinary);
+            SetTypeMappings<byte[]>("binary", DataTypeEnum.dbBinary);
+            SetTypeMappings<byte[]>("longbinary", DataTypeEnum.dbLongBinary);
+            SetTypeMappings<byte[]>("varbinary", DataTypeEnum.dbVarBinary);
 
-            SetTypeMappings<bool>("bit", DAO.DataTypeEnum.dbBoolean);
-            SetTypeMappings<bool?>("bit", DAO.DataTypeEnum.dbBoolean);
+            SetTypeMappings<bool>("bit", DataTypeEnum.dbBoolean);
+            SetTypeMappings<bool?>("bit", DataTypeEnum.dbBoolean);
 
-            SetTypeMappings<byte>("byte", DAO.DataTypeEnum.dbByte);
-            SetTypeMappings<byte?>("byte", DAO.DataTypeEnum.dbByte);
-            SetTypeMappings<sbyte>("byte", DAO.DataTypeEnum.dbByte);
-            SetTypeMappings<sbyte?>("byte", DAO.DataTypeEnum.dbByte);
+            SetTypeMappings<byte>("byte", DataTypeEnum.dbByte);
+            SetTypeMappings<byte?>("byte", DataTypeEnum.dbByte);
+            SetTypeMappings<sbyte>("byte", DataTypeEnum.dbByte);
+            SetTypeMappings<sbyte?>("byte", DataTypeEnum.dbByte);
 
-            SetTypeMappings<char>("char", DAO.DataTypeEnum.dbChar);
-            SetTypeMappings<char?>("char", DAO.DataTypeEnum.dbChar);
+            SetTypeMappings<char>("char", DataTypeEnum.dbChar);
+            SetTypeMappings<char?>("char", DataTypeEnum.dbChar);
 
-            SetTypeMappings<Guid>("guid", DAO.DataTypeEnum.dbGUID);
-            SetTypeMappings<Guid?>("guid", DAO.DataTypeEnum.dbGUID);
+            SetTypeMappings<Guid>("guid", DataTypeEnum.dbGUID);
+            SetTypeMappings<Guid?>("guid", DataTypeEnum.dbGUID);
 
-            SetTypeMappings<int>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<int?>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<int>("int", DAO.DataTypeEnum.dbBigInt);
-            SetTypeMappings<int?>("int", DAO.DataTypeEnum.dbBigInt);
-            SetTypeMappings<int>("int", DAO.DataTypeEnum.dbLong);
-            SetTypeMappings<int?>("int", DAO.DataTypeEnum.dbLong);
-            SetTypeMappings<uint>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<uint?>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<short>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<short?>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<ushort>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<ushort?>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<long>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<long?>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<ulong>("int", DAO.DataTypeEnum.dbInteger);
-            SetTypeMappings<ulong?>("int", DAO.DataTypeEnum.dbInteger);
+            SetTypeMappings<int>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<int?>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<int>("int", DataTypeEnum.dbBigInt);
+            SetTypeMappings<int?>("int", DataTypeEnum.dbBigInt);
+            SetTypeMappings<int>("int", DataTypeEnum.dbLong);
+            SetTypeMappings<int?>("int", DataTypeEnum.dbLong);
+            SetTypeMappings<uint>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<uint?>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<short>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<short?>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<ushort>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<ushort?>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<long>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<long?>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<ulong>("int", DataTypeEnum.dbInteger);
+            SetTypeMappings<ulong?>("int", DataTypeEnum.dbInteger);
 
-            SetTypeMappings<decimal>("currency", DAO.DataTypeEnum.dbCurrency);
-            SetTypeMappings<decimal?>("currency", DAO.DataTypeEnum.dbCurrency);
-            SetTypeMappings<decimal>("decimal", DAO.DataTypeEnum.dbDecimal);
-            SetTypeMappings<decimal?>("decimal", DAO.DataTypeEnum.dbDecimal);
-            SetTypeMappings<decimal>("numeric", DAO.DataTypeEnum.dbNumeric);
-            SetTypeMappings<decimal?>("numeric", DAO.DataTypeEnum.dbNumeric);
+            SetTypeMappings<decimal>("currency", DataTypeEnum.dbCurrency);
+            SetTypeMappings<decimal?>("currency", DataTypeEnum.dbCurrency);
+            SetTypeMappings<decimal>("decimal", DataTypeEnum.dbDecimal);
+            SetTypeMappings<decimal?>("decimal", DataTypeEnum.dbDecimal);
+            SetTypeMappings<decimal>("numeric", DataTypeEnum.dbNumeric);
+            SetTypeMappings<decimal?>("numeric", DataTypeEnum.dbNumeric);
 
-            SetTypeMappings<double>("double", DAO.DataTypeEnum.dbDouble);
-            SetTypeMappings<double?>("double", DAO.DataTypeEnum.dbDouble);
+            SetTypeMappings<double>("double", DataTypeEnum.dbDouble);
+            SetTypeMappings<double?>("double", DataTypeEnum.dbDouble);
 
-            SetTypeMappings<float>("float", DAO.DataTypeEnum.dbFloat);
-            SetTypeMappings<float?>("float", DAO.DataTypeEnum.dbFloat);
-            SetTypeMappings<float>("single", DAO.DataTypeEnum.dbSingle);
-            SetTypeMappings<float?>("single", DAO.DataTypeEnum.dbSingle);
+            SetTypeMappings<float>("float", DataTypeEnum.dbFloat);
+            SetTypeMappings<float?>("float", DataTypeEnum.dbFloat);
+            SetTypeMappings<float>("single", DataTypeEnum.dbSingle);
+            SetTypeMappings<float?>("single", DataTypeEnum.dbSingle);
 
-            SetTypeMappings<string>("text", DAO.DataTypeEnum.dbText);
-            SetTypeMappings<string>("memo", DAO.DataTypeEnum.dbMemo);
+            SetTypeMappings<string>("text", DataTypeEnum.dbText);
+            SetTypeMappings<string>("memo", DataTypeEnum.dbMemo);
 
-            SetTypeMappings<DateTime>("datetime", DAO.DataTypeEnum.dbDate);
-            SetTypeMappings<DateTime?>("datetime", DAO.DataTypeEnum.dbDate);
-            SetTypeMappings<DateTime>("time", DAO.DataTypeEnum.dbTime);
-            SetTypeMappings<DateTime?>("time", DAO.DataTypeEnum.dbTime);
-            SetTypeMappings<DateTime>("timestamp", DAO.DataTypeEnum.dbTimeStamp);
-            SetTypeMappings<DateTime?>("timestamp", DAO.DataTypeEnum.dbTimeStamp);
+            SetTypeMappings<DateTime>("datetime", DataTypeEnum.dbDate);
+            SetTypeMappings<DateTime?>("datetime", DataTypeEnum.dbDate);
+            SetTypeMappings<DateTime>("time", DataTypeEnum.dbTime);
+            SetTypeMappings<DateTime?>("time", DataTypeEnum.dbTime);
+            SetTypeMappings<DateTime>("timestamp", DataTypeEnum.dbTimeStamp);
+            SetTypeMappings<DateTime?>("timestamp", DataTypeEnum.dbTimeStamp);
 
             PARAMETER_MODES = new Dictionary<short, string>();
-            PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamInput, "IN");
-            PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamInputOutput, "INOUT");
-            PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamOutput, "OUT");
-            PARAMETER_MODES.Add((short)DAO.ParameterDirectionEnum.dbParamReturnValue, "RETURN");
+            PARAMETER_MODES.Add((short)ParameterDirectionEnum.dbParamInput, "IN");
+            PARAMETER_MODES.Add((short)ParameterDirectionEnum.dbParamInputOutput, "INOUT");
+            PARAMETER_MODES.Add((short)ParameterDirectionEnum.dbParamOutput, "OUT");
+            PARAMETER_MODES.Add((short)ParameterDirectionEnum.dbParamReturnValue, "RETURN");
 
         }
 
@@ -178,8 +179,9 @@ namespace SqlSiphon.OleDB
             if (!string.IsNullOrEmpty(this.DataSource)
                 && !System.IO.File.Exists(this.DataSource))
             {
-                ADOX.Catalog cat = new ADOX.Catalog();
-                cat.Create(string.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0}; Jet OLEDB:Engine Type=5", this.DataSource));
+                var engine = new DBEngine();
+                var db = engine.CreateDatabase(this.DataSource, LanguageConstants.dbLangGeneral);
+                db.Close();
             }
         }
 
@@ -408,11 +410,11 @@ namespace SqlSiphon.OleDB
         {
             return WithDAO(db =>
             {
-                return db.TableDefs.Cast<DAO.TableDef>().SelectMany(table =>
+                return db.TableDefs.Cast<TableDef>().SelectMany(table =>
                 {
-                    return table.Fields.Cast<DAO.Field>().Select(field =>
+                    return table.Fields.Cast<Field>().Select(field =>
                     {
-                        var attr = (DAO.FieldAttributeEnum)field.Attributes;
+                        var attr = (FieldAttributeEnum)field.Attributes;
                         return new InformationSchema.Columns
                         {
                             table_name = table.Name,
@@ -422,7 +424,7 @@ namespace SqlSiphon.OleDB
                             is_nullable = field.Required ? "no" : "yes",
                             column_default = field.DefaultValue.ToString(),
                             character_maximum_length = field.Size,
-                            is_identity = ((attr & DAO.FieldAttributeEnum.dbAutoIncrField) == DAO.FieldAttributeEnum.dbAutoIncrField) ? 1 : 0
+                            is_identity = ((attr & FieldAttributeEnum.dbAutoIncrField) == FieldAttributeEnum.dbAutoIncrField) ? 1 : 0
                         };
                     });
                 }).ToList();
@@ -478,7 +480,7 @@ namespace SqlSiphon.OleDB
             return value;
         }
 
-        private T WithDAO<T>(Func<DAO.Database, T> thunk)
+        private T WithDAO<T>(Func<Database, T> thunk)
         {
             // temporarily close the connection to the file
             bool wasOpen = false;
@@ -489,8 +491,8 @@ namespace SqlSiphon.OleDB
             }
 
             // setup DAO
-            var engine = new DAO.DBEngine();
-            var db = engine.OpenDatabase(this.Connection.DataSource);
+            var engine = new DBEngine();
+            var db = engine.OpenDatabase(this.DataSource);
 
             try
             {
@@ -507,7 +509,7 @@ namespace SqlSiphon.OleDB
             }
         }
 
-        private void WithDAO(Action<DAO.Database> thunk)
+        private void WithDAO(Action<Database> thunk)
         {
             WithDAO(db =>
             {
@@ -528,9 +530,9 @@ namespace SqlSiphon.OleDB
                 }
                 var props = attr.Properties.Where(p => p.Include && !p.IsIdentity).ToArray();
                 var recordSet = db.OpenRecordset(attr.Name);
-                var fields = new DAO.Field[props.Length];
+                var fields = new Field[props.Length];
                 var fieldNames = recordSet.Fields
-                    .OfType<DAO.Field>()
+                    .OfType<Field>()
                     .Select(f => f.Name);
 
                 for (int i = 0; i < fields.Length; ++i)
@@ -563,7 +565,7 @@ namespace SqlSiphon.OleDB
         {
             return WithDAO(db =>
             {
-                return db.QueryDefs.Cast<DAO.QueryDef>().Select(query =>
+                return db.QueryDefs.Cast<QueryDef>().Select(query =>
                 {
                     return new InformationSchema.Routines
                     {
@@ -605,10 +607,10 @@ namespace SqlSiphon.OleDB
         {
             return WithDAO(db =>
             {
-                return db.Relations.Cast<DAO.Relation>().Select(rel =>
+                return db.Relations.Cast<Relation>().Select(rel =>
                 {
-                    var a = (DAO.RelationAttributeEnum)rel.Attributes;
-                    var b = rel.Fields.Cast<DAO.Field>().Select(f =>
+                    var a = (RelationAttributeEnum)rel.Attributes;
+                    var b = rel.Fields.Cast<Field>().Select(f =>
                     {
                         var c = f.Name;
                         var d = f.Type;
@@ -646,9 +648,9 @@ namespace SqlSiphon.OleDB
         {
             return WithDAO<List<InformationSchema.Parameters>>(db =>
             {
-                return db.QueryDefs.Cast<DAO.QueryDef>().SelectMany(query =>
+                return db.QueryDefs.Cast<QueryDef>().SelectMany(query =>
                 {
-                    return query.Parameters.Cast<DAO.Parameter>().Select(param =>
+                    return query.Parameters.Cast<Parameter>().Select(param =>
                     {
                         return new InformationSchema.Parameters
                         {
