@@ -13,7 +13,7 @@ namespace SqlSiphon
         public static string GetDatabaseTypeName(Type t)
         {
             var attr = Mapping.DatabaseObjectAttribute.GetAttribute<DatabaseVendorNameAttribute>(t);
-            return attr != null ? attr.Name : null;
+            return attr?.Name;
         }
 
         public static bool IsNullableValueType(Type type)

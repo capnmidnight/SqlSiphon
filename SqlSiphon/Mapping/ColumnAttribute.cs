@@ -107,7 +107,7 @@ namespace SqlSiphon.Mapping
             if (value == DBNull.Value)
                 value = null;
             var targetType = DataConnector.CoalesceNullableValueType(this.originalProperty.PropertyType);
-            
+
             if (value != null)
             {
                 if (targetType.IsEnum && value is string)
@@ -180,10 +180,10 @@ namespace SqlSiphon.Mapping
         public override string ToString()
         {
             return string.Format("COLUMN [{0}].[{1}].[{2}] {3}",
-                this.Table != null ? this.Table.Schema : null,
-                this.Table != null ? this.Table.Name : null,
+                this.Table?.Schema,
+                this.Table?.Name,
                 this.Name,
-                this.SystemType != null ? this.SystemType.FullName : null);
+                this.SystemType?.FullName);
         }
     }
 }

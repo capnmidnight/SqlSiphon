@@ -437,7 +437,7 @@ namespace SqlSiphon.Postgres
 
                     if (typeName == null && systemType.Name != "Void")
                     {
-                        throw new Exception(string.Format("Couldn't find type description for type: {0}", systemType != null ? systemType.FullName : "N/A"));
+                        throw new Exception(string.Format("Couldn't find type description for type: {0}", systemType?.FullName ?? "N/A"));
                     }
                 }
             }

@@ -49,7 +49,7 @@ namespace SqlSiphon.Model
         {
             get
             {
-                return base.Schema ?? (Table != null ? Table.Schema : null);
+                return base.Schema ?? Table?.Schema;
             }
             set
             {

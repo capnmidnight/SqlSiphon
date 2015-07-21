@@ -136,7 +136,7 @@ namespace SqlSiphon
         protected SqlSiphon(SqlSiphon<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
             : this(false)
         {
-            this.SetConnection(dal != null ? dal.Connection : null);
+            this.SetConnection(dal?.Connection);
         }
 
         private void SetConnection(string connectionString)
