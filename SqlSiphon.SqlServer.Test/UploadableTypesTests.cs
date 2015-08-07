@@ -87,6 +87,28 @@ namespace SqlSiphon.SqlServer.Test
         }
 
         [TestMethod]
+        public void TableTypeUDTT()
+        {
+            var table = testDB.MakeUDTTTableAttribute(typeof(TestUploadableClass));
+            var script = testDB.MakeCreateUDTTScript(table);
+            Assert.AreEqual(@"create type [dbo].[TestUploadableClassUDTT] as table(
+    [BareField] int NOT NULL,
+    [FieldWithDefaultValue] int NOT NULL default (1337)
+);", script);
+        }
+
+        [TestMethod]
+        public void TableTypeArrayUDTT()
+        {
+            var table = testDB.MakeUDTTTableAttribute(typeof(TestUploadableClass[]));
+            var script = testDB.MakeCreateUDTTScript(table);
+            Assert.AreEqual(@"create type [dbo].[TestUploadableClassUDTT] as table(
+    [BareField] int NOT NULL,
+    [FieldWithDefaultValue] int NOT NULL default (1337)
+);", script);
+        }
+
+        [TestMethod]
         public void BareFieldsIncluded()
         {
             Assert.IsTrue(FieldTest("BareField"));

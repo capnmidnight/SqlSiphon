@@ -978,7 +978,7 @@ order by ordinal_position;")]
             }
             else
             {
-                attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(elementType);
+                attr = DatabaseObjectAttribute.GetAttribute(elementType);
             }
             attr.Name = elementType.Name + "UDTT";
             return attr;
