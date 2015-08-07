@@ -10,6 +10,7 @@ namespace SqlSiphon.TestBase
 {
     public class TestQueries : DataConnector
     {
+        public TestQueries() : base() { }
         public TestQueries(IDataConnector connection)
             : base(connection)
         {

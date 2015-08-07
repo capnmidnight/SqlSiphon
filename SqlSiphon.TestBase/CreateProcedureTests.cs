@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SqlSiphon.TestBase
 {
     [TestClass]
-    public abstract class CreateProcedureTests
+    public abstract class CreateProcedureTests<QueryDefT> where QueryDefT : TestQueries, new()
     {
         protected abstract ISqlSiphon MakeConnector();
 
@@ -21,7 +21,8 @@ namespace SqlSiphon.TestBase
             // so it shouldn't be a problem to provide no connection string.
             using (var ss = this.MakeConnector())
             {
-                var dc = new TestQueries(ss);
+                var dc = new QueryDefT();
+                dc.Connection = ss;
                 var t = dc.GetType();
                 var method = t.GetMethod(methodName);
                 var methodInfo = DatabaseObjectAttribute.GetAttribute(method);
@@ -33,5 +34,11 @@ namespace SqlSiphon.TestBase
         public abstract void GetEmptyTable();
 
         public abstract void EmptyStoredProcedure();
+    }
+
+    [TestClass]
+    public abstract class CreateProcedureTests : CreateProcedureTests<TestQueries>
+    {
+
     }
 }

@@ -239,7 +239,7 @@ namespace SqlSiphon.SqlServer
             if (t.IsArray)
                 t = t.GetElementType();
             var attr = DatabaseObjectAttribute.GetAttribute(t) as SqlServerTableAttribute;
-            return attr?.Name ?? t.Name + "UDTT";
+            return (attr?.Name ?? t.Name) + "UDTT";
         }
 
         public override int DefaultTypePrecision(string typeName, int testPrecision)
@@ -310,14 +310,7 @@ end",
 
         public override string MakeCreateRoutineScript(RoutineAttribute info, bool createBody = true)
         {
-            try
-            {
-                return createBody ? this.MakeRoutineBody(info) : info.Query;
-            }
-            catch (Exception exp)
-            {
-                throw;
-            }
+            return createBody ? this.MakeRoutineBody(info) : info.Query;
         }
 
         public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
