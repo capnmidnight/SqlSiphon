@@ -380,8 +380,11 @@ namespace SqlSiphon
                         }
                         else
                         {
-                            var idxNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, index.Key).ToLowerInvariant();
-                            this.Indexes.Add(idxNameKey, index.Value);
+                            var idxNameKey = dal.MakeIdentifier(table.PrimaryKey?.Schema ?? dal.DefaultSchemaName, index.Key).ToLowerInvariant();
+                            if (!this.Indexes.ContainsKey(idxNameKey))
+                            {
+                                this.Indexes.Add(idxNameKey, index.Value);
+                            }
                         }
                     }
 

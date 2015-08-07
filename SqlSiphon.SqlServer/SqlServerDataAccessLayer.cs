@@ -160,13 +160,13 @@ namespace SqlSiphon.SqlServer
             typeToString = new Dictionary<Type, string>();
             defaultTypePrecisions = new Dictionary<string, int>();
 
-            SetTypeMappings<string>("nvarchar", 0); 
+            SetTypeMappings<string>("nvarchar", 0);
             SetTypeMappings<string>("char");
             SetTypeMappings<string>("varchar");
             SetTypeMappings<string>("text");
             SetTypeMappings<string>("nchar");
             SetTypeMappings<string>("ntext");
-            
+
 
             SetTypeMappings<int>("int", 10);
             SetTypeMappings<int?>("int");
@@ -231,21 +231,15 @@ namespace SqlSiphon.SqlServer
 
             SetTypeMappings<byte[]>("varbinary");
             SetTypeMappings<byte[]>("binary");
-            SetTypeMappings<byte[]>("image");            
+            SetTypeMappings<byte[]>("image");
         }
 
         public static string MakeUDTTName(Type t)
         {
             if (t.IsArray)
                 t = t.GetElementType();
-
             var attr = DatabaseObjectAttribute.GetAttribute(t) as SqlServerTableAttribute;
-            if (attr == null)
-            {
-                attr = new SqlServerTableAttribute(t);
-            }
-
-            return attr.Name + "UDTT";
+            return attr?.Name ?? t.Name + "UDTT";
         }
 
         public override int DefaultTypePrecision(string typeName, int testPrecision)
@@ -316,7 +310,14 @@ end",
 
         public override string MakeCreateRoutineScript(RoutineAttribute info, bool createBody = true)
         {
-            return createBody ? this.MakeRoutineBody(info) : info.Query;
+            try
+            {
+                return createBody ? this.MakeRoutineBody(info) : info.Query;
+            }
+            catch (Exception exp)
+            {
+                throw;
+            }
         }
 
         public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
@@ -1024,9 +1025,9 @@ order by ordinal_position;")]
             bool complete = RunProcess(
                 executablePath,
                 new string[]{
-                    "-S " + server, 
-                    string.IsNullOrWhiteSpace(adminUser) ? null : "-U " + adminUser, 
-                    string.IsNullOrWhiteSpace(adminPass) ? null : "-P " + adminPass, 
+                    "-S " + server,
+                    string.IsNullOrWhiteSpace(adminUser) ? null : "-U " + adminUser,
+                    string.IsNullOrWhiteSpace(adminPass) ? null : "-P " + adminPass,
                     (database == null) ? null : "-d " + database,
                     string.Format("-Q \"{0}\"", query)
                 });
