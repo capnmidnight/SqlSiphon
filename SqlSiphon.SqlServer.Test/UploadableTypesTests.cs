@@ -47,6 +47,46 @@ namespace SqlSiphon.SqlServer.Test
         }
 
         [TestMethod]
+        public void BasicIntegerArrayUDTT()
+        {
+            var table = testDB.MakeUDTTTableAttribute(typeof(int[]));
+            var script = testDB.MakeCreateUDTTScript(table);
+            Assert.AreEqual(@"create type [dbo].[Int32UDTT] as table(
+    [Value] int NOT NULL
+);", script);
+        }
+
+        [TestMethod]
+        public void BasicFloatArrayUDTT()
+        {
+            var table = testDB.MakeUDTTTableAttribute(typeof(float[]));
+            var script = testDB.MakeCreateUDTTScript(table);
+            Assert.AreEqual(@"create type [dbo].[SingleUDTT] as table(
+    [Value] real NOT NULL
+);", script);
+        }
+
+        [TestMethod]
+        public void BasicDoubleArrayUDTT()
+        {
+            var table = testDB.MakeUDTTTableAttribute(typeof(double[]));
+            var script = testDB.MakeCreateUDTTScript(table);
+            Assert.AreEqual(@"create type [dbo].[DoubleUDTT] as table(
+    [Value] float NOT NULL
+);", script);
+        }
+
+        [TestMethod]
+        public void BasicStringArrayUDTT()
+        {
+            var table = testDB.MakeUDTTTableAttribute(typeof(string[]));
+            var script = testDB.MakeCreateUDTTScript(table);
+            Assert.AreEqual(@"create type [dbo].[StringUDTT] as table(
+    [Value] nvarchar(MAX) NOT NULL
+);", script);
+        }
+
+        [TestMethod]
         public void BareFieldsIncluded()
         {
             Assert.IsTrue(FieldTest("BareField"));

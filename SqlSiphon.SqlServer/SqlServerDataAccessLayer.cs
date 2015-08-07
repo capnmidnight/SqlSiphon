@@ -945,33 +945,43 @@ order by ordinal_position;")]
             {
                 if (IsUDTT(parameter.SystemType))
                 {
-                    var elementType = parameter.SystemType;
-                    if (elementType.IsArray)
-                    {
-                        elementType = elementType.GetElementType();
-                    }
-                    types.Add(elementType);
+                    types.Add(parameter.SystemType);
                 }
             }
+
             foreach (var type in types)
             {
-                var attr = new TableAttribute();
-                var scanType = type;
-                attr.Name = type.Name + "UDTT";
-                if (DataConnector.IsTypePrimitive(type))
-                {
-                    var valueColumn = new ColumnAttribute
-                    {
-                        Table = attr,
-                        Name = "Value"
-                    };
-                    valueColumn.SetSystemType(type);
-                    attr.Properties.Add(valueColumn);
-                    scanType = null;
-                }
-                ssState.AddTable(ssState.UDTTs, scanType, this, attr);
+                TableAttribute attr = MakeUDTTTableAttribute(type);
+                ssState.AddTable(ssState.UDTTs, DataConnector.IsTypePrimitive(type) ? null : type, this, attr);
             }
             return ssState;
+        }
+
+        public TableAttribute MakeUDTTTableAttribute(Type type)
+        {
+            var elementType = type;
+            if (elementType.IsArray)
+            {
+                elementType = elementType.GetElementType();
+            }
+            TableAttribute attr = null;
+            if (DataConnector.IsTypePrimitive(elementType))
+            {
+                attr = new TableAttribute();
+                var valueColumn = new ColumnAttribute
+                {
+                    Table = attr,
+                    Name = "Value"
+                };
+                valueColumn.SetSystemType(elementType);
+                attr.Properties.Add(valueColumn);
+            }
+            else
+            {
+                attr = DatabaseObjectAttribute.GetAttribute<TableAttribute>(elementType);
+            }
+            attr.Name = elementType.Name + "UDTT";
+            return attr;
         }
 
         public static bool IsUDTT(Type t)
