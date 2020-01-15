@@ -1,4 +1,4 @@
-﻿using SqlSiphon;
+using SqlSiphon;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,8 +28,7 @@ namespace InitDB
         private static Type[] CONNECTION_TYPES = new Type[]
         {
             typeof(SqlSiphon.SqlServer.SqlServerDataConnectorFactory),
-            typeof(SqlSiphon.Postgres.PostgresDataConnectorFactory),
-            typeof(SqlSiphon.OleDB.OleDBDataConnectorFactory),
+            typeof(SqlSiphon.Postgres.PostgresDataConnectorFactory)
         };
 
         static string UnrollStackTrace(Exception e)
