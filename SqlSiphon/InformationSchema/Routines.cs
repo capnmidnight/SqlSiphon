@@ -1,5 +1,4 @@
-﻿using System;
-using SqlSiphon.Mapping;
+﻿using SqlSiphon.Mapping;
 
 namespace SqlSiphon.InformationSchema
 {
@@ -69,7 +68,7 @@ namespace SqlSiphon.InformationSchema
 
         public override string ToString()
         {
-            return "Routine: " + this.routine_name;
+            return "Routine: " + routine_name;
         }
     }
 }

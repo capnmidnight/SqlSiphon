@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SqlSiphon.SqlServer
 {
@@ -17,7 +14,7 @@ namespace SqlSiphon.SqlServer
 
         public SqlServerTableAttribute(Type t)
         {
-            this.InferProperties(t);
+            InferProperties(t);
         }
     }
 
@@ -26,15 +23,15 @@ namespace SqlSiphon.SqlServer
     {
         public UploadableAttribute()
         {
-            this.IsUploadable = true;
-            this.Include = false;
+            IsUploadable = true;
+            Include = false;
         }
 
         public UploadableAttribute(Type t)
             : base(t)
         {
-            this.IsUploadable = true;
-            this.Include = false;
+            IsUploadable = true;
+            Include = false;
         }
     }
 }

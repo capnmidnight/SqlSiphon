@@ -1,8 +1,5 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSiphon;
-using SqlSiphon.Mapping;
-using SqlSiphon.Postgres;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using SqlSiphon.TestBase;
 
 namespace SqlSiphon.Postgres.Test

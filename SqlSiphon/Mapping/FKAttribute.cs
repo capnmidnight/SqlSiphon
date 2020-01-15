@@ -30,10 +30,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using SqlSiphon.Model;
 
 namespace SqlSiphon.Mapping
 {
@@ -52,8 +48,8 @@ namespace SqlSiphon.Mapping
 
         public FKAttribute(Type target)
         {
-            this.Target = target;
-            this.AutoCreateIndex = true;
+            Target = target;
+            AutoCreateIndex = true;
         }
 
         /// <summary>
@@ -66,33 +62,33 @@ namespace SqlSiphon.Mapping
         /// <param name="columnDef"></param>
         public void InferProperties(ColumnAttribute columnDef)
         {
-            if (this.FromColumnName == null)
+            if (FromColumnName == null)
             {
-                this.FromColumnName = columnDef.Name;
+                FromColumnName = columnDef.Name;
             }
 
-            var targetTableDef = DatabaseObjectAttribute.GetAttribute(this.Target) ?? new TableAttribute(this.Target);
+            var targetTableDef = DatabaseObjectAttribute.GetAttribute(Target) ?? new TableAttribute(Target);
 
             foreach (var targetColumnDef in targetTableDef.Properties)
             {
                 if (columnDef.Name.ToLowerInvariant().EndsWith(targetColumnDef.Name.ToLowerInvariant()))
                 {
-                    if (this.ToColumnName == null)
+                    if (ToColumnName == null)
                     {
-                        this.ToColumnName = targetColumnDef.Name;
+                        ToColumnName = targetColumnDef.Name;
                     }
 
-                    if (this.Prefix == null)
+                    if (Prefix == null)
                     {
-                        this.Prefix = columnDef.Name.Substring(0, columnDef.Name.Length - targetColumnDef.Name.Length);
+                        Prefix = columnDef.Name.Substring(0, columnDef.Name.Length - targetColumnDef.Name.Length);
                     }
                     break;
                 }
             }
 
-            if (this.Prefix == null)
+            if (Prefix == null)
             {
-                this.Prefix = string.Empty;
+                Prefix = string.Empty;
             }
         }
     }

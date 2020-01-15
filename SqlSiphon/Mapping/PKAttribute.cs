@@ -30,7 +30,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Reflection;
 
 namespace SqlSiphon.Mapping
 {
@@ -45,7 +44,7 @@ namespace SqlSiphon.Mapping
     {
         public PKAttribute()
         {
-            this.IncludeInPrimaryKey = true;
+            IncludeInPrimaryKey = true;
         }
 
         public override string ToString()

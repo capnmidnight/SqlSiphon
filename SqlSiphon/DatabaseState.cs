@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
 
@@ -38,17 +39,17 @@ namespace SqlSiphon
             Dictionary<string, PrimaryKey> pks, List<string> schemata, Dictionary<string, string> logins,
             List<string> initScripts, List<Action<IDataConnector>> postExecute, string catalogueName, bool? catalogueExists)
         {
-            this.Tables = tables;
-            this.Indexes = indexes;
-            this.Functions = routines;
-            this.Relationships = relationships;
-            this.PrimaryKeys = pks;
-            this.Schemata = schemata;
-            this.DatabaseLogins = logins;
-            this.InitScripts = initScripts;
-            this.PostExecute = postExecute;
-            this.CatalogueExists = catalogueExists;
-            this.CatalogueName = catalogueName;
+            Tables = tables;
+            Indexes = indexes;
+            Functions = routines;
+            Relationships = relationships;
+            PrimaryKeys = pks;
+            Schemata = schemata;
+            DatabaseLogins = logins;
+            InitScripts = initScripts;
+            PostExecute = postExecute;
+            CatalogueExists = catalogueExists;
+            CatalogueName = catalogueName;
         }
 
         private DatabaseState()
@@ -71,10 +72,10 @@ namespace SqlSiphon
         public DatabaseState(IEnumerable<Type> types, IAssemblyStateReader asm, IDatabaseScriptGenerator dal, string userName, string password)
             : this()
         {
-            this.PostExecute = new List<Action<IDataConnector>>();
+            PostExecute = new List<Action<IDataConnector>>();
             if (!string.IsNullOrWhiteSpace(userName))
             {
-                this.DatabaseLogins.Add(userName.ToLowerInvariant(), password);
+                DatabaseLogins.Add(userName.ToLowerInvariant(), password);
             }
 
             var routineDefTypes = new List<Type>();
@@ -99,7 +100,7 @@ namespace SqlSiphon
                         var parameters = method.GetParameters();
                         if (parameters.Length == 1 && parameters[0].ParameterType.GetInterfaces().Contains(typeof(IDataConnector)))
                         {
-                            this.PostExecute.Add((db) => method.Invoke(null, new object[] { db }));
+                            PostExecute.Add((db) => method.Invoke(null, new object[] { db }));
                         }
                     }
                 }
@@ -109,7 +110,7 @@ namespace SqlSiphon
 
             CreateRoutines(routineDefTypes, dal);
 
-            this.Schemata.AddRange(this.GetSchemata(dal));
+            Schemata.AddRange(GetSchemata(dal));
         }
 
         /// <summary>
@@ -121,20 +122,20 @@ namespace SqlSiphon
         {
             if (dal != null)
             {
-                bool hasScriptStatusTable = false;
-                string scriptStatusName = dal.MakeIdentifier(dal.DefaultSchemaName, "ScriptStatus");
-                this.CatalogueName = catalogueName;
+                var hasScriptStatusTable = false;
+                var scriptStatusName = dal.MakeIdentifier(dal.DefaultSchemaName, "ScriptStatus");
+                CatalogueName = catalogueName;
                 try
                 {
                     foreach (var name in dal.GetDatabaseLogins())
                     {
-                        this.DatabaseLogins.Add(name.ToLowerInvariant(), null);
+                        DatabaseLogins.Add(name.ToLowerInvariant(), null);
                     }
-                    this.CatalogueExists = true;
+                    CatalogueExists = true;
                     var schemas = dal.GetSchemata();
                     if (schemas.Count > 0)
                     {
-                        this.Schemata.AddRange(schemas);
+                        Schemata.AddRange(schemas);
                     }
                     var columns = dal.GetColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
                     var constraints = dal.GetTableConstraints();
@@ -171,7 +172,7 @@ namespace SqlSiphon
                             var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : new InformationSchema.ConstraintColumnUsage[] { };
                             var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : new InformationSchema.IndexColumnUsage[] { };
                             var table = new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal);
-                            this.Tables.Add(tableName.ToLowerInvariant(), table);
+                            Tables.Add(tableName.ToLowerInvariant(), table);
                             if (tableConstraints != null)
                             {
                                 foreach (var constraint in tableConstraints)
@@ -188,7 +189,7 @@ namespace SqlSiphon
                                         var uniqueTableKeyColumns = keyColumnsByTable[uniqueTableName];
                                         if (constraint.constraint_type == "FOREIGN KEY")
                                         {
-                                            this.Relationships.Add(
+                                            Relationships.Add(
                                                 constraintName.ToLowerInvariant(),
                                                 new Relationship(
                                                     tableColumns,
@@ -208,7 +209,7 @@ namespace SqlSiphon
                                                 uniqueConstraintColumns,
                                                 uniqueTableColumns,
                                                 dal);
-                                            this.PrimaryKeys.Add(constraintName.ToLowerInvariant(), table.PrimaryKey);
+                                            PrimaryKeys.Add(constraintName.ToLowerInvariant(), table.PrimaryKey);
                                         }
                                     }
                                 }
@@ -237,9 +238,9 @@ namespace SqlSiphon
                         var routineParameters = parameters.ContainsKey(key) ? parameters[key] : null;
                         var function = new RoutineAttribute(routine, routineParameters, dal);
                         var ident = dal.MakeRoutineIdentifier(function);
-                        if (!this.Functions.ContainsKey(ident))
+                        if (!Functions.ContainsKey(ident))
                         {
-                            this.Functions.Add(ident.ToLowerInvariant(), function);
+                            Functions.Add(ident.ToLowerInvariant(), function);
                         }
                     }
 
@@ -248,13 +249,13 @@ namespace SqlSiphon
                         var idxKey = dal.MakeIdentifier(dal.DefaultSchemaName, idxName).ToLowerInvariant();
                         var idx = indexedColumnsByName[idxName];
                         var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name).ToLowerInvariant();
-                        if (this.Tables.ContainsKey(tableName))
+                        if (Tables.ContainsKey(tableName))
                         {
-                            var table = this.Tables[tableName];
-                            this.Indexes.Add(idxKey, new TableIndex(table, idxName));
+                            var table = Tables[tableName];
+                            Indexes.Add(idxKey, new TableIndex(table, idxName));
                             foreach (var idxCol in idx)
                             {
-                                this.Indexes[idxKey].Columns.Add(idxCol.column_name);
+                                Indexes[idxKey].Columns.Add(idxCol.column_name);
                             }
                         }
                     }
@@ -264,24 +265,24 @@ namespace SqlSiphon
                         var scripts = dal.GetScriptStatus();
                         if (scripts.Count > 0)
                         {
-                            this.InitScripts.AddRange(scripts);
+                            InitScripts.AddRange(scripts);
                         }
                     }
                 }
                 catch (ConnectionFailedException)
                 {
-                    this.CatalogueExists = false;
+                    CatalogueExists = false;
                 }
             }
         }
 
         private List<string> GetSchemata(IDatabaseScriptGenerator dal)
         {
-            var schemata = this.Tables.Values.Select(t => t.Schema)
-                .Union(this.Functions.Values.Select(f => f.Schema))
-                .Union(this.Relationships.Values.Select(r => r.Schema))
-                .Union(this.PrimaryKeys.Values.Select(r => r.Schema))
-                .Where(s => !string.IsNullOrWhiteSpace(s) && !this.Schemata.Contains(s) && s != dal.DefaultSchemaName)
+            var schemata = Tables.Values.Select(t => t.Schema)
+                .Union(Functions.Values.Select(f => f.Schema))
+                .Union(Relationships.Values.Select(r => r.Schema))
+                .Union(PrimaryKeys.Values.Select(r => r.Schema))
+                .Where(s => !string.IsNullOrWhiteSpace(s) && !Schemata.Contains(s) && s != dal.DefaultSchemaName)
                 .Distinct()
                 .ToList();
             return schemata;
@@ -298,13 +299,13 @@ namespace SqlSiphon
                     if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
                     {
                         var functionName = dal.MakeRoutineIdentifier(function);
-                        if (this.Functions.ContainsKey(functionName))
+                        if (Functions.ContainsKey(functionName))
                         {
 
                         }
                         else
                         {
-                            this.Functions.Add(functionName.ToLowerInvariant(), function);
+                            Functions.Add(functionName.ToLowerInvariant(), function);
                         }
                     }
                 }
@@ -313,27 +314,27 @@ namespace SqlSiphon
 
         private void CreateRelationships(IDatabaseScriptGenerator dal)
         {
-            var tablesBySystemType = this.Tables.Values.ToDictionary(t => t.SystemType);
-            foreach (var table in this.Tables.Values)
+            var tablesBySystemType = Tables.Values.ToDictionary(t => t.SystemType);
+            foreach (var table in Tables.Values)
             {
                 var relationships = table.GetRelationships();
                 foreach (var relationship in relationships)
                 {
                     relationship.ResolveColumns(tablesBySystemType, dal);
                     var id = dal.MakeIdentifier(relationship.Schema ?? dal.DefaultSchemaName, relationship.Name);
-                    if (this.Relationships.ContainsKey(id))
+                    if (Relationships.ContainsKey(id))
                     {
                         throw new RelationshipExistsException(id);
                     }
                     else
                     {
-                        this.Relationships.Add(id.ToLowerInvariant(), relationship);
+                        Relationships.Add(id.ToLowerInvariant(), relationship);
                         if (relationship.AutoCreateIndex)
                         {
                             var fkIndex = new TableIndex(relationship.From, "IDX_" + relationship.Name);
                             fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
                             var fkIndexNameKey = dal.MakeIdentifier(relationship.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
-                            this.Indexes.Add(fkIndexNameKey, fkIndex);
+                            Indexes.Add(fkIndexNameKey, fkIndex);
                         }
                     }
                 }
@@ -351,7 +352,7 @@ namespace SqlSiphon
                 var table = DatabaseObjectAttribute.GetAttribute(type);
                 if (table != null)
                 {
-                    AddTable(this.Tables, type, dal, table);
+                    AddTable(Tables, type, dal, table);
                 }
             }
         }
@@ -368,27 +369,27 @@ namespace SqlSiphon
                     if (type != null && table.Properties.Any(p => p.IncludeInPrimaryKey))
                     {
                         var pkNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.Name).ToLowerInvariant();
-                        this.PrimaryKeys.Add(pkNameKey, table.PrimaryKey);
-                        this.Indexes.Add(pkNameKey, table.PrimaryKey.ToIndex());
+                        PrimaryKeys.Add(pkNameKey, table.PrimaryKey);
+                        Indexes.Add(pkNameKey, table.PrimaryKey.ToIndex());
                     }
 
                     foreach (var index in table.Indexes)
                     {
-                        if (this.Indexes.ContainsKey(index.Key))
+                        if (Indexes.ContainsKey(index.Key))
                         {
-                            throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, this.Indexes[index.Key].Table.Name);
+                            throw new IndexExistsException(index.Value.Name, index.Value.Table.Name, Indexes[index.Key].Table.Name);
                         }
                         else
                         {
                             var idxNameKey = dal.MakeIdentifier(table.PrimaryKey?.Schema ?? dal.DefaultSchemaName, index.Key).ToLowerInvariant();
-                            if (!this.Indexes.ContainsKey(idxNameKey))
+                            if (!Indexes.ContainsKey(idxNameKey))
                             {
-                                this.Indexes.Add(idxNameKey, index.Value);
+                                Indexes.Add(idxNameKey, index.Value);
                             }
                         }
                     }
 
-                    this.InitScripts.AddRange(table.EnumValues.Select(val => dal.MakeInsertScript(table, val)));
+                    InitScripts.AddRange(table.EnumValues.Select(val => dal.MakeInsertScript(table, val)));
                 }
             }
         }
@@ -407,11 +408,11 @@ namespace SqlSiphon
         public bool TypeExists<T>()
         {
             var type = typeof(T);
-            return this.Functions.Values.Any(f => f.SystemType == type || f.Parameters.Any(p => p.SystemType == type))
-                || this.Tables.Values.SelectMany(t => t.Properties).Any(p => p.SystemType == type);
+            return Functions.Values.Any(f => f.SystemType == type || f.Parameters.Any(p => p.SystemType == type))
+                || Tables.Values.SelectMany(t => t.Properties).Any(p => p.SystemType == type);
         }
 
-        private static Dictionary<Type, string> TYPE_NAMES;
+        private static readonly Dictionary<Type, string> TYPE_NAMES;
         private static void AddType<T>(string name) { TYPE_NAMES.Add(typeof(T), name); }
         static DatabaseState()
         {
@@ -432,7 +433,7 @@ namespace SqlSiphon
             AddType<string>("string");
         }
 
-        static string TypeName(Type t)
+        private static string TypeName(Type t)
         {
             if (t != null)
             {
@@ -455,10 +456,10 @@ namespace SqlSiphon
         {
             if (Directory.Exists(directory))
             {
-                foreach (var table in this.Tables.Values)
+                foreach (var table in Tables.Values)
                 {
                     var columnStrings = new List<string>();
-                    var indexes = this.Indexes.Values.Where(i => i.Table.Schema == table.Schema && i.Table.Name == table.Name);
+                    var indexes = Indexes.Values.Where(i => i.Table.Schema == table.Schema && i.Table.Name == table.Name);
                     foreach (var column in table.Properties)
                     {
                         if (column.Include)
@@ -489,7 +490,7 @@ namespace SqlSiphon
                             if (hasOptions)
                             {
                                 columnAttrString += "(";
-                                string sep = "";
+                                var sep = "";
                                 if (column.DefaultValue != null)
                                 {
                                     columnAttrString += string.Format(@"{0}DefaultValue = ""{0}""", sep, column.DefaultValue);
@@ -538,7 +539,7 @@ namespace SqlSiphon
                     }
 
                     var fkAttrString = "";
-                    var fks = this.Relationships.Values.Where(r => r.From.Schema == table.Schema && r.From.Name == table.Name);
+                    var fks = Relationships.Values.Where(r => r.From.Schema == table.Schema && r.From.Name == table.Name);
                     foreach (var fk in fks)
                     {
                         fkAttrString += @"
@@ -567,9 +568,9 @@ namespace {0}
 }}", nameSpace, fkAttrString, table.Name, string.Join("", columnStrings));
                     File.WriteAllText(Path.Combine(directory, table.Name + ".cs"), codeFile);
                 }
-                var routineSectionStr = string.Join("", this.Functions.Values.Select(f =>
+                var routineSectionStr = string.Join("", Functions.Values.Select(f =>
                 {
-                    bool isCollection = DataConnector.IsTypeCollection(f.SystemType);
+                    var isCollection = DataConnector.IsTypeCollection(f.SystemType);
                     var type = DataConnector.CoalesceCollectionType(f.SystemType);
                     var retTypeStr = TypeName(type) ?? "void";
                     if (isCollection)

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace SqlSiphon.Postgres
 {
@@ -15,7 +13,7 @@ namespace SqlSiphon.Postgres
         public PostgresDatabaseState(DatabaseState state)
             : base(state)
         {
-            this.Extensions = new Dictionary<string, pg_extension>();
+            Extensions = new Dictionary<string, pg_extension>();
         }
 
         public override DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator dal)
@@ -34,9 +32,9 @@ namespace SqlSiphon.Postgres
             }
 
             delta.Scripts.Add(new ScriptStatus(
-                ScriptType.AlterSettings, 
-                "set schema search path", 
-                string.Format("set search_path = {0},public;", string.Join(",", this.Schemata.Select(s=>dal.MakeIdentifier(s)))),
+                ScriptType.AlterSettings,
+                "set schema search path",
+                string.Format("set search_path = {0},public;", string.Join(",", Schemata.Select(s => dal.MakeIdentifier(s)))),
                 "Schema search path needs to be set"));
 
             delta.Scripts.Sort();
@@ -47,7 +45,7 @@ namespace SqlSiphon.Postgres
 
         private void RemoveExtensionObjects(PostgresDatabaseState pg)
         {
-            var extSchema = this.Extensions.Keys.ToList();
+            var extSchema = Extensions.Keys.ToList();
             RemoveExtensionObjects(extSchema, pg.Functions);
             RemoveExtensionObjects(extSchema, pg.Indexes);
             RemoveExtensionObjects(extSchema, pg.PrimaryKeys);
@@ -68,7 +66,7 @@ namespace SqlSiphon.Postgres
 
         private void ProcessExtensions(IDatabaseObjectHandler dal, DatabaseDelta delta, Dictionary<string, pg_extension> extensions)
         {
-            foreach (var ext in this.Extensions)
+            foreach (var ext in Extensions)
             {
                 if (!extensions.ContainsKey(ext.Key))
                 {
@@ -94,12 +92,12 @@ namespace SqlSiphon.Postgres
 
         public void AddExtension(pg_extension ext)
         {
-            this.AddExtension(ext.extname, ext.extversion);
+            AddExtension(ext.extname, ext.extversion);
         }
 
         public void AddExtension(string name, string version)
         {
-            this.Extensions.Add(name, new pg_extension(name, version));
+            Extensions.Add(name, new pg_extension(name, version));
         }
     }
 }

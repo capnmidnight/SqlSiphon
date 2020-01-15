@@ -1,4 +1,5 @@
 ﻿using System;
+
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.TestBase

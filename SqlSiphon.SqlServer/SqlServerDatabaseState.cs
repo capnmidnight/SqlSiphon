@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.SqlServer
@@ -13,9 +11,9 @@ namespace SqlSiphon.SqlServer
         public SqlServerDatabaseState(DatabaseState state)
             : base(state)
         {
-            this.UDTTs = new Dictionary<string, TableAttribute>();
+            UDTTs = new Dictionary<string, TableAttribute>();
         }
-        
+
         public override DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator dal)
         {
             var delta = base.Diff(initial, asm, dal);
@@ -23,7 +21,7 @@ namespace SqlSiphon.SqlServer
             var ssDal = dal as SqlServerDataAccessLayer;
             if (ssState != null && ssDal != null)
             {
-                ProcessUDTTs(delta, this.UDTTs, ssState.UDTTs, asm, ssDal);
+                ProcessUDTTs(delta, UDTTs, ssState.UDTTs, asm, ssDal);
             }
 
             delta.Scripts.Sort();
@@ -52,7 +50,7 @@ namespace SqlSiphon.SqlServer
                     var finalColumns = finalUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(finalUDTT.Schema ?? gen.DefaultSchemaName, finalUDTT.Name, p.Name).ToLower());
                     var initialColumns = initialUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(initialUDTT.Schema ?? gen.DefaultSchemaName, initialUDTT.Name, p.Name).ToLower());
 
-                    bool changed = false;
+                    var changed = false;
                     DatabaseDelta.Traverse(
                         finalColumns,
                         initialColumns,

@@ -30,7 +30,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace SqlSiphon.Mapping
@@ -72,41 +71,44 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public ColumnAttribute()
         {
-            this.IsIdentity = false;
-            this.IncludeInPrimaryKey = false;
+            IsIdentity = false;
+            IncludeInPrimaryKey = false;
         }
 
         public ColumnAttribute(PropertyInfo obj)
             : this()
         {
-            this.InferProperties(obj);
+            InferProperties(obj);
         }
 
         public ColumnAttribute(TableAttribute table, InformationSchema.Columns column, bool includeInPK, IDatabaseStateReader dal)
         {
-            this.Table = table;
-            this.Name = column.column_name;
+            Table = table;
+            Name = column.column_name;
             var defVal = column.column_default;
-            this.IsIdentity = dal.DescribesIdentity(column);
-            this.DefaultValue = defVal;
-            this.IncludeInPrimaryKey = includeInPK;
-            this.Include = true;
+            IsIdentity = dal.DescribesIdentity(column);
+            DefaultValue = defVal;
+            IncludeInPrimaryKey = includeInPK;
+            Include = true;
 
             if (column.is_nullable != null && column.is_nullable.ToLowerInvariant() == "yes")
             {
-                this.IsOptional = true;
+                IsOptional = true;
             }
 
-            this.InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
+            InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
         }
 
-        private PropertyInfo originalProperty { get { return (PropertyInfo)this.SourceObject; } }
+        private PropertyInfo originalProperty { get { return (PropertyInfo)SourceObject; } }
 
         public void SetValue(object obj, object value)
         {
             if (value == DBNull.Value)
+            {
                 value = null;
-            var targetType = DataConnector.CoalesceNullableValueType(this.originalProperty.PropertyType);
+            }
+
+            var targetType = DataConnector.CoalesceNullableValueType(originalProperty.PropertyType);
 
             if (value != null)
             {
@@ -126,53 +128,53 @@ namespace SqlSiphon.Mapping
 
             try
             {
-                this.originalProperty.SetValue(obj, value, null);
+                originalProperty.SetValue(obj, value, null);
             }
             catch (Exception exp)
             {
                 throw new Exception(string.Format(
                     "Cannot set property value for property {0}.{1}. Reason: {2}.",
-                    this.originalProperty.DeclaringType.Name,
-                    this.originalProperty.Name,
+                    originalProperty.DeclaringType.Name,
+                    originalProperty.Name,
                     exp.Message), exp);
             }
         }
 
         public virtual T GetValue<T>(object obj)
         {
-            return (T)this.originalProperty.GetValue(obj, null);
+            return (T)originalProperty.GetValue(obj, null);
         }
 
         public virtual object GetValue(object obj)
         {
-            return this.originalProperty.GetValue(obj, null);
+            return originalProperty.GetValue(obj, null);
         }
 
         public ParameterAttribute ToParameter()
         {
             var p = new ParameterAttribute
             {
-                DefaultValue = this.DefaultValue,
+                DefaultValue = DefaultValue,
                 Direction = System.Data.ParameterDirection.Input,
-                Name = this.Name,
-                Schema = this.Schema,
-                SqlType = this.SqlType
+                Name = Name,
+                Schema = Schema,
+                SqlType = SqlType
             };
-            if (this.IsPrecisionSet)
+            if (IsPrecisionSet)
             {
-                p.Precision = this.Precision;
+                p.Precision = Precision;
             }
-            if (this.IsSizeSet)
+            if (IsSizeSet)
             {
-                p.Size = this.Size;
+                p.Size = Size;
             }
-            if (this.IsOptionalSet)
+            if (IsOptionalSet)
             {
-                p.IsOptional = this.IsOptional;
+                p.IsOptional = IsOptional;
             }
-            if (this.IsIncludeSet)
+            if (IsIncludeSet)
             {
-                p.Include = this.Include;
+                p.Include = Include;
             }
             return p;
         }
@@ -180,10 +182,10 @@ namespace SqlSiphon.Mapping
         public override string ToString()
         {
             return string.Format("COLUMN [{0}].[{1}].[{2}] {3}",
-                this.Table?.Schema,
-                this.Table?.Name,
-                this.Name,
-                this.SystemType?.FullName);
+                Table?.Schema,
+                Table?.Name,
+                Name,
+                SystemType?.FullName);
         }
     }
 }

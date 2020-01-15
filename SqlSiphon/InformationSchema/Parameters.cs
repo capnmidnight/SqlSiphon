@@ -33,7 +33,7 @@ namespace SqlSiphon.InformationSchema
 
         public override string ToString()
         {
-            return string.Format("Parameter: {0}:({1})", this.parameter_name, this.data_type);
+            return string.Format("Parameter: {0}:({1})", parameter_name, data_type);
         }
     }
 }

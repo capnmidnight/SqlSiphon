@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
 using SqlSiphon.Mapping;
 
 
@@ -58,7 +59,7 @@ namespace SqlSiphon.Examples
             var users = db.GetAllUsers(appName);
             foreach (var userName in new[] { "Anna", "Bob", "Christine", "Dave" })
             {
-                Guid userID = db.GetUserID(userName);
+                var userID = db.GetUserID(userName);
                 if (userID == Guid.Empty)
                 {
                     userID = Guid.NewGuid();
@@ -104,7 +105,7 @@ from Applications
 where ApplicationName = @applicationName;")]
         public Guid GetApplicationID(string applicationName)
         {
-            return this.Get<Guid>(applicationName);
+            return Get<Guid>(applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -116,7 +117,7 @@ ColumnB, ColumnC, renamedColumnD, ColumnE
 from @vals;")]
         public void UploadTestEntity(TestEntity1[] vals)
         {
-            this.Execute(vals);
+            Execute(vals);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -127,7 +128,7 @@ from @vals;")]
 (newid(), @applicationName, lower(@applicationName), @description);")]
         public void CreateApplication(string applicationName, string description)
         {
-            this.Execute(applicationName, description);
+            Execute(applicationName, description);
         }
 
 
@@ -154,7 +155,7 @@ where u.userName = @userName
     and a.ApplicationName = @applicationName;")]
         public MembershipUser GetUserByUserName(string userName, string applicationName)
         {
-            return this.Get<MembershipUser>(userName, applicationName);
+            return Get<MembershipUser>(userName, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -169,7 +170,7 @@ where m.LoweredEmail = lower(@email)
     and u.ApplicatoinName = @applicationName;")]
         public string GetuserNameByEmail(string email, string applicationName)
         {
-            return this.Get<string>(email, applicationName);
+            return Get<string>(email, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -193,7 +194,7 @@ inner join Users u on u.UserID = m.UserID
 where m.UserID = @userID;")]
         public MembershipUser GetUserByID(Guid userID)
         {
-            return this.Get<MembershipUser>(userID);
+            return Get<MembershipUser>(userID);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -205,7 +206,7 @@ from Users
 where userName = @userName;")]
         public Guid GetUserID(string userName)
         {
-            return this.Get<Guid>(userName);
+            return Get<Guid>(userName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -231,17 +232,17 @@ from Applications
 where ApplicationName = @applicationName;")]
         public void InsertUser(Guid userID, string userName, string applicationName, bool isAnonymous)
         {
-            this.Execute(userID, userName, applicationName, isAnonymous);
+            Execute(userID, userName, applicationName, isAnonymous);
         }
         public void InsertUser(Guid userID, string userName, string applicationName)
         {
-            this.InsertUser(userID, userName, applicationName, false);
+            InsertUser(userID, userName, applicationName, false);
         }
 
         public Guid CreateUser(Guid userID, string userName, string applicationName)
         {
-            this.InsertUser(userID, userName, applicationName);
-            return this.GetUserID(userName);
+            InsertUser(userID, userName, applicationName);
+            return GetUserID(userName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -293,13 +294,13 @@ from Applications
 where ApplicationName = @applicationName;")]
         public void InsertMembershipUser(Guid userID, string password, string passwordSalt, string email, string passwordQuestion, string passwordAnswer, bool isApproved, DateTime creationDate, string applicationName, bool isLockedOut)
         {
-            this.Execute(userID, password, passwordSalt, email, passwordQuestion, passwordAnswer, isApproved, creationDate, applicationName, isLockedOut);
+            Execute(userID, password, passwordSalt, email, passwordQuestion, passwordAnswer, isApproved, creationDate, applicationName, isLockedOut);
         }
 
         public MembershipUser CreateMembershipUser(Guid userID, string password, string passwordSalt, string email, string passwordQuestion, string passwordAnswer, bool isApproved, DateTime creationDate, string applicationName, bool isLockedOut)
         {
-            this.InsertMembershipUser(userID, password, passwordSalt, email, passwordQuestion, passwordAnswer, isApproved, creationDate, applicationName, isLockedOut);
-            return this.GetUserByID(userID);
+            InsertMembershipUser(userID, password, passwordSalt, email, passwordQuestion, passwordAnswer, isApproved, creationDate, applicationName, isLockedOut);
+            return GetUserByID(userID);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -324,7 +325,7 @@ delete from Users where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void DeleteUser(string userName, string applicationName)
         {
-            this.Execute(userName, applicationName);
+            Execute(userName, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -351,7 +352,7 @@ where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void UpdateUser(string userName, string applicationName, string email, string comment, bool isApproved)
         {
-            this.Execute(userName, applicationName, email, comment, isApproved);
+            Execute(userName, applicationName, email, comment, isApproved);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -382,7 +383,7 @@ where m.ApplicationID = @applicationID
 order by userName asc;")]
         public List<MembershipUser> GetAllUsers(string applicationName)
         {
-            return this.GetList<MembershipUser>(applicationName);
+            return GetList<MembershipUser>(applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -401,7 +402,7 @@ where LastActivityDate > @compareDate
     and ApplicationID = @applicationID;")]
         public int GetNumberOfUsersOnline(DateTime compareDate, string applicationName)
         {
-            return this.Get<int>(compareDate, applicationName);
+            return Get<int>(compareDate, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -436,7 +437,7 @@ where u.userName = @userName
     and a.ApplicationName = @applicationName;")]
         public Membership GetMembership(string userName, string applicationName)
         {
-            return this.Get<Membership>(userName, applicationName);
+            return Get<Membership>(userName, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -461,7 +462,7 @@ update Membership set
 where UserID = @userID;")]
         public void ChangePassword(string userName, string newPassword, DateTime lastPasswordChangedDate, string applicationName)
         {
-            this.Execute(userName, newPassword, lastPasswordChangedDate, applicationName);
+            Execute(userName, newPassword, lastPasswordChangedDate, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -479,7 +480,7 @@ where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void UserLogin(DateTime lastLoginDate, Guid userID, string applicationName)
         {
-            this.Execute(lastLoginDate, userID, applicationName);
+            Execute(lastLoginDate, userID, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -505,7 +506,7 @@ where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void UpdateFailedPasswordAttemptCountAndDate(string userName, string applicationName, int failedPasswordAttemptCount, DateTime failedPasswordAttemptWindowStart)
         {
-            this.Execute(userName, applicationName, failedPasswordAttemptCount, failedPasswordAttemptWindowStart);
+            Execute(userName, applicationName, failedPasswordAttemptCount, failedPasswordAttemptWindowStart);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -529,7 +530,7 @@ where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void UpdateFailedPasswordAttemptCount(string userName, string applicationName, int failedPasswordAttemptCount)
         {
-            this.Execute(userName, applicationName, failedPasswordAttemptCount);
+            Execute(userName, applicationName, failedPasswordAttemptCount);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -554,7 +555,7 @@ where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void UpdateFailedPasswordAnswerAttemptCountAndDate(string userName, string applicationName, int failedPasswordAnswerAttemptCount, DateTime failedPasswordAnswerAttemptWindowStart)
         {
-            this.Execute(userName, applicationName, failedPasswordAnswerAttemptCount, failedPasswordAnswerAttemptWindowStart);
+            Execute(userName, applicationName, failedPasswordAnswerAttemptCount, failedPasswordAnswerAttemptWindowStart);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -578,7 +579,7 @@ where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void UpdateFailedPasswordAnswerAttemptCount(string userName, string applicationName, int failedPasswordAnswerAttemptCount)
         {
-            this.Execute(userName, applicationName, failedPasswordAnswerAttemptCount);
+            Execute(userName, applicationName, failedPasswordAnswerAttemptCount);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -603,7 +604,7 @@ where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void LockUnlockUser(string userName, string applicationName, bool isLockedOut, DateTime lastLockoutDate)
         {
-            this.Execute(userName, applicationName, isLockedOut, lastLockoutDate);
+            Execute(userName, applicationName, isLockedOut, lastLockoutDate);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -635,7 +636,7 @@ where u.userName LIKE @userNameToMatch
     and m.ApplicationID = @applicationID;")]
         public List<MembershipUser> FindUsersByName(string userNameToMatch, string applicationName)
         {
-            return this.GetList<MembershipUser>(userNameToMatch, applicationName);
+            return GetList<MembershipUser>(userNameToMatch, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -667,7 +668,7 @@ where Email like @emailToMatch
     and m.ApplicationID = @applicationID;")]
         public List<MembershipUser> FindUsersByEmail(string emailToMatch, string applicationName)
         {
-            return this.GetList<MembershipUser>(emailToMatch, applicationName);
+            return GetList<MembershipUser>(emailToMatch, applicationName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -691,7 +692,7 @@ where UserID = @userID
     and ApplicationID = @applicationID;")]
         public void ChangePasswordQuestionAndAnswer(string userName, string applicationName, string question, string answer)
         {
-            this.Execute(userName, applicationName, question, answer);
+            Execute(userName, applicationName, question, answer);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -703,7 +704,7 @@ where UserID = @userID
 where UserID = @userID;")]
         public void ChangeEmail(Guid userID, string newAddress)
         {
-            this.Execute(userID, newAddress);
+            Execute(userID, newAddress);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -725,7 +726,7 @@ insert into UsersInRoles
 (@userID, @roleID);")]
         public void AddUserToRole(string userName, string roleName)
         {
-            this.Execute(userName, roleName);
+            Execute(userName, roleName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -742,7 +743,7 @@ insert into Roles
 (newid(), @applicationID, @roleName, lower(@roleName), @description);")]
         public void CreateRole(string roleName, string applicationName, string description)
         {
-            this.Execute(roleName, applicationName, description);
+            Execute(roleName, applicationName, description);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -752,7 +753,7 @@ insert into Roles
 	where RoleID = (select RoleID from Roles where RoleName = @roleName);")]
         public void DeleteUsersInRole(string roleName)
         {
-            this.Execute(roleName);
+            Execute(roleName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -763,8 +764,8 @@ where RoleName = @roleName;")]
         public void DeleteRole(string roleName)
         {
             // remove FK items
-            this.DeleteUsersInRole(roleName);
-            this.Execute(roleName);
+            DeleteUsersInRole(roleName);
+            Execute(roleName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -774,7 +775,7 @@ where RoleName = @roleName;")]
 from Roles;")]
         public string[] GetAllRoles()
         {
-            return this.GetList<string>().ToArray();
+            return GetList<string>().ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -790,7 +791,7 @@ from Roles
 where ApplicationID = @applicationID;")]
         public List<Roles> GetRoles(Guid applicationID)
         {
-            return this.GetList<Roles>(applicationID);
+            return GetList<Roles>(applicationID);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -803,7 +804,7 @@ from UsersInRoles
 where Users.userName = @userName;", Size = 256)]
         public string[] GetRolesForUser(string userName)
         {
-            return this.GetList<string>(userName).ToArray();
+            return GetList<string>(userName).ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -816,7 +817,7 @@ from UsersInRoles
 where Roles.RoleName = @roleName;")]
         public string[] GetUsersInRole(string roleName)
         {
-            return this.GetList<string>(roleName).ToArray();
+            return GetList<string>(roleName).ToArray();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -831,7 +832,7 @@ where Users.userName= @userName
     and Roles.RoleName = @roleName;")]
         public bool IsUserInRole(string userName, string roleName)
         {
-            return this.Get<int>(userName, roleName) > 0;
+            return Get<int>(userName, roleName) > 0;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -853,7 +854,7 @@ where UserID = @UserID
     and RoleID = @RoleID;")]
         public void RemoveUserFromRole(string userName, string roleName)
         {
-            this.Execute(userName, roleName);
+            Execute(userName, roleName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -865,7 +866,7 @@ from Roles
 where RoleName = @roleName;")]
         public bool RoleExists(string roleName)
         {
-            return this.Get<int>(roleName) > 0;
+            return Get<int>(roleName) > 0;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -879,7 +880,7 @@ where Users.userName like @userNameToMatch
     and Roles.RoleName = @roleName;")]
         public string[] FindUsersInRole(string userNameToMatch, string roleName)
         {
-            return this.GetList<string>(userNameToMatch, roleName).ToArray();
+            return GetList<string>(userNameToMatch, roleName).ToArray();
         }
     }
 }

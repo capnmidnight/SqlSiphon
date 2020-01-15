@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Data;
 using System.Data.Common;
-using System.Reflection;
+using System.Linq;
 
 namespace SqlSiphon
 {
@@ -18,9 +16,9 @@ namespace SqlSiphon
 
         public static bool IsNullableValueType(Type type)
         {
-            return type != null 
-                && type.IsGenericType 
-                && type.Namespace == "System" 
+            return type != null
+                && type.IsGenericType
+                && type.Namespace == "System"
                 && type.Name.StartsWith("Nullable");
         }
 
@@ -94,13 +92,13 @@ namespace SqlSiphon
         {
             get
             {
-                return this.Connection.DataSource;
+                return Connection.DataSource;
             }
         }
 
         protected DataConnector(IDataConnector connection)
         {
-            this.Connection = connection;
+            Connection = connection;
         }
 
         protected DataConnector(IDataConnectorFactory factory, string connectionString)
@@ -117,7 +115,7 @@ namespace SqlSiphon
 
         public void Dispose()
         {
-            this.Connection.Dispose();
+            Connection.Dispose();
         }
 
         public ISqlSiphon GetSqlSiphon()
@@ -127,42 +125,42 @@ namespace SqlSiphon
 
         public void Execute(params object[] parameters)
         {
-            this.Connection.Execute(parameters);
+            Connection.Execute(parameters);
         }
 
         public EntityT Return<EntityT>(params object[] parameters)
         {
-            return this.Connection.Return<EntityT>(parameters);
+            return Connection.Return<EntityT>(parameters);
         }
 
         public EntityT Get<EntityT>(params object[] parameters)
         {
-            return this.Connection.Get<EntityT>(parameters);
+            return Connection.Get<EntityT>(parameters);
         }
 
         public List<EntityT> GetList<EntityT>(params object[] parameters)
         {
-            return this.Connection.GetList<EntityT>(parameters);
+            return Connection.GetList<EntityT>(parameters);
         }
 
         public DataSet GetDataSet(params object[] parameters)
         {
-            return this.Connection.GetDataSet(parameters);
+            return Connection.GetDataSet(parameters);
         }
 
         public DbDataReader GetReader(params object[] parameters)
         {
-            return this.Connection.GetReader(parameters);
+            return Connection.GetReader(parameters);
         }
 
         public IEnumerable<EntityT> GetEnumerator<EntityT>(params object[] parameters)
         {
-            return this.Connection.GetEnumerator<EntityT>(parameters);
+            return Connection.GetEnumerator<EntityT>(parameters);
         }
 
         public void InsertAll(Type t, System.Collections.IEnumerable data)
         {
-            this.Connection.InsertAll(t, data);
+            Connection.InsertAll(t, data);
         }
     }
 }

@@ -30,8 +30,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace SqlSiphon.Mapping
 {
@@ -85,8 +85,8 @@ namespace SqlSiphon.Mapping
             get { return _include; }
             set
             {
-                this.IsIncludeSet = true;
-                this._include = value;
+                IsIncludeSet = true;
+                _include = value;
             }
         }
 
@@ -95,7 +95,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public DatabaseObjectAttribute()
         {
-            this._include = true;
+            _include = true;
         }
 
         /// <summary>
@@ -171,9 +171,9 @@ namespace SqlSiphon.Mapping
         public System.Collections.Generic.IEnumerable<T> GetOtherAttributes<T>()
             where T : Attribute
         {
-            if (this.SourceObject != null)
+            if (SourceObject != null)
             {
-                return DatabaseObjectAttribute.GetAttributes<T>(this.SourceObject);
+                return DatabaseObjectAttribute.GetAttributes<T>(SourceObject);
             }
             return new T[] { };
         }
@@ -181,7 +181,7 @@ namespace SqlSiphon.Mapping
         public T GetOtherAttribute<T>()
             where T : Attribute
         {
-            return this.GetOtherAttributes<T>().FirstOrDefault();
+            return GetOtherAttributes<T>().FirstOrDefault();
         }
 
         /// <summary>
@@ -192,8 +192,10 @@ namespace SqlSiphon.Mapping
         /// <param name="name"></param>
         private void SetName(string name)
         {
-            if (this.Name == null)
-                this.Name = name;
+            if (Name == null)
+            {
+                Name = name;
+            }
         }
 
         /// <summary>
@@ -221,11 +223,11 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public int Size
         {
-            get { return this.typeSize; }
+            get { return typeSize; }
             set
             {
-                this.IsSizeSet = true;
-                this.typeSize = value;
+                IsSizeSet = true;
+                typeSize = value;
             }
         }
 
@@ -244,11 +246,11 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public int Precision
         {
-            get { return this.typePrecision; }
+            get { return typePrecision; }
             set
             {
-                this.IsPrecisionSet = true;
-                this.typePrecision = value;
+                IsPrecisionSet = true;
+                typePrecision = value;
             }
         }
 
@@ -281,12 +283,12 @@ namespace SqlSiphon.Mapping
 
         public void SetSystemType(Type type)
         {
-            if (this.SystemType == null)
+            if (SystemType == null)
             {
-                this.SystemType = DataConnector.CoalesceNullableValueType(type);
-                if (DataConnector.IsNullableValueType(type) && !this.IsOptionalSet)
+                SystemType = DataConnector.CoalesceNullableValueType(type);
+                if (DataConnector.IsNullableValueType(type) && !IsOptionalSet)
                 {
-                    this.IsOptional = true;
+                    IsOptional = true;
                 }
             }
         }
@@ -300,9 +302,9 @@ namespace SqlSiphon.Mapping
         /// <param name="obj">The object to InferProperties</param>
         protected virtual void InferProperties(MethodInfo obj)
         {
-            this.SourceObject = obj;
-            this.SetName(obj.Name);
-            this.SetSystemType(obj.ReturnType);
+            SourceObject = obj;
+            SetName(obj.Name);
+            SetSystemType(obj.ReturnType);
         }
 
         /// <summary>
@@ -314,9 +316,9 @@ namespace SqlSiphon.Mapping
         /// <param name="obj">The object to InferProperties</param>
         protected virtual void InferProperties(PropertyInfo obj)
         {
-            this.SourceObject = obj;
-            this.SetName(obj.Name);
-            this.SetSystemType(obj.PropertyType);
+            SourceObject = obj;
+            SetName(obj.Name);
+            SetSystemType(obj.PropertyType);
         }
 
         /// <summary>
@@ -328,9 +330,9 @@ namespace SqlSiphon.Mapping
         /// <param name="obj">The object to InferProperties</param>
         protected virtual void InferProperties(ParameterInfo obj)
         {
-            this.SourceObject = obj;
-            this.SetName(obj.Name);
-            this.SetSystemType(obj.ParameterType);
+            SourceObject = obj;
+            SetName(obj.Name);
+            SetSystemType(obj.ParameterType);
         }
 
         /// <summary>
@@ -342,49 +344,49 @@ namespace SqlSiphon.Mapping
         /// <param name="obj">The object to InferProperties</param>
         protected virtual void InferProperties(Type obj)
         {
-            this.SourceObject = obj;
-            this.SetName(obj.Name);
-            this.SetSystemType(obj);
+            SourceObject = obj;
+            SetName(obj.Name);
+            SetSystemType(obj);
         }
 
         protected void InferTypeInfo(InformationSchema.Typed obj, string sqlType, IDatabaseStateReader dal)
         {
-            this.SqlType = sqlType;
-            if (this.SqlType[0] == '_')
+            SqlType = sqlType;
+            if (SqlType[0] == '_')
             {
-                this.SqlType = this.SqlType.Substring(1);
+                SqlType = SqlType.Substring(1);
             }
 
-            this.SystemType = dal.GetSystemType(this.SqlType);
-            if (this.SystemType != null)
+            SystemType = dal.GetSystemType(SqlType);
+            if (SystemType != null)
             {
                 var systemSize = 0;
-                if (this.SystemType.IsPrimitive)
+                if (SystemType.IsPrimitive)
                 {
-                    systemSize = System.Runtime.InteropServices.Marshal.SizeOf(this.SystemType);
+                    systemSize = System.Runtime.InteropServices.Marshal.SizeOf(SystemType);
                 }
 
                 if (obj.numeric_precision.HasValue
-                    && obj.numeric_precision.Value != dal.DefaultTypePrecision(this.SqlType, obj.numeric_precision.Value))
+                    && obj.numeric_precision.Value != dal.DefaultTypePrecision(SqlType, obj.numeric_precision.Value))
                 {
-                    this.Precision = obj.numeric_precision.Value;
+                    Precision = obj.numeric_precision.Value;
                 }
 
                 if (obj.character_maximum_length.HasValue && obj.character_maximum_length.Value > 0)
                 {
-                    this.Size = obj.character_maximum_length.Value;
+                    Size = obj.character_maximum_length.Value;
                 }
 
                 if (obj.numeric_scale.HasValue && obj.numeric_scale.Value > 0)
                 {
-                    this.Precision = obj.numeric_scale.Value;
+                    Precision = obj.numeric_scale.Value;
                 }
             }
         }
 
         public override string ToString()
         {
-            return string.Format("[{0}].[{1}]", this.Schema, this.Name);
+            return string.Format("[{0}].[{1}]", Schema, Name);
         }
     }
 }

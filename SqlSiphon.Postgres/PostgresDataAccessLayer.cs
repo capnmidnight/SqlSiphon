@@ -29,14 +29,15 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
-using System.Data;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Data;
 using System.IO;
-using System.Text.RegularExpressions;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+
 using Npgsql;
+
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
 
@@ -48,92 +49,95 @@ namespace SqlSiphon.Postgres
     /// </summary>
     public class PostgresDataAccessLayer : SqlSiphon<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
-        private static Dictionary<string, int> defaultTypeSizes;
-        private static Dictionary<string, Type> typeMapping;
-        private static Dictionary<Type, string> reverseTypeMapping;
+        private static readonly Dictionary<string, int> defaultTypeSizes;
+        private static readonly Dictionary<string, Type> typeMapping;
+        private static readonly Dictionary<Type, string> reverseTypeMapping;
 
-        public override string DataSource { get { return this.Connection.DataSource; } }
+        public override string DataSource { get { return Connection.DataSource; } }
 
         static PostgresDataAccessLayer()
         {
-            typeMapping = new Dictionary<string, Type>();
+            typeMapping = new Dictionary<string, Type>
+            {
+                { "bigint", typeof(long) },
+                { "int8", typeof(long) },
+                { "bigserial", typeof(long) },
+                { "serial8", typeof(long) },
 
-            typeMapping.Add("bigint", typeof(long));
-            typeMapping.Add("int8", typeof(long));
-            typeMapping.Add("bigserial", typeof(long));
-            typeMapping.Add("serial8", typeof(long));
+                { "bit", typeof(bool[]) },
+                { "varbit", typeof(bool[]) },
+                { "bit varying", typeof(bool[]) },
 
-            typeMapping.Add("bit", typeof(bool[]));
-            typeMapping.Add("varbit", typeof(bool[]));
-            typeMapping.Add("bit varying", typeof(bool[]));
+                { "boolean", typeof(bool) },
+                { "bool", typeof(bool) },
 
-            typeMapping.Add("boolean", typeof(bool));
-            typeMapping.Add("bool", typeof(bool));
+                { "bytea", typeof(byte[]) },
 
-            typeMapping.Add("bytea", typeof(byte[]));
+                { "text", typeof(string) },
+                { "character varying", typeof(string) },
+                { "varchar", typeof(string) },
+                { "tsquery", typeof(string) },
+                { "xml", typeof(string) },
+                { "json", typeof(string) },
+                { "name", typeof(string) },
+                { "character", typeof(string) },
+                { "char", typeof(string) },
 
-            typeMapping.Add("text", typeof(string));
-            typeMapping.Add("character varying", typeof(string));
-            typeMapping.Add("varchar", typeof(string));
-            typeMapping.Add("tsquery", typeof(string));
-            typeMapping.Add("xml", typeof(string));
-            typeMapping.Add("json", typeof(string));
-            typeMapping.Add("name", typeof(string));
-            typeMapping.Add("character", typeof(string));
-            typeMapping.Add("char", typeof(string));
+                { "inet", typeof(System.Net.IPAddress) },
+                { "cidr", typeof(string) },
 
-            typeMapping.Add("inet", typeof(System.Net.IPAddress));
-            typeMapping.Add("cidr", typeof(string));
+                { "date", typeof(DateTime) },
+                { "datetime", typeof(DateTime) }, // included for tranlating T-SQL to PG/PSQL
+                { "datetime2", typeof(DateTime) }, // included for tranlating T-SQL to PG/PSQL
 
-            typeMapping.Add("date", typeof(DateTime));
-            typeMapping.Add("datetime", typeof(DateTime)); // included for tranlating T-SQL to PG/PSQL
-            typeMapping.Add("datetime2", typeof(DateTime)); // included for tranlating T-SQL to PG/PSQL
+                { "double precision", typeof(double) },
+                { "float8", typeof(double) },
 
-            typeMapping.Add("double precision", typeof(double));
-            typeMapping.Add("float8", typeof(double));
+                { "integer", typeof(int) },
+                { "int", typeof(int) },
+                { "int4", typeof(int) },
+                { "serial", typeof(int) },
+                { "serial4", typeof(int) },
 
-            typeMapping.Add("integer", typeof(int));
-            typeMapping.Add("int", typeof(int));
-            typeMapping.Add("int4", typeof(int));
-            typeMapping.Add("serial", typeof(int));
-            typeMapping.Add("serial4", typeof(int));
+                { "interval", typeof(TimeSpan) },
 
-            typeMapping.Add("interval", typeof(TimeSpan));
+                { "money", typeof(decimal) },
+                { "numeric", typeof(decimal) },
 
-            typeMapping.Add("money", typeof(decimal));
-            typeMapping.Add("numeric", typeof(decimal));
+                { "real", typeof(float) },
+                { "float4", typeof(float) },
 
-            typeMapping.Add("real", typeof(float));
-            typeMapping.Add("float4", typeof(float));
+                { "smallint", typeof(short) },
+                { "int2", typeof(short) },
+                { "smallserial", typeof(short) },
+                { "serial2", typeof(short) },
 
-            typeMapping.Add("smallint", typeof(short));
-            typeMapping.Add("int2", typeof(short));
-            typeMapping.Add("smallserial", typeof(short));
-            typeMapping.Add("serial2", typeof(short));
+                { "time", typeof(DateTime) },
+                { "time with time zone", typeof(DateTime) },
+                { "timestamp", typeof(DateTime) },
+                { "timestamp with time zone", typeof(DateTime) },
 
-            typeMapping.Add("time", typeof(DateTime));
-            typeMapping.Add("time with time zone", typeof(DateTime));
-            typeMapping.Add("timestamp", typeof(DateTime));
-            typeMapping.Add("timestamp with time zone", typeof(DateTime));
+                { "uuid", typeof(Guid) },
+                { "uniqueidentifier", typeof(Guid) }, // included for tranlating T-SQL to PG/PSQL
 
-            typeMapping.Add("uuid", typeof(Guid));
-            typeMapping.Add("uniqueidentifier", typeof(Guid)); // included for tranlating T-SQL to PG/PSQL
+                { "box", typeof(NpgsqlTypes.NpgsqlBox) },
+                { "circle", typeof(NpgsqlTypes.NpgsqlCircle) },
+                { "lseg", typeof(NpgsqlTypes.NpgsqlLSeg) },
+                { "macaddr", typeof(string) },
+                { "path", typeof(NpgsqlTypes.NpgsqlPath) },
+                { "point", typeof(NpgsqlTypes.NpgsqlPoint) },
+                { "polygon", typeof(NpgsqlTypes.NpgsqlPolygon) },
+                { "geometry", typeof(string) },
+                { "geography", typeof(string) },
+                { "tsvector", typeof(string) }
+            };
 
-            typeMapping.Add("box", typeof(NpgsqlTypes.NpgsqlBox));
-            typeMapping.Add("circle", typeof(NpgsqlTypes.NpgsqlCircle));
-            typeMapping.Add("lseg", typeof(NpgsqlTypes.NpgsqlLSeg));
-            typeMapping.Add("macaddr", typeof(string));
-            typeMapping.Add("path", typeof(NpgsqlTypes.NpgsqlPath));
-            typeMapping.Add("point", typeof(NpgsqlTypes.NpgsqlPoint));
-            typeMapping.Add("polygon", typeof(NpgsqlTypes.NpgsqlPolygon));
-            typeMapping.Add("geometry", typeof(string));
-            typeMapping.Add("geography", typeof(string));
-            typeMapping.Add("tsvector", typeof(string));
-
-            defaultTypeSizes = new Dictionary<string, int>();
-            defaultTypeSizes.Add("float4", 24);
-            defaultTypeSizes.Add("float8", 53);
-            defaultTypeSizes.Add("integer", 32);
+            defaultTypeSizes = new Dictionary<string, int>
+            {
+                { "float4", 24 },
+                { "float8", 53 },
+                { "integer", 32 }
+            };
 
             reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
@@ -208,7 +212,7 @@ namespace SqlSiphon.Postgres
             if (i > -1)
             {
                 builder.Host = server.Substring(0, i);
-                int port = 0;
+                var port = 0;
                 if (int.TryParse(server.Substring(i + 1), out port))
                 {
                     builder.Port = port;
@@ -242,7 +246,7 @@ namespace SqlSiphon.Postgres
 
                 // I prefer colon-separated address/port specifications.
                 string port = null;
-                int i = server.IndexOf(":");
+                var i = server.IndexOf(":");
                 if (i > -1)
                 {
                     port = server.Substring(i + 1);
@@ -251,17 +255,17 @@ namespace SqlSiphon.Postgres
 
                 configurationPath = FindConfigurationFile(configurationPath);
 
-                string[] originalConf = InjectUserCredentials(configurationPath, server, port, database, adminUser, adminPass);
+                var originalConf = InjectUserCredentials(configurationPath, server, port, database, adminUser, adminPass);
 
-                bool succeeded = false;
+                var succeeded = false;
                 try
                 {
                     succeeded = RunProcess(
                         executablePath,
                         new string[]{
-                            "-h " + server, 
-                            string.IsNullOrWhiteSpace(port) ? null : "-p " + port, 
-                            "-U " + adminUser, 
+                            "-h " + server,
+                            string.IsNullOrWhiteSpace(port) ? null : "-p " + port,
+                            "-U " + adminUser,
                             (database == null) ? null : "-d " + database,
                             string.Format("-c \"{0}\"", query)
                     });
@@ -299,7 +303,7 @@ namespace SqlSiphon.Postgres
         {
             // If either InitDB or Postgres' configuration file moves, this will break. But
             // for now, they are both in the User's AppData directory.
-            int j = configurationPath.IndexOf("InitDB");
+            var j = configurationPath.IndexOf("InitDB");
             configurationPath = Path.Combine(configurationPath.Substring(0, j), "postgresql", "pgpass.conf");
             return configurationPath;
         }
@@ -341,7 +345,7 @@ namespace SqlSiphon.Postgres
             else
             {
                 var conf = originalConf.ToList();
-                int i = conf.IndexOf(lineToAdd);
+                var i = conf.IndexOf(lineToAdd);
                 if (i == -1)
                 {
                     conf.Add(lineToAdd);
@@ -373,7 +377,7 @@ namespace SqlSiphon.Postgres
         public override string MakeIdentifier(params string[] parts)
         {
             var goodParts = parts.Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
-            for (int i = 0; i < goodParts.Length; ++i)
+            for (var i = 0; i < goodParts.Length; ++i)
             {
                 if (goodParts[i].Length > 63)
                 {
@@ -396,7 +400,7 @@ namespace SqlSiphon.Postgres
             var pgState = new PostgresDatabaseState(state);
             if (pgState.CatalogueExists.HasValue && pgState.CatalogueExists.Value)
             {
-                this.GetExtensions().ForEach(pgState.AddExtension);
+                GetExtensions().ForEach(pgState.AddExtension);
             }
             return pgState;
         }
@@ -480,22 +484,22 @@ namespace SqlSiphon.Postgres
         public override string MakeCreateColumnScript(ColumnAttribute prop)
         {
             return string.Format("alter table if exists {0} add column {1} {2};",
-                this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
+                MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
                 prop.Name,
-                this.MakeSqlTypeString(prop));
+                MakeSqlTypeString(prop));
         }
 
         public override string MakeDropColumnScript(ColumnAttribute prop)
         {
             return string.Format("alter table if exists {0} drop column if exists {1};",
-                this.MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
-                this.MakeIdentifier(prop.Name));
+                MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
+                MakeIdentifier(prop.Name));
         }
 
         public override string RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
-            var typeA = this.MakeSqlTypeString(a) ?? "void";
-            bool changedReturnType = typeA != b.SqlType;
+            var typeA = MakeSqlTypeString(a) ?? "void";
+            var changedReturnType = typeA != b.SqlType;
             return changedReturnType ? "IDK" : base.RoutineChanged(a, b);
         }
 
@@ -515,7 +519,7 @@ namespace SqlSiphon.Postgres
             else
             {
                 var attr = DatabaseObjectAttribute.GetAttribute(baseType) ?? new TableAttribute(baseType);
-                sqlType = string.Format("table ({0})", this.MakeColumnSection(attr, true));
+                sqlType = string.Format("table ({0})", MakeColumnSection(attr, true));
             }
 
             if (DataConnector.IsTypeCollection(systemType))
@@ -530,7 +534,7 @@ namespace SqlSiphon.Postgres
         {
             var preamble = string.Format(
                 "alter table if exists {0}",
-                this.MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name));
+                MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name));
 
             if (final.Include != initial.Include)
             {
@@ -538,8 +542,8 @@ namespace SqlSiphon.Postgres
                     "{0} {1} column {2} {3};",
                     preamble,
                     final.Include ? "add" : "drop",
-                    this.MakeIdentifier(final.Name),
-                    final.Include ? this.MakeSqlTypeString(final) : "")
+                    MakeIdentifier(final.Name),
+                    final.Include ? MakeSqlTypeString(final) : "")
                     .Trim();
             }
             else if (final.DefaultValue != initial.DefaultValue)
@@ -547,7 +551,7 @@ namespace SqlSiphon.Postgres
                 return string.Format(
                     "{0} alter column {1} {2} default {3};",
                     preamble,
-                    this.MakeIdentifier(final.Name),
+                    MakeIdentifier(final.Name),
                     final.DefaultValue == null ? "drop" : "set",
                     final.DefaultValue ?? "")
                     .Trim();
@@ -557,7 +561,7 @@ namespace SqlSiphon.Postgres
                 return string.Format(
                     "{0} alter column {1} {2} not null;",
                     preamble,
-                    this.MakeIdentifier(final.Name),
+                    MakeIdentifier(final.Name),
                     final.IsOptional ? "drop" : "set");
             }
             else if (final.SystemType != initial.SystemType
@@ -568,8 +572,8 @@ namespace SqlSiphon.Postgres
                 return string.Format(
                     "{0} alter column {1} set data type {2};",
                     preamble,
-                    this.MakeIdentifier(final.Name),
-                    this.MakeSqlTypeString(final));
+                    MakeIdentifier(final.Name),
+                    MakeSqlTypeString(final));
             }
             else
             {
@@ -581,7 +585,7 @@ namespace SqlSiphon.Postgres
 
         protected override string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial)
         {
-            bool valuesMatch = true;
+            var valuesMatch = true;
             if (final.SystemType == typeof(bool))
             {
                 var xb = final.DefaultValue.Replace("'", "").ToLower();
@@ -623,16 +627,18 @@ namespace SqlSiphon.Postgres
             switch (param.Direction)
             {
                 case ParameterDirection.InputOutput:
-                    dirString = "inout";
-                    break;
+                dirString = "inout";
+                break;
                 case ParameterDirection.Output:
-                    dirString = "out";
-                    break;
+                dirString = "out";
+                break;
             }
 
             var defaultString = "";
             if (param.DefaultValue != null)
+            {
                 defaultString = " default = " + param.DefaultValue.ToString();
+            }
 
             return string.Format("{0} _{1} {2}{3}", dirString, param.Name, typeStr, defaultString).Trim();
         }
@@ -665,7 +671,7 @@ namespace SqlSiphon.Postgres
             }
 
             return string.Format("{0} {1} {2} {3}",
-                this.MakeIdentifier(column.Name),
+                MakeIdentifier(column.Name),
                 typeStr,
                 nullString,
                 defaultString).Trim();
@@ -673,28 +679,28 @@ namespace SqlSiphon.Postgres
 
         public override string MakeDropRoutineScript(RoutineAttribute routine)
         {
-            return string.Format(@"drop function if exists {0} cascade;", this.MakeRoutineIdentifier(routine));
+            return string.Format(@"drop function if exists {0} cascade;", MakeRoutineIdentifier(routine));
         }
 
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
         {
-            var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var parameterSection = this.MakeParameterSection(routine);
+            var identifier = MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
+            var parameterSection = MakeParameterSection(routine);
             return string.Format(@"{0}({1})", identifier, parameterSection);
         }
 
-        private static Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public override string MakeCreateRoutineScript(RoutineAttribute routine, bool createBody = true)
         {
-            var queryBody = createBody ? this.MakeRoutineBody(routine) : routine.Query.Trim();
-            var identifier = this.MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var returnType = this.MakeSqlTypeString(routine) ?? "void";
+            var queryBody = createBody ? MakeRoutineBody(routine) : routine.Query.Trim();
+            var identifier = MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
+            var returnType = MakeSqlTypeString(routine) ?? "void";
             if (returnType.Contains("[]"))
             {
                 returnType = "setof " + returnType.Substring(0, returnType.Length - 2);
             }
-            var parameterSection = this.MakeParameterSection(routine);
+            var parameterSection = MakeParameterSection(routine);
             var query = string.Format(
 @"create function {0}({1})
 returns {2} 
@@ -709,8 +715,8 @@ language plpgsql;",
             return query;
         }
 
-        private static Regex SetVariablePattern = new Regex("select (@\\w+) = (\\w+)", RegexOptions.Compiled);
-        private static Regex ReplaceFuncsPattern = new Regex("(newid|getdate)\\(\\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SetVariablePattern = new Regex("select (@\\w+) = (\\w+)", RegexOptions.Compiled);
+        private static readonly Regex ReplaceFuncsPattern = new Regex("(newid|getdate)\\(\\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public override string MakeRoutineBody(RoutineAttribute routine)
         {
@@ -746,7 +752,7 @@ language plpgsql;",
             }));
 
 
-            var returnType = this.MakeSqlTypeString(routine);
+            var returnType = MakeSqlTypeString(routine);
             if (returnType != null)
             {
                 if (returnType.Contains("[]") || returnType.StartsWith("table"))
@@ -760,7 +766,7 @@ language plpgsql;",
                 }
             }
 
-            for (int i = 0; i < declarations.Count; ++i)
+            for (var i = 0; i < declarations.Count; ++i)
             {
                 var parts = declarations[i]
                     .Trim()
@@ -801,7 +807,7 @@ end;",
         public override string MakeCreateTableScript(TableAttribute table)
         {
             var schema = table.Schema ?? DefaultSchemaName;
-            var identifier = this.MakeIdentifier(schema, table.Name);
+            var identifier = MakeIdentifier(schema, table.Name);
             var reset = new List<ColumnAttribute>();
             foreach (var prop in table.Properties)
             {
@@ -813,7 +819,7 @@ end;",
                     reset.Add(prop);
                 }
             }
-            var columnSection = this.MakeColumnSection(table, false);
+            var columnSection = MakeColumnSection(table, false);
             foreach (var column in reset)
             {
                 column.SqlType = null;
@@ -828,60 +834,60 @@ end;",
         public override string MakeDropTableScript(TableAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
-            var identifier = this.MakeIdentifier(schema, info.Name);
+            var identifier = MakeIdentifier(schema, info.Name);
             return string.Format("drop table if exists {0};", identifier);
         }
 
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
-            var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
-            var toColumns = string.Join(", ", relation.To.PrimaryKey.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
+            var fromColumns = string.Join(", ", relation.FromColumns.Select(c => MakeIdentifier(c.Name)));
+            var toColumns = string.Join(", ", relation.To.PrimaryKey.KeyColumns.Select(c => MakeIdentifier(c.Name)));
             return string.Format(
 @"alter table {0} add constraint {1}
     foreign key({2})
     references {3}({4});",
-                    this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    this.MakeIdentifier(relation.GetName(this)),
+                    MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
+                    MakeIdentifier(relation.GetName(this)),
                     fromColumns,
-                    this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
+                    MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
                     toColumns);
         }
 
         public override string MakeDropRelationshipScript(Relationship relation)
         {
             return string.Format(@"alter table if exists {0} drop constraint if exists {1};",
-                this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                this.MakeIdentifier(relation.GetName(this)));
+                MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
+                MakeIdentifier(relation.GetName(this)));
         }
 
         public override string MakeDropPrimaryKeyScript(PrimaryKey key)
         {
             return string.Format(@"alter table if exists {0} drop constraint if exists {1};
 drop index if exists {2};",
-                this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
-                this.MakeIdentifier(key.Name),
-                this.MakeIdentifier("idx_" + key.Name));
+                MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
+                MakeIdentifier(key.Name),
+                MakeIdentifier("idx_" + key.Name));
         }
 
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
         {
-            var keys = string.Join(", ", key.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
+            var keys = string.Join(", ", key.KeyColumns.Select(c => MakeIdentifier(c.Name)));
             return string.Format(
 @"create unique index {0} on {1} ({2});
 alter table {1} add constraint {3} primary key using index {0};",
-                this.MakeIdentifier("idx_" + key.Name),
-                this.MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
+                MakeIdentifier("idx_" + key.Name),
+                MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
                 keys,
-                this.MakeIdentifier(key.Name));
+                MakeIdentifier(key.Name));
         }
 
         public override string MakeCreateIndexScript(TableIndex idx)
         {
-            var columnSection = string.Join(",", idx.Columns.Select(c => this.MakeIdentifier(c)));
+            var columnSection = string.Join(",", idx.Columns.Select(c => MakeIdentifier(c)));
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
             return string.Format(
 @"create index {0} on {1}({2});",
-                this.MakeIdentifier(idx.Name),
+                MakeIdentifier(idx.Name),
                 tableName,
                 columnSection);
         }
@@ -895,7 +901,7 @@ alter table {1} add constraint {3} primary key using index {0};",
         [Routine(CommandType = CommandType.Text, Query = @"select usename from pg_catalog.pg_user")]
         public override List<string> GetDatabaseLogins()
         {
-            return this.GetList<string>();
+            return GetList<string>();
         }
 
         public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
@@ -908,7 +914,7 @@ alter table {1} add constraint {3} primary key using index {0};",
 @"select schema_name from information_schema.schemata where schema_name not like 'pg_%' and schema_name not in ('information_schema', 'public');")]
         public override List<string> GetSchemata()
         {
-            return this.GetList<string>();
+            return GetList<string>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1057,7 +1063,7 @@ where constraint_schema != 'information_schema'
 @"select extname, extversion from pg_extension where extname != 'plpgsql';")]
         internal List<pg_extension> GetExtensions()
         {
-            return this.GetList<pg_extension>();
+            return GetList<pg_extension>();
         }
 
         public override string MakeInsertScript(TableAttribute table, object value)
@@ -1066,7 +1072,7 @@ where constraint_schema != 'information_schema'
                 .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
                 .ToArray();
 
-            var columnNames = columns.Select(c => this.MakeIdentifier(c.Name)).ToArray();
+            var columnNames = columns.Select(c => MakeIdentifier(c.Name)).ToArray();
             var columnValues = columns.Select(c =>
             {
                 var v = c.GetValue(value);
@@ -1095,7 +1101,7 @@ where constraint_schema != 'information_schema'
             }).ToArray();
 
             return string.Format("insert into {0}({1}) values({2});",
-                this.MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
+                MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
                 string.Join(", ", columnNames),
                 string.Join(", ", columnValues));
         }

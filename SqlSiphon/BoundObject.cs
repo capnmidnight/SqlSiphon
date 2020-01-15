@@ -31,7 +31,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace SqlSiphon
 {
@@ -42,8 +41,8 @@ namespace SqlSiphon
     public abstract class BoundObject : INotifyPropertyChanged, INotifyPropertyChanging
     {
         #region statics
-        private static Dictionary<string, PropertyChangedEventArgs> propertyChangedCache;
-        private static Dictionary<string, PropertyChangingEventArgs> propertyChangingCache;
+        private static readonly Dictionary<string, PropertyChangedEventArgs> propertyChangedCache;
+        private static readonly Dictionary<string, PropertyChangingEventArgs> propertyChangingCache;
 
         static BoundObject()
         {
@@ -70,14 +69,17 @@ namespace SqlSiphon
 
         protected T Get<T>()
         {
-            string propertyName = GetMethodName();
+            var propertyName = GetMethodName();
             return Get<T>(propertyName);
         }
 
         protected T Get<T>(string propertyName)
         {
             if (propertyName == null)
+            {
                 propertyName = GetMethodName();
+            }
+
             OnPropertyAccessed(propertyName);
             if (values.ContainsKey(propertyName) && values[propertyName] != null)
             {
@@ -93,14 +95,16 @@ namespace SqlSiphon
 
         protected void Set<T>(T value)
         {
-            string propertyName = GetMethodName();
+            var propertyName = GetMethodName();
             Set(value, propertyName);
         }
 
         protected void Set<T>(T value, string propertyName)
         {
             if (propertyName == null)
+            {
                 propertyName = GetMethodName();
+            }
 
             if (!values.ContainsKey(propertyName))
             {
@@ -161,14 +165,21 @@ namespace SqlSiphon
         private bool CompareFields(object obj)
         {
             var b = obj as BoundObject;
-            if (b == null || this.values.Count != b.values.Count)
+            if (b == null || values.Count != b.values.Count)
+            {
                 return false;
+            }
 
-            foreach (var key in this.values.Keys)
+            foreach (var key in values.Keys)
+            {
                 if (!b.values.ContainsKey(key)
-                    || (this.values[key] != null && !this.values[key].Equals(b.values[key]))
-                    || (b.values[key] != null && !b.values[key].Equals(this.values[key])))
+                    || (values[key] != null && !values[key].Equals(b.values[key]))
+                    || (b.values[key] != null && !b.values[key].Equals(values[key])))
+                {
                     return false;
+                }
+            }
+
             return true;
         }
     }

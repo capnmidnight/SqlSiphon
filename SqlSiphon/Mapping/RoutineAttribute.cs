@@ -30,8 +30,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Data;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 
@@ -75,27 +75,27 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public List<ParameterAttribute> Parameters { get; private set; }
 
-        private MethodInfo originalMethod { get { return (MethodInfo)this.SourceObject; } }
+        private MethodInfo originalMethod { get { return (MethodInfo)SourceObject; } }
 
         /// <summary>
         /// Default constructor to set default values;
         /// </summary>
         public RoutineAttribute()
         {
-            this.Parameters = new List<ParameterAttribute>();
-            this.Timeout = -1;
-            this.CommandType = CommandType.StoredProcedure;
-            this.EnableTransaction = false;
+            Parameters = new List<ParameterAttribute>();
+            Timeout = -1;
+            CommandType = CommandType.StoredProcedure;
+            EnableTransaction = false;
         }
 
         public RoutineAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, IDatabaseStateReader dal)
         {
-            this.Schema = routine.routine_schema;
-            this.Name = routine.routine_name;
-            this.CommandType = System.Data.CommandType.StoredProcedure;
-            this.Parameters = new List<ParameterAttribute>();
-            this.SqlType = routine.data_type;
-            int begin = routine.routine_definition
+            Schema = routine.routine_schema;
+            Name = routine.routine_name;
+            CommandType = System.Data.CommandType.StoredProcedure;
+            Parameters = new List<ParameterAttribute>();
+            SqlType = routine.data_type;
+            var begin = routine.routine_definition
                 .ToLowerInvariant()
                 .IndexOf("set nocount on;");
 
@@ -104,7 +104,7 @@ namespace SqlSiphon.Mapping
             {
                 foreach (var p in parameters)
                 {
-                    this.Parameters.Add(new ParameterAttribute(p, dal));
+                    Parameters.Add(new ParameterAttribute(p, dal));
                 }
             }
         }
@@ -125,7 +125,10 @@ namespace SqlSiphon.Mapping
         {
             var meta = DatabaseObjectAttribute.GetAttribute(method);
             if (meta != null && meta.CommandType == CommandType.TableDirect)
+            {
                 throw new NotImplementedException("Table-Direct queries are not supported by SqlSiphon");
+            }
+
             return meta;
         }
 
@@ -145,10 +148,10 @@ namespace SqlSiphon.Mapping
             base.InferProperties(obj);
             if (obj.ReturnType != typeof(void))
             {
-                this.SystemType = obj.ReturnType;
+                SystemType = obj.ReturnType;
             }
-            this.Parameters.AddRange(obj.GetParameters()
-                .Select(this.ToColumn));
+            Parameters.AddRange(obj.GetParameters()
+                .Select(ToColumn));
         }
 
         public override string ToString()

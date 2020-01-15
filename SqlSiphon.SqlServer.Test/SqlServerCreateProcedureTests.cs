@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSiphon.TestBase;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using SqlSiphon.Mapping;
+using SqlSiphon.TestBase;
 
 namespace SqlSiphon.SqlServer.Test
 {
@@ -12,16 +12,16 @@ namespace SqlSiphon.SqlServer.Test
         [Routine(CommandType = System.Data.CommandType.StoredProcedure, Query = @"insert into whatever(bleh) select Value from @values;")]
         public void TestUploadableSimpleArrayType(int[] values)
         {
-            this.Execute(values);
+            Execute(values);
         }
 
-        [Routine(CommandType = System.Data.CommandType.StoredProcedure, 
+        [Routine(CommandType = System.Data.CommandType.StoredProcedure,
 Query = @"insert into TestUploadable(BareField, ExcludedFieldWithDefaultValue)
 select BareField, ExcludedFieldWithDefaultValue
 from @values;")]
         public void TestUploadableComplexArrayType(TestUploadableClass[] values)
         {
-            this.Execute(values);
+            Execute(values);
         }
 
         [Routine(CommandType = System.Data.CommandType.StoredProcedure,
@@ -30,7 +30,7 @@ select BareField, ExcludedFieldWithDefaultValue
 from @value;")]
         public void TestUploadableComplexType(TestUploadableClass value)
         {
-            this.Execute(value);
+            Execute(value);
         }
     }
 
@@ -45,7 +45,7 @@ from @value;")]
         [TestMethod]
         public override void EmptyStoredProcedure()
         {
-            var script = this.GetScript();
+            var script = GetScript();
             Assert.AreEqual(
 @"create procedure [dbo].[EmptyStoredProcedure]
     
@@ -58,13 +58,13 @@ end", script);
         [TestMethod]
         public override void GetEmptyTable()
         {
-            var script = this.GetScript();
+            var script = GetScript();
         }
 
         [TestMethod]
         public void TestUploadableSimpleArrayType()
         {
-            var script = this.GetScript();
+            var script = GetScript();
             Assert.AreEqual(@"create procedure [dbo].[TestUploadableSimpleArrayType]
     @values Int32UDTT  readonly
 as begin
@@ -76,7 +76,7 @@ end", script);
         [TestMethod]
         public void TestUploadableComplexArrayType()
         {
-            var script = this.GetScript();
+            var script = GetScript();
             Assert.AreEqual(@"create procedure [dbo].[TestUploadableComplexArrayType]
     @values TestUploadableClassUDTT  readonly
 as begin
@@ -90,7 +90,7 @@ end", script);
         [TestMethod]
         public void TestUploadableComplexType()
         {
-            var script = this.GetScript();
+            var script = GetScript();
             Assert.AreEqual(@"create procedure [dbo].[TestUploadableComplexType]
     @value TestUploadableClassUDTT  readonly
 as begin

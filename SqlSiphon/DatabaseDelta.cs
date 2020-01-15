@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
 
@@ -64,8 +64,8 @@ namespace SqlSiphon
             Func<T, string> altMakeCreateScript,
             bool makeChangeScripts)
         {
-            DumpAll(this.Initial, initial, createType, altMakeCreateScript ?? makeCreateScript);
-            DumpAll(this.Final, final, createType, makeCreateScript);
+            DumpAll(Initial, initial, createType, altMakeCreateScript ?? makeCreateScript);
+            DumpAll(Final, final, createType, makeCreateScript);
             Traverse(
                 final,
                 initial,
@@ -76,13 +76,13 @@ namespace SqlSiphon
                         var script = makeDropScript(i);
                         if (script != null && dropType != ScriptType.None)
                         {
-                            this.Scripts.Add(new ScriptStatus(dropType, key, script, name + " no longer exists"));
+                            Scripts.Add(new ScriptStatus(dropType, key, script, name + " no longer exists"));
                         }
                     }
                 },
                 (key, f) =>
                 {
-                    this.Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), name + " does not exist"));
+                    Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), name + " does not exist"));
                 },
                 (key, f, i) =>
                 {
@@ -90,8 +90,8 @@ namespace SqlSiphon
                     if (changeReason != null)
                     {
                         changeReason = string.Format("{0} has changed, {1}", name, changeReason);
-                        this.Scripts.Add(new ScriptStatus(dropType, key, makeDropScript(i), changeReason));
-                        this.Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), changeReason));
+                        Scripts.Add(new ScriptStatus(dropType, key, makeDropScript(i), changeReason));
+                        Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), changeReason));
                     }
                 },
                 makeChangeScripts);
@@ -104,13 +104,13 @@ namespace SqlSiphon
 
         public DatabaseDelta(DatabaseState final, DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
-            this.Scripts = new List<ScriptStatus>();
-            this.Initial = new List<ScriptStatus>();
-            this.Final = new List<ScriptStatus>();
+            Scripts = new List<ScriptStatus>();
+            Initial = new List<ScriptStatus>();
+            Final = new List<ScriptStatus>();
 
             if (initial != null && initial.CatalogueExists == false)
             {
-                this.Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, final.CatalogueName, gen.MakeCreateCatalogueScript(final.CatalogueName), "Database doesn't exist"));
+                Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, final.CatalogueName, gen.MakeCreateCatalogueScript(final.CatalogueName), "Database doesn't exist"));
             }
 
             ProcessDatabaseLogins(final.DatabaseLogins, initial?.DatabaseLogins?.Keys?.ToList(), final.CatalogueName, asm, gen);
@@ -120,19 +120,19 @@ namespace SqlSiphon
             ProcessRelationships(final.Relationships, initial?.Relationships, asm, gen, makeChangeScripts);
             ProcessPrimaryKeys(final.PrimaryKeys, initial?.PrimaryKeys, asm, gen, makeChangeScripts);
             ProcessRoutines(final.Functions, initial?.Functions, asm, gen, makeChangeScripts);
-            this.Scripts.AddRange(final.InitScripts
+            Scripts.AddRange(final.InitScripts
                 .Where(s => initial?.InitScripts?.Contains(s) ?? true)
                 .Select(s => new ScriptStatus(ScriptType.InitializeData, "init", s, "Initialize data in database")));
-            this.Scripts.Sort();
-            this.Initial.Sort();
-            this.Final.Sort();
-            this.PostExecute = final.PostExecute;
+            Scripts.Sort();
+            Initial.Sort();
+            Final.Sort();
+            PostExecute = final.PostExecute;
         }
 
         private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {
             var names = initial?.Select(s => s.ToLowerInvariant())?.ToArray();
-            this.Scripts.AddRange(final
+            Scripts.AddRange(final
                 .Where(u => !names?.Contains(u.Key.ToLowerInvariant()) ?? true)
                 .Select(u => new ScriptStatus(ScriptType.CreateDatabaseLogin, u.Key, gen.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName), "Database login doesn't exist")));
         }
@@ -214,19 +214,19 @@ namespace SqlSiphon
 
         private void ProcessTables(Dictionary<string, TableAttribute> finalTables, Dictionary<string, TableAttribute> initialTables, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
-            DumpAll(this.Initial, initialTables, ScriptType.CreateTable, gen.MakeCreateTableScript);
-            DumpAll(this.Final, finalTables, ScriptType.CreateTable, gen.MakeCreateTableScript);
+            DumpAll(Initial, initialTables, ScriptType.CreateTable, gen.MakeCreateTableScript);
+            DumpAll(Final, finalTables, ScriptType.CreateTable, gen.MakeCreateTableScript);
 
             Traverse(
                 finalTables,
                 initialTables,
                 (tableName, initialTable) =>
                 {
-                    this.Scripts.Add(new ScriptStatus(ScriptType.DropTable, tableName, gen.MakeDropTableScript(initialTable), "Table no longer exists"));
+                    Scripts.Add(new ScriptStatus(ScriptType.DropTable, tableName, gen.MakeDropTableScript(initialTable), "Table no longer exists"));
                 },
                 (tableName, finalTable) =>
                 {
-                    this.Scripts.Add(new ScriptStatus(ScriptType.CreateTable, tableName, gen.MakeCreateTableScript(finalTable), "Table does not exist"));
+                    Scripts.Add(new ScriptStatus(ScriptType.CreateTable, tableName, gen.MakeCreateTableScript(finalTable), "Table does not exist"));
                 },
                 (tableName, finalTable, initialTable) =>
                 {
@@ -238,18 +238,18 @@ namespace SqlSiphon
                         initialColumns,
                         (columnName, initialColumn) =>
                         {
-                            this.Scripts.Add(new ScriptStatus(ScriptType.DropColumn, columnName, gen.MakeDropColumnScript(initialColumn), "Column no longer exists"));
+                            Scripts.Add(new ScriptStatus(ScriptType.DropColumn, columnName, gen.MakeDropColumnScript(initialColumn), "Column no longer exists"));
                         },
                         (columnName, finalColumn) =>
                         {
-                            this.Scripts.Add(new ScriptStatus(ScriptType.CreateColumn, columnName, gen.MakeCreateColumnScript(finalColumn), "Column doesn't exist"));
+                            Scripts.Add(new ScriptStatus(ScriptType.CreateColumn, columnName, gen.MakeCreateColumnScript(finalColumn), "Column doesn't exist"));
                         },
                         (columnName, finalColumn, initialColumn) =>
                         {
                             var reason = asm.ColumnChanged(finalColumn, initialColumn);
                             if (reason != null)
                             {
-                                this.Scripts.Add(new ScriptStatus(ScriptType.AlterColumn, columnName, gen.MakeAlterColumnScript(finalColumn, initialColumn), reason));
+                                Scripts.Add(new ScriptStatus(ScriptType.AlterColumn, columnName, gen.MakeAlterColumnScript(finalColumn, initialColumn), reason));
                             }
                         }, makeChangeScripts);
                 }, makeChangeScripts);

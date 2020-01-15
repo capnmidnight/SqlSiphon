@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Model
@@ -15,9 +13,9 @@ namespace SqlSiphon.Model
 
         internal TableIndex(TableAttribute table, string name)
         {
-            this.Name = name;
-            this.Table = table;
-            this.Columns = new List<string>();
+            Name = name;
+            Table = table;
+            Columns = new List<string>();
         }
     }
 }

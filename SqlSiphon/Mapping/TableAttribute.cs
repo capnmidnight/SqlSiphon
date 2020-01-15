@@ -33,6 +33,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
 using SqlSiphon.Model;
 
 namespace SqlSiphon.Mapping
@@ -54,15 +55,15 @@ namespace SqlSiphon.Mapping
 
         public TableAttribute()
         {
-            this.Properties = new List<ColumnAttribute>();
-            this.EnumValues = new Dictionary<int, string>();
-            this.Indexes = new Dictionary<string, TableIndex>();
+            Properties = new List<ColumnAttribute>();
+            EnumValues = new Dictionary<int, string>();
+            Indexes = new Dictionary<string, TableIndex>();
         }
 
         public TableAttribute(Type t)
             : this()
         {
-            this.InferProperties(t);
+            InferProperties(t);
         }
 
         public TableAttribute(
@@ -76,7 +77,7 @@ namespace SqlSiphon.Mapping
         {
             get
             {
-                return base.SystemType ?? (Type)this.SourceObject;
+                return base.SystemType ?? (Type)SourceObject;
             }
             protected set
             {
@@ -94,9 +95,9 @@ namespace SqlSiphon.Mapping
             : this()
         {
             var testColumn = columns.First();
-            this.Schema = testColumn.table_schema;
-            this.Name = testColumn.table_name;
-            this.Include = true;
+            Schema = testColumn.table_schema;
+            Name = testColumn.table_name;
+            Include = true;
             var columnConstraints = new Dictionary<string, List<string>>();
             if (keyColumns != null)
             {
@@ -135,18 +136,18 @@ namespace SqlSiphon.Mapping
                 var isIncludedInPK = columnConstraints.ContainsKey(key)
                     && columnConstraints[key].Any(constraintName => constraintTypes != null && constraintTypes.ContainsKey(constraintName)
                         && constraintTypes[constraintName] == "PRIMARY KEY");
-                this.Properties.Add(new ColumnAttribute(this, column, isIncludedInPK, dal));
+                Properties.Add(new ColumnAttribute(this, column, isIncludedInPK, dal));
             }
 
             if (indexedColumns != null)
             {
                 foreach (var idxCol in indexedColumns)
                 {
-                    if (!this.Indexes.ContainsKey(idxCol.index_name))
+                    if (!Indexes.ContainsKey(idxCol.index_name))
                     {
-                        this.Indexes.Add(idxCol.index_name, new TableIndex(this, idxCol.index_name));
+                        Indexes.Add(idxCol.index_name, new TableIndex(this, idxCol.index_name));
                     }
-                    this.Indexes[idxCol.index_name].Columns.Add(idxCol.column_name);
+                    Indexes[idxCol.index_name].Columns.Add(idxCol.column_name);
                 }
             }
         }
@@ -163,7 +164,10 @@ namespace SqlSiphon.Mapping
         {
             var attr = RoutineAttribute.GetCommandDescription(method);
             if (attr == null || !attr.Include)
+            {
                 return null;
+            }
+
             return attr;
         }
 
@@ -184,26 +188,30 @@ namespace SqlSiphon.Mapping
             base.InferProperties(obj);
             if (obj.IsEnum)
             {
-                var valueColumn = new EnumerationTableColumn(obj, this, "Value", typeof(int));
-                valueColumn.IncludeInPrimaryKey = true;
+                var valueColumn = new EnumerationTableColumn(obj, this, "Value", typeof(int))
+                {
+                    IncludeInPrimaryKey = true
+                };
 
                 var descriptionColumn = new EnumerationTableColumn(obj, this, "Description", typeof(string));
 
-                this.Properties.Add(valueColumn);
-                this.Properties.Add(descriptionColumn);
+                Properties.Add(valueColumn);
+                Properties.Add(descriptionColumn);
 
-                this.PrimaryKey = new PrimaryKey(this);
+                PrimaryKey = new PrimaryKey(this);
 
                 var names = obj.GetEnumNames();
                 foreach (var name in names)
+                {
                     EnumValues.Add((int)Enum.Parse(obj, name), name);
+                }
             }
             else
             {
                 var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .OrderByDescending(p =>
                     {
-                        int depth = 0;
+                        var depth = 0;
                         var top = obj;
                         while (top != null && p.DeclaringType != top)
                         {
@@ -212,14 +220,14 @@ namespace SqlSiphon.Mapping
                         }
                         return depth;
                     }).ToArray();
-                bool hasPK = false;
+                var hasPK = false;
                 foreach (var prop in props)
                 {
                     var columnDescription = DatabaseObjectAttribute.GetAttribute(prop) ?? new ColumnAttribute(prop);
                     if (columnDescription.Include)
                     {
                         columnDescription.Table = this;
-                        this.Properties.Add(columnDescription);
+                        Properties.Add(columnDescription);
                         if (columnDescription.IncludeInPrimaryKey)
                         {
                             hasPK = true;
@@ -228,21 +236,21 @@ namespace SqlSiphon.Mapping
                         var indexInclusions = columnDescription.GetOtherAttributes<IndexAttribute>();
                         foreach (var idxInc in indexInclusions)
                         {
-                            if (!this.Indexes.ContainsKey(idxInc.Name))
+                            if (!Indexes.ContainsKey(idxInc.Name))
                             {
-                                this.Indexes.Add(idxInc.Name, new TableIndex(this, idxInc.Name));
+                                Indexes.Add(idxInc.Name, new TableIndex(this, idxInc.Name));
                             }
-                            this.Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
+                            Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
                         }
                     }
                 }
 
                 if (hasPK)
                 {
-                    this.PrimaryKey = new PrimaryKey(this);
+                    PrimaryKey = new PrimaryKey(this);
                 }
 
-                if (this.Properties.All(f => !f.Include))
+                if (Properties.All(f => !f.Include))
                 {
                     throw new TableHasNoColumnsException(this);
                 }
@@ -251,10 +259,10 @@ namespace SqlSiphon.Mapping
 
         public List<Relationship> GetRelationships()
         {
-            List<Relationship> fks = new List<Relationship>();
+            var fks = new List<Relationship>();
             var fkOrganizer = new Dictionary<Type, Dictionary<string, List<string>>>();
             var autoCreateIndex = new Dictionary<Type, Dictionary<string, bool>>();
-            foreach (var columnDef in this.Properties)
+            foreach (var columnDef in Properties)
             {
                 var fkDefs = columnDef.GetOtherAttributes<FKAttribute>();
 
@@ -287,8 +295,10 @@ namespace SqlSiphon.Mapping
                 foreach (var prefix in fkOrganizer[targetType].Keys)
                 {
                     var columns = fkOrganizer[targetType][prefix];
-                    var r = new Relationship(prefix, this, targetType, autoCreateIndex[targetType][prefix], columns.ToArray());
-                    r.Schema = this.Schema;
+                    var r = new Relationship(prefix, this, targetType, autoCreateIndex[targetType][prefix], columns.ToArray())
+                    {
+                        Schema = Schema
+                    };
                     fks.Add(r);
                 }
             }
@@ -298,7 +308,7 @@ namespace SqlSiphon.Mapping
 
         public override string ToString()
         {
-            return string.Format("Table: {0}.{1}", this.Schema, this.Name);
+            return string.Format("Table: {0}.{1}", Schema, Name);
         }
     }
 }

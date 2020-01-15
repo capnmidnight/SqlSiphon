@@ -38,6 +38,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
 
@@ -76,15 +77,19 @@ namespace SqlSiphon
 
         private static void CopyOutputParameters(object[] parameters, DbParameterCollection sqlParameters)
         {
-            for (int i = 0; sqlParameters != null && i < sqlParameters.Count; ++i)
+            for (var i = 0; sqlParameters != null && i < sqlParameters.Count; ++i)
+            {
                 if (sqlParameters[i].Direction == ParameterDirection.InputOutput ||
                     sqlParameters[i].Direction == ParameterDirection.Output)
+                {
                     parameters[i] = sqlParameters[i].Value;
+                }
+            }
         }
 
-        private bool isConnectionOwned;
+        private readonly bool isConnectionOwned;
 
-        private Regex FKNameRegex;
+        private readonly Regex FKNameRegex;
 
         protected virtual string IdentifierPartBegin { get { return ""; } }
         protected virtual string IdentifierPartEnd { get { return ""; } }
@@ -99,7 +104,7 @@ namespace SqlSiphon
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
         private SqlSiphon(bool isConnectionOwned)
         {
-            this.FKNameRegex = new Regex(
+            FKNameRegex = new Regex(
                 string.Format(@"add constraint \{0}([\w_]+)\{1}", IdentifierPartBegin, IdentifierPartEnd),
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
             this.isConnectionOwned = isConnectionOwned;
@@ -119,7 +124,7 @@ namespace SqlSiphon
         protected SqlSiphon(string server, string database, string userName, string password)
             : this(true)
         {
-            SetConnection(this.MakeConnectionString(server, database, userName, password));
+            SetConnection(MakeConnectionString(server, database, userName, password));
         }
 
         /// <summary>
@@ -130,23 +135,23 @@ namespace SqlSiphon
         protected SqlSiphon(ConnectionT connection)
             : this(false)
         {
-            this.SetConnection(connection);
+            SetConnection(connection);
         }
 
         protected SqlSiphon(SqlSiphon<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
             : this(false)
         {
-            this.SetConnection(dal?.Connection);
+            SetConnection(dal?.Connection);
         }
 
         private void SetConnection(string connectionString)
         {
-            this.SetConnection(new ConnectionT { ConnectionString = connectionString });
+            SetConnection(new ConnectionT { ConnectionString = connectionString });
         }
 
         private void SetConnection(ConnectionT connection)
         {
-            this.Connection = connection;
+            Connection = connection;
         }
 
 
@@ -157,12 +162,15 @@ namespace SqlSiphon
         /// </summary>
         public virtual void Dispose()
         {
-            if (this.isConnectionOwned && this.Connection != null)
+            if (isConnectionOwned && Connection != null)
             {
-                if (this.Connection.State == ConnectionState.Open)
-                    this.Connection.Close();
-                this.Connection.Dispose();
-                this.Connection = null;
+                if (Connection.State == ConnectionState.Open)
+                {
+                    Connection.Close();
+                }
+
+                Connection.Dispose();
+                Connection = null;
             }
         }
 
@@ -173,12 +181,12 @@ namespace SqlSiphon
                 if (Connection.State == ConnectionState.Closed)
                 {
                     Connection.Open();
-                    this.OnOpened();
+                    OnOpened();
                 }
             }
             catch (Exception exp)
             {
-                throw new ConnectionFailedException("Could not connect to the database at : " + this.Connection.ConnectionString, exp);
+                throw new ConnectionFailedException("Could not connect to the database at : " + Connection.ConnectionString, exp);
             }
         }
 
@@ -203,17 +211,17 @@ namespace SqlSiphon
             Query = "select count(*) from ScriptStatus")]
         public int GetDatabaseVersion()
         {
-            return this.Get<int>();
+            return Get<int>();
         }
 
         public void AlterDatabase(ScriptStatus script)
         {
-            this.ExecuteQuery(script.Script);
+            ExecuteQuery(script.Script);
             if (script.ScriptType == ScriptType.InitializeData)
             {
                 try
                 {
-                    this.MarkScriptAsRan(script);
+                    MarkScriptAsRan(script);
                 }
                 catch (DbException exp)
                 {
@@ -261,21 +269,21 @@ namespace SqlSiphon
                 var columnNames = columns.Select(c => c.Name);
                 var parameterNames = columnNames.Select(c => "@" + c);
 
-                string query = string.Format("insert into {0}({1}) values({2})",
-                    this.MakeIdentifier(attr.Schema ?? DefaultSchemaName, attr.Name),
+                var query = string.Format("insert into {0}({1}) values({2})",
+                    MakeIdentifier(attr.Schema ?? DefaultSchemaName, attr.Name),
                     string.Join(", ", columnNames),
                     string.Join(", ", parameterNames));
 
                 using (var command = BuildCommand(query, CommandType.Text, methParams))
                 {
-                    foreach (object obj in data)
+                    foreach (var obj in data)
                     {
                         var parameterValues = new object[columns.Length];
-                        for (int i = 0; i < columns.Length; ++i)
+                        for (var i = 0; i < columns.Length; ++i)
                         {
                             parameterValues[i] = columns[i].GetValue<object>(obj);
                         }
-                        this.CopyParameterValues(command, parameterValues.ToArray());
+                        CopyParameterValues(command, parameterValues.ToArray());
                         command.ExecuteNonQuery();
                     }
                 }
@@ -308,7 +316,9 @@ namespace SqlSiphon
             // We absolutely need to find a method with this attribute, because we won't know where in
             // the stack trace to stop, so that we can inspect the method for parameter name info.
             if (method == null)
+            {
                 throw new Exception("Could not find a mapped method!");
+            }
 
             var meta = RoutineAttribute.GetCommandDescription(method);
 
@@ -318,20 +328,29 @@ namespace SqlSiphon
             if (meta.Parameters.Count != parameterValues.Length)
             {
                 if (isPrimitive && meta.Parameters.Count == parameterValues.Length + 1)
+                {
                     throw new Exception("When querying for a single value, the first parameter passed to the processing method will be treated as a column name or column index to map out of the query result set.");
+                }
                 else if (meta.Parameters.Count < parameterValues.Length)
+                {
                     throw new Exception("More parameters were passed to the processing method than were specified in the mapped method signature.");
+                }
                 else
+                {
                     throw new Exception("Fewer parameters were passed to the processing method than were specified in the mapped method signature.");
+                }
             }
 
             var procName = MakeIdentifier(meta.Schema ?? DefaultSchemaName, meta.Name);
             var methParams = meta.Parameters.ToArray();
             var command = BuildCommand(meta.CommandType == CommandType.Text ? meta.Query : procName, meta.CommandType, methParams);
-            this.CopyParameterValues(command, parameterValues);
+            CopyParameterValues(command, parameterValues);
 
             if (meta.Timeout > -1)
+            {
                 command.CommandTimeout = meta.Timeout;
+            }
+
             return command;
         }
 
@@ -340,11 +359,13 @@ namespace SqlSiphon
             // the mapped method must match the name of a stored procedure in the database, or the
             // query or procedure name must be provided explicitly in the RoutineAttribute's
             // Query property.
-            var command = new CommandT();
-            command.Connection = Connection;
-            command.CommandType = commandType;
-            // meta.Query defaults to null, so default behavior is to use the procedure name
-            command.CommandText = procName;
+            var command = new CommandT
+            {
+                Connection = Connection,
+                CommandType = commandType,
+                // meta.Query defaults to null, so default behavior is to use the procedure name
+                CommandText = procName
+            };
             command.Parameters.AddRange(MakeProcedureParameters(methParams));
             return command;
         }
@@ -365,12 +386,14 @@ namespace SqlSiphon
 
         private ParameterT[] MakeProcedureParameters(ParameterAttribute[] methParams)
         {
-            List<ParameterT> procedureParams = new List<ParameterT>();
-            for (int i = 0; methParams != null && i < methParams.Length; ++i)
+            var procedureParams = new List<ParameterT>();
+            for (var i = 0; methParams != null && i < methParams.Length; ++i)
             {
-                var p = new ParameterT();
-                p.ParameterName = methParams[i].Name;
-                p.Direction = methParams[i].Direction;
+                var p = new ParameterT
+                {
+                    ParameterName = methParams[i].Name,
+                    Direction = methParams[i].Direction
+                };
                 procedureParams.Add(p);
             }
             return procedureParams.ToArray();
@@ -393,10 +416,12 @@ namespace SqlSiphon
 
         public EntityT Return<EntityT>(params object[] parameters)
         {
-            using (var cmd = this.ConstructCommand(parameters))
+            using (var cmd = ConstructCommand(parameters))
             {
-                var p = new ParameterT();
-                p.Direction = ParameterDirection.ReturnValue;
+                var p = new ParameterT
+                {
+                    Direction = ParameterDirection.ReturnValue
+                };
                 cmd.Parameters.Add(p);
                 cmd.ExecuteNonQuery();
                 return (EntityT)p.Value;
@@ -425,14 +450,20 @@ namespace SqlSiphon
         protected virtual void ExecuteQuery(string query)
         {
             if (!string.IsNullOrWhiteSpace(query))
+            {
                 using (var command = BuildCommand(query, CommandType.Text, null))
+                {
                     Execute(command);
+                }
+            }
         }
 
         public void Execute(params object[] parameters)
         {
             using (var command = ConstructCommand(parameters))
+            {
                 Execute(command, parameters);
+            }
         }
 
         /// <summary>
@@ -466,7 +497,9 @@ namespace SqlSiphon
         public DataSet GetDataSet(params object[] parameters)
         {
             using (var command = ConstructCommand(parameters))
+            {
                 return GetDataSet(command, parameters);
+            }
         }
 
         private DataReaderT GetReader(CommandT command, params object[] parameters)
@@ -491,7 +524,9 @@ namespace SqlSiphon
         public DbDataReader GetReader(params object[] parameters)
         {
             using (var command = ConstructCommand(parameters))
+            {
                 return GetReader(command, parameters);
+            }
         }
 
         /// <summary>
@@ -524,7 +559,7 @@ namespace SqlSiphon
 
                     var columnNames = new string[reader.FieldCount];
                     var columnTypes = new Type[reader.FieldCount];
-                    for (int i = 0; i < reader.FieldCount; ++i)
+                    for (var i = 0; i < reader.FieldCount; ++i)
                     {
                         columnNames[i] = reader.GetName(i).ToUpperInvariant();
                         columnTypes[i] = reader.GetFieldType(i);
@@ -546,7 +581,7 @@ namespace SqlSiphon
                     if (useTypedConstructor)
                     {
                         var values = new object[reader.FieldCount];
-                        getter = delegate()
+                        getter = delegate ()
                         {
                             reader.GetValues(values);
                             return (EntityT)constructor.Invoke(values);
@@ -555,11 +590,11 @@ namespace SqlSiphon
                     else
                     {
                         var props = GetProperties(type).ToDictionary(p => p.Name.ToUpperInvariant());
-                        getter = delegate()
+                        getter = delegate ()
                         {
                             var inst = (EntityT)constructor.Invoke(null);
 
-                            for (int i = 0; i < columnNames.Length; ++i)
+                            for (var i = 0; i < columnNames.Length; ++i)
                             {
                                 if (props.ContainsKey(columnNames[i]))
                                 {
@@ -608,7 +643,7 @@ namespace SqlSiphon
 
             // If we're returning a primitive value, we assume it's in the first position
             // of the result set.
-            object key = DataConnector.IsTypePrimitive(type) ? (object)0 : type;
+            var key = DataConnector.IsTypePrimitive(type) ? (object)0 : type;
 
             using (var command = ConstructCommand(parameters))
             {
@@ -647,7 +682,7 @@ namespace SqlSiphon
         protected string MakeColumnSection(TableAttribute info, bool isReturnType)
         {
             var columns = info.Properties.Where(p => p.Include).ToArray();
-            return ArgumentList(columns, p => this.MakeColumnString(p, isReturnType).Trim());
+            return ArgumentList(columns, p => MakeColumnString(p, isReturnType).Trim());
         }
 
         protected string MakeSqlTypeString(DatabaseObjectAttribute p)
@@ -682,15 +717,15 @@ namespace SqlSiphon
 
         public virtual string RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
-            var scriptA = this.MakeCreateRoutineScript(a);
-            var scriptB = this.MakeCreateRoutineScript(b, false);
+            var scriptA = MakeCreateRoutineScript(a);
+            var scriptB = MakeCreateRoutineScript(b, false);
             if (scriptA == scriptB)
             {
                 return null;
             }
             else
             {
-                bool changedParameters = a.Parameters.Count != b.Parameters.Count;
+                var changedParameters = a.Parameters.Count != b.Parameters.Count;
                 if (!changedParameters)
                 {
                     var paramChanges = a.Parameters.Select((p1, i) =>
@@ -710,9 +745,9 @@ namespace SqlSiphon
                     }).ToArray();
                     changedParameters = paramChanges.Any(t => t);
                 }
-                var finalScript = this.MakeRoutineBody(a).Trim();
+                var finalScript = MakeRoutineBody(a).Trim();
                 var initialScript = b.Query.Trim();
-                bool changedQuery = finalScript != initialScript;
+                var changedQuery = finalScript != initialScript;
                 var changed = changedParameters
                     || changedQuery;
                 return changed ? "IDK" : null;
@@ -769,12 +804,12 @@ namespace SqlSiphon
 
         public virtual string RelationshipChanged(Relationship a, Relationship b)
         {
-            var aFromTableName = this.MakeIdentifier(a.From.Schema, a.From.Name).ToLowerInvariant();
+            var aFromTableName = MakeIdentifier(a.From.Schema, a.From.Name).ToLowerInvariant();
             var aFromColumnNames = a.FromColumns.Select(c => c.Name.ToLowerInvariant());
-            var aToTableName = this.MakeIdentifier(a.To.Schema, a.To.Name).ToLowerInvariant();
-            var bFromTableName = this.MakeIdentifier(b.From.Schema, b.From.Name).ToLowerInvariant();
+            var aToTableName = MakeIdentifier(a.To.Schema, a.To.Name).ToLowerInvariant();
+            var bFromTableName = MakeIdentifier(b.From.Schema, b.From.Name).ToLowerInvariant();
             var bFromColumnNames = b.FromColumns.Select(c => c.Name.ToLowerInvariant());
-            var bToTableName = this.MakeIdentifier(b.To.Schema, b.To.Name).ToLowerInvariant();
+            var bToTableName = MakeIdentifier(b.To.Schema, b.To.Name).ToLowerInvariant();
             var changed = aFromTableName != bFromTableName
                 || aToTableName != bToTableName
                 || aFromColumnNames.Any(c => !bFromColumnNames.Contains(c))
@@ -784,8 +819,8 @@ namespace SqlSiphon
 
         public virtual string IndexChanged(TableIndex a, TableIndex b)
         {
-            var aTableName = this.MakeIdentifier(a.Table.Schema, a.Table.Name).ToLowerInvariant();
-            var bTableName = this.MakeIdentifier(b.Table.Schema, b.Table.Name).ToLowerInvariant();
+            var aTableName = MakeIdentifier(a.Table.Schema, a.Table.Name).ToLowerInvariant();
+            var bTableName = MakeIdentifier(b.Table.Schema, b.Table.Name).ToLowerInvariant();
             var aColumnNames = a.Columns.Select(c => c.ToLowerInvariant());
             var bColumnNames = b.Columns.Select(c => c.ToLowerInvariant());
             var changed = aTableName != bTableName
@@ -823,7 +858,7 @@ namespace SqlSiphon
 @"select schema_name from information_schema.schemata;")]
         public virtual List<string> GetSchemata()
         {
-            return this.GetList<string>();
+            return GetList<string>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -831,7 +866,7 @@ namespace SqlSiphon
 @"select script from ScriptStatus;")]
         public virtual List<string> GetScriptStatus()
         {
-            return this.GetList<string>();
+            return GetList<string>();
         }
 
         public virtual string MakeCreateCatalogueScript(string catalogueName)
@@ -841,7 +876,7 @@ namespace SqlSiphon
 
         private string MakeSchemaScript(string op, string schemaName)
         {
-            return string.Format("{0} schema {1};", op, this.MakeIdentifier(schemaName));
+            return string.Format("{0} schema {1};", op, MakeIdentifier(schemaName));
         }
 
         public virtual string MakeCreateSchemaScript(string schemaName)
@@ -858,16 +893,16 @@ namespace SqlSiphon
         public event IOEventHandler OnStandardError;
         protected virtual void ToOutput(string value)
         {
-            if (this.OnStandardOutput != null)
+            if (OnStandardOutput != null)
             {
-                this.OnStandardOutput(this, new IOEventArgs(value));
+                OnStandardOutput(this, new IOEventArgs(value));
             }
         }
         protected void ToError(string value)
         {
-            if (this.OnStandardError != null)
+            if (OnStandardError != null)
             {
-                this.OnStandardError(this, new IOEventArgs(value));
+                OnStandardError(this, new IOEventArgs(value));
             }
         }
 
@@ -875,7 +910,7 @@ namespace SqlSiphon
         {
             var succeeded = true;
             var shortName = new System.IO.FileInfo(path).Name;
-            this.ToOutput(string.Format(":> {0} {1}\r\n", shortName, string.Join(" ", args)));
+            ToOutput(string.Format(":> {0} {1}\r\n", shortName, string.Join(" ", args)));
             var procInfo = new ProcessStartInfo
             {
                 FileName = path,
@@ -895,12 +930,12 @@ namespace SqlSiphon
                 proc.WaitForExit();
                 while (proc.StandardOutput.Peek() != -1)
                 {
-                    this.ToOutput(proc.StandardOutput.ReadLine());
+                    ToOutput(proc.StandardOutput.ReadLine());
                 }
                 while (proc.StandardError.Peek() != -1)
                 {
                     succeeded = false;
-                    this.ToError(proc.StandardError.ReadLine());
+                    ToError(proc.StandardError.ReadLine());
                 }
             }
             return succeeded;
@@ -928,7 +963,7 @@ namespace SqlSiphon
 
         protected string MakeParameterSection(RoutineAttribute info)
         {
-            var parameters = info.Parameters.Select(this.MakeParameterString);
+            var parameters = info.Parameters.Select(MakeParameterString);
             var parameterSection = string.Join(", ", parameters);
             return parameterSection;
         }

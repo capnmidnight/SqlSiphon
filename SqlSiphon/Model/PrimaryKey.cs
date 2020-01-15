@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
+
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Model
@@ -18,30 +16,30 @@ namespace SqlSiphon.Model
             InformationSchema.Columns[] uniqueTableColumns,
             IDatabaseStateReader dal)
         {
-            this.Schema = constraint.constraint_schema;
-            this.Name = constraint.constraint_name;
-            this.Table = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, null, uniqueConstraintColumns, null, dal);
-            this.KeyColumns = this.Table.Properties
+            Schema = constraint.constraint_schema;
+            Name = constraint.constraint_name;
+            Table = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, null, uniqueConstraintColumns, null, dal);
+            KeyColumns = Table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();
         }
 
         internal PrimaryKey(TableAttribute table)
         {
-            this.Schema = table.Schema;
-            this.Table = table;
-            this.KeyColumns = table.Properties
+            Schema = table.Schema;
+            Table = table;
+            KeyColumns = table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();
-            var nullableColumns = this.KeyColumns.Where(c => c.IsOptional).ToArray();
+            var nullableColumns = KeyColumns.Where(c => c.IsOptional).ToArray();
             if (nullableColumns.Length > 0)
             {
-                throw new PrimaryKeyColumnNotNullableException(this.Table, nullableColumns);
+                throw new PrimaryKeyColumnNotNullableException(Table, nullableColumns);
             }
-            var tooLongStringColumns = this.KeyColumns.Where(c => c.SystemType == typeof(string) && !c.IsSizeSet).ToArray();
+            var tooLongStringColumns = KeyColumns.Where(c => c.SystemType == typeof(string) && !c.IsSizeSet).ToArray();
             if (tooLongStringColumns.Length > 0)
             {
-                throw new MustSetStringSizeInPrimaryKeyException(this.Table, tooLongStringColumns);
+                throw new MustSetStringSizeInPrimaryKeyException(Table, tooLongStringColumns);
             }
         }
 
@@ -63,8 +61,8 @@ namespace SqlSiphon.Model
             {
                 return base.Name ?? (Table != null ? string.Format(
                 "pk_{0}_{1}",
-                this.Table.Schema,
-                this.Table.Name).Replace("__", "_") : null);
+                Table.Schema,
+                Table.Name).Replace("__", "_") : null);
             }
             set
             {
@@ -74,9 +72,11 @@ namespace SqlSiphon.Model
 
         internal TableIndex ToIndex()
         {
-            var idx = new TableIndex(this.Table, this.Name);
-            idx.IsClustered = true;
-            foreach (var column in this.KeyColumns)
+            var idx = new TableIndex(Table, Name)
+            {
+                IsClustered = true
+            };
+            foreach (var column in KeyColumns)
             {
                 idx.Columns.Add(column.Name);
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon
@@ -67,18 +68,18 @@ namespace SqlSiphon
         /// <param name="script">The thing that does the work.</param>
         public ScriptStatus(ScriptType type, string name, string script, string reason)
         {
-            this.ScriptType = type;
-            this.Name = name;
-            this.Script = script;
-            this.Reason = reason;
+            ScriptType = type;
+            Name = name;
+            Script = script;
+            Reason = reason;
         }
 
         public int CompareTo(ScriptStatus obj)
         {
-            int result = this.ScriptType.CompareTo(obj.ScriptType);
+            var result = ScriptType.CompareTo(obj.ScriptType);
             if (result == 0)
             {
-                result = this.Name.CompareTo(obj.Name);
+                result = Name.CompareTo(obj.Name);
             }
             return result;
         }

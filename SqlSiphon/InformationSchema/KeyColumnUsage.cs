@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace SqlSiphon.InformationSchema
+﻿namespace SqlSiphon.InformationSchema
 {
     /// <summary>
     /// This is an entity object for the SQL standard 
@@ -27,7 +22,7 @@ namespace SqlSiphon.InformationSchema
 
         public override string ToString()
         {
-            return string.Format("KeyColumnUsage: {0} {1}({2}.{3})", this.ordinal_position, this.constraint_name, this.table_name, this.column_name);
+            return string.Format("KeyColumnUsage: {0} {1}({2}.{3})", ordinal_position, constraint_name, table_name, column_name);
         }
     }
 }

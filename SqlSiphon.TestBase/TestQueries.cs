@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Runtime.CompilerServices;
+
 using SqlSiphon.Mapping;
 
 
@@ -21,7 +20,7 @@ namespace SqlSiphon.TestBase
             Query = @"-- nothing here")]
         public void EmptyStoredProcedure()
         {
-            this.Execute();
+            Execute();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -29,7 +28,7 @@ namespace SqlSiphon.TestBase
             Query = @"select * from EmptyTable")]
         public List<EmptyTable> GetEmptyTable()
         {
-            return this.GetList<EmptyTable>();
+            return GetList<EmptyTable>();
         }
     }
 }

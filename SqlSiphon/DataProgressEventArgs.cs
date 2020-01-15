@@ -42,9 +42,9 @@ namespace SqlSiphon
 
         public DataProgressEventArgs(int currentRow, int rowCount, string message)
         {
-            this.RowCount = rowCount;
-            this.CurrentRow = currentRow;
-            this.Message = message;
+            RowCount = rowCount;
+            CurrentRow = currentRow;
+            Message = message;
         }
 
         public int GetProgressScale(int scale)

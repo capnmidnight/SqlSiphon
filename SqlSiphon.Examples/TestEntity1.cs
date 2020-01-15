@@ -1,5 +1,4 @@
-﻿using System;
-using SqlSiphon.Mapping;
+﻿using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Examples
 {

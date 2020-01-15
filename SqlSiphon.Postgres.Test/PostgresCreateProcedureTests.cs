@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using SqlSiphon.TestBase;
 
 namespace SqlSiphon.Postgres.Test
@@ -15,7 +15,7 @@ namespace SqlSiphon.Postgres.Test
         [TestMethod]
         public override void EmptyStoredProcedure()
         {
-            var script = this.GetScript();
+            var script = GetScript();
             Assert.AreEqual(
 @"create function ""public"".""emptystoredprocedure""()
 returns void 
@@ -28,9 +28,9 @@ language plpgsql;", script);
         }
 
         [TestMethod]
-        public override void GetEmptyTable() 
+        public override void GetEmptyTable()
         {
-            var script = this.GetScript();
+            var script = GetScript();
         }
     }
 }

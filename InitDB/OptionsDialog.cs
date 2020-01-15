@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace InitDB
@@ -21,11 +14,11 @@ namespace InitDB
         {
             add
             {
-                this.browseSqlCmdButton.Click += value;
+                browseSqlCmdButton.Click += value;
             }
             remove
             {
-                this.browseSqlCmdButton.Click -= value;
+                browseSqlCmdButton.Click -= value;
             }
         }
 
@@ -33,11 +26,11 @@ namespace InitDB
         {
             add
             {
-                this.browsePsqlButton.Click += value;
+                browsePsqlButton.Click += value;
             }
             remove
             {
-                this.browsePsqlButton.Click -= value;
+                browsePsqlButton.Click -= value;
             }
         }
 
@@ -45,11 +38,11 @@ namespace InitDB
         {
             get
             {
-                return this.sqlcmdTB.Text;
+                return sqlcmdTB.Text;
             }
             set
             {
-                this.sqlcmdTB.Text = value;
+                sqlcmdTB.Text = value;
             }
         }
 
@@ -79,14 +72,14 @@ namespace InitDB
 
         private void okButton_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.Close();
+            DialogResult = System.Windows.Forms.DialogResult.OK;
+            Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Close();
+            DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            Close();
         }
     }
 }

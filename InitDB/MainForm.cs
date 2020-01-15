@@ -1,14 +1,14 @@
-using SqlSiphon;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+
+using SqlSiphon;
 
 namespace InitDB
 {
@@ -25,19 +25,19 @@ namespace InitDB
         private const string DEFAULT_PSQL_PATH = @"C:\Program Files\PostgreSQL\9.3\bin\psql.exe";
         private const string DEFAULT_OBJECT_FILTER = @"^(vw_)?aspnet_";
 
-        private static Type[] CONNECTION_TYPES = new Type[]
+        private static readonly Type[] CONNECTION_TYPES = new Type[]
         {
             typeof(SqlSiphon.SqlServer.SqlServerDataConnectorFactory),
             typeof(SqlSiphon.Postgres.PostgresDataConnectorFactory)
         };
 
-        static string UnrollStackTrace(Exception e)
+        private static string UnrollStackTrace(Exception e)
         {
             var sb = new System.Text.StringBuilder();
             sb.AppendFormat(@"<stacktrace timestamp=""{0}"">
 ", DateTime.Now);
             var exp = e;
-            for (int i = 0; exp != null; ++i)
+            for (var i = 0; exp != null; ++i)
             {
                 sb.AppendFormat(
 @"<exception depth=""{0}"" type=""{1}"">
@@ -54,44 +54,44 @@ namespace InitDB
         private Dictionary<string, Session> sessions;
         private Dictionary<string, string> options;
         private BindingList<string> names;
-        private OptionsDialog optionsDialog = new OptionsDialog();
+        private readonly OptionsDialog optionsDialog = new OptionsDialog();
 
         public MainForm()
         {
             InitializeComponent();
-            this.databaseTypeList.DataSource = MainForm.CONNECTION_TYPES
+            databaseTypeList.DataSource = MainForm.CONNECTION_TYPES
                 .Select(DataConnector.GetDatabaseTypeName)
                 .ToArray();
-            this.pendingScriptsGV.AutoGenerateColumns = false;
-            this.initialScriptsGV.AutoGenerateColumns = false;
-            this.finalScriptsGV.AutoGenerateColumns = false;
+            pendingScriptsGV.AutoGenerateColumns = false;
+            initialScriptsGV.AutoGenerateColumns = false;
+            finalScriptsGV.AutoGenerateColumns = false;
             foreach (ScriptType value in Enum.GetValues(typeof(ScriptType)))
             {
                 if (value != ScriptType.None)
                 {
-                    this.filterTypesCBL.Items.Add(value);
+                    filterTypesCBL.Items.Add(value);
                 }
             }
-            this.Icon = Properties.Resources.InitDBLogo;
-            this.statusRTB.Text = string.Empty;
+            Icon = Properties.Resources.InitDBLogo;
+            statusRTB.Text = string.Empty;
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             var version = assembly.GetName().Version;
-            this.Text += " v" + version.ToString(4);
+            Text += " v" + version.ToString(4);
             LoadSessions();
             LoadOptions();
-            this.optionsDialog.BrowsePSQLPathClick += optionsDialog_BrowsePSQLPathClick;
-            this.optionsDialog.BrowseSQLCMDPathClick += optionsDialog_BrowseSQLCMDPathClick;
+            optionsDialog.BrowsePSQLPathClick += optionsDialog_BrowsePSQLPathClick;
+            optionsDialog.BrowseSQLCMDPathClick += optionsDialog_BrowseSQLCMDPathClick;
         }
 
         public DataConnector MakeDatabaseConnection()
         {
-            var constructorParams = new[] { 
+            var constructorParams = new[] {
                 typeof(IDataConnector)
             };
-            if (File.Exists(this.assemblyTB.Text))
+            if (File.Exists(assemblyTB.Text))
             {
                 var ss = typeof(IDataConnector);
-                var assembly = System.Reflection.Assembly.LoadFrom(this.assemblyTB.Text);
+                var assembly = System.Reflection.Assembly.LoadFrom(assemblyTB.Text);
                 var candidateTypes = assembly.GetTypes()
                     .Where(t => t.GetInterfaces().Contains(ss)
                                 && !t.IsAbstract
@@ -102,17 +102,17 @@ namespace InitDB
                 {
                     SyncUI(() =>
                     {
-                        var factoryType = CONNECTION_TYPES[this.databaseTypeList.SelectedIndex];
+                        var factoryType = CONNECTION_TYPES[databaseTypeList.SelectedIndex];
                         var factoryConstructor = factoryType.GetConstructor(System.Type.EmptyTypes);
                         var factory = (IDataConnectorFactory)factoryConstructor.Invoke(System.Type.EmptyTypes);
-                        var connector = factory.MakeConnector(this.serverTB.Text, this.databaseTB.Text, this.adminUserTB.Text, this.adminPassTB.Text);
+                        var connector = factory.MakeConnector(serverTB.Text, databaseTB.Text, adminUserTB.Text, adminPassTB.Text);
                         constructorArgs = new object[] { connector };
                         constructor = type.GetConstructor(constructorParams);
                     });
 
                     if (constructor != null && constructorArgs != null)
                     {
-                        this.CurrentDataAccessLayerType = type;
+                        CurrentDataAccessLayerType = type;
                         return ((DataConnector)constructor.Invoke(constructorArgs));
                     }
                 }
@@ -122,14 +122,19 @@ namespace InitDB
 
         private void SyncUI(Action act)
         {
-            if (this.InvokeRequired)
-                this.Invoke(act);
-            else act();
+            if (InvokeRequired)
+            {
+                Invoke(act);
+            }
+            else
+            {
+                act();
+            }
         }
 
         private void Dump(string txt, bool isError, bool modal)
         {
-            this.SyncUI(() =>
+            SyncUI(() =>
             {
                 if (!txt.EndsWith("..."))
                 {
@@ -158,7 +163,7 @@ namespace InitDB
         {
             if (exp != null)
             {
-                this.ToError(UnrollStackTrace(exp), modal);
+                ToError(UnrollStackTrace(exp), modal);
             }
         }
 
@@ -166,25 +171,25 @@ namespace InitDB
         {
             if (txt != null)
             {
-                this.Dump(txt, true, modal);
-                this.SyncUI(() =>
+                Dump(txt, true, modal);
+                SyncUI(() =>
                 {
-                    this.tabControl1.SelectedTab = this.tabStatus;
-                    this.runToolStripMenuItem.Enabled = true;
+                    tabControl1.SelectedTab = tabStatus;
+                    runToolStripMenuItem.Enabled = true;
                 });
             }
         }
 
         private void ToOutput(string txt, bool modal = false)
         {
-            this.Dump(txt, false, modal);
+            Dump(txt, false, modal);
         }
 
         private void LoadOptions()
         {
             if (File.Exists(OPTIONS_FILENAME))
             {
-                this.options = File.ReadAllLines(OPTIONS_FILENAME)
+                options = File.ReadAllLines(OPTIONS_FILENAME)
                     .Select(l => l.Trim())
                     .Where(l => l.Length > 0)
                     .Select(l => l.Split('='))
@@ -193,32 +198,33 @@ namespace InitDB
             }
             else
             {
-                this.options = new Dictionary<string, string>();
+                options = new Dictionary<string, string>();
             }
 
-            this.DisplayOptions();
+            DisplayOptions();
         }
 
         private string CoalesceOption(string key, string defaultValue)
         {
-            if (!this.options.ContainsKey(key))
+            if (!options.ContainsKey(key))
             {
-                this.options.Add(key, defaultValue);
+                options.Add(key, defaultValue);
             }
-            return this.options[key];
+            return options[key];
         }
 
         private void DisplayOptions()
         {
-            this.optionsDialog.SQLCMDPath = this.CoalesceOption(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH);
-            this.optionsDialog.PSQLPath = this.CoalesceOption(PSQL_PATH_KEY, DEFAULT_PSQL_PATH);
-            this.optionsDialog.DefaultObjectFilterRegexText = this.CoalesceOption(OBJECT_FILTER_KEY, DEFAULT_OBJECT_FILTER);
+            optionsDialog.SQLCMDPath = CoalesceOption(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH);
+            optionsDialog.PSQLPath = CoalesceOption(PSQL_PATH_KEY, DEFAULT_PSQL_PATH);
+            optionsDialog.DefaultObjectFilterRegexText = CoalesceOption(OBJECT_FILTER_KEY, DEFAULT_OBJECT_FILTER);
         }
 
         private void LoadSessions()
         {
             if (File.Exists(SESSIONS_FILENAME))
-                this.sessions = File.ReadAllLines(SESSIONS_FILENAME)
+            {
+                sessions = File.ReadAllLines(SESSIONS_FILENAME)
                     .Select(l => l.Trim())
                     .Where(l => l.Length > 0)
                     .Select(l =>
@@ -234,19 +240,23 @@ namespace InitDB
                     })
                     .Where(l => l != null)
                     .ToDictionary(s => s.Name);
+            }
             else
             {
-                this.sessions = new Dictionary<string, Session>();
+                sessions = new Dictionary<string, Session>();
             }
-            if (!this.sessions.ContainsKey(DEFAULT_SESSION_NAME))
-                this.sessions.Add(DEFAULT_SESSION_NAME, new Session());
-            this.names = new BindingList<string>(this.sessions.Keys.OrderBy(k => k).ToList());
-            this.savedSessionList.DataSource = this.names;
+            if (!sessions.ContainsKey(DEFAULT_SESSION_NAME))
+            {
+                sessions.Add(DEFAULT_SESSION_NAME, new Session());
+            }
+
+            names = new BindingList<string>(sessions.Keys.OrderBy(k => k).ToList());
+            savedSessionList.DataSource = names;
         }
 
         private void runToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.runToolStripMenuItem.Enabled = false;
+            runToolStripMenuItem.Enabled = false;
             Application.DoEvents();
             if (PathsAreCorrect())
             {
@@ -261,14 +271,14 @@ namespace InitDB
             {
                 WithErrorCapture(() =>
                 {
-                    bool succeeded = false;
-                    using (var db = this.MakeDatabaseConnection())
+                    var succeeded = false;
+                    using (var db = MakeDatabaseConnection())
                     {
                         var ss = db.GetSqlSiphon();
                         var delta = CreateDelta(ss);
                         DisplayDelta(delta);
                         var t = db.GetType();
-                        this.ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
+                        ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
 
                         succeeded = RunScripts(delta.Scripts, ss);
                         try
@@ -284,43 +294,52 @@ namespace InitDB
                         catch (Exception exp)
                         {
                             succeeded = false;
-                            this.ToError(exp);
+                            ToError(exp);
                         }
 
                         if (succeeded)
                         {
-                            this.ToOutput("All done", true);
+                            ToOutput("All done", true);
                         }
                         else
                         {
-                            this.ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
+                            ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
                         }
 
                         delta = CreateDelta(ss);
                         DisplayDelta(delta);
-                        this.SyncUI(() => runToolStripMenuItem.Enabled = true);
+                        SyncUI(() => runToolStripMenuItem.Enabled = true);
                     }
                     return succeeded;
                 });
             }
             catch (ConnectionFailedException exp)
             {
-                this.ToOutput("failed");
-                this.ToError(exp.Message);
+                ToOutput("failed");
+                ToError(exp.Message);
             }
         }
 
         private bool PathsAreCorrect()
         {
-            var sqlcmdGood = File.Exists(this.optionsDialog.SQLCMDPath);
-            var psqlGood = File.Exists(this.optionsDialog.PSQLPath);
+            var sqlcmdGood = File.Exists(optionsDialog.SQLCMDPath);
+            var psqlGood = File.Exists(optionsDialog.PSQLPath);
             var assemblyGood = File.Exists(assemblyTB.Text);
             if (!psqlGood)
-                this.ToError("Can't find PSQL");
+            {
+                ToError("Can't find PSQL");
+            }
+
             if (!sqlcmdGood)
-                this.ToError("Can't find SQLCMD");
+            {
+                ToError("Can't find SQLCMD");
+            }
+
             if (!assemblyGood)
-                this.ToError("Can't find Assembly");
+            {
+                ToError("Can't find Assembly");
+            }
+
             return psqlGood && sqlcmdGood && assemblyGood;
         }
 
@@ -339,8 +358,8 @@ namespace InitDB
             }
             catch (ConnectionFailedException exp)
             {
-                this.ToOutput("failed");
-                this.ToError(exp.Message);
+                ToOutput("failed");
+                ToError(exp.Message);
                 succeeded = false;
             }
             return succeeded;
@@ -348,14 +367,14 @@ namespace InitDB
 
         private bool RunScript(ScriptStatus script, bool selectTab, ISqlSiphon db)
         {
-            bool succeeded = true;
+            var succeeded = true;
             if (selectTab)
             {
-                this.tabControl1.SelectedTab = this.tabStatus;
+                tabControl1.SelectedTab = tabStatus;
             }
 
-            this.ToOutput(HORIZONTAL_LINE);
-            this.ToOutput(string.Format("{0} {1}...", script.ScriptType, script.Name));
+            ToOutput(HORIZONTAL_LINE);
+            ToOutput(string.Format("{0} {1}...", script.ScriptType, script.Name));
 
             if (script.ScriptType == ScriptType.CreateCatalogue
                 || script.ScriptType == ScriptType.CreateDatabaseLogin
@@ -365,7 +384,7 @@ namespace InitDB
                 var db_OnStandardError = new IOEventHandler((sender, args) =>
                 {
                     succeeded = false;
-                    this.ToError(args.Text);
+                    ToError(args.Text);
                 });
 
                 db.OnStandardError += db_OnStandardError;
@@ -373,10 +392,10 @@ namespace InitDB
                 succeeded = db.RunCommandLine(
                     GetExecutable(db),
                     System.Windows.Forms.Application.UserAppDataPath,
-                    this.serverTB.Text,
-                    script.ScriptType == ScriptType.InstallExtension ? this.databaseTB.Text : null,
-                    this.adminUserTB.Text,
-                    this.adminPassTB.Text,
+                    serverTB.Text,
+                    script.ScriptType == ScriptType.InstallExtension ? databaseTB.Text : null,
+                    adminUserTB.Text,
+                    adminPassTB.Text,
                     script.Script);
                 db.OnStandardOutput -= db_OnStandardOutput;
                 db.OnStandardError -= db_OnStandardError;
@@ -392,14 +411,14 @@ namespace InitDB
                 db.AlterDatabase(script);
             }
 
-            this.ToOutput(succeeded ? "succeeded!" : "failed.");
+            ToOutput(succeeded ? "succeeded!" : "failed.");
 
             return succeeded;
         }
 
-        void db_OnStandardOutput(object sender, IOEventArgs args)
+        private void db_OnStandardOutput(object sender, IOEventArgs args)
         {
-            this.ToOutput(args.Text);
+            ToOutput(args.Text);
         }
 
         private Type CurrentDataAccessLayerType;
@@ -407,8 +426,8 @@ namespace InitDB
         private DatabaseDelta CreateDelta(ISqlSiphon db)
         {
             var r = ObjectFilter;
-            var initial = db.GetInitialState(this.databaseTB.Text, r);
-            var final = db.GetFinalState(this.CurrentDataAccessLayerType, this.sqlUserTB.Text, this.sqlPassTB.Text);
+            var initial = db.GetInitialState(databaseTB.Text, r);
+            var final = db.GetFinalState(CurrentDataAccessLayerType, sqlUserTB.Text, sqlPassTB.Text);
             return final.Diff(initial, db, db);
         }
 
@@ -416,13 +435,13 @@ namespace InitDB
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(this.objFilterTB.Text))
+                if (string.IsNullOrWhiteSpace(objFilterTB.Text))
                 {
                     return null;
                 }
                 else
                 {
-                    return new Regex(this.objFilterTB.Text, RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    return new Regex(objFilterTB.Text, RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
                 }
             }
         }
@@ -435,16 +454,16 @@ namespace InitDB
                 {
                     try
                     {
-                        this.ToOutput("Synchronizing schema.");
-                        using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
+                        ToOutput("Synchronizing schema.");
+                        using (var db = MakeDatabaseConnection().GetSqlSiphon())
                         {
                             DisplayDelta(CreateDelta(db));
                         }
-                        this.ToOutput("Schema synched.");
+                        ToOutput("Schema synched.");
                     }
                     catch (Exception exp)
                     {
-                        this.ToError(exp);
+                        ToError(exp);
                     }
                 });
             }
@@ -452,12 +471,12 @@ namespace InitDB
 
         private void DisplayDelta(DatabaseDelta delta)
         {
-            this.SyncUI(() =>
+            SyncUI(() =>
             {
                 var list = new BindingList<ScriptStatus>(delta.Scripts);
-                this.pendingScriptsGV.DataSource = list;
-                this.initialScriptsGV.DataSource = delta.Initial;
-                this.finalScriptsGV.DataSource = delta.Final;
+                pendingScriptsGV.DataSource = list;
+                initialScriptsGV.DataSource = delta.Initial;
+                finalScriptsGV.DataSource = delta.Final;
                 FilterScripts();
             });
         }
@@ -482,44 +501,44 @@ namespace InitDB
             assemblyTB.Text = BrowseFrom(assemblyTB.Text) ?? assemblyTB.Text;
         }
 
-        void optionsDialog_BrowseSQLCMDPathClick(object sender, EventArgs e)
+        private void optionsDialog_BrowseSQLCMDPathClick(object sender, EventArgs e)
         {
-            this.optionsDialog.SQLCMDPath = BrowseFrom(this.optionsDialog.SQLCMDPath) ?? this.optionsDialog.SQLCMDPath;
+            optionsDialog.SQLCMDPath = BrowseFrom(optionsDialog.SQLCMDPath) ?? optionsDialog.SQLCMDPath;
         }
 
-        void optionsDialog_BrowsePSQLPathClick(object sender, EventArgs e)
+        private void optionsDialog_BrowsePSQLPathClick(object sender, EventArgs e)
         {
-            this.optionsDialog.PSQLPath = BrowseFrom(this.optionsDialog.PSQLPath) ?? this.optionsDialog.PSQLPath;
+            optionsDialog.PSQLPath = BrowseFrom(optionsDialog.PSQLPath) ?? optionsDialog.PSQLPath;
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var sesh = new Session(
-                this.savedSessionList.Text,
-                this.serverTB.Text,
-                this.databaseTB.Text,
-                this.adminUserTB.Text,
-                this.adminPassTB.Text,
-                this.sqlUserTB.Text,
-                this.sqlPassTB.Text,
-                this.assemblyTB.Text,
-                this.objFilterTB.Text,
-                this.databaseTypeList.SelectedIndex,
-                this.filterTypesCBL.CheckedItems.Cast<ScriptType>().ToArray());
+                savedSessionList.Text,
+                serverTB.Text,
+                databaseTB.Text,
+                adminUserTB.Text,
+                adminPassTB.Text,
+                sqlUserTB.Text,
+                sqlPassTB.Text,
+                assemblyTB.Text,
+                objFilterTB.Text,
+                databaseTypeList.SelectedIndex,
+                filterTypesCBL.CheckedItems.Cast<ScriptType>().ToArray());
 
-            if (this.sessions.ContainsKey(sesh.Name))
+            if (sessions.ContainsKey(sesh.Name))
             {
-                this.sessions[sesh.Name] = sesh;
+                sessions[sesh.Name] = sesh;
             }
             else
             {
-                this.sessions.Add(sesh.Name, sesh);
-                this.names.Add(sesh.Name);
-                this.savedSessionList.SelectedItem = sesh.Name;
+                sessions.Add(sesh.Name, sesh);
+                names.Add(sesh.Name);
+                savedSessionList.SelectedItem = sesh.Name;
             }
 
-            this.SaveSessions();
-            this.Analyze();
+            SaveSessions();
+            Analyze();
         }
 
         private Session CurrentSession
@@ -527,10 +546,12 @@ namespace InitDB
             get
             {
                 Session value = null;
-                this.SyncUI(() =>
+                SyncUI(() =>
                 {
-                    if (this.sessions.ContainsKey(this.savedSessionList.Text))
-                        value = this.sessions[this.savedSessionList.Text];
+                    if (sessions.ContainsKey(savedSessionList.Text))
+                    {
+                        value = sessions[savedSessionList.Text];
+                    }
                 });
                 return value;
             }
@@ -538,7 +559,7 @@ namespace InitDB
 
         private void SaveSessions()
         {
-            var lines = this.sessions.Values.Select(v => v.ToString()).ToArray();
+            var lines = sessions.Values.Select(v => v.ToString()).ToArray();
             File.WriteAllLines(SESSIONS_FILENAME, lines);
         }
 
@@ -546,7 +567,7 @@ namespace InitDB
         {
             var sessionName = savedSessionList.SelectedItem as string;
             if (sessionName != null
-                && this.sessions.ContainsKey(sessionName)
+                && sessions.ContainsKey(sessionName)
                 && MessageBox.Show(
                     string.Format("Are you sure you want to delete session \"{0}\"?", sessionName),
                     "Confirm delete",
@@ -554,9 +575,9 @@ namespace InitDB
                     MessageBoxIcon.Question,
                     MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.Yes)
             {
-                this.sessions.Remove(sessionName);
-                this.names.Remove(sessionName);
-                this.SaveSessions();
+                sessions.Remove(sessionName);
+                names.Remove(sessionName);
+                SaveSessions();
             }
         }
 
@@ -566,28 +587,28 @@ namespace InitDB
             if (sessionName != null)
             {
                 sessionToolStripMenuItem.Enabled = savedSessionList.SelectedIndex > 0;
-                if (this.CurrentSession != null)
+                if (CurrentSession != null)
                 {
-                    this.serverTB.Text = this.CurrentSession.Server;
-                    this.databaseTB.Text = this.CurrentSession.DBName;
-                    this.adminUserTB.Text = this.CurrentSession.AdminName;
-                    this.adminPassTB.Text = this.CurrentSession.AdminPassword;
-                    this.sqlUserTB.Text = this.CurrentSession.LoginName;
-                    this.sqlPassTB.Text = this.CurrentSession.LoginPassword;
-                    this.assemblyTB.Text = this.CurrentSession.AssemblyFile;
-                    this.objFilterTB.Text = this.CurrentSession.ObjectFilter ?? this.optionsDialog.DefaultObjectFilterRegexText;
-                    this.databaseTypeList.SelectedIndex = this.CurrentSession.DatabaseTypeIndex;
-                    var st = this.CurrentSession.ScriptTypes ?? new ScriptType[] { };
-                    for (int i = 0; i < this.filterTypesCBL.Items.Count; ++i)
+                    serverTB.Text = CurrentSession.Server;
+                    databaseTB.Text = CurrentSession.DBName;
+                    adminUserTB.Text = CurrentSession.AdminName;
+                    adminPassTB.Text = CurrentSession.AdminPassword;
+                    sqlUserTB.Text = CurrentSession.LoginName;
+                    sqlPassTB.Text = CurrentSession.LoginPassword;
+                    assemblyTB.Text = CurrentSession.AssemblyFile;
+                    objFilterTB.Text = CurrentSession.ObjectFilter ?? optionsDialog.DefaultObjectFilterRegexText;
+                    databaseTypeList.SelectedIndex = CurrentSession.DatabaseTypeIndex;
+                    var st = CurrentSession.ScriptTypes ?? new ScriptType[] { };
+                    for (var i = 0; i < filterTypesCBL.Items.Count; ++i)
                     {
-                        this.filterTypesCBL.SetItemChecked(i, st.Contains((ScriptType)this.filterTypesCBL.Items[i]));
+                        filterTypesCBL.SetItemChecked(i, st.Contains((ScriptType)filterTypesCBL.Items[i]));
                     }
-                    this.statusRTB.Text = "";
-                    tabControl1.SelectedTab = this.tabScripts;
-                    this.pendingScriptsGV.DataSource = null;
+                    statusRTB.Text = "";
+                    tabControl1.SelectedTab = tabScripts;
+                    pendingScriptsGV.DataSource = null;
                     if (sessionName != DEFAULT_SESSION_NAME)
                     {
-                        this.Analyze();
+                        Analyze();
                     }
                 }
 
@@ -601,13 +622,18 @@ namespace InitDB
         {
             var sessionName = savedSessionList.Text.Trim();
             if (sessionName.Length == 0)
+            {
                 sessionName = DEFAULT_SESSION_NAME;
+            }
+
             saveToolStripMenuItem.Enabled
                 = deleteToolStripMenuItem.Enabled
                 = (sessionName != DEFAULT_SESSION_NAME);
 
             if (sessionName == DEFAULT_SESSION_NAME)
+            {
                 savedSessionList.SelectedItem = DEFAULT_SESSION_NAME;
+            }
         }
 
         private void scriptGV_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -624,7 +650,7 @@ namespace InitDB
                         var scriptObject = (ScriptStatus)row.DataBoundItem;
                         var selectedCell = row.Cells[e.ColumnIndex];
                         var stringValue = selectedCell.Value as string;
-                        bool succeeded = true;
+                        var succeeded = true;
                         Application.DoEvents();
                         if (stringValue == scriptObject.Script)
                         {
@@ -641,7 +667,7 @@ namespace InitDB
                         }
                         else if (gv == pendingScriptsGV && stringValue == "run")
                         {
-                            using (var db = this.MakeDatabaseConnection())
+                            using (var db = MakeDatabaseConnection())
                             {
                                 succeeded = RunScript(scriptObject, true, db.GetSqlSiphon());
                             }
@@ -649,7 +675,7 @@ namespace InitDB
                         }
                         else if (gv == pendingScriptsGV && stringValue == "skip")
                         {
-                            using (var db = this.MakeDatabaseConnection())
+                            using (var db = MakeDatabaseConnection())
                             {
                                 db.GetSqlSiphon().MarkScriptAsRan(scriptObject);
                             }
@@ -658,14 +684,14 @@ namespace InitDB
                         return succeeded;
                     }, (exp) =>
                     {
-                        this.tabControl1.SelectedTab = this.tabStatus;
+                        tabControl1.SelectedTab = tabStatus;
                         return string.Format("{0}: {1}", exp.GetType().Name, exp.Message);
                     });
                 }
                 catch (ConnectionFailedException exp)
                 {
-                    this.ToOutput("failed");
-                    this.ToError(exp.Message);
+                    ToOutput("failed");
+                    ToError(exp.Message);
                 }
                 finally
                 {
@@ -676,33 +702,33 @@ namespace InitDB
 
         private void optionsBtn_Click(object sender, EventArgs e)
         {
-            if (this.optionsDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (optionsDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                this.options[SQLCMD_PATH_KEY] = this.optionsDialog.SQLCMDPath;
-                this.options[PSQL_PATH_KEY] = this.optionsDialog.PSQLPath;
-                this.options[OBJECT_FILTER_KEY] = this.optionsDialog.DefaultObjectFilterRegexText;
+                options[SQLCMD_PATH_KEY] = optionsDialog.SQLCMDPath;
+                options[PSQL_PATH_KEY] = optionsDialog.PSQLPath;
+                options[OBJECT_FILTER_KEY] = optionsDialog.DefaultObjectFilterRegexText;
                 File.WriteAllLines(OPTIONS_FILENAME,
-                    this.options.Select(kv => string.Join("=", kv.Key, kv.Value)).ToArray());
+                    options.Select(kv => string.Join("=", kv.Key, kv.Value)).ToArray());
             }
             else
             {
-                this.DisplayOptions();
+                DisplayOptions();
             }
         }
 
 
         private void FilterScripts(ItemCheckEventArgs e = null)
         {
-            var types = this.filterTypesCBL.CheckedItems.Cast<ScriptType>().ToList();
+            var types = filterTypesCBL.CheckedItems.Cast<ScriptType>().ToList();
             if (e != null)
             {
                 if (e.NewValue == CheckState.Checked)
                 {
-                    types.Add((ScriptType)this.filterTypesCBL.Items[e.Index]);
+                    types.Add((ScriptType)filterTypesCBL.Items[e.Index]);
                 }
                 else
                 {
-                    types.Remove((ScriptType)this.filterTypesCBL.Items[e.Index]);
+                    types.Remove((ScriptType)filterTypesCBL.Items[e.Index]);
                 }
             }
             foreach (DataGridViewRow row in pendingScriptsGV.Rows)
@@ -717,16 +743,16 @@ namespace InitDB
             if (e.Control && e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
-                var script = this.generalScriptTB.Text;
-                if (this.generalScriptTB.SelectionLength > 0)
+                var script = generalScriptTB.Text;
+                if (generalScriptTB.SelectionLength > 0)
                 {
-                    script = script.Substring(this.generalScriptTB.SelectionStart, this.generalScriptTB.SelectionLength);
+                    script = script.Substring(generalScriptTB.SelectionStart, generalScriptTB.SelectionLength);
                 }
                 var scriptObj = new ScriptStatus(ScriptType.InstallExtension, "none", script, null);
 
-                using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
+                using (var db = MakeDatabaseConnection().GetSqlSiphon())
                 {
-                    this.RunScript(scriptObj, true, db);
+                    RunScript(scriptObj, true, db);
                 }
             }
         }
@@ -735,11 +761,11 @@ namespace InitDB
         {
             if (connector is SqlSiphon.Postgres.PostgresDataAccessLayer)
             {
-                return this.optionsDialog.PSQLPath;
+                return optionsDialog.PSQLPath;
             }
             else if (connector is SqlSiphon.SqlServer.SqlServerDataAccessLayer)
             {
-                return this.optionsDialog.SQLCMDPath;
+                return optionsDialog.SQLCMDPath;
             }
             return null;
         }
@@ -760,8 +786,8 @@ namespace InitDB
             }
             catch (Exception exp)
             {
-                this.ToOutput("failed");
-                this.ToError(errorHandler(exp));
+                ToOutput("failed");
+                ToError(errorHandler(exp));
                 return false;
             }
         }
@@ -773,9 +799,9 @@ namespace InitDB
 
         private void selectAllFiltersCB_CheckedChanged(object sender, EventArgs e)
         {
-            for (int i = 0; i < this.filterTypesCBL.Items.Count; ++i)
+            for (var i = 0; i < filterTypesCBL.Items.Count; ++i)
             {
-                this.filterTypesCBL.SetItemChecked(i, this.selectAllFiltersCB.Checked);
+                filterTypesCBL.SetItemChecked(i, selectAllFiltersCB.Checked);
             }
         }
 
@@ -792,46 +818,46 @@ by Sean T. McBeth (v1) (sean@seanmcbeth.com)",
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void analyzeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Analyze();
+            Analyze();
         }
 
         private void exportToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
+                using (var db = MakeDatabaseConnection().GetSqlSiphon())
                 {
-                    var delta = this.CreateDelta(db);
+                    var delta = CreateDelta(db);
                     var sb = new System.Text.StringBuilder();
                     foreach (var script in delta.Scripts)
                     {
                         sb.AppendLine(script.Script);
                         sb.AppendLine("GO");
                     }
-                    File.WriteAllText(this.saveFileDialog1.FileName, sb.ToString());
+                    File.WriteAllText(saveFileDialog1.FileName, sb.ToString());
                 }
             }
         }
 
         private void generateCodeBTN_Click(object sender, EventArgs e)
         {
-            using (var db = this.MakeDatabaseConnection().GetSqlSiphon())
+            using (var db = MakeDatabaseConnection().GetSqlSiphon())
             {
-                var initial = db.GetInitialState(this.databaseTB.Text, ObjectFilter);
+                var initial = db.GetInitialState(databaseTB.Text, ObjectFilter);
                 initial.WriteCodeFiles(@"D:\\Sean\\Desktop", "TestProject.Data", "TestConnector");
             }
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            if (0 <= Properties.Settings.Default.LastSelectedSession && Properties.Settings.Default.LastSelectedSession < this.names.Count)
+            if (0 <= Properties.Settings.Default.LastSelectedSession && Properties.Settings.Default.LastSelectedSession < names.Count)
             {
-                this.savedSessionList.SelectedIndex = Properties.Settings.Default.LastSelectedSession;
+                savedSessionList.SelectedIndex = Properties.Settings.Default.LastSelectedSession;
             }
         }
 

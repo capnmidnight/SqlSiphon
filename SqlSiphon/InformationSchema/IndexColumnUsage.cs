@@ -52,7 +52,7 @@ namespace SqlSiphon.InformationSchema
 
         public override string ToString()
         {
-            return string.Format("IndexColumnUsage: {0}({1}.{2})", this.index_name, this.table_name, this.column_name);
+            return string.Format("IndexColumnUsage: {0}({1}.{2})", index_name, table_name, column_name);
         }
     }
 }

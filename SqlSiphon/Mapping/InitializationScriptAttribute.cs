@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SqlSiphon.Mapping
 {
@@ -13,7 +9,7 @@ namespace SqlSiphon.Mapping
 
         public InitializationScriptAttribute(string query)
         {
-            this.Query = query;
+            Query = query;
         }
     }
 }

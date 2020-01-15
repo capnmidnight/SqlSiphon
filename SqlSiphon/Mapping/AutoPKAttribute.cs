@@ -30,7 +30,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
-using System.Reflection;
 
 namespace SqlSiphon.Mapping
 {
@@ -47,7 +46,7 @@ namespace SqlSiphon.Mapping
     {
         public AutoPKAttribute()
         {
-            this.IsIdentity = true;
+            IsIdentity = true;
         }
     }
 }

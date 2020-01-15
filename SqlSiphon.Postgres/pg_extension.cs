@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SqlSiphon.Postgres
 {
-    class pg_extension
+    internal class pg_extension
     {
         public string extname { get; set; }
         public string extversion
         {
-            get { return this.Version.ToString(); }
-            set { this.Version = new Version(value); }
+            get { return Version.ToString(); }
+            set { Version = new Version(value); }
         }
 
         public Version Version { get; set; }
@@ -20,8 +17,8 @@ namespace SqlSiphon.Postgres
 
         public pg_extension(string name, string version)
         {
-            this.extname = name;
-            this.extversion = version;
+            extname = name;
+            extversion = version;
         }
     }
 }

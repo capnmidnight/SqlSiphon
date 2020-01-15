@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SqlSiphon
 {
@@ -11,7 +8,7 @@ namespace SqlSiphon
         public string Text { get; private set; }
         public IOEventArgs(string text)
         {
-            this.Text = text;
+            Text = text;
         }
     }
 }

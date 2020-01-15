@@ -56,48 +56,48 @@ namespace SqlSiphon.Mapping
         {
             get
             {
-                return this.paramDirection;
+                return paramDirection;
             }
             set
             {
                 directionNotSet = false;
-                this.paramDirection = value;
+                paramDirection = value;
             }
         }
 
         public bool IsUDTT { get; private set; }
 
-        public ParameterAttribute() {}
+        public ParameterAttribute() { }
 
         public ParameterAttribute(ParameterInfo param)
         {
-            this.InferProperties(param);
+            InferProperties(param);
         }
 
         public ParameterAttribute(InformationSchema.Parameters parameter, IDatabaseStateReader dal)
         {
-            this.Include = true;
+            Include = true;
 
             if (!string.IsNullOrEmpty(parameter.parameter_name))
             {
-                this.Name = parameter.parameter_name.Substring(1);
+                Name = parameter.parameter_name.Substring(1);
             }
 
-            this.InferTypeInfo(parameter, parameter.user_defined_type_name ?? parameter.data_type, dal);
+            InferTypeInfo(parameter, parameter.user_defined_type_name ?? parameter.data_type, dal);
 
             switch (parameter.parameter_mode)
             {
                 case "OUT":
-                    this.Direction = ParameterDirection.Output;
-                    break;
+                Direction = ParameterDirection.Output;
+                break;
                 case "INOUT":
-                    this.Direction = ParameterDirection.InputOutput;
-                    break;
+                Direction = ParameterDirection.InputOutput;
+                break;
             }
 
-            this.IsUDTT = parameter.user_defined_type_name != null;
+            IsUDTT = parameter.user_defined_type_name != null;
         }
-        
+
         /// <summary>
         /// A virtual method to analyze an object and figure out the
         /// default settings for it. The attribute can't find the thing
@@ -115,32 +115,42 @@ namespace SqlSiphon.Mapping
 
             // If the parameter direction was not set explicitly,
             // then infer it from the method parameter's direction.
-            if (this.directionNotSet)
+            if (directionNotSet)
             {
                 Direction = ParameterDirection.Input;
                 if (parameter.IsIn && parameter.IsOut)
+                {
                     Direction = ParameterDirection.InputOutput;
+                }
                 else if (parameter.IsOut)
+                {
                     Direction = ParameterDirection.Output;
+                }
                 else if (parameter.IsRetval)
+                {
                     Direction = ParameterDirection.ReturnValue;
+                }
             }
 
             // Infer optionalness of the stored procedure's parameter
             // from whether or not the method's parameter is optional, 
             // but only if the IsOptional property of the attribute 
             // was not set explicitly.
-            if (!this.IsOptionalSet)
-                this.IsOptional = parameter.IsOptional;
+            if (!IsOptionalSet)
+            {
+                IsOptional = parameter.IsOptional;
+            }
 
             // Infer the default value for the stored procedure's 
             // parameter from the method parameter's default value,
             // but only if the DefaultValue property of the attribute
             // was not set to a specific value.
-            if (this.DefaultValue == null 
+            if (DefaultValue == null
                 && parameter.DefaultValue != null
                 && parameter.DefaultValue != DBNull.Value)
-                this.DefaultValue = parameter.DefaultValue.ToString();
+            {
+                DefaultValue = parameter.DefaultValue.ToString();
+            }
         }
     }
 }

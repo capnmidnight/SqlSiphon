@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSiphon;
+
 using SqlSiphon.Mapping;
-using SqlSiphon.SqlServer;
 
 namespace SqlSiphon.SqlServer.Test
 {
@@ -31,7 +31,7 @@ namespace SqlSiphon.SqlServer.Test
     [TestClass]
     public class UploadableTypesTests
     {
-        private SqlServerDataAccessLayer testDB = new SqlServerDataAccessLayer((string)null);
+        private readonly SqlServerDataAccessLayer testDB = new SqlServerDataAccessLayer((string)null);
 
         private bool FieldTest(string fieldName)
         {

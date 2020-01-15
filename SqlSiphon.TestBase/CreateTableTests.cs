@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using SqlSiphon;
-using SqlSiphon.Mapping;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using SqlSiphon.Mapping;
 
 namespace SqlSiphon.TestBase
 {
@@ -15,7 +16,7 @@ namespace SqlSiphon.TestBase
         {
             // We aren't opening a connection, we're just trying to generate scripts
             // so it shouldn't be a problem to provide no connection string.
-            using (var ss = this.MakeConnector())
+            using (var ss = MakeConnector())
             {
                 var t = typeof(T);
                 var table = DatabaseObjectAttribute.GetAttribute(t);
@@ -27,12 +28,14 @@ namespace SqlSiphon.TestBase
                     sb.AppendLine("--");
                     sb.Append(ss.MakeCreatePrimaryKeyScript(table.PrimaryKey));
                 }
-                
+
                 var relationships = table.GetRelationships();
                 if (relationships.Count > 0)
                 {
-                    var tables = new Dictionary<Type, TableAttribute>();
-                    tables.Add(t, table);
+                    var tables = new Dictionary<Type, TableAttribute>
+                    {
+                        { t, table }
+                    };
                     sb.AppendLine();
                     sb.Append("--");
                     foreach (var rel in relationships)
@@ -70,7 +73,7 @@ namespace SqlSiphon.TestBase
                 return sb.ToString();
             }
         }
-        
+
         [ExpectedException(typeof(TableHasNoColumnsException))]
         public abstract void CantCreateEmptyTables();
 

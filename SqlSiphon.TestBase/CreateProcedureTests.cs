@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using SqlSiphon;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using SqlSiphon.Mapping;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SqlSiphon.TestBase
 {
@@ -19,10 +17,12 @@ namespace SqlSiphon.TestBase
                 .Name;
             // We aren't opening a connection, we're just trying to generate scripts
             // so it shouldn't be a problem to provide no connection string.
-            using (var ss = this.MakeConnector())
+            using (var ss = MakeConnector())
             {
-                var dc = new QueryDefT();
-                dc.Connection = ss;
+                var dc = new QueryDefT
+                {
+                    Connection = ss
+                };
                 var t = dc.GetType();
                 var method = t.GetMethod(methodName);
                 var methodInfo = DatabaseObjectAttribute.GetAttribute(method);
