@@ -565,8 +565,7 @@ namespace InitDB
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var sessionName = savedSessionList.SelectedItem as string;
-            if (sessionName != null
+            if (savedSessionList.SelectedItem is string sessionName
                 && sessions.ContainsKey(sessionName)
                 && MessageBox.Show(
                     string.Format("Are you sure you want to delete session \"{0}\"?", sessionName),
@@ -583,8 +582,7 @@ namespace InitDB
 
         private void savedSessionList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var sessionName = savedSessionList.SelectedItem as string;
-            if (sessionName != null)
+            if (savedSessionList.SelectedItem is string sessionName)
             {
                 sessionToolStripMenuItem.Enabled = savedSessionList.SelectedIndex > 0;
                 if (CurrentSession != null)
@@ -638,8 +636,7 @@ namespace InitDB
 
         private void scriptGV_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            var gv = sender as DataGridView;
-            if (gv != null)
+            if (sender is DataGridView gv)
             {
                 gv.Enabled = false;
                 try

@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -164,8 +164,8 @@ namespace SqlSiphon
 
         private bool CompareFields(object obj)
         {
-            var b = obj as BoundObject;
-            if (b == null || values.Count != b.values.Count)
+            if (!(obj is BoundObject b)
+                || values.Count != b.values.Count)
             {
                 return false;
             }

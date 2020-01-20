@@ -550,13 +550,10 @@ namespace SqlSiphon
                 {
                     getter = () => reader[(int)key];
                 }
-                else if (key is Type)
+                else if (key is Type type) // A raw entity type must have a default constructor. We need to be able to create an
+                                           // uninitialized version of the object so that we can set the fields to the
+                                           // mapped values later
                 {
-                    // A raw entity type must have a default constructor. We need to be able to create an
-                    // uninitialized version of the object so that we can set the fields to the
-                    // mapped values later
-                    var type = (Type)key;
-
                     var columnNames = new string[reader.FieldCount];
                     var columnTypes = new Type[reader.FieldCount];
                     for (var i = 0; i < reader.FieldCount; ++i)

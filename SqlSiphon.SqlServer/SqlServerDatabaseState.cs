@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 using SqlSiphon.Mapping;
@@ -17,9 +17,8 @@ namespace SqlSiphon.SqlServer
         public override DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator dal)
         {
             var delta = base.Diff(initial, asm, dal);
-            var ssState = initial as SqlServerDatabaseState;
-            var ssDal = dal as SqlServerDataAccessLayer;
-            if (ssState != null && ssDal != null)
+            if (initial is SqlServerDatabaseState ssState
+                && dal is SqlServerDataAccessLayer ssDal)
             {
                 ProcessUDTTs(delta, UDTTs, ssState.UDTTs, asm, ssDal);
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using SqlSiphon.Mapping;
@@ -17,9 +17,8 @@ namespace SqlSiphon.Model
 
         public override object GetValue(object source)
         {
-            if (source is KeyValuePair<int, string>)
+            if (source is KeyValuePair<int, string> kp)
             {
-                var kp = (KeyValuePair<int, string>)source;
                 if (Name == "Value")
                 {
                     return kp.Key;

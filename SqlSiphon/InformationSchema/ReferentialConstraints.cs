@@ -1,4 +1,4 @@
-﻿namespace SqlSiphon.InformationSchema
+namespace SqlSiphon.InformationSchema
 {
     /// <summary>
     /// This is an entity object for the SQL standard 
@@ -23,7 +23,7 @@
         */
         public override string ToString()
         {
-            return string.Format("ReferentialConstraint: {0} to {2}", constraint_name, unique_constraint_name);
+            return $"ReferentialConstraint: {constraint_name} to {unique_constraint_name}";
         }
     }
 }
