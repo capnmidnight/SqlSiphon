@@ -90,7 +90,7 @@ namespace SqlSiphon
                 catch { }
             }
 
-            return default(T);
+            return default;
         }
 
         protected void Set<T>(T value)
@@ -156,10 +156,7 @@ namespace SqlSiphon
         public event PropertyAccessedEventHandler PropertyAccessed;
         private void OnPropertyAccessed(string propertyName)
         {
-            if (PropertyAccessed != null)
-            {
-                PropertyAccessed(this, propertyName);
-            }
+            PropertyAccessed?.Invoke(this, propertyName);
         }
 
         private bool CompareFields(object obj)

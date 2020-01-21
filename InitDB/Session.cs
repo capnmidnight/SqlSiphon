@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 
 using SqlSiphon;
 
@@ -19,10 +19,7 @@ namespace InitDB
         {
             get
             {
-                var str = Get<string>();
-                var index = 0;
-                int.TryParse(str, out index);
-                return index;
+                return int.Parse(Get<string>());
             }
             set { Set(value.ToString()); }
         }

@@ -212,8 +212,7 @@ namespace SqlSiphon.Postgres
             if (i > -1)
             {
                 builder.Host = server.Substring(0, i);
-                var port = 0;
-                if (int.TryParse(server.Substring(i + 1), out port))
+                if (int.TryParse(server.Substring(i + 1), out var port))
                 {
                     builder.Port = port;
                 }
@@ -505,9 +504,9 @@ namespace SqlSiphon.Postgres
 
         private string MakeComplexSqlTypeString(Type systemType)
         {
-            string sqlType = null;
             var baseType = DataConnector.CoalesceCollectionType(systemType);
 
+            string sqlType;
             if (baseType == typeof(void))
             {
                 sqlType = "void";
@@ -596,8 +595,10 @@ namespace SqlSiphon.Postgres
             }
             else if (final.SystemType == typeof(DateTime))
             {
-                valuesMatch = final.DefaultValue == "'9999/12/31 23:59:59.99999'" && initial.DefaultValue == "'9999-12-31'::date"
-                        || final.DefaultValue == "getdate()" && initial.DefaultValue == "('now'::text)::date";
+                valuesMatch = (final.DefaultValue == "'9999/12/31 23:59:59.99999'"
+                        && initial.DefaultValue == "'9999-12-31'::date")
+                    || (final.DefaultValue == "getdate()"
+                        && initial.DefaultValue == "('now'::text)::date");
             }
             else if (final.SystemType == typeof(double))
             {

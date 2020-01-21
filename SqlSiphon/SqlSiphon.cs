@@ -284,7 +284,7 @@ namespace SqlSiphon
                             parameterValues[i] = columns[i].GetValue<object>(obj);
                         }
                         CopyParameterValues(command, parameterValues.ToArray());
-                        command.ExecuteNonQuery();
+                        _ = command.ExecuteNonQuery();
                     }
                 }
             }
@@ -422,8 +422,8 @@ namespace SqlSiphon
                 {
                     Direction = ParameterDirection.ReturnValue
                 };
-                cmd.Parameters.Add(p);
-                cmd.ExecuteNonQuery();
+                _ = cmd.Parameters.Add(p);
+                _ = cmd.ExecuteNonQuery();
                 return (EntityT)p.Value;
             }
         }
@@ -438,7 +438,7 @@ namespace SqlSiphon
             Open();
             try
             {
-                command.ExecuteNonQuery();
+                _ = command.ExecuteNonQuery();
                 CopyOutputParameters(parameters, command.Parameters);
             }
             catch (Exception exp)
@@ -488,7 +488,7 @@ namespace SqlSiphon
             {
                 adapter.SelectCommand = command;
                 //Open(); // open is not necessary for DataAdapter.Fill()
-                adapter.Fill(result);
+                _ = adapter.Fill(result);
             }
             CopyOutputParameters(parameters, command.Parameters);
             return result;
@@ -580,7 +580,7 @@ namespace SqlSiphon
                         var values = new object[reader.FieldCount];
                         getter = delegate ()
                         {
-                            reader.GetValues(values);
+                            _ = reader.GetValues(values);
                             return (EntityT)constructor.Invoke(values);
                         };
                     }
@@ -612,7 +612,7 @@ namespace SqlSiphon
                     var val = getter();
                     if (val == DBNull.Value)
                     {
-                        yield return default(EntityT);
+                        yield return default;
                     }
                     else
                     {
@@ -890,17 +890,11 @@ namespace SqlSiphon
         public event IOEventHandler OnStandardError;
         protected virtual void ToOutput(string value)
         {
-            if (OnStandardOutput != null)
-            {
-                OnStandardOutput(this, new IOEventArgs(value));
-            }
+            OnStandardOutput?.Invoke(this, new IOEventArgs(value));
         }
         protected void ToError(string value)
         {
-            if (OnStandardError != null)
-            {
-                OnStandardError(this, new IOEventArgs(value));
-            }
+            OnStandardError?.Invoke(this, new IOEventArgs(value));
         }
 
         protected bool RunProcess(string path, string[] args)
@@ -923,7 +917,7 @@ namespace SqlSiphon
             {
                 proc.StartInfo = procInfo;
                 proc.EnableRaisingEvents = true;
-                proc.Start();
+                _ = proc.Start();
                 proc.WaitForExit();
                 while (proc.StandardOutput.Peek() != -1)
                 {

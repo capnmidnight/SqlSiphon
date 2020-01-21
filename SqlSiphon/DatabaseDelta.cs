@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -80,10 +80,7 @@ namespace SqlSiphon
                         }
                     }
                 },
-                (key, f) =>
-                {
-                    Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), name + " does not exist"));
-                },
+                (key, f) => Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), name + " does not exist")),
                 (key, f, i) =>
                 {
                     var changeReason = isChanged(f, i);
@@ -220,14 +217,8 @@ namespace SqlSiphon
             Traverse(
                 finalTables,
                 initialTables,
-                (tableName, initialTable) =>
-                {
-                    Scripts.Add(new ScriptStatus(ScriptType.DropTable, tableName, gen.MakeDropTableScript(initialTable), "Table no longer exists"));
-                },
-                (tableName, finalTable) =>
-                {
-                    Scripts.Add(new ScriptStatus(ScriptType.CreateTable, tableName, gen.MakeCreateTableScript(finalTable), "Table does not exist"));
-                },
+                (tableName, initialTable) => Scripts.Add(new ScriptStatus(ScriptType.DropTable, tableName, gen.MakeDropTableScript(initialTable), "Table no longer exists")),
+                (tableName, finalTable) => Scripts.Add(new ScriptStatus(ScriptType.CreateTable, tableName, gen.MakeCreateTableScript(finalTable), "Table does not exist")),
                 (tableName, finalTable, initialTable) =>
                 {
                     var finalColumns = finalTable.Properties.ToDictionary(p => gen.MakeIdentifier(finalTable.Schema ?? gen.DefaultSchemaName, finalTable.Name, p.Name).ToLowerInvariant());
@@ -236,14 +227,8 @@ namespace SqlSiphon
                     Traverse(
                         finalColumns,
                         initialColumns,
-                        (columnName, initialColumn) =>
-                        {
-                            Scripts.Add(new ScriptStatus(ScriptType.DropColumn, columnName, gen.MakeDropColumnScript(initialColumn), "Column no longer exists"));
-                        },
-                        (columnName, finalColumn) =>
-                        {
-                            Scripts.Add(new ScriptStatus(ScriptType.CreateColumn, columnName, gen.MakeCreateColumnScript(finalColumn), "Column doesn't exist"));
-                        },
+                        (columnName, initialColumn) => Scripts.Add(new ScriptStatus(ScriptType.DropColumn, columnName, gen.MakeDropColumnScript(initialColumn), "Column no longer exists")),
+                        (columnName, finalColumn) => Scripts.Add(new ScriptStatus(ScriptType.CreateColumn, columnName, gen.MakeCreateColumnScript(finalColumn), "Column doesn't exist")),
                         (columnName, finalColumn, initialColumn) =>
                         {
                             var reason = asm.ColumnChanged(finalColumn, initialColumn);

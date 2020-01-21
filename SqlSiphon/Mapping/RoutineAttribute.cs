@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -75,7 +75,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public List<ParameterAttribute> Parameters { get; private set; }
 
-        private MethodInfo originalMethod { get { return (MethodInfo)SourceObject; } }
+        private MethodInfo OriginalMethod { get { return (MethodInfo)SourceObject; } }
 
         /// <summary>
         /// Default constructor to set default values;
@@ -92,7 +92,7 @@ namespace SqlSiphon.Mapping
         {
             Schema = routine.routine_schema;
             Name = routine.routine_name;
-            CommandType = System.Data.CommandType.StoredProcedure;
+            CommandType = CommandType.StoredProcedure;
             Parameters = new List<ParameterAttribute>();
             SqlType = routine.data_type;
             var begin = routine.routine_definition

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using SqlSiphon.TestBase;
 
@@ -31,6 +31,7 @@ language plpgsql;", script);
         public override void GetEmptyTable()
         {
             var script = GetScript();
+            Assert.IsNotNull(script);
         }
     }
 }

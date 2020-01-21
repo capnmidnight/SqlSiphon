@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using SqlSiphon.Mapping;
 using SqlSiphon.TestBase;
@@ -59,6 +59,7 @@ end", script);
         public override void GetEmptyTable()
         {
             var script = GetScript();
+            Assert.IsNotNull(script);
         }
 
         [TestMethod]

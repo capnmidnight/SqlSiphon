@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -360,10 +360,9 @@ namespace SqlSiphon.Mapping
             SystemType = dal.GetSystemType(SqlType);
             if (SystemType != null)
             {
-                var systemSize = 0;
                 if (SystemType.IsPrimitive)
                 {
-                    systemSize = System.Runtime.InteropServices.Marshal.SizeOf(SystemType);
+                    Size = System.Runtime.InteropServices.Marshal.SizeOf(SystemType);
                 }
 
                 if (obj.numeric_precision.HasValue

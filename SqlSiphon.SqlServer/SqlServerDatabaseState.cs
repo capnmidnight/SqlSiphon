@@ -36,14 +36,8 @@ namespace SqlSiphon.SqlServer
             DatabaseDelta.Traverse(
                 finalUDTTs,
                 initialUDTTs,
-                (UDTTName, initialUDTT) =>
-                {
-                    delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type no longer exists"));
-                },
-                (UDTTName, finalUDTT) =>
-                {
-                    delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist"));
-                },
+                (UDTTName, initialUDTT) => delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type no longer exists")),
+                (UDTTName, finalUDTT) => delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist")),
                 (UDTTName, finalUDTT, initialUDTT) =>
                 {
                     var finalColumns = finalUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(finalUDTT.Schema ?? gen.DefaultSchemaName, finalUDTT.Name, p.Name).ToLower());
@@ -53,14 +47,8 @@ namespace SqlSiphon.SqlServer
                     DatabaseDelta.Traverse(
                         finalColumns,
                         initialColumns,
-                        (columnName, initialColumn) =>
-                        {
-                            changed = true;
-                        },
-                        (columnName, finalColumn) =>
-                        {
-                            changed = true;
-                        },
+                        (columnName, initialColumn) => changed = true,
+                        (columnName, finalColumn) => changed = true,
                         (columnName, finalColumn, initialColumn) =>
                         {
                             var colDiff = asm.ColumnChanged(finalColumn, initialColumn);

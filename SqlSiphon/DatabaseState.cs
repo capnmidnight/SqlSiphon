@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -468,7 +468,8 @@ namespace SqlSiphon
                             var hasOptions = column.DefaultValue != null
                                 || column.IsPrecisionSet
                                 || column.IsSizeSet
-                                || column.IsOptional && !column.SystemType.IsValueType;
+                                || (column.IsOptional
+                                    && !column.SystemType.IsValueType);
                             if (column.IncludeInPrimaryKey)
                             {
                                 if (column.IsIdentity)

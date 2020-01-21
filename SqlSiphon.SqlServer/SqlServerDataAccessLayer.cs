@@ -580,18 +580,18 @@ end",
                     var typeStr = new StringBuilder(sqlType);
                     if (size.HasValue && (systemType != typeof(int) || size.Value > 0))
                     {
-                        typeStr.AppendFormat("({0}", size);
+                        _ = typeStr.AppendFormat("({0}", size);
                         if (precision.HasValue)
                         {
-                            typeStr.AppendFormat(", {0}", precision);
+                            _ = typeStr.AppendFormat(", {0}", precision);
                         }
-                        typeStr.Append(")");
+                        _ = typeStr.Append(")");
                     }
 
                     if (sqlType.Contains("var")
                         && typeStr[typeStr.Length - 1] != ')')
                     {
-                        typeStr.Append("(MAX)");
+                        _ = typeStr.Append("(MAX)");
                     }
                     return typeStr.ToString();
                 }
@@ -621,10 +621,10 @@ end",
             var table = new DataTable(tableName);
             if (typeToString.ContainsKey(t))
             {
-                table.Columns.Add("Value", t);
+                _ = table.Columns.Add("Value", t);
                 foreach (var obj in array)
                 {
-                    table.Rows.Add(new object[] { obj });
+                    _ = table.Rows.Add(new object[] { obj });
                 }
             }
             else
@@ -637,7 +637,7 @@ end",
                     .ToList();
                 foreach (var column in columns)
                 {
-                    table.Columns.Add(column.Name, column.SystemType);
+                    _ = table.Columns.Add(column.Name, column.SystemType);
                 }
                 foreach (var obj in array)
                 {
@@ -647,7 +647,7 @@ end",
                         var element = column.GetValue<object>(obj);
                         row.Add(element);
                     }
-                    table.Rows.Add(row.ToArray());
+                    _ = table.Rows.Add(row.ToArray());
                 }
             }
             return table;
@@ -915,7 +915,7 @@ order by ordinal_position;")]
                     var bulkCopy = new SqlBulkCopy(Connection);
                     foreach (var column in tableData.Columns.Cast<DataColumn>())
                     {
-                        bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                        _ = bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
                     }
                     bulkCopy.DestinationTableName = attr.Name;
                     bulkCopy.WriteToServer(tableData);
@@ -952,7 +952,7 @@ order by ordinal_position;")]
             {
                 if (IsUDTT(parameter.SystemType))
                 {
-                    types.Add(parameter.SystemType);
+                    _ = types.Add(parameter.SystemType);
                 }
             }
 
@@ -971,7 +971,7 @@ order by ordinal_position;")]
             {
                 elementType = elementType.GetElementType();
             }
-            TableAttribute attr = null;
+            TableAttribute attr;
             if (DataConnector.IsTypePrimitive(elementType))
             {
                 attr = new TableAttribute();
