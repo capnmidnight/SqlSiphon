@@ -49,7 +49,7 @@ namespace SqlSiphon.SqlServer
     /// </summary>
     public class SqlServerDataAccessLayer : SqlSiphon<SqlConnection, SqlCommand, SqlParameter, SqlDataAdapter, SqlDataReader>
     {
-        public override string DataSource { get { return Connection.DataSource; } }
+        public override string DataSource => Connection.DataSource;
         /// <summary>
         /// creates a new connection to a MS SQL Server 2005/2008 database and automatically
         /// opens the connection. 
@@ -99,9 +99,9 @@ namespace SqlSiphon.SqlServer
             return builder.ConnectionString;
         }
 
-        protected override string IdentifierPartBegin { get { return "["; } }
-        protected override string IdentifierPartEnd { get { return "]"; } }
-        public override string DefaultSchemaName { get { return "dbo"; } }
+        protected override string IdentifierPartBegin => "[";
+        protected override string IdentifierPartEnd => "]";
+        public override string DefaultSchemaName => "dbo";
 
         private const SqlServerOptions STANDARD_OPTIONS = SqlServerOptions.ANSI_WARNINGS | SqlServerOptions.ANSI_PADDING | SqlServerOptions.ANSI_NULLS | SqlServerOptions.ARITHABORT | SqlServerOptions.QUOTED_IDENTIFIER | SqlServerOptions.ANSI_NULL_DFLT_ON | SqlServerOptions.CONCAT_NULL_YIELDS_NULL;
 
