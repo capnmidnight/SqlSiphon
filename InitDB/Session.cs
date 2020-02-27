@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 using SqlSiphon;
@@ -61,9 +62,11 @@ namespace InitDB
                     var k = pair.FirstOrDefault() ?? "";
                     var v = pair.LastOrDefault() ?? "";
                     object o = null;
-                    if (v.Equals("True") || v.Equals("False"))
+                    var isTrue = v.Equals("True", StringComparison.InvariantCultureIgnoreCase);
+                    var isFalse = v.Equals("False", StringComparison.InvariantCultureIgnoreCase);
+                    if (isTrue || isFalse)
                     {
-                        o = v.Equals("True");
+                        o = isTrue;
                     }
                     else if (k == "ScriptTypes")
                     {

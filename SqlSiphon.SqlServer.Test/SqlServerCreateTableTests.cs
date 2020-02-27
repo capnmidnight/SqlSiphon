@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 using SqlSiphon.TestBase;
 
 namespace SqlSiphon.SqlServer.Test
 {
-    [TestClass]
+    [TestFixture]
     public class SqlServerCreateTableTests : CreateTableTests
     {
         protected override ISqlSiphon MakeConnector()
@@ -12,13 +12,16 @@ namespace SqlSiphon.SqlServer.Test
             return new SqlServerDataAccessLayer((string)null);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CantCreateEmptyTables()
         {
-            GetScriptFor<EmptyTable>();
+            Assert.Throws<TableHasNoColumnsException>(() =>
+            {
+                GetScriptFor<EmptyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateSingleColumnTable()
         {
             var script = GetScriptFor<OneColumnTable>();
@@ -28,7 +31,7 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateSingleColumnTableWithSchema()
         {
             var script = GetScriptFor<OneColumnTableWithSchema>();
@@ -38,7 +41,7 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTwoColumnTable()
         {
             var script = GetScriptFor<TwoColumnTable>();
@@ -49,7 +52,7 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTwoColumnTableAsChild()
         {
             var script = GetScriptFor<TwoColumnTableAsChild>();
@@ -60,7 +63,7 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateOneNullableColumn()
         {
             var script = GetScriptFor<OneNullableColumnTable>();
@@ -70,13 +73,16 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CantCreatePKWithMAXString()
         {
-            GetScriptFor<LongStringPrimaryKeyTable>();
+            Assert.Throws<MustSetStringSizeInPrimaryKeyException>(() =>
+            {
+                GetScriptFor<LongStringPrimaryKeyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateWithPK()
         {
             var script = GetScriptFor<PrimaryKeyColumnTable>();
@@ -89,7 +95,7 @@ namespace SqlSiphon.SqlServer.Test
 alter table [dbo].[PrimaryKeyColumnTable] add constraint [pk_PrimaryKeyColumnTable] primary key([KeyColumn]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateLongerPrimaryKey()
         {
             var script = GetScriptFor<PrimaryKeyTwoColumnsTable>();
@@ -101,13 +107,16 @@ alter table [dbo].[PrimaryKeyColumnTable] add constraint [pk_PrimaryKeyColumnTab
 alter table [dbo].[PrimaryKeyTwoColumnsTable] add constraint [pk_PrimaryKeyTwoColumnsTable] primary key([KeyColumn1], [KeyColumn2]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CantCreateNullablePK()
         {
-            GetScriptFor<NullablePrimaryKeyTable>();
+            Assert.Throws<PrimaryKeyColumnNotNullableException>(() =>
+            {
+                GetScriptFor<NullablePrimaryKeyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateWithIdentity()
         {
             var script = GetScriptFor<IdentityColumnTable>();
@@ -120,7 +129,7 @@ alter table [dbo].[PrimaryKeyTwoColumnsTable] add constraint [pk_PrimaryKeyTwoCo
 alter table [dbo].[IdentityColumnTable] add constraint [pk_IdentityColumnTable] primary key([KeyColumn]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableFromEnumeration()
         {
             var script = GetScriptFor<EnumerationTable>();
@@ -143,7 +152,7 @@ insert into [dbo].[EnumerationTable](Value, Description) values(7, 'OpQ');
 insert into [dbo].[EnumerationTable](Value, Description) values(8, 'rSt');", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithSimpleIndex()
         {
             var script = GetScriptFor<SimpleIndexTable>();
@@ -159,7 +168,7 @@ alter table [dbo].[SimpleIndexTable] add constraint [pk_SimpleIndexTable] primar
 create nonclustered index [idx_Test1] on [dbo].[SimpleIndexTable]([DoubleColumn]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithLongIndex()
         {
             var script = GetScriptFor<LongIndexTable>();
@@ -182,7 +191,7 @@ create nonclustered index [idx_Test2] on [dbo].[LongIndexTable]([DoubleColumn],[
 create nonclustered index [idx_Test3] on [dbo].[LongIndexTable]([LongColumn],[DecimalColumn],[CharColumn]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithFK()
         {
             var script = GetScriptFor<FKTable>();
@@ -201,7 +210,7 @@ alter table [dbo].[FKTable] add constraint [fk_from_dbo_FKTable_to_pk_PrimaryKey
 create nonclustered index [idx_fk_from_dbo_FKTable_to_pk_PrimaryKeyColumnTable] on [dbo].[FKTable]([KeyColumn]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithLongFK()
         {
             var script = GetScriptFor<LongFKTable>();

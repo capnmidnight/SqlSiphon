@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.TestBase
 {
-    [TestClass]
+    [TestFixture]
     public abstract class CreateProcedureTests<QueryDefT> where QueryDefT : TestQueries, new()
     {
         protected abstract ISqlSiphon MakeConnector();
@@ -30,13 +30,12 @@ namespace SqlSiphon.TestBase
             }
         }
 
-        [ExpectedException(typeof(TableHasNoColumnsException))]
         public abstract void GetEmptyTable();
 
         public abstract void EmptyStoredProcedure();
     }
 
-    [TestClass]
+    [TestFixture]
     public abstract class CreateProcedureTests : CreateProcedureTests<TestQueries>
     {
 

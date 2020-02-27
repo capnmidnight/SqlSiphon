@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -71,7 +71,7 @@ namespace SqlSiphon.Mapping
 
             foreach (var targetColumnDef in targetTableDef.Properties)
             {
-                if (columnDef.Name.ToLowerInvariant().EndsWith(targetColumnDef.Name.ToLowerInvariant()))
+                if (columnDef.Name.EndsWith(targetColumnDef.Name, StringComparison.InvariantCultureIgnoreCase))
                 {
                     if (ToColumnName == null)
                     {

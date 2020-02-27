@@ -1,19 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.OleDB.Test
 {
 
-    [TestClass]
+    [TestFixture]
     public class BasicTests
     {
         private static TestDatabase d;
-        [ClassInitialize]
+        [SetUp]
         public static void Init(TestContext context)
         {
             if (!System.IO.File.Exists("Test.mdb"))
@@ -30,7 +30,7 @@ namespace SqlSiphon.OleDB.Test
             }
         }
 
-        [ClassCleanup]
+        [TearDown]
         public static void Done()
         {
             d.Dispose();
@@ -38,7 +38,7 @@ namespace SqlSiphon.OleDB.Test
             System.Diagnostics.Process.Start("cmd", "/C del Test.mdb");
         }
 
-        [TestMethod]
+        [TestCase]
         public void GetList()
         {
             var names = d.GetNames();
@@ -49,7 +49,7 @@ namespace SqlSiphon.OleDB.Test
             }
         }
 
-        [TestMethod]
+        [TestCase]
         public void GetListPrimitiveByIndex()
         {
             var names = d.GetNamesPrimitiveByIndex();
@@ -60,7 +60,7 @@ namespace SqlSiphon.OleDB.Test
             }
         }
 
-        [TestMethod]
+        [TestCase]
         public void GetOne()
         {
             var name = d.GetName(3);
@@ -68,7 +68,7 @@ namespace SqlSiphon.OleDB.Test
             Assert.AreEqual("mike", name.name);
         }
 
-        [TestMethod]
+        [TestCase]
         public void ExecuteUpdate()
         {
             var name1 = d.GetName(5);
@@ -80,7 +80,7 @@ namespace SqlSiphon.OleDB.Test
             Assert.AreEqual("joel", name2.name);
         }
 
-        [TestMethod]
+        [TestCase]
         public void ExecuteDelete()
         {
             var name1 = d.FindName(7);
@@ -91,7 +91,7 @@ namespace SqlSiphon.OleDB.Test
             Assert.IsNull(name2);
         }
 
-        [TestMethod]
+        [TestCase]
         public void AutoInsert()
         {
             var newNames = new TestEntity[]{
@@ -105,7 +105,7 @@ namespace SqlSiphon.OleDB.Test
             d.InsertAll(newNames);
 
             var foundNames = d.GetNames()
-                .Where(n => n.name.StartsWith("testName"))
+                .Where(n => n.name.StartsWith("testName", StringComparison.InvariantCultureIgnoreCase))
                 .OrderBy(n => n.name)
                 .ToArray();
 

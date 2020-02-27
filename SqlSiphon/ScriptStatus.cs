@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using SqlSiphon.Mapping;
 
@@ -79,7 +79,7 @@ namespace SqlSiphon
             var result = ScriptType.CompareTo(obj.ScriptType);
             if (result == 0)
             {
-                result = Name.CompareTo(obj.Name);
+                result = string.Compare(Name, obj.Name, StringComparison.InvariantCultureIgnoreCase);
             }
             return result;
         }

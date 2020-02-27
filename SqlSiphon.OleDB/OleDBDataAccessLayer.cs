@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009, 2010, 2011, 2012, 2013 Sean T. McBeth
 All rights reserved.
@@ -29,30 +29,30 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISE
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 using System;
-using System.Data;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Data;
 using System.Data.OleDb;
-using SqlSiphon;
+using System.Linq;
+
+using DAO;
+
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
-using DAO;
 
 namespace SqlSiphon.OleDB
 {
     public class OleDBDataAccessLayer : SqlSiphon<OleDbConnection, OleDbCommand, OleDbParameter, OleDbDataAdapter, OleDbDataReader>
     {
-        public override string DataSource { get { return System.IO.Path.GetFullPath(this.Connection.DataSource); } }
+        public override string DataSource => System.IO.Path.GetFullPath(Connection.DataSource);
 
-        private static Dictionary<short, string> PARAMETER_MODES;
+        private static readonly Dictionary<short, string> PARAMETER_MODES;
 
-        private static Dictionary<string, Type> stringToType;
-        private static Dictionary<Type, string> typeToString;
-        private static Dictionary<short, Type> shortToType;
-        private static Dictionary<Type, short> typeToShort;
-        private static Dictionary<short, string> shortToString;
-        private static Dictionary<string, short> stringToShort;
+        private static readonly Dictionary<string, Type> stringToType;
+        private static readonly Dictionary<Type, string> typeToString;
+        private static readonly Dictionary<short, Type> shortToType;
+        private static readonly Dictionary<Type, short> typeToShort;
+        private static readonly Dictionary<short, string> shortToString;
+        private static readonly Dictionary<string, short> stringToShort;
 
         private static void SetTypeMappings<T>(string name, DataTypeEnum val)
         {
@@ -79,7 +79,7 @@ namespace SqlSiphon.OleDB
             shortToString = new Dictionary<short, string>();
             stringToShort = new Dictionary<string, short>();
 
-            SetTypeInformation(typeof(void), "void", (DataTypeEnum)0);
+            SetTypeInformation(typeof(void), "void", 0);
             SetTypeInformation(typeof(void), "void", (DataTypeEnum)48);
 
             SetTypeMappings<byte[]>("binary", DataTypeEnum.dbBinary);
@@ -142,45 +142,29 @@ namespace SqlSiphon.OleDB
             SetTypeMappings<DateTime>("timestamp", DataTypeEnum.dbTimeStamp);
             SetTypeMappings<DateTime?>("timestamp", DataTypeEnum.dbTimeStamp);
 
-            PARAMETER_MODES = new Dictionary<short, string>();
-            PARAMETER_MODES.Add((short)ParameterDirectionEnum.dbParamInput, "IN");
-            PARAMETER_MODES.Add((short)ParameterDirectionEnum.dbParamInputOutput, "INOUT");
-            PARAMETER_MODES.Add((short)ParameterDirectionEnum.dbParamOutput, "OUT");
-            PARAMETER_MODES.Add((short)ParameterDirectionEnum.dbParamReturnValue, "RETURN");
-
-        }
-
-        protected override string IdentifierPartBegin
-        {
-            get
+            PARAMETER_MODES = new Dictionary<short, string>
             {
-                return "[";
-            }
+                { (short)ParameterDirectionEnum.dbParamInput, "IN" },
+                { (short)ParameterDirectionEnum.dbParamInputOutput, "INOUT" },
+                { (short)ParameterDirectionEnum.dbParamOutput, "OUT" },
+                { (short)ParameterDirectionEnum.dbParamReturnValue, "RETURN" }
+            };
+
         }
 
-        protected override string IdentifierPartEnd
-        {
-            get
-            {
-                return "]";
-            }
-        }
+        protected override string IdentifierPartBegin => "[";
 
-        protected override string IdentifierPartSeperator
-        {
-            get
-            {
-                return ".";
-            }
-        }
+        protected override string IdentifierPartEnd => "]";
+
+        protected override string IdentifierPartSeperator => ".";
 
         private void FillInFile()
         {
-            if (!string.IsNullOrEmpty(this.DataSource)
-                && !System.IO.File.Exists(this.DataSource))
+            if (!string.IsNullOrEmpty(DataSource)
+                && !System.IO.File.Exists(DataSource))
             {
                 var engine = new DBEngine();
-                var db = engine.CreateDatabase(this.DataSource, LanguageConstants.dbLangGeneral);
+                var db = engine.CreateDatabase(DataSource, LanguageConstants.dbLangGeneral);
                 db.Close();
             }
         }
@@ -222,19 +206,10 @@ namespace SqlSiphon.OleDB
 
         public event EventHandler Disposed;
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            try
-            {
-                base.Dispose();
-            }
-            finally
-            {
-                if (this.Disposed != null)
-                {
-                    this.Disposed(this, EventArgs.Empty);
-                }
-            }
+            base.Dispose(disposing);
+            Disposed?.Invoke(this, EventArgs.Empty);
         }
 
         public override string MakeConnectionString(string server, string database, string user, string password)
@@ -258,11 +233,11 @@ namespace SqlSiphon.OleDB
 
         private T[] GetSchemaRowValues<T>(Guid objectID, string columnName)
         {
-            if (this.Connection.State != ConnectionState.Open)
+            if (Connection.State != ConnectionState.Open)
             {
-                this.Connection.Open();
+                Connection.Open();
             }
-            return this.Connection.GetOleDbSchemaTable(objectID, null)
+            return Connection.GetOleDbSchemaTable(objectID, null)
                 .Rows
                 .OfType<DataRow>()
                 .Select(r => (T)r[columnName])
@@ -271,11 +246,11 @@ namespace SqlSiphon.OleDB
 
         private string[] GetSchemaColumnNames(Guid objectID)
         {
-            if (this.Connection.State != ConnectionState.Open)
+            if (Connection.State != ConnectionState.Open)
             {
-                this.Connection.Open();
+                Connection.Open();
             }
-            return this.Connection.GetOleDbSchemaTable(objectID, null)
+            return Connection.GetOleDbSchemaTable(objectID, null)
                 .Columns
                 .OfType<DataColumn>()
                 .Select(c => string.Format("{0} {1}", c.DataType, c.ColumnName))
@@ -284,11 +259,11 @@ namespace SqlSiphon.OleDB
 
         private string[] GetSchemaObjectNames()
         {
-            if (this.Connection.State != ConnectionState.Open)
+            if (Connection.State != ConnectionState.Open)
             {
-                this.Connection.Open();
+                Connection.Open();
             }
-            return this.Connection.GetSchema()
+            return Connection.GetSchema()
                 .Rows
                 .OfType<DataRow>()
                 .Select(r => (string)r[0])
@@ -308,8 +283,8 @@ namespace SqlSiphon.OleDB
                 DatabaseObjectAttribute.GetAttribute(DataConnector.CoalesceCollectionType(info.SystemType));
             }
 
-            var identifier = this.MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
-            var parameterSection = this.MakeParameterSection(info);
+            var identifier = MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
+            var parameterSection = MakeParameterSection(info);
             if (parameterSection.Length > 0)
             {
                 parameterSection = string.Format("({0})", parameterSection);
@@ -327,9 +302,9 @@ namespace SqlSiphon.OleDB
             if (info.CommandType == CommandType.Text && info.Parameters.Count > 0)
             {
                 var q = info.Query.Trim().ToUpperInvariant();
-                if (!q.StartsWith("PARAMETERS"))
+                if (!q.StartsWith("PARAMETERS", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var p = this.MakeParameterSection(info);
+                    var p = MakeParameterSection(info);
                     query = string.Format("PARAMETERS {0};\n{1}", p, info.Query);
                 }
             }
@@ -339,8 +314,8 @@ namespace SqlSiphon.OleDB
         public override string MakeCreateTableScript(TableAttribute info)
         {
             var schema = info.Schema ?? DefaultSchemaName;
-            var identifier = this.MakeIdentifier("_".Combine(schema, info.Name));
-            var columnSection = this.MakeColumnSection(info, false);
+            var identifier = MakeIdentifier("_".Combine(schema, info.Name));
+            var columnSection = MakeColumnSection(info, false);
             return string.Format(
 @"create table {0}(
     {1}
@@ -363,7 +338,7 @@ namespace SqlSiphon.OleDB
                 typeStr = "autoincrement";
             }
             return string.Join(" ",
-                this.MakeIdentifier(p.Name),
+                MakeIdentifier(p.Name),
                 typeStr,
                 p.IsOptional || p.IncludeInPrimaryKey ? "" : "NOT NULL")
                 .Trim();
@@ -379,7 +354,9 @@ namespace SqlSiphon.OleDB
             if (sqlType != null)
             {
                 if (sqlType[sqlType.Length - 1] == ')') // someone already setup the type name, so skip it
+                {
                     return sqlType;
+                }
                 else
                 {
                     if (sqlType != "text" && size.HasValue)
@@ -483,16 +460,16 @@ namespace SqlSiphon.OleDB
         private T WithDAO<T>(Func<Database, T> thunk)
         {
             // temporarily close the connection to the file
-            bool wasOpen = false;
-            if (this.Connection.State != ConnectionState.Closed)
+            var wasOpen = false;
+            if (Connection.State != ConnectionState.Closed)
             {
                 wasOpen = true;
-                this.Connection.Close();
+                Connection.Close();
             }
 
             // setup DAO
             var engine = new DBEngine();
-            var db = engine.OpenDatabase(this.DataSource);
+            var db = engine.OpenDatabase(DataSource);
 
             try
             {
@@ -504,7 +481,7 @@ namespace SqlSiphon.OleDB
                 // reopen the connection, if the user is expecting it.
                 if (wasOpen)
                 {
-                    this.Connection.Open();
+                    Connection.Open();
                 }
             }
         }
@@ -535,7 +512,7 @@ namespace SqlSiphon.OleDB
                     .OfType<Field>()
                     .Select(f => f.Name);
 
-                for (int i = 0; i < fields.Length; ++i)
+                for (var i = 0; i < fields.Length; ++i)
                 {
                     fields[i] = recordSet.Fields[props[i].Name];
                 }
@@ -544,7 +521,7 @@ namespace SqlSiphon.OleDB
                 foreach (var obj in data)
                 {
                     recordSet.AddNew();
-                    for (int j = 0; j < fields.Length; ++j)
+                    for (var j = 0; j < fields.Length; ++j)
                     {
                         var value = props[j].GetValue(obj);
                         if (props[j].SystemType == typeof(Guid))
@@ -639,10 +616,7 @@ namespace SqlSiphon.OleDB
             return new List<InformationSchema.KeyColumnUsage>();
         }
 
-        public override string DefaultSchemaName
-        {
-            get { return null; }
-        }
+        public override string DefaultSchemaName => null;
 
         public override List<InformationSchema.Parameters> GetParameters()
         {
@@ -722,31 +696,31 @@ namespace SqlSiphon.OleDB
 
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
-            var fromColumns = string.Join(", ", relation.FromColumns.Select(c => this.MakeIdentifier(c.Name)));
-            var toColumns = string.Join(", ", relation.To.PrimaryKey.KeyColumns.Select(c => this.MakeIdentifier(c.Name)));
+            var fromColumns = string.Join(", ", relation.FromColumns.Select(c => MakeIdentifier(c.Name)));
+            var toColumns = string.Join(", ", relation.To.PrimaryKey.KeyColumns.Select(c => MakeIdentifier(c.Name)));
 
             return string.Format(@"alter table {0} add foreign key({2}) references {3}({4});",
-                    this.MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    this.MakeIdentifier(relation.GetName(this)),
+                    MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
+                    MakeIdentifier(relation.GetName(this)),
                     fromColumns,
-                    this.MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
+                    MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
                     toColumns);
         }
 
         public override string MakeCreateIndexScript(TableIndex index)
         {
             return string.Format("create index {0} on {1}({2});",
-                this.MakeIdentifier(index.Name),
-                this.MakeIdentifier(index.Table.Name),
-                string.Join(", ", index.Columns.Select(k => this.MakeIdentifier(k))));
+                MakeIdentifier(index.Name),
+                MakeIdentifier(index.Table.Name),
+                string.Join(", ", index.Columns.Select(k => MakeIdentifier(k))));
         }
 
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
         {
             return string.Format("create index {0} on {1}({2}) with primary;",
-                this.MakeIdentifier(key.Name),
-                this.MakeIdentifier(key.Table.Name),
-                string.Join(", ", key.KeyColumns.Select(k => this.MakeIdentifier(k.Name))));
+                MakeIdentifier(key.Name),
+                MakeIdentifier(key.Table.Name),
+                string.Join(", ", key.KeyColumns.Select(k => MakeIdentifier(k.Name))));
         }
 
         public override string MakeDropIndexScript(TableIndex index)
@@ -760,7 +734,7 @@ namespace SqlSiphon.OleDB
                 .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
                 .ToArray();
 
-            var columnNames = columns.Select(c => this.MakeIdentifier(c.Name)).ToArray();
+            var columnNames = columns.Select(c => MakeIdentifier(c.Name)).ToArray();
             var columnValues = columns.Select(c =>
             {
                 var v = c.GetValue(value);
@@ -789,7 +763,7 @@ namespace SqlSiphon.OleDB
             }).ToArray();
 
             return string.Format("insert into {0}({1}) values({2});",
-                this.MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
+                MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
                 string.Join(", ", columnNames),
                 string.Join(", ", columnValues));
         }

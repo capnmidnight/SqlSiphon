@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.TestBase
 {
-    [TestClass]
+    [TestFixture]
     public abstract class CreateTableTests
     {
         protected abstract ISqlSiphon MakeConnector();
@@ -74,13 +74,10 @@ namespace SqlSiphon.TestBase
             }
         }
 
-        [ExpectedException(typeof(TableHasNoColumnsException))]
         public abstract void CantCreateEmptyTables();
 
-        [ExpectedException(typeof(PrimaryKeyColumnNotNullableException))]
         public abstract void CantCreateNullablePK();
-
-        [ExpectedException(typeof(MustSetStringSizeInPrimaryKeyException))]
+        
         public abstract void CantCreatePKWithMAXString();
 
         public abstract void CreateSingleColumnTable();

@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using SqlSiphon.TestBase;
 
 
 namespace SqlSiphon.OleDB.Test
 {
-    [TestClass]
+    [TestFixture]
     public class OleDBCreateTableTests : CreateTableTests
     {
         private const string TEST_FILE_NAME = "CreateTableTest.mdb";
@@ -21,13 +21,16 @@ namespace SqlSiphon.OleDB.Test
             System.Diagnostics.Process.Start("cmd", "/C del " + TEST_FILE_NAME);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CantCreateEmptyTables()
         {
-            GetScriptFor<EmptyTable>();
+            Assert.Throws<TableHasNoColumnsException>(() =>
+            {
+                GetScriptFor<EmptyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateSingleColumnTable()
         {
             var script = GetScriptFor<OneColumnTable>();
@@ -37,7 +40,7 @@ namespace SqlSiphon.OleDB.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateSingleColumnTableWithSchema()
         {
             var script = GetScriptFor<OneColumnTableWithSchema>();
@@ -47,7 +50,7 @@ namespace SqlSiphon.OleDB.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTwoColumnTable()
         {
             var script = GetScriptFor<TwoColumnTable>();
@@ -58,7 +61,7 @@ namespace SqlSiphon.OleDB.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTwoColumnTableAsChild()
         {
             var script = GetScriptFor<TwoColumnTableAsChild>();
@@ -69,7 +72,7 @@ namespace SqlSiphon.OleDB.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateOneNullableColumn()
         {
             var script = GetScriptFor<OneNullableColumnTable>();
@@ -79,13 +82,16 @@ namespace SqlSiphon.OleDB.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CantCreatePKWithMAXString()
         {
-            GetScriptFor<LongStringPrimaryKeyTable>();
+            Assert.Throws<MustSetStringSizeInPrimaryKeyException>(() =>
+            {
+                GetScriptFor<LongStringPrimaryKeyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateWithPK()
         {
             var script = GetScriptFor<PrimaryKeyColumnTable>();
@@ -98,7 +104,7 @@ namespace SqlSiphon.OleDB.Test
 create index [pk_PrimaryKeyColumnTable] on [PrimaryKeyColumnTable]([KeyColumn]) with primary;", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateLongerPrimaryKey()
         {
             var script = GetScriptFor<PrimaryKeyTwoColumnsTable>();
@@ -110,13 +116,16 @@ create index [pk_PrimaryKeyColumnTable] on [PrimaryKeyColumnTable]([KeyColumn]) 
 create index [pk_PrimaryKeyTwoColumnsTable] on [PrimaryKeyTwoColumnsTable]([KeyColumn1], [KeyColumn2]) with primary;", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CantCreateNullablePK()
         {
-            GetScriptFor<NullablePrimaryKeyTable>();
+            Assert.Throws<PrimaryKeyColumnNotNullableException>(() =>
+            {
+                GetScriptFor<NullablePrimaryKeyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateWithIdentity()
         {
             var script = GetScriptFor<IdentityColumnTable>();
@@ -129,7 +138,7 @@ create index [pk_PrimaryKeyTwoColumnsTable] on [PrimaryKeyTwoColumnsTable]([KeyC
 create index [pk_IdentityColumnTable] on [IdentityColumnTable]([KeyColumn]) with primary;", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableFromEnumeration()
         {
             var script = GetScriptFor<EnumerationTable>();
@@ -152,7 +161,7 @@ insert into [EnumerationTable]([Value], [Description]) values(7, 'OpQ');
 insert into [EnumerationTable]([Value], [Description]) values(8, 'rSt');", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithSimpleIndex()
         {
             var script = GetScriptFor<SimpleIndexTable>();
@@ -168,7 +177,7 @@ create index [pk_SimpleIndexTable] on [SimpleIndexTable]([KeyColumn]) with prima
 create index [idx_Test1] on [SimpleIndexTable]([DoubleColumn]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithLongIndex()
         {
             var script = GetScriptFor<LongIndexTable>();
@@ -191,7 +200,7 @@ create index [idx_Test2] on [LongIndexTable]([DoubleColumn], [IntColumn], [BoolC
 create index [idx_Test3] on [LongIndexTable]([LongColumn], [DecimalColumn], [CharColumn]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithFK()
         {
             var script = GetScriptFor<FKTable>();
@@ -208,7 +217,7 @@ alter table [FKTable] add foreign key([KeyColumn]) references [PrimaryKeyColumnT
 create index [idx_fk_from_FKTable_to_pk_PrimaryKeyColumnTable] on [FKTable]([KeyColumn]);", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithLongFK()
         {
             var script = GetScriptFor<LongFKTable>();

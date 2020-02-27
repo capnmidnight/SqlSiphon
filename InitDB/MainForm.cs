@@ -136,7 +136,7 @@ namespace InitDB
         {
             SyncUI(() =>
             {
-                if (!txt.EndsWith("..."))
+                if (!txt.EndsWith("...", StringComparison.InvariantCultureIgnoreCase))
                 {
                     txt += Environment.NewLine;
                 }

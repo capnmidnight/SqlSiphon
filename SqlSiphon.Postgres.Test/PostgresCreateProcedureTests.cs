@@ -1,10 +1,10 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 using SqlSiphon.TestBase;
 
 namespace SqlSiphon.Postgres.Test
 {
-    [TestClass]
+    [TestFixture]
     public class PostgresCreateProcedureTests : CreateProcedureTests
     {
         protected override ISqlSiphon MakeConnector()
@@ -12,7 +12,7 @@ namespace SqlSiphon.Postgres.Test
             return new PostgresDataAccessLayer((string)null);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void EmptyStoredProcedure()
         {
             var script = GetScript();
@@ -27,11 +27,13 @@ $$
 language plpgsql;", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void GetEmptyTable()
         {
-            var script = GetScript();
-            Assert.IsNotNull(script);
+            Assert.Throws<TableHasNoColumnsException>(() =>
+            {
+                GetScript();
+            });
         }
     }
 }

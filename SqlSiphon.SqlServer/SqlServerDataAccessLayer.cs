@@ -319,7 +319,7 @@ end",
         public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {
             base.AnalyzeQuery(routineText, routine);
-            routine.EnableTransaction = routineText.IndexOf("begin transaction TRANS") > -1;
+            routine.EnableTransaction = routineText.IndexOf("begin transaction TRANS", StringComparison.InvariantCultureIgnoreCase) > -1;
         }
 
         public override string MakeCreateTableScript(TableAttribute info)
@@ -769,15 +769,15 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
         {
             if (column.column_default != null)
             {
-                while (column.column_default.StartsWith("("))
+                while (column.column_default.StartsWith("(", StringComparison.InvariantCultureIgnoreCase))
                 {
                     column.column_default = column.column_default.Substring(1);
                 }
-                while (column.column_default.EndsWith(")"))
+                while (column.column_default.EndsWith(")", StringComparison.InvariantCultureIgnoreCase))
                 {
                     column.column_default = column.column_default.Substring(0, column.column_default.Length - 1);
                 }
-                if (column.column_default.EndsWith("("))
+                if (column.column_default.EndsWith("(", StringComparison.InvariantCultureIgnoreCase))
                 {
                     column.column_default += ")";
                 }
@@ -897,7 +897,7 @@ order by ordinal_position;")]
                 {
                     throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
                 }
-                var tableData = MakeDataTable(attr.Name, t, data);
+                using var tableData = MakeDataTable(attr.Name, t, data);
 
                 //should make it using bulk insert when mono-project fix it for varbinary data
                 //see https://bugzilla.xamarin.com/show_bug.cgi?id=20563
@@ -912,7 +912,7 @@ order by ordinal_position;")]
                     {
                         Connection.Open();
                     }
-                    var bulkCopy = new SqlBulkCopy(Connection);
+                    using var bulkCopy = new SqlBulkCopy(Connection);
                     foreach (var column in tableData.Columns.Cast<DataColumn>())
                     {
                         _ = bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);

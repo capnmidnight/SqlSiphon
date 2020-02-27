@@ -44,13 +44,6 @@ using SqlSiphon.Model;
 
 namespace SqlSiphon
 {
-    public class ConnectionFailedException : Exception
-    {
-        public ConnectionFailedException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-    }
     /// <summary>
     /// A base class for building Data Access Layers that connect to MS SQL Server 2005/2008
     /// databases and execute store procedures stored within.
@@ -160,9 +153,16 @@ namespace SqlSiphon
         /// <summary>
         /// Cleans up the connection with the database.
         /// </summary>
-        public virtual void Dispose()
+
+        public void Dispose()
         {
-            if (isConnectionOwned && Connection != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (isConnectionOwned && Connection != null && disposing)
             {
                 if (Connection.State == ConnectionState.Open)
                 {

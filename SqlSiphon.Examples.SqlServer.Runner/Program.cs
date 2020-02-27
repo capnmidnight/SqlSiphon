@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
 namespace SqlSiphon.Examples.SqlServer.Runner
 {
@@ -15,18 +11,19 @@ namespace SqlSiphon.Examples.SqlServer.Runner
 
     public static class Program
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
             var factories = new IDataConnectorFactory[]{
                 new SqlSiphon.SqlServer.SqlServerDataConnectorFactory(),
-                new SqlSiphon.Postgres.PostgresDataConnectorFactory()
+                new Postgres.PostgresDataConnectorFactory()
             };
-            var db = new BasicDAL();
+            using var db = new BasicDAL();
             foreach (var factory in factories)
             {
                 var dbTypeName = DataConnector.GetDatabaseTypeName(factory.GetType());
                 var server = "localhost";
-                if(factory is SqlSiphon.SqlServer.SqlServerDataConnectorFactory){
+                if (factory is SqlSiphon.SqlServer.SqlServerDataConnectorFactory)
+                {
                     server += "\\SQLEXPRESS";
                 }
                 using (db.Connection = factory.MakeConnector(server, "TestDB", "TestDBUser", "TestDBPassword"))

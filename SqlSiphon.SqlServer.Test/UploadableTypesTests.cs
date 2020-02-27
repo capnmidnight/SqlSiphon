@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 using SqlSiphon.Mapping;
 
@@ -28,11 +28,9 @@ namespace SqlSiphon.SqlServer.Test
         public int IncludedIdentityField { get; set; }
     }
 
-    [TestClass]
+    [TestFixture]
     public class UploadableTypesTests
     {
-        private readonly SqlServerDataAccessLayer testDB = new SqlServerDataAccessLayer((string)null);
-
         private bool FieldTest(string fieldName)
         {
             var t = typeof(TestUploadableClass);
@@ -42,13 +40,15 @@ namespace SqlSiphon.SqlServer.Test
                 throw new Exception("Field " + fieldName + " doesn't exist");
             }
             var attr = DatabaseObjectAttribute.GetAttribute(t);
+            using var testDB = new SqlServerDataAccessLayer((string)null);
             var script = testDB.MakeCreateUDTTScript(attr);
-            return script.IndexOf(fieldName) > -1;
+            return script.IndexOf(fieldName, StringComparison.InvariantCultureIgnoreCase) > -1;
         }
 
-        [TestMethod]
+        [TestCase]
         public void BasicIntegerArrayUDTT()
         {
+            using var testDB = new SqlServerDataAccessLayer((string)null);
             var table = testDB.MakeUDTTTableAttribute(typeof(int[]));
             var script = testDB.MakeCreateUDTTScript(table);
             Assert.AreEqual(@"create type [dbo].[Int32UDTT] as table(
@@ -56,9 +56,10 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public void BasicFloatArrayUDTT()
         {
+            using var testDB = new SqlServerDataAccessLayer((string)null);
             var table = testDB.MakeUDTTTableAttribute(typeof(float[]));
             var script = testDB.MakeCreateUDTTScript(table);
             Assert.AreEqual(@"create type [dbo].[SingleUDTT] as table(
@@ -66,9 +67,10 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public void BasicDoubleArrayUDTT()
         {
+            using var testDB = new SqlServerDataAccessLayer((string)null);
             var table = testDB.MakeUDTTTableAttribute(typeof(double[]));
             var script = testDB.MakeCreateUDTTScript(table);
             Assert.AreEqual(@"create type [dbo].[DoubleUDTT] as table(
@@ -76,9 +78,10 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public void BasicStringArrayUDTT()
         {
+            using var testDB = new SqlServerDataAccessLayer((string)null);
             var table = testDB.MakeUDTTTableAttribute(typeof(string[]));
             var script = testDB.MakeCreateUDTTScript(table);
             Assert.AreEqual(@"create type [dbo].[StringUDTT] as table(
@@ -86,9 +89,10 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public void TableTypeUDTT()
         {
+            using var testDB = new SqlServerDataAccessLayer((string)null);
             var table = testDB.MakeUDTTTableAttribute(typeof(TestUploadableClass));
             var script = testDB.MakeCreateUDTTScript(table);
             Assert.AreEqual(@"create type [dbo].[TestUploadableClassUDTT] as table(
@@ -97,9 +101,10 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public void TableTypeArrayUDTT()
         {
+            using var testDB = new SqlServerDataAccessLayer((string)null);
             var table = testDB.MakeUDTTTableAttribute(typeof(TestUploadableClass[]));
             var script = testDB.MakeCreateUDTTScript(table);
             Assert.AreEqual(@"create type [dbo].[TestUploadableClassUDTT] as table(
@@ -108,37 +113,37 @@ namespace SqlSiphon.SqlServer.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public void BareFieldsIncluded()
         {
             Assert.IsTrue(FieldTest("BareField"));
         }
 
-        [TestMethod]
+        [TestCase]
         public void FieldsAreExcluded()
         {
             Assert.IsFalse(FieldTest("ExcludedField"));
         }
 
-        [TestMethod]
+        [TestCase]
         public void FieldsWithDefaultValuesAreExcluded()
         {
             Assert.IsFalse(FieldTest("ExcludedFieldWithDefaultValue"));
         }
 
-        [TestMethod]
+        [TestCase]
         public void FieldsWithDefaultValuesExplicitlyIncludedAreIncluded()
         {
             Assert.IsTrue(FieldTest("FieldWithDefaultValue"));
         }
 
-        [TestMethod]
+        [TestCase]
         public void IdentityFieldExcluded()
         {
             Assert.IsFalse(FieldTest("ExcludedIdentityField"));
         }
 
-        [TestMethod]
+        [TestCase]
         public void CantForceIdentityFieldToInclude()
         {
             Assert.IsFalse(FieldTest("IncludedIdentityField"));

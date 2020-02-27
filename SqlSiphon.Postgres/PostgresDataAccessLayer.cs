@@ -208,7 +208,7 @@ namespace SqlSiphon.Postgres
                 builder.Add("Password", password.Trim());
             }
 
-            var i = server.IndexOf(":");
+            var i = server.IndexOf(":", StringComparison.InvariantCultureIgnoreCase);
             if (i > -1)
             {
                 builder.Host = server.Substring(0, i);
@@ -245,7 +245,7 @@ namespace SqlSiphon.Postgres
 
                 // I prefer colon-separated address/port specifications.
                 string port = null;
-                var i = server.IndexOf(":");
+                var i = server.IndexOf(":", StringComparison.InvariantCultureIgnoreCase);
                 if (i > -1)
                 {
                     port = server.Substring(i + 1);
@@ -302,7 +302,7 @@ namespace SqlSiphon.Postgres
         {
             // If either InitDB or Postgres' configuration file moves, this will break. But
             // for now, they are both in the User's AppData directory.
-            var j = configurationPath.IndexOf("InitDB");
+            var j = configurationPath.IndexOf("InitDB", StringComparison.InvariantCultureIgnoreCase);
             configurationPath = Path.Combine(configurationPath.Substring(0, j), "postgresql", "pgpass.conf");
             return configurationPath;
         }
@@ -445,13 +445,13 @@ namespace SqlSiphon.Postgres
                 }
             }
 
-            if (size.HasValue && typeName.IndexOf("(") == -1)
+            if (size.HasValue && typeName.IndexOf("(", StringComparison.InvariantCultureIgnoreCase) == -1)
             {
                 var format = precision.HasValue
                     ? "({0},{1})"
                     : "({0})";
                 var sizeStr = string.Format(format, size, precision);
-                var bracketsIndex = typeName.IndexOf("[]");
+                var bracketsIndex = typeName.IndexOf("[]", StringComparison.InvariantCultureIgnoreCase);
                 if (bracketsIndex > -1)
                 {
                     typeName = typeName.Substring(0, bracketsIndex);
@@ -471,7 +471,7 @@ namespace SqlSiphon.Postgres
 
         public override bool DescribesIdentity(InformationSchema.Columns column)
         {
-            if (column.column_default != null && column.column_default.IndexOf("nextval") == 0)
+            if (column.column_default != null && column.column_default.IndexOf("nextval", StringComparison.InvariantCultureIgnoreCase) == 0)
             {
                 column.column_default = null;
                 column.udt_name = "integer";
@@ -756,7 +756,7 @@ language plpgsql;",
             var returnType = MakeSqlTypeString(routine);
             if (returnType != null)
             {
-                if (returnType.Contains("[]") || returnType.StartsWith("table"))
+                if (returnType.Contains("[]") || returnType.StartsWith("table", StringComparison.InvariantCultureIgnoreCase))
                 {
                     returnType = null;
                 }

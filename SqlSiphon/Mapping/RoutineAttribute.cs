@@ -96,8 +96,7 @@ namespace SqlSiphon.Mapping
             Parameters = new List<ParameterAttribute>();
             SqlType = routine.data_type;
             var begin = routine.routine_definition
-                .ToLowerInvariant()
-                .IndexOf("set nocount on;");
+                .IndexOf("set nocount on;", StringComparison.InvariantCultureIgnoreCase);
 
             dal.AnalyzeQuery(routine.routine_definition, this);
             if (parameters != null)

@@ -546,8 +546,9 @@ namespace SqlSiphon
                         fkAttrString += @"
     [FK(";
                         var prefix = fk.FromColumns.SelectMany(c =>
-                            table.Properties.Where(c2 => c.Name.EndsWith(c2.Name))
-                                .Select(c2 => c.Name.Substring(0, c.Name.IndexOf(c2.Name))))
+                            (from c2 in table.Properties
+                             where c.Name.EndsWith(c2.Name, StringComparison.InvariantCulture)
+                             select c.Name.Substring(0, c.Name.IndexOf(c2.Name, StringComparison.InvariantCulture))))
                             .FirstOrDefault();
                         if (prefix != null && prefix.Length > 0)
                         {

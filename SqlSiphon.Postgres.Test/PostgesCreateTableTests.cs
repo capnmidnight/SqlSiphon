@@ -1,23 +1,27 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 using SqlSiphon.TestBase;
 
 namespace SqlSiphon.Postgres.Test
 {
-    [TestClass]
+    [TestFixture]
     public class PostgresCreateTableTests : CreateTableTests
     {
         protected override ISqlSiphon MakeConnector()
         {
             return new PostgresDataAccessLayer((string)null);
         }
-        [TestMethod]
+
+        [TestCase]
         public override void CantCreateEmptyTables()
         {
-            GetScriptFor<EmptyTable>();
+            Assert.Throws<TableHasNoColumnsException>(() =>
+            {
+                GetScriptFor<EmptyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateSingleColumnTable()
         {
             var script = GetScriptFor<OneColumnTable>();
@@ -27,7 +31,7 @@ namespace SqlSiphon.Postgres.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateSingleColumnTableWithSchema()
         {
             var script = GetScriptFor<OneColumnTableWithSchema>();
@@ -37,7 +41,7 @@ namespace SqlSiphon.Postgres.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTwoColumnTable()
         {
             var script = GetScriptFor<TwoColumnTable>();
@@ -48,7 +52,7 @@ namespace SqlSiphon.Postgres.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTwoColumnTableAsChild()
         {
             var script = GetScriptFor<TwoColumnTableAsChild>();
@@ -59,7 +63,7 @@ namespace SqlSiphon.Postgres.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateOneNullableColumn()
         {
             var script = GetScriptFor<OneNullableColumnTable>();
@@ -69,13 +73,16 @@ namespace SqlSiphon.Postgres.Test
 );", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CantCreatePKWithMAXString()
         {
-            GetScriptFor<LongStringPrimaryKeyTable>();
+            Assert.Throws<MustSetStringSizeInPrimaryKeyException>(() =>
+            {
+                GetScriptFor<LongStringPrimaryKeyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateWithPK()
         {
             var script = GetScriptFor<PrimaryKeyColumnTable>();
@@ -89,7 +96,7 @@ create unique index ""idx_pk_primarykeycolumntable"" on ""public"".""primarykeyc
 alter table ""public"".""primarykeycolumntable"" add constraint ""pk_primarykeycolumntable"" primary key using index ""idx_pk_primarykeycolumntable"";", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateLongerPrimaryKey()
         {
             var script = GetScriptFor<PrimaryKeyTwoColumnsTable>();
@@ -102,13 +109,16 @@ create unique index ""idx_pk_primarykeytwocolumnstable"" on ""public"".""primary
 alter table ""public"".""primarykeytwocolumnstable"" add constraint ""pk_primarykeytwocolumnstable"" primary key using index ""idx_pk_primarykeytwocolumnstable"";", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CantCreateNullablePK()
         {
-            GetScriptFor<NullablePrimaryKeyTable>();
+            Assert.Throws<PrimaryKeyColumnNotNullableException>(() =>
+            {
+                GetScriptFor<NullablePrimaryKeyTable>();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateWithIdentity()
         {
             var script = GetScriptFor<IdentityColumnTable>();
@@ -122,7 +132,7 @@ create unique index ""idx_pk_identitycolumntable"" on ""public"".""identitycolum
 alter table ""public"".""identitycolumntable"" add constraint ""pk_identitycolumntable"" primary key using index ""idx_pk_identitycolumntable"";", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableFromEnumeration()
         {
             var script = GetScriptFor<EnumerationTable>();
@@ -146,7 +156,7 @@ insert into ""public"".""enumerationtable""(""value"", ""description"") values(7
 insert into ""public"".""enumerationtable""(""value"", ""description"") values(8, 'rSt');", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithSimpleIndex()
         {
             var script = GetScriptFor<SimpleIndexTable>();
@@ -163,7 +173,7 @@ alter table ""public"".""simpleindextable"" add constraint ""pk_simpleindextable
 create index ""idx_test1"" on ""public"".""simpleindextable""(""doublecolumn"");", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithLongIndex()
         {
             var script = GetScriptFor<LongIndexTable>();
@@ -187,7 +197,7 @@ create index ""idx_test2"" on ""public"".""longindextable""(""doublecolumn"",""i
 create index ""idx_test3"" on ""public"".""longindextable""(""longcolumn"",""decimalcolumn"",""charcolumn"");", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithFK()
         {
             var script = GetScriptFor<FKTable>();
@@ -207,7 +217,7 @@ alter table ""public"".""fktable"" add constraint ""fk_from_public_fktable_to_pk
 create index ""idx_fk_from_public_fktable_to_pk_primarykeycolumntable"" on ""public"".""fktable""(""keycolumn"");", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void CreateTableWithLongFK()
         {
             var script = GetScriptFor<LongFKTable>();

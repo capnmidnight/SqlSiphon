@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 
 namespace InitDB
@@ -13,7 +13,8 @@ namespace InitDB
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            using var mainForm = new MainForm();
+            Application.Run(mainForm);
         }
     }
 }

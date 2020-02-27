@@ -1,10 +1,10 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using NUnit.Framework;
 using SqlSiphon.TestBase;
 
 namespace SqlSiphon.OleDB.Test
 {
-    [TestClass]
+    [TestFixture]
     public class OleDBCreateProcedureTests : CreateProcedureTests
     {
         protected override ISqlSiphon MakeConnector()
@@ -12,17 +12,20 @@ namespace SqlSiphon.OleDB.Test
             return new OleDBDataAccessLayer("Test.mbd");
         }
 
-        [TestMethod]
+        [TestCase]
         public override void EmptyStoredProcedure()
         {
             var script = this.GetScript();
             Assert.AreEqual(@"create procedure [EmptyStoredProcedure] as -- nothing here", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void GetEmptyTable() 
         {
-            var script = this.GetScript();
+            Assert.Throws<TableHasNoColumnsException>(() =>
+            {
+                GetScript();
+            });
         }
     }
 }

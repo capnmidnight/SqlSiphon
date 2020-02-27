@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -19,7 +19,7 @@ namespace SqlSiphon
             return type != null
                 && type.IsGenericType
                 && type.Namespace == "System"
-                && type.Name.StartsWith("Nullable");
+                && type.Name.StartsWith("Nullable", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public static Type CoalesceNullableValueType(Type type)
@@ -88,13 +88,7 @@ namespace SqlSiphon
             }
         }
 
-        public string DataSource
-        {
-            get
-            {
-                return Connection.DataSource;
-            }
-        }
+        public string DataSource => Connection.DataSource;
 
         protected DataConnector(IDataConnector connection)
         {
@@ -115,7 +109,16 @@ namespace SqlSiphon
 
         public void Dispose()
         {
-            Connection.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Connection.Dispose();
+            }
         }
 
         public ISqlSiphon GetSqlSiphon()

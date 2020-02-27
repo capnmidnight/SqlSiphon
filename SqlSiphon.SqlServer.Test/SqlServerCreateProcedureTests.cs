@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 using SqlSiphon.Mapping;
 using SqlSiphon.TestBase;
@@ -34,7 +34,7 @@ from @value;")]
         }
     }
 
-    [TestClass]
+    [TestFixture]
     public class SqlServerCreateProcedureTests : CreateProcedureTests<SqlServerTestQueries>
     {
         protected override ISqlSiphon MakeConnector()
@@ -42,7 +42,7 @@ from @value;")]
             return new SqlServerDataAccessLayer((string)null);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void EmptyStoredProcedure()
         {
             var script = GetScript();
@@ -55,14 +55,16 @@ as begin
 end", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public override void GetEmptyTable()
         {
-            var script = GetScript();
-            Assert.IsNotNull(script);
+            Assert.Throws<TableHasNoColumnsException>(() =>
+            {
+                GetScript();
+            });
         }
 
-        [TestMethod]
+        [TestCase]
         public void TestUploadableSimpleArrayType()
         {
             var script = GetScript();
@@ -74,7 +76,7 @@ as begin
 end", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public void TestUploadableComplexArrayType()
         {
             var script = GetScript();
@@ -88,7 +90,7 @@ from @values;
 end", script);
         }
 
-        [TestMethod]
+        [TestCase]
         public void TestUploadableComplexType()
         {
             var script = GetScript();

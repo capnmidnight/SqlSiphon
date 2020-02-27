@@ -41,14 +41,8 @@ namespace SqlSiphon
     public abstract class BoundObject : INotifyPropertyChanged, INotifyPropertyChanging
     {
         #region statics
-        private static readonly Dictionary<string, PropertyChangedEventArgs> propertyChangedCache;
-        private static readonly Dictionary<string, PropertyChangingEventArgs> propertyChangingCache;
-
-        static BoundObject()
-        {
-            propertyChangedCache = new Dictionary<string, PropertyChangedEventArgs>();
-            propertyChangingCache = new Dictionary<string, PropertyChangingEventArgs>();
-        }
+        private static readonly Dictionary<string, PropertyChangedEventArgs> propertyChangedCache = new Dictionary<string, PropertyChangedEventArgs>();
+        private static readonly Dictionary<string, PropertyChangingEventArgs> propertyChangingCache = new Dictionary<string, PropertyChangingEventArgs>();
 
         private static string GetMethodName()
         {
