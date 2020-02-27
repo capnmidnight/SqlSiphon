@@ -1,6 +1,7 @@
-﻿namespace SqlSiphon
+namespace SqlSiphon
 {
-    public interface ISqlSiphon : IDataConnector,
+    public interface ISqlSiphon :
+        IDataConnector,
         IDatabaseStateReader,
         IDatabaseStateWriter,
         IAssemblyStateReader,

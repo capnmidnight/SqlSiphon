@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -10,5 +10,9 @@
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj" />
     <PackageReference Include="Npgsql" Version="2.2.7" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec ContinueOnError="true" Command="XCOPY &quot;$(TargetDir)*&quot; &quot;$(ProjectDir)..\InitDB\Drivers&quot; /exclude:$(ProjectDir)excludeFromInitDB.txt /C /I /F /Y" />
+  </Target>
   
 </Project>

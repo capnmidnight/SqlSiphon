@@ -49,100 +49,97 @@ namespace SqlSiphon.Postgres
     /// </summary>
     public class PostgresDataAccessLayer : SqlSiphon<NpgsqlConnection, NpgsqlCommand, NpgsqlParameter, NpgsqlDataAdapter, NpgsqlDataReader>
     {
-        private static readonly Dictionary<string, int> defaultTypeSizes;
-        private static readonly Dictionary<string, Type> typeMapping;
-        private static readonly Dictionary<Type, string> reverseTypeMapping;
-
         public override string DataSource => Connection.DataSource;
 
-        static PostgresDataAccessLayer()
+        private static readonly Dictionary<string, Type> typeMapping = new Dictionary<string, Type>
         {
-            typeMapping = new Dictionary<string, Type>
-            {
-                { "bigint", typeof(long) },
-                { "int8", typeof(long) },
-                { "bigserial", typeof(long) },
-                { "serial8", typeof(long) },
+            ["bigint"] = typeof(long),
+            ["int8"] = typeof(long),
+            ["bigserial"] = typeof(long),
+            ["serial8"] = typeof(long),
 
-                { "bit", typeof(bool[]) },
-                { "varbit", typeof(bool[]) },
-                { "bit varying", typeof(bool[]) },
+            ["bit"] = typeof(bool[]),
+            ["varbit"] = typeof(bool[]),
+            ["bit varying"] = typeof(bool[]),
 
-                { "boolean", typeof(bool) },
-                { "bool", typeof(bool) },
+            ["boolean"] = typeof(bool),
+            ["bool"] = typeof(bool),
 
-                { "bytea", typeof(byte[]) },
+            ["bytea"] = typeof(byte[]),
 
-                { "text", typeof(string) },
-                { "character varying", typeof(string) },
-                { "varchar", typeof(string) },
-                { "tsquery", typeof(string) },
-                { "xml", typeof(string) },
-                { "json", typeof(string) },
-                { "name", typeof(string) },
-                { "character", typeof(string) },
-                { "char", typeof(string) },
+            ["text"] = typeof(string),
+            ["character varying"] = typeof(string),
+            ["varchar"] = typeof(string),
+            ["tsquery"] = typeof(string),
+            ["xml"] = typeof(string),
+            ["json"] = typeof(string),
+            ["name"] = typeof(string),
+            ["character"] = typeof(string),
+            ["char"] = typeof(string),
 
-                { "inet", typeof(System.Net.IPAddress) },
-                { "cidr", typeof(string) },
+            ["inet"] = typeof(System.Net.IPAddress),
+            ["cidr"] = typeof(string),
 
-                { "date", typeof(DateTime) },
-                { "datetime", typeof(DateTime) }, // included for tranlating T-SQL to PG/PSQL
-                { "datetime2", typeof(DateTime) }, // included for tranlating T-SQL to PG/PSQL
+            ["date"] = typeof(DateTime),
+            ["datetime"] = typeof(DateTime), // included for tranlating T-SQL to PG/PSQL
+            ["datetime2"] = typeof(DateTime), // included for tranlating T-SQL to PG/PSQL
 
-                { "double precision", typeof(double) },
-                { "float8", typeof(double) },
+            ["double precision"] = typeof(double),
+            ["float8"] = typeof(double),
 
-                { "integer", typeof(int) },
-                { "int", typeof(int) },
-                { "int4", typeof(int) },
-                { "serial", typeof(int) },
-                { "serial4", typeof(int) },
+            ["integer"] = typeof(int),
+            ["int"] = typeof(int),
+            ["int4"] = typeof(int),
+            ["serial"] = typeof(int),
+            ["serial4"] = typeof(int),
 
-                { "interval", typeof(TimeSpan) },
+            ["interval"] = typeof(TimeSpan),
 
-                { "money", typeof(decimal) },
-                { "numeric", typeof(decimal) },
+            ["money"] = typeof(decimal),
+            ["numeric"] = typeof(decimal),
 
-                { "real", typeof(float) },
-                { "float4", typeof(float) },
+            ["real"] = typeof(float),
+            ["float4"] = typeof(float),
 
-                { "smallint", typeof(short) },
-                { "int2", typeof(short) },
-                { "smallserial", typeof(short) },
-                { "serial2", typeof(short) },
+            ["smallint"] = typeof(short),
+            ["int2"] = typeof(short),
+            ["smallserial"] = typeof(short),
+            ["serial2"] = typeof(short),
 
-                { "time", typeof(DateTime) },
-                { "time with time zone", typeof(DateTime) },
-                { "timestamp", typeof(DateTime) },
-                { "timestamp with time zone", typeof(DateTime) },
+            ["time"] = typeof(DateTime),
+            ["time with time zone"] = typeof(DateTime),
+            ["timestamp"] = typeof(DateTime),
+            ["timestamp with time zone"] = typeof(DateTime),
 
-                { "uuid", typeof(Guid) },
-                { "uniqueidentifier", typeof(Guid) }, // included for tranlating T-SQL to PG/PSQL
+            ["uuid"] = typeof(Guid),
+            ["uniqueidentifier"] = typeof(Guid), // included for tranlating T-SQL to PG/PSQL
 
-                { "box", typeof(NpgsqlTypes.NpgsqlBox) },
-                { "circle", typeof(NpgsqlTypes.NpgsqlCircle) },
-                { "lseg", typeof(NpgsqlTypes.NpgsqlLSeg) },
-                { "macaddr", typeof(string) },
-                { "path", typeof(NpgsqlTypes.NpgsqlPath) },
-                { "point", typeof(NpgsqlTypes.NpgsqlPoint) },
-                { "polygon", typeof(NpgsqlTypes.NpgsqlPolygon) },
-                { "geometry", typeof(string) },
-                { "geography", typeof(string) },
-                { "tsvector", typeof(string) }
-            };
+            ["box"] = typeof(NpgsqlTypes.NpgsqlBox),
+            ["circle"] = typeof(NpgsqlTypes.NpgsqlCircle),
+            ["lseg"] = typeof(NpgsqlTypes.NpgsqlLSeg),
+            ["macaddr"] = typeof(string),
+            ["path"] = typeof(NpgsqlTypes.NpgsqlPath),
+            ["point"] = typeof(NpgsqlTypes.NpgsqlPoint),
+            ["polygon"] = typeof(NpgsqlTypes.NpgsqlPolygon),
+            ["geometry"] = typeof(string),
+            ["geography"] = typeof(string),
+            ["tsvector"] = typeof(string)
+        };
 
-            defaultTypeSizes = new Dictionary<string, int>
-            {
-                { "float4", 24 },
-                { "float8", 53 },
-                { "integer", 32 }
-            };
+        private static readonly Dictionary<string, int> defaultTypeSizes = new Dictionary<string, int>
+        {
+            ["float4"] = 24,
+            ["float8"] = 53,
+            ["integer"] = 32
+        };
 
-            reverseTypeMapping = typeMapping
+
+        private static readonly Dictionary<Type, string> reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
                 .ToDictionary(g => g.Key, g => g.First());
 
+        static PostgresDataAccessLayer()
+        {
             reverseTypeMapping.Add(typeof(int?), "int");
             reverseTypeMapping.Add(typeof(uint), "int");
             reverseTypeMapping.Add(typeof(uint?), "int");

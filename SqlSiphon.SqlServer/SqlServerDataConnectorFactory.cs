@@ -1,6 +1,6 @@
-﻿namespace SqlSiphon.SqlServer
+namespace SqlSiphon.SqlServer
 {
-    [DatabaseVendorName("Microsoft SQL Server")]
+    [DatabaseVendorInfo("Microsoft SQL Server", "SQLCMD", @"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\sqlcmd.exe")]
     public class SqlServerDataConnectorFactory : IDataConnectorFactory
     {
         public IDataConnector MakeConnector(string connectionString)

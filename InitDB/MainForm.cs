@@ -17,19 +17,24 @@ namespace InitDB
         public const string DEFAULT_SESSION_NAME = "<none>";
         private const string SESSIONS_FILENAME = "sessions.dat";
         private const string OPTIONS_FILENAME = "options.dat";
-        private const string SQLCMD_PATH_KEY = "SQLCMDPATH";
-        private const string PSQL_PATH_KEY = "PGSQLPATH";
         private const string OBJECT_FILTER_KEY = "OBJECTFILTER";
         private const string HORIZONTAL_LINE = "================================================================================";
-        private const string DEFAULT_SQLCMD_PATH = @"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\sqlcmd.exe";
-        private const string DEFAULT_PSQL_PATH = @"C:\Program Files\PostgreSQL\9.3\bin\psql.exe";
         private const string DEFAULT_OBJECT_FILTER = @"^(vw_)?aspnet_";
 
-        private static readonly Type[] CONNECTION_TYPES = new Type[]
+        public static readonly Type[] CONNECTION_TYPES = GetConnectionTypes().ToArray();
+        private static IEnumerable<Type> GetConnectionTypes()
         {
-            typeof(SqlSiphon.SqlServer.SqlServerDataConnectorFactory),
-            typeof(SqlSiphon.Postgres.PostgresDataConnectorFactory)
-        };
+            return from directory in new FileInfo(Application.ExecutablePath)
+                             .Directory
+                             .GetDirectories()
+                   where directory.Name == "Drivers"
+                   from file in directory.GetFiles("*.dll")
+                   let assembly = Assembly.LoadFile(file.FullName)
+                   from type in assembly.GetTypes()
+                   let interfaces = type.GetInterfaces()
+                   where interfaces.Contains(typeof(IDataConnectorFactory))
+                   select type;
+        }
 
         private static string UnrollStackTrace(Exception e)
         {
@@ -59,9 +64,7 @@ namespace InitDB
         public MainForm()
         {
             InitializeComponent();
-            databaseTypeList.DataSource = MainForm.CONNECTION_TYPES
-                .Select(DataConnector.GetDatabaseTypeName)
-                .ToArray();
+            databaseTypeList.DataSource = CONNECTION_TYPES.Select(DataConnector.GetDatabaseVendorName).ToArray();
             pendingScriptsGV.AutoGenerateColumns = false;
             initialScriptsGV.AutoGenerateColumns = false;
             finalScriptsGV.AutoGenerateColumns = false;
@@ -74,13 +77,12 @@ namespace InitDB
             }
             Icon = Properties.Resources.InitDBLogo;
             statusRTB.Text = string.Empty;
-            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var assembly = Assembly.GetExecutingAssembly();
             var version = assembly.GetName().Version;
             Text += " v" + version.ToString(4);
             LoadSessions();
             LoadOptions();
-            optionsDialog.BrowsePSQLPathClick += optionsDialog_BrowsePSQLPathClick;
-            optionsDialog.BrowseSQLCMDPathClick += optionsDialog_BrowseSQLCMDPathClick;
+            optionsDialog.BrowseCommandPathClick += optionsDialog_BrowseCommandPathClick;
         }
 
         public DataConnector MakeDatabaseConnection()
@@ -91,11 +93,12 @@ namespace InitDB
             if (File.Exists(assemblyTB.Text))
             {
                 var ss = typeof(IDataConnector);
-                var assembly = System.Reflection.Assembly.LoadFrom(assemblyTB.Text);
-                var candidateTypes = assembly.GetTypes()
-                    .Where(t => t.GetInterfaces().Contains(ss)
-                                && !t.IsAbstract
-                                && !t.IsInterface).ToArray();
+                var assembly = Assembly.LoadFrom(assemblyTB.Text);
+                var candidateTypes = (from t in assembly.GetTypes()
+                                      where t.GetInterfaces().Contains(ss)
+                                                  && !t.IsAbstract
+                                                  && !t.IsInterface
+                                      select t).ToArray();
                 ConstructorInfo constructor = null;
                 object[] constructorArgs = null;
                 foreach (var type in candidateTypes)
@@ -103,8 +106,8 @@ namespace InitDB
                     SyncUI(() =>
                     {
                         var factoryType = CONNECTION_TYPES[databaseTypeList.SelectedIndex];
-                        var factoryConstructor = factoryType.GetConstructor(System.Type.EmptyTypes);
-                        var factory = (IDataConnectorFactory)factoryConstructor.Invoke(System.Type.EmptyTypes);
+                        var factoryConstructor = factoryType.GetConstructor(Type.EmptyTypes);
+                        var factory = (IDataConnectorFactory)factoryConstructor.Invoke(Type.EmptyTypes);
                         var connector = factory.MakeConnector(serverTB.Text, databaseTB.Text, adminUserTB.Text, adminPassTB.Text);
                         constructorArgs = new object[] { connector };
                         constructor = type.GetConstructor(constructorParams);
@@ -215,8 +218,15 @@ namespace InitDB
 
         private void DisplayOptions()
         {
-            optionsDialog.SQLCMDPath = CoalesceOption(SQLCMD_PATH_KEY, DEFAULT_SQLCMD_PATH);
-            optionsDialog.PSQLPath = CoalesceOption(PSQL_PATH_KEY, DEFAULT_PSQL_PATH);
+            optionsDialog.SetTypes(CONNECTION_TYPES);
+
+            foreach (var type in CONNECTION_TYPES)
+            {
+                var name = DataConnector.GetDatabaseVendorName(type);
+                var path = DataConnector.GetDatabaseCommandDefaultPath(type);
+                optionsDialog.SetPath(name, CoalesceOption(name, path));
+            }
+
             optionsDialog.DefaultObjectFilterRegexText = CoalesceOption(OBJECT_FILTER_KEY, DEFAULT_OBJECT_FILTER);
         }
 
@@ -322,25 +332,27 @@ namespace InitDB
 
         private bool PathsAreCorrect()
         {
-            var sqlcmdGood = File.Exists(optionsDialog.SQLCMDPath);
-            var psqlGood = File.Exists(optionsDialog.PSQLPath);
+            var cmdGood = CONNECTION_TYPES
+                .Select(DataConnector.GetDatabaseVendorName)
+                .ToDictionary(
+                    name => name,
+                    name => File.Exists(optionsDialog.GetPath(name)));
+
+            foreach (var kv in cmdGood)
+            {
+                if (!kv.Value)
+                {
+                    ToError($"Can't find {kv.Key} command line utility");
+                }
+            }
+
             var assemblyGood = File.Exists(assemblyTB.Text);
-            if (!psqlGood)
-            {
-                ToError("Can't find PSQL");
-            }
-
-            if (!sqlcmdGood)
-            {
-                ToError("Can't find SQLCMD");
-            }
-
             if (!assemblyGood)
             {
                 ToError("Can't find Assembly");
             }
 
-            return psqlGood && sqlcmdGood && assemblyGood;
+            return cmdGood.All(kv => kv.Value) && assemblyGood;
         }
 
         private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
@@ -391,7 +403,7 @@ namespace InitDB
                 db.OnStandardOutput += db_OnStandardOutput;
                 succeeded = db.RunCommandLine(
                     GetExecutable(db),
-                    System.Windows.Forms.Application.UserAppDataPath,
+                    Application.UserAppDataPath,
                     serverTB.Text,
                     script.ScriptType == ScriptType.InstallExtension ? databaseTB.Text : null,
                     adminUserTB.Text,
@@ -501,14 +513,9 @@ namespace InitDB
             assemblyTB.Text = BrowseFrom(assemblyTB.Text) ?? assemblyTB.Text;
         }
 
-        private void optionsDialog_BrowseSQLCMDPathClick(object sender, EventArgs e)
+        private void optionsDialog_BrowseCommandPathClick(object sender, BrowseCommandPathEventArgs args)
         {
-            optionsDialog.SQLCMDPath = BrowseFrom(optionsDialog.SQLCMDPath) ?? optionsDialog.SQLCMDPath;
-        }
-
-        private void optionsDialog_BrowsePSQLPathClick(object sender, EventArgs e)
-        {
-            optionsDialog.PSQLPath = BrowseFrom(optionsDialog.PSQLPath) ?? optionsDialog.PSQLPath;
+            optionsDialog.SetPath(args.TypeName, BrowseFrom(args.Path) ?? args.Path);
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -596,7 +603,7 @@ namespace InitDB
                     assemblyTB.Text = CurrentSession.AssemblyFile;
                     objFilterTB.Text = CurrentSession.ObjectFilter ?? optionsDialog.DefaultObjectFilterRegexText;
                     databaseTypeList.SelectedIndex = CurrentSession.DatabaseTypeIndex;
-                    var st = CurrentSession.ScriptTypes ?? new ScriptType[] { };
+                    var st = CurrentSession.ScriptTypes ?? Array.Empty<ScriptType>();
                     for (var i = 0; i < filterTypesCBL.Items.Count; ++i)
                     {
                         filterTypesCBL.SetItemChecked(i, st.Contains((ScriptType)filterTypesCBL.Items[i]));
@@ -699,10 +706,14 @@ namespace InitDB
 
         private void optionsBtn_Click(object sender, EventArgs e)
         {
-            if (optionsDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (optionsDialog.ShowDialog() == DialogResult.OK)
             {
-                options[SQLCMD_PATH_KEY] = optionsDialog.SQLCMDPath;
-                options[PSQL_PATH_KEY] = optionsDialog.PSQLPath;
+                foreach (var type in CONNECTION_TYPES)
+                {
+                    var name = DataConnector.GetDatabaseVendorName(type);
+                    options[name] = optionsDialog.GetPath(name);
+                }
+
                 options[OBJECT_FILTER_KEY] = optionsDialog.DefaultObjectFilterRegexText;
                 File.WriteAllLines(OPTIONS_FILENAME,
                     options.Select(kv => string.Join("=", kv.Key, kv.Value)).ToArray());
@@ -754,17 +765,18 @@ namespace InitDB
             }
         }
 
-        private string GetExecutable(IDataConnector connector)
+        private string GetExecutable(ISqlSiphon connector)
         {
-            if (connector is SqlSiphon.Postgres.PostgresDataAccessLayer)
-            {
-                return optionsDialog.PSQLPath;
-            }
-            else if (connector is SqlSiphon.SqlServer.SqlServerDataAccessLayer)
-            {
-                return optionsDialog.SQLCMDPath;
-            }
-            return null;
+            var type = connector.GetType();
+            var asm = type.Assembly;
+            var factoryType = (from t in asm.GetTypes()
+                              let interfaces = t.GetInterfaces()
+                              where interfaces.Contains(typeof(IDataConnectorFactory))
+                              select t)
+                            .FirstOrDefault();
+
+            var name = DataConnector.GetDatabaseVendorName(factoryType);
+            return optionsDialog.GetPath(name);
         }
 
         private bool WithErrorCapture(Func<bool> act, Func<Exception, string> errorHandler = null)

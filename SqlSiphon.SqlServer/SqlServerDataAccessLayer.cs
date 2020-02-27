@@ -83,7 +83,7 @@ namespace SqlSiphon.SqlServer
 
         public override string MakeConnectionString(string server, string database, string userName, string password)
         {
-            var builder = new System.Data.SqlClient.SqlConnectionStringBuilder
+            var builder = new SqlConnectionStringBuilder
             {
                 DataSource = server,
                 InitialCatalog = database

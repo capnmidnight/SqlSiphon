@@ -15,10 +15,32 @@
     <PackageReference Include="jacobslusser.ScintillaNET" Version="3.6.3" />
     <PackageReference Include="MySql.Data" Version="6.9.6" />
     <PackageReference Include="Npgsql" Version="2.2.7" />
-
-    <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj" />
-    <ProjectReference Include="..\SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj" />
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Drivers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Drivers\Mono.Security.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Drivers\Npgsql.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Drivers\SqlSiphon.Postgres.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Drivers\SqlSiphon.Postgres.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Drivers\SqlSiphon.SqlServer.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Drivers\SqlSiphon.SqlServer.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   
 </Project>

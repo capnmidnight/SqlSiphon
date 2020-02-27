@@ -8,10 +8,22 @@ namespace SqlSiphon
 {
     public abstract class DataConnector : IDataConnector
     {
-        public static string GetDatabaseTypeName(Type t)
+        public static string GetDatabaseVendorName(Type t)
         {
-            var attr = Mapping.DatabaseObjectAttribute.GetAttribute<DatabaseVendorNameAttribute>(t);
+            var attr = Mapping.DatabaseObjectAttribute.GetAttribute<DatabaseVendorInfoAttribute>(t);
             return attr?.Name;
+        }
+
+        public static string GetDatabaseCommandName(Type t)
+        {
+            var attr = Mapping.DatabaseObjectAttribute.GetAttribute<DatabaseVendorInfoAttribute>(t);
+            return attr?.ToolName;
+        }
+
+        public static string GetDatabaseCommandDefaultPath(Type t)
+        {
+            var attr = Mapping.DatabaseObjectAttribute.GetAttribute<DatabaseVendorInfoAttribute>(t);
+            return attr?.DefaultPath;
         }
 
         public static bool IsNullableValueType(Type type)

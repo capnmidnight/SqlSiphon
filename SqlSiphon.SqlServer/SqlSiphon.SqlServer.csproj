@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <RootNamespace>SqlSiphon.SqlServer</RootNamespace>
@@ -8,5 +8,9 @@
   <ItemGroup>
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec ContinueOnError="true" Command="XCOPY &quot;$(TargetDir)*&quot; &quot;$(ProjectDir)..\InitDB\Drivers&quot; /exclude:$(ProjectDir)excludeFromInitDB.txt /C /I /F /Y" />
+  </Target>
   
 </Project>
