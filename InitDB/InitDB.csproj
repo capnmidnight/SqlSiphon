@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -22,25 +22,8 @@
     <Folder Include="Drivers\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Drivers\Mono.Security.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Drivers\Npgsql.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Drivers\SqlSiphon.Postgres.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Drivers\SqlSiphon.Postgres.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Drivers\SqlSiphon.SqlServer.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Drivers\SqlSiphon.SqlServer.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec ContinueOnError="true" Command="XCOPY &quot;$(ProjectDir)Drivers\*&quot; &quot;$(TargetDir)Drivers&quot; /C /I /F /Y" />
+  </Target>
   
 </Project>
