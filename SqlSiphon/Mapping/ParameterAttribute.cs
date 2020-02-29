@@ -88,11 +88,11 @@ namespace SqlSiphon.Mapping
             switch (parameter.parameter_mode)
             {
                 case "OUT":
-                    Direction = ParameterDirection.Output;
-                    break;
+                Direction = ParameterDirection.Output;
+                break;
                 case "INOUT":
-                    Direction = ParameterDirection.InputOutput;
-                    break;
+                Direction = ParameterDirection.InputOutput;
+                break;
             }
 
             IsUDTT = parameter.user_defined_type_name != null;

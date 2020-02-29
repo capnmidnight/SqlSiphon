@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+
 using SqlSiphon;
 
 namespace InitDB
@@ -51,7 +52,7 @@ namespace InitDB
                 textBoxes[name] = txtBox;
                 controls.Add(txtBox);
                 tableLayoutPanel1.Controls.Add(txtBox, 1, y);
-                
+
                 var btn = new Button();
                 controls.Add(btn);
                 btn.Text = "Browse";

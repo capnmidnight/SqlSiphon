@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Runtime.CompilerServices;
+
 using SqlSiphon.Mapping;
 
 namespace SqlSiphon.OleDB.Test
 {
-    class TestDatabase : DataConnector
+    internal class TestDatabase : DataConnector
     {
         public TestDatabase(string fileName)
             : base(new OleDBDataConnectorFactory().MakeConnector(fileName))
@@ -16,8 +16,8 @@ namespace SqlSiphon.OleDB.Test
 
         protected void GenerateAndExecuteScripts<T>(Func<DatabaseState, Dictionary<string, T>> getter, Func<IDatabaseScriptGenerator, T, string> maker)
         {
-            var ss = this.GetSqlSiphon();
-            var final = new DatabaseState(new Type[] { this.GetType() }, ss, ss, null, null);
+            var ss = GetSqlSiphon();
+            var final = new DatabaseState(new Type[] { GetType() }, ss, ss, null, null);
             foreach (var o in getter(final))
             {
                 ss.AlterDatabase(new ScriptStatus(ScriptType.None, null, maker(ss, o.Value), null));
@@ -40,7 +40,7 @@ namespace SqlSiphon.OleDB.Test
             Query = "select * from test_table order by id")]
         public List<TestEntity> TestCreateFunction()
         {
-            return this.GetList<TestEntity>();
+            return GetList<TestEntity>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
@@ -49,7 +49,7 @@ namespace SqlSiphon.OleDB.Test
             Query = "select * from test_table order by id")]
         public List<TestEntity> GetNames()
         {
-            return this.GetList<TestEntity>();
+            return GetList<TestEntity>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
@@ -58,7 +58,7 @@ namespace SqlSiphon.OleDB.Test
             Query = "select name from test_table order by id")]
         public List<string> GetNamesPrimitiveByIndex()
         {
-            return this.GetList<string>();
+            return GetList<string>();
         }
 
         [Routine(
@@ -67,7 +67,7 @@ namespace SqlSiphon.OleDB.Test
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public TestEntity GetName(int userid)
         {
-            return this.Get<TestEntity>(userid);
+            return Get<TestEntity>(userid);
         }
 
 
@@ -77,7 +77,7 @@ namespace SqlSiphon.OleDB.Test
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public TestEntity FindName(int userid)
         {
-            return this.Get<TestEntity>(userid);
+            return Get<TestEntity>(userid);
         }
 
         [Routine(
@@ -86,7 +86,7 @@ namespace SqlSiphon.OleDB.Test
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public void UpdateName(int userid, string username)
         {
-            this.Execute(userid, username);
+            Execute(userid, username);
         }
 
         [Routine(
@@ -95,7 +95,7 @@ namespace SqlSiphon.OleDB.Test
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public void DeleteName(int userid)
         {
-            this.Execute(userid);
+            Execute(userid);
         }
 
         [Routine(
@@ -104,7 +104,7 @@ namespace SqlSiphon.OleDB.Test
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public void DropNamesTable()
         {
-            this.Execute();
+            Execute();
         }
 
         [Routine(
@@ -113,7 +113,7 @@ namespace SqlSiphon.OleDB.Test
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.Synchronized)]
         public void InsertName(string username)
         {
-            this.Execute(username);
+            Execute(username);
         }
     }
 }

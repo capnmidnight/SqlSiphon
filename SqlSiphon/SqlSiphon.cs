@@ -84,9 +84,9 @@ namespace SqlSiphon
 
         private readonly Regex FKNameRegex;
 
-        protected virtual string IdentifierPartBegin { get { return ""; } }
-        protected virtual string IdentifierPartEnd { get { return ""; } }
-        protected virtual string IdentifierPartSeperator { get { return "."; } }
+        protected virtual string IdentifierPartBegin => "";
+        protected virtual string IdentifierPartEnd => "";
+        protected virtual string IdentifierPartSeperator => ".";
 
         public ConnectionT Connection { get; private set; }
 

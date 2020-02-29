@@ -1,4 +1,5 @@
 using NUnit.Framework;
+
 using SqlSiphon.TestBase;
 
 
@@ -16,7 +17,7 @@ namespace SqlSiphon.OleDB.Test
             return db;
         }
 
-        void db_Disposed(object sender, System.EventArgs e)
+        private void db_Disposed(object sender, System.EventArgs e)
         {
             System.Diagnostics.Process.Start("cmd", "/C del " + TEST_FILE_NAME);
         }

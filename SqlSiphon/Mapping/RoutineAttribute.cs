@@ -75,7 +75,7 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public List<ParameterAttribute> Parameters { get; private set; }
 
-        private MethodInfo OriginalMethod { get { return (MethodInfo)SourceObject; } }
+        private MethodInfo OriginalMethod => (MethodInfo)SourceObject;
 
         /// <summary>
         /// Default constructor to set default values;

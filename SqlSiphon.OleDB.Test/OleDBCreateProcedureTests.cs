@@ -1,5 +1,5 @@
-using System;
 using NUnit.Framework;
+
 using SqlSiphon.TestBase;
 
 namespace SqlSiphon.OleDB.Test
@@ -15,12 +15,12 @@ namespace SqlSiphon.OleDB.Test
         [TestCase]
         public override void EmptyStoredProcedure()
         {
-            var script = this.GetScript();
+            var script = GetScript();
             Assert.AreEqual(@"create procedure [EmptyStoredProcedure] as -- nothing here", script);
         }
 
         [TestCase]
-        public override void GetEmptyTable() 
+        public override void GetEmptyTable()
         {
             Assert.Throws<TableHasNoColumnsException>(() =>
             {

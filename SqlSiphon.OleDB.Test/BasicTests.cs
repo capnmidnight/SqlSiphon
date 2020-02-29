@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Runtime.CompilerServices;
+
 using NUnit.Framework;
-using SqlSiphon.Mapping;
 
 namespace SqlSiphon.OleDB.Test
 {
@@ -22,7 +19,10 @@ namespace SqlSiphon.OleDB.Test
                 d.CreateTables();
                 d.CreateProcedures();
                 var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-                foreach (var name in expected) d.InsertName(name);
+                foreach (var name in expected)
+                {
+                    d.InsertName(name);
+                }
             }
             else
             {
@@ -43,7 +43,7 @@ namespace SqlSiphon.OleDB.Test
         {
             var names = d.GetNames();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            for (int i = 0; i < expected.Length; ++i)
+            for (var i = 0; i < expected.Length; ++i)
             {
                 Assert.AreEqual(expected[i], names[i].name);
             }
@@ -54,7 +54,7 @@ namespace SqlSiphon.OleDB.Test
         {
             var names = d.GetNamesPrimitiveByIndex();
             var expected = new string[] { "sean", "dave", "mike", "carl", "paul", "neil", "mark" };
-            for (int i = 0; i < expected.Length; ++i)
+            for (var i = 0; i < expected.Length; ++i)
             {
                 Assert.AreEqual(expected[i], names[i]);
             }

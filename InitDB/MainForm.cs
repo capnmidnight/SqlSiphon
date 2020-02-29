@@ -41,7 +41,7 @@ namespace InitDB
                         {
                             types = assembly.GetTypes();
                         }
-                        catch(ReflectionTypeLoadException exp)
+                        catch (ReflectionTypeLoadException exp)
                         {
                             types = exp.Types.Where(t => t != null).ToArray();
                         }
@@ -793,9 +793,9 @@ namespace InitDB
             var type = connector.GetType();
             var asm = type.Assembly;
             var factoryType = (from t in asm.GetTypes()
-                              let interfaces = t.GetInterfaces()
-                              where interfaces.Contains(typeof(IDataConnectorFactory))
-                              select t)
+                               let interfaces = t.GetInterfaces()
+                               where interfaces.Contains(typeof(IDataConnectorFactory))
+                               select t)
                             .FirstOrDefault();
 
             var name = DataConnector.GetDatabaseVendorName(factoryType);

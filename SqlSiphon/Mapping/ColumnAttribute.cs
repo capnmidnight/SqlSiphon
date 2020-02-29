@@ -99,7 +99,7 @@ namespace SqlSiphon.Mapping
             InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
         }
 
-        private PropertyInfo originalProperty { get { return (PropertyInfo)SourceObject; } }
+        private PropertyInfo originalProperty => (PropertyInfo)SourceObject;
 
         public void SetValue(object obj, object value)
         {

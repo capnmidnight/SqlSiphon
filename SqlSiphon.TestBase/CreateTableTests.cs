@@ -77,7 +77,7 @@ namespace SqlSiphon.TestBase
         public abstract void CantCreateEmptyTables();
 
         public abstract void CantCreateNullablePK();
-        
+
         public abstract void CantCreatePKWithMAXString();
 
         public abstract void CreateSingleColumnTable();
