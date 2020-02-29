@@ -24,16 +24,39 @@ namespace InitDB
         public static readonly Type[] CONNECTION_TYPES = GetConnectionTypes().ToArray();
         private static IEnumerable<Type> GetConnectionTypes()
         {
-            return from directory in new FileInfo(Application.ExecutablePath)
+            var assemblies = new List<Assembly>();
+
+            foreach (var directory in new FileInfo(Application.ExecutablePath)
                              .Directory
-                             .GetDirectories()
-                   where directory.Name == "Drivers"
-                   from file in directory.GetFiles("*.dll")
-                   let assembly = Assembly.LoadFile(file.FullName)
-                   from type in assembly.GetTypes()
-                   let interfaces = type.GetInterfaces()
-                   where interfaces.Contains(typeof(IDataConnectorFactory))
-                   select type;
+                             .GetDirectories())
+            {
+                if (directory.Name == "Drivers")
+                {
+                    foreach (var file in directory.GetFiles("*.dll"))
+                    {
+                        var assembly = Assembly.LoadFile(file.FullName);
+                        assemblies.Add(assembly);
+                        Type[] types = null;
+                        try
+                        {
+                            types = assembly.GetTypes();
+                        }
+                        catch(ReflectionTypeLoadException exp)
+                        {
+                            types = exp.Types.Where(t => t != null).ToArray();
+                        }
+
+                        foreach (var type in types)
+                        {
+                            var interfaces = type.GetInterfaces();
+                            if (interfaces.Contains(typeof(IDataConnectorFactory)))
+                            {
+                                yield return type;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private static string UnrollStackTrace(Exception e)
