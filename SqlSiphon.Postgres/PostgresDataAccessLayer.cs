@@ -193,15 +193,15 @@ namespace SqlSiphon.Postgres
 
         public override string MakeConnectionString(string server, string database, string userName, string password)
         {
-            var builder = new Npgsql.NpgsqlConnectionStringBuilder
+            var builder = new NpgsqlConnectionStringBuilder
             {
-                Database = database.ToLower()
+                Database = database.ToLowerInvariant()
             };
 
             if (!string.IsNullOrWhiteSpace(userName)
                 && !string.IsNullOrWhiteSpace(password))
             {
-                builder.UserName = userName.Trim();
+                builder.Add("Username", userName.Trim());
                 builder.Add("Password", password.Trim());
             }
 

@@ -1,7 +1,11 @@
 # Overview
-SqlSiphon is an ADO.NET wrapper that simplifies the process of connecting to MS SQL Server, MySQL, PostgreSQL, and OleDB-compliant databases and executing stored procedures (for SQL Server and MySQL) or text queries on them. It's been running in one iteration or another in about 20 different production systems for the last 7 years.
+SqlSiphon is an ADO.NET wrapper that simplifies the process of connecting to MS SQL Server,
+MySQL, PostgreSQL, and OleDB-compliant databases and executing stored procedures (for SQL
+Server and MySQL) or text queries on them.
 
-The project's core ethos is pretty simple: keep everything to the most basic datatypes possible. SqlSiphon is not an Object-Relational Mapping (ORM) system. It is a system for simplifying the strict use of relational SQL in applications and assist in the management of database change.
+The project's core ethos is pretty simple: keep everything to the most basic datatypes possible.
+SqlSiphon is not an Object-Relational Mapping (ORM) system. It is a system for simplifying the
+strict use of relational SQL in applications and assist in the management of database change.
 
 ## Features
 * Succinct execution of arbitrary SQL through ADO.NET without disposable object leaks.
@@ -13,7 +17,7 @@ The project's core ethos is pretty simple: keep everything to the most basic dat
 * Bulk insert with:
   * SQL Server table-value parameters
   * PostgreSQL array parameters
-  * 
+
 ## Database support
 Currently, it has been tested and used regularly with:
 * MS SQL Server:
@@ -34,7 +38,5 @@ Currently, it has been tested and used regularly with:
   * SQLite
   * SqlAnywhere
   * Generic ODBC drivers (code exists, but is untested)
-* Automatic generation of Foreign Key relationships
 * Postgres and MySQL schema management and migration
-* Data migration tool
 * Query structure analyzer

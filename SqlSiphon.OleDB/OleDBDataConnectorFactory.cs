@@ -1,6 +1,6 @@
-﻿namespace SqlSiphon.OleDB
+namespace SqlSiphon.OleDB
 {
-    [DatabaseVendorName("Microsoft Access 97")]
+    [DatabaseVendorInfo("Microsoft Access 97", null, null)]
     public class OleDBDataConnectorFactory : IDataConnectorFactory
     {
         public IDataConnector MakeConnector(string fileName)

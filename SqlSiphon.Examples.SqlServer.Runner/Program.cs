@@ -20,7 +20,7 @@ namespace SqlSiphon.Examples.SqlServer.Runner
             using var db = new BasicDAL();
             foreach (var factory in factories)
             {
-                var dbTypeName = DataConnector.GetDatabaseTypeName(factory.GetType());
+                var dbTypeName = DataConnector.GetDatabaseVendorName(factory.GetType());
                 var server = "localhost";
                 if (factory is SqlSiphon.SqlServer.SqlServerDataConnectorFactory)
                 {

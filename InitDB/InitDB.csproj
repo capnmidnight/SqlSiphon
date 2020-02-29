@@ -13,8 +13,6 @@
     <Reference Include="System.Windows.Forms" />
     
     <PackageReference Include="jacobslusser.ScintillaNET" Version="3.6.3" />
-    <PackageReference Include="MySql.Data" Version="6.9.6" />
-    <PackageReference Include="Npgsql" Version="2.2.7" />
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj" />
   </ItemGroup>
 
