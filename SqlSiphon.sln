@@ -3,34 +3,26 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon", "SqlSiphon\SqlSiphon.csproj", "{136933A4-27E3-4CBF-84F8-8898447A3D8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSiphon", "SqlSiphon\SqlSiphon.csproj", "{136933A4-27E3-4CBF-84F8-8898447A3D8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Postgres", "SqlSiphon.Postgres\SqlSiphon.Postgres.csproj", "{175A4D4A-2C9D-4EDD-B9CC-7ADC3322CC1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSiphon.Postgres", "SqlSiphon.Postgres\SqlSiphon.Postgres.csproj", "{175A4D4A-2C9D-4EDD-B9CC-7ADC3322CC1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.SqlServer", "SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj", "{1C09319B-01E7-4F56-B29B-61FD4E546F54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSiphon.SqlServer", "SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj", "{1C09319B-01E7-4F56-B29B-61FD4E546F54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InitDB", "InitDB\InitDB.csproj", "{27BD4F0D-5652-4B3E-9BE4-33ED0F2DFBA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InitDB", "InitDB\InitDB.csproj", "{27BD4F0D-5652-4B3E-9BE4-33ED0F2DFBA1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{38251332-2C6D-413A-AA3A-88BA110B3D4F} = {38251332-2C6D-413A-AA3A-88BA110B3D4F}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples.Runner", "SqlSiphon.Examples.SqlServer.Runner\SqlSiphon.Examples.Runner.csproj", "{03563419-53BF-4076-A350-2B6392A38CB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSiphon.Examples.Runner", "SqlSiphon.Examples.SqlServer.Runner\SqlSiphon.Examples.Runner.csproj", "{03563419-53BF-4076-A350-2B6392A38CB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Examples", "SqlSiphon.Examples\SqlSiphon.Examples.csproj", "{38251332-2C6D-413A-AA3A-88BA110B3D4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSiphon.Examples", "SqlSiphon.Examples\SqlSiphon.Examples.csproj", "{38251332-2C6D-413A-AA3A-88BA110B3D4F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.OleDB", "SqlSiphon.OleDB\SqlSiphon.OleDB.csproj", "{CDBFA667-30DD-403F-B265-7FD5210CBA13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSiphon.Postgres.Test", "SqlSiphon.Postgres.Test\SqlSiphon.Postgres.Test.csproj", "{365B028B-B01D-4F07-8DE1-DE09E7381519}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.MySql", "SqlSiphon.MySql\SqlSiphon.MySql.csproj", "{C103798D-9CBB-402C-BF99-32A7A150FD4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSiphon.SqlServer.Test", "SqlSiphon.SqlServer.Test\SqlSiphon.SqlServer.Test.csproj", "{89012BC0-2781-4AB0-92E0-BA128C8D2507}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.ODBC", "SqlSiphon.ODBC\SqlSiphon.ODBC.csproj", "{E493A431-5F12-4D34-8CC4-6DF0D97ED388}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.OleDB.Test", "SqlSiphon.OleDB.Test\SqlSiphon.OleDB.Test.csproj", "{6616AC18-C493-4177-A27F-177424715C83}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.Postgres.Test", "SqlSiphon.Postgres.Test\SqlSiphon.Postgres.Test.csproj", "{365B028B-B01D-4F07-8DE1-DE09E7381519}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.SqlServer.Test", "SqlSiphon.SqlServer.Test\SqlSiphon.SqlServer.Test.csproj", "{89012BC0-2781-4AB0-92E0-BA128C8D2507}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSiphon.TestBase", "SqlSiphon.TestBase\SqlSiphon.TestBase.csproj", "{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSiphon.TestBase", "SqlSiphon.TestBase\SqlSiphon.TestBase.csproj", "{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8E0BCDC1-BDC9-443C-A413-0E7B5F39CBF0}"
 	ProjectSection(SolutionItems) = preProject
@@ -122,54 +114,6 @@ Global
 		{38251332-2C6D-413A-AA3A-88BA110B3D4F}.Release|x64.Build.0 = Release|Any CPU
 		{38251332-2C6D-413A-AA3A-88BA110B3D4F}.Release|x86.ActiveCfg = Release|Any CPU
 		{38251332-2C6D-413A-AA3A-88BA110B3D4F}.Release|x86.Build.0 = Release|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|x64.Build.0 = Debug|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Debug|x86.Build.0 = Debug|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|x64.ActiveCfg = Release|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|x64.Build.0 = Release|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|x86.ActiveCfg = Release|Any CPU
-		{CDBFA667-30DD-403F-B265-7FD5210CBA13}.Release|x86.Build.0 = Release|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Debug|x64.Build.0 = Debug|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Debug|x86.Build.0 = Debug|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Release|x64.ActiveCfg = Release|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Release|x64.Build.0 = Release|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Release|x86.ActiveCfg = Release|Any CPU
-		{C103798D-9CBB-402C-BF99-32A7A150FD4B}.Release|x86.Build.0 = Release|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Debug|x64.Build.0 = Debug|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Debug|x86.Build.0 = Debug|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|x64.ActiveCfg = Release|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|x64.Build.0 = Release|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|x86.ActiveCfg = Release|Any CPU
-		{E493A431-5F12-4D34-8CC4-6DF0D97ED388}.Release|x86.Build.0 = Release|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Debug|x64.Build.0 = Debug|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Debug|x86.Build.0 = Debug|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Release|x64.ActiveCfg = Release|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Release|x64.Build.0 = Release|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Release|x86.ActiveCfg = Release|Any CPU
-		{6616AC18-C493-4177-A27F-177424715C83}.Release|x86.Build.0 = Release|Any CPU
 		{365B028B-B01D-4F07-8DE1-DE09E7381519}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{365B028B-B01D-4F07-8DE1-DE09E7381519}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{365B028B-B01D-4F07-8DE1-DE09E7381519}.Debug|x64.ActiveCfg = Debug|Any CPU
