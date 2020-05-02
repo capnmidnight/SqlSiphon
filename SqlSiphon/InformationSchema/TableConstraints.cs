@@ -1,4 +1,4 @@
-﻿namespace SqlSiphon.InformationSchema
+namespace SqlSiphon.InformationSchema
 {
     /// <summary>
     /// This is an entity object for the SQL standard 
@@ -22,7 +22,7 @@
 
         public override string ToString()
         {
-            return string.Format("TableConstraint: {2}.{0}:({1})", constraint_name, constraint_type, table_name);
+            return $"TableConstraint: {table_name}.{constraint_name}:({constraint_type})";
         }
     }
 }

@@ -31,6 +31,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -182,7 +183,7 @@ namespace SqlSiphon.Postgres
         }
 
         public PostgresDataAccessLayer(PostgresDataAccessLayer dal)
-            : base(dal.Connection)
+            : base(dal?.Connection)
         {
         }
 
@@ -193,6 +194,16 @@ namespace SqlSiphon.Postgres
 
         public override string MakeConnectionString(string server, string database, string userName, string password)
         {
+            if (server is null)
+            {
+                throw new ArgumentNullException(nameof(server));
+            }
+
+            if (database is null)
+            {
+                throw new ArgumentNullException(nameof(database));
+            }
+
             var builder = new NpgsqlConnectionStringBuilder
             {
                 Database = database.ToLowerInvariant()
@@ -224,55 +235,75 @@ namespace SqlSiphon.Postgres
 
         public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
         {
+            if (string.IsNullOrEmpty(executablePath))
+            {
+                throw new ArgumentException("message", nameof(executablePath));
+            }
+
+            if (configurationPath is null)
+            {
+                throw new ArgumentNullException(nameof(configurationPath));
+            }
+
+            if (server is null)
+            {
+                throw new ArgumentNullException(nameof(server));
+            }
+
+            if (database is null)
+            {
+                throw new ArgumentNullException(nameof(database));
+            }
+
             if (string.IsNullOrWhiteSpace(adminUser) || string.IsNullOrWhiteSpace(adminPass))
             {
                 throw new Exception("PSQL does not support Windows Authentication. Please provide a username and password for the server process.");
             }
-            else
+
+            if (query is null)
             {
-                if (database != null)
-                {
-                    // Postgres is case-insensitive to database names in general, but
-                    // the psql program is not. You can't make a mixed-case database,
-                    // but psql will not match mixed-case names to their lowercase version.
-                    database = database.ToLower();
-                }
+                throw new ArgumentNullException(nameof(query));
+            }
 
-                query = query.Replace("\"", "\\\"");
+            // Postgres is case-insensitive to database names in general, but
+            // the psql program is not. You can't make a mixed-case database,
+            // but psql will not match mixed-case names to their lowercase version.
+            database = database?.ToLowerInvariant();
 
-                // I prefer colon-separated address/port specifications.
-                string port = null;
-                var i = server.IndexOf(":", StringComparison.InvariantCultureIgnoreCase);
-                if (i > -1)
-                {
-                    port = server.Substring(i + 1);
-                    server = server.Substring(0, i);
-                }
+            query = query.Replace("\"", "\\\"");
 
-                configurationPath = FindConfigurationFile(configurationPath);
+            // I prefer colon-separated address/port specifications.
+            string port = null;
+            var i = server.IndexOf(":", StringComparison.InvariantCultureIgnoreCase);
+            if (i > -1)
+            {
+                port = server.Substring(i + 1);
+                server = server.Substring(0, i);
+            }
 
-                var originalConf = InjectUserCredentials(configurationPath, server, port, database, adminUser, adminPass);
+            configurationPath = FindConfigurationFile(configurationPath);
 
-                var succeeded = false;
-                try
-                {
-                    succeeded = RunProcess(
-                        executablePath,
-                        new string[]{
+            var originalConf = InjectUserCredentials(configurationPath, server, port, database, adminUser, adminPass);
+
+            var succeeded = false;
+            try
+            {
+                succeeded = RunProcess(
+                    executablePath,
+                    new string[]{
                             "-h " + server,
                             string.IsNullOrWhiteSpace(port) ? null : "-p " + port,
                             "-U " + adminUser,
                             (database == null) ? null : "-d " + database,
-                            string.Format("-c \"{0}\"", query)
-                    });
-                }
-                finally
-                {
-                    RevertConfigurationFile(configurationPath, originalConf);
-                }
-
-                return succeeded;
+                            $"-c \"{query}\""
+                });
             }
+            finally
+            {
+                RevertConfigurationFile(configurationPath, originalConf);
+            }
+
+            return succeeded;
         }
 
         private static void RevertConfigurationFile(string configurationPath, string[] originalConf)
@@ -324,18 +355,15 @@ namespace SqlSiphon.Postgres
                 originalConf = File.ReadAllLines(configurationPath);
             }
 
-            var lineToAdd = string.Format(
-                "{0}:{1}:{2}:{3}:{4}",
-                server,
-                port ?? "*",
-                database ?? "*",
-                adminUser,
-                adminPass);
+            port ??= "*";
+            database ??= "*";
+
+            var lineToAdd = $"{server}:{port}:{database}:{adminUser}:{adminPass}";
 
             if (originalConf == null)
             {
                 // No configuration file exists, so make one.
-                originalConf = new string[0];
+                originalConf = Array.Empty<string>();
                 File.WriteAllText(configurationPath, lineToAdd);
             }
             else
@@ -365,7 +393,7 @@ namespace SqlSiphon.Postgres
         {
             if (!defaultTypeSizes.ContainsKey(typeName))
             {
-                throw new Exception(string.Format("I don't know the default type size for `{0}`. Perhaps it is {1}?\n\ndefaultTypeSizes.Add(\"{0}\", {1});\n\n", typeName, testSize));
+                throw new Exception($"I don't know the default type size for `{typeName}`. Perhaps it is {testSize}?\n\ndefaultTypeSizes.Add(\"{typeName}\", {testSize});\n\n");
             }
             return defaultTypeSizes[typeName];
         }
@@ -377,7 +405,7 @@ namespace SqlSiphon.Postgres
             {
                 if (goodParts[i].Length > 63)
                 {
-                    var len = goodParts[i].Length.ToString();
+                    var len = goodParts[i].Length.ToString(CultureInfo.InvariantCulture);
                     var lengthLength = len.Length;
                     goodParts[i] = goodParts[i].Substring(0, 63 - lengthLength) + len;
                 }
@@ -437,17 +465,17 @@ namespace SqlSiphon.Postgres
 
                     if (typeName == null && systemType.Name != "Void")
                     {
-                        throw new Exception(string.Format("Couldn't find type description for type: {0}", systemType?.FullName ?? "N/A"));
+                        var systemTypeName = systemType?.FullName ?? "N/A";
+                        throw new Exception($"Couldn't find type description for type: {systemTypeName}");
                     }
                 }
             }
 
             if (size.HasValue && typeName.IndexOf("(", StringComparison.InvariantCultureIgnoreCase) == -1)
             {
-                var format = precision.HasValue
-                    ? "({0},{1})"
-                    : "({0})";
-                var sizeStr = string.Format(format, size, precision);
+                var sizeStr = precision.HasValue
+                    ? $"({size},{precision})"
+                    : $"({size})";
                 var bracketsIndex = typeName.IndexOf("[]", StringComparison.InvariantCultureIgnoreCase);
                 if (bracketsIndex > -1)
                 {
@@ -468,6 +496,11 @@ namespace SqlSiphon.Postgres
 
         public override bool DescribesIdentity(InformationSchema.Columns column)
         {
+            if (column is null)
+            {
+                throw new ArgumentNullException(nameof(column));
+            }
+
             if (column.column_default != null && column.column_default.IndexOf("nextval", StringComparison.InvariantCultureIgnoreCase) == 0)
             {
                 column.column_default = null;
@@ -479,21 +512,41 @@ namespace SqlSiphon.Postgres
 
         public override string MakeCreateColumnScript(ColumnAttribute prop)
         {
-            return string.Format("alter table if exists {0} add column {1} {2};",
-                MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
-                prop.Name,
-                MakeSqlTypeString(prop));
+            if (prop is null)
+            {
+                throw new ArgumentNullException(nameof(prop));
+            }
+
+            var tableName = MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name);
+            var columnName = MakeIdentifier(prop.Name);
+            var columnType = MakeSqlTypeString(prop);
+            return $"alter table if exists {tableName} add column {columnName} {columnType};";
         }
 
         public override string MakeDropColumnScript(ColumnAttribute prop)
         {
-            return string.Format("alter table if exists {0} drop column if exists {1};",
-                MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
-                MakeIdentifier(prop.Name));
+            if (prop is null)
+            {
+                throw new ArgumentNullException(nameof(prop));
+            }
+
+            var tableName = MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name);
+            var columnName = MakeIdentifier(prop.Name);
+            return $"alter table if exists {tableName} drop column if exists {columnName};";
         }
 
         public override string RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
+            if (a is null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (b is null)
+            {
+                throw new ArgumentNullException(nameof(b));
+            }
+
             var typeA = MakeSqlTypeString(a) ?? "void";
             var changedReturnType = typeA != b.SqlType;
             return changedReturnType ? "IDK" : base.RoutineChanged(a, b);
@@ -515,7 +568,8 @@ namespace SqlSiphon.Postgres
             else
             {
                 var attr = DatabaseObjectAttribute.GetAttribute(baseType) ?? new TableAttribute(baseType);
-                sqlType = string.Format("table ({0})", MakeColumnSection(attr, true));
+                var tableDef = MakeColumnSection(attr, true);
+                sqlType = $"table ({tableDef})";
             }
 
             if (DataConnector.IsTypeCollection(systemType))
@@ -528,48 +582,46 @@ namespace SqlSiphon.Postgres
 
         public override string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial)
         {
-            var preamble = string.Format(
-                "alter table if exists {0}",
-                MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name));
+            if (final is null)
+            {
+                throw new ArgumentNullException(nameof(final));
+            }
+
+            if (initial is null)
+            {
+                throw new ArgumentNullException(nameof(initial));
+            }
+
+            var tableName = MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name);
+            var preamble = $"alter table if exists {tableName}";
+            var columnName = MakeIdentifier(final.Name);
+            var columnType = MakeSqlTypeString(final);
 
             if (final.Include != initial.Include)
             {
-                return string.Format(
-                    "{0} {1} column {2} {3};",
-                    preamble,
-                    final.Include ? "add" : "drop",
-                    MakeIdentifier(final.Name),
-                    final.Include ? MakeSqlTypeString(final) : "")
+                var conditionalColumnType = final.Include ? columnType : "";
+                var op = final.Include ? "add" : "drop";
+                return $"{preamble} {op} column {columnName} {conditionalColumnType};"
                     .Trim();
             }
             else if (final.DefaultValue != initial.DefaultValue)
             {
-                return string.Format(
-                    "{0} alter column {1} {2} default {3};",
-                    preamble,
-                    MakeIdentifier(final.Name),
-                    final.DefaultValue == null ? "drop" : "set",
-                    final.DefaultValue ?? "")
+                var op = final.DefaultValue == null ? "drop" : "set";
+                var defaultValue = final.DefaultValue ?? "";
+                return $"{preamble} alter column {columnName} {op} default {defaultValue};"
                     .Trim();
             }
             else if (final.IsOptional != initial.IsOptional)
             {
-                return string.Format(
-                    "{0} alter column {1} {2} not null;",
-                    preamble,
-                    MakeIdentifier(final.Name),
-                    final.IsOptional ? "drop" : "set");
+                var op = final.IsOptional ? "drop" : "set";
+                return $"{preamble} alter column {columnName} {op} not null;";
             }
             else if (final.SystemType != initial.SystemType
                 || final.Size != initial.Size
                 || final.Precision != initial.Precision
                 || final.IsIdentity != initial.IsIdentity)
             {
-                return string.Format(
-                    "{0} alter column {1} set data type {2};",
-                    preamble,
-                    MakeIdentifier(final.Name),
-                    MakeSqlTypeString(final));
+                return $"{preamble} alter column {columnName} set data type {columnType};";
             }
             else
             {
@@ -581,12 +633,22 @@ namespace SqlSiphon.Postgres
 
         protected override string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial)
         {
+            if (final is null)
+            {
+                throw new ArgumentNullException(nameof(final));
+            }
+
+            if (initial is null)
+            {
+                throw new ArgumentNullException(nameof(initial));
+            }
+
             var valuesMatch = true;
             if (final.SystemType == typeof(bool))
             {
-                var xb = final.DefaultValue.Replace("'", "").ToLower();
+                var xb = final.DefaultValue.Replace("'", "").ToLowerInvariant();
                 var xbb = xb == "true" || xb == "1";
-                var yb = initial.DefaultValue.Replace("'", "").ToLower();
+                var yb = initial.DefaultValue.Replace("'", "").ToLowerInvariant();
                 var ybb = yb == "true" || yb == "1";
                 valuesMatch = xbb == ybb;
             }
@@ -614,12 +676,17 @@ namespace SqlSiphon.Postgres
             }
             else
             {
-                return string.Format("Column default value has changed. Was {0}, now {1}.", initial.DefaultValue, final.DefaultValue);
+                return $"Column default value has changed. Was {initial.DefaultValue}, now {final.DefaultValue}.";
             }
         }
 
         protected override string MakeParameterString(ParameterAttribute param)
         {
+            if (param is null)
+            {
+                throw new ArgumentNullException(nameof(param));
+            }
+
             var dirString = "";
             var typeStr = MakeSqlTypeString(param);
             switch (param.Direction)
@@ -638,11 +705,16 @@ namespace SqlSiphon.Postgres
                 defaultString = " default = " + param.DefaultValue.ToString();
             }
 
-            return string.Format("{0} _{1} {2}{3}", dirString, param.Name, typeStr, defaultString).Trim();
+            return $"{dirString} _{param.Name} {typeStr}{defaultString}".Trim();
         }
 
         protected override string MakeColumnString(ColumnAttribute column, bool isReturnType)
         {
+            if (column is null)
+            {
+                throw new ArgumentNullException(nameof(column));
+            }
+
             var typeStr = MakeSqlTypeString(column);
             var nullString = "";
             var defaultString = "";
@@ -651,7 +723,7 @@ namespace SqlSiphon.Postgres
                 nullString = column.IsOptional ? "NULL" : "NOT NULL";
                 if (column.DefaultValue != null)
                 {
-                    var val = column.DefaultValue.ToString().ToLower();
+                    var val = column.DefaultValue.ToString().ToLowerInvariant();
                     if (val == "getdate()")
                     {
                         val = "current_date";
@@ -668,48 +740,58 @@ namespace SqlSiphon.Postgres
                 }
             }
 
-            return string.Format("{0} {1} {2} {3}",
-                MakeIdentifier(column.Name),
-                typeStr,
-                nullString,
-                defaultString).Trim();
+            var columnName = MakeIdentifier(column.Name);
+            return $"{columnName} {typeStr} {nullString} {defaultString}".Trim();
         }
 
         public override string MakeDropRoutineScript(RoutineAttribute routine)
         {
-            return string.Format(@"drop function if exists {0} cascade;", MakeRoutineIdentifier(routine));
+            if (routine is null)
+            {
+                throw new ArgumentNullException(nameof(routine));
+            }
+
+            var routineName = MakeRoutineIdentifier(routine);
+            return $@"drop function if exists {routineName} cascade;";
         }
 
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
         {
+            if (routine is null)
+            {
+                throw new ArgumentNullException(nameof(routine));
+            }
+
             var identifier = MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = MakeParameterSection(routine);
-            return string.Format(@"{0}({1})", identifier, parameterSection);
+            return $@"{identifier}({parameterSection})";
         }
 
         private static readonly Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public override string MakeCreateRoutineScript(RoutineAttribute routine, bool createBody = true)
         {
+            if (routine is null)
+            {
+                throw new ArgumentNullException(nameof(routine));
+            }
+
             var queryBody = createBody ? MakeRoutineBody(routine) : routine.Query.Trim();
             var identifier = MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var returnType = MakeSqlTypeString(routine) ?? "void";
+
             if (returnType.Contains("[]"))
             {
                 returnType = "setof " + returnType.Substring(0, returnType.Length - 2);
             }
+
             var parameterSection = MakeParameterSection(routine);
-            var query = string.Format(
-@"create function {0}({1})
-returns {2} 
+            var query = $@"create function {identifier}({parameterSection})
+returns {returnType} 
 as $$
-{3}
+{queryBody}
 $$
-language plpgsql;",
-                identifier,
-                parameterSection,
-                returnType ?? "void",
-                queryBody);
+language plpgsql;";
             return query;
         }
 
@@ -718,10 +800,15 @@ language plpgsql;",
 
         public override string MakeRoutineBody(RoutineAttribute routine)
         {
+            if (routine is null)
+            {
+                throw new ArgumentNullException(nameof(routine));
+            }
+
             var queryBody = routine.Query;
             queryBody = ReplaceFuncsPattern.Replace(queryBody, new MatchEvaluator(m =>
             {
-                var func = m.Groups[1].Value.ToLower();
+                var func = m.Groups[1].Value.ToLowerInvariant();
                 if (func == "newid")
                 {
                     return "uuid_generate_v4()";
@@ -772,7 +859,7 @@ language plpgsql;",
                     .Select(p => p.Trim())
                     .Where(p => p.Length > 0)
                     .ToArray();
-                parts[1] = NormalizeTypeName(parts[1].ToLower());
+                parts[1] = NormalizeTypeName(parts[1].ToLowerInvariant());
                 declarations[i] = "\n\t" + string.Join(" ", parts) + ";";
             }
             var declarationString = "";
@@ -781,13 +868,10 @@ language plpgsql;",
                 declarationString = "declare " + string.Join("", declarations);
             }
 
-            queryBody = string.Format(
-@"{0}
+            queryBody = $@"{declarationString}
 begin
-{1}
-end;",
-                declarationString,
-                queryBody);
+{queryBody}
+end;";
             queryBody = queryBody.Replace("@", "_");
             return queryBody.Trim();
         }
@@ -804,6 +888,11 @@ end;",
 
         public override string MakeCreateTableScript(TableAttribute table)
         {
+            if (table is null)
+            {
+                throw new ArgumentNullException(nameof(table));
+            }
+
             var schema = table.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, table.Name);
             var reset = new List<ColumnAttribute>();
@@ -822,77 +911,107 @@ end;",
             {
                 column.SqlType = null;
             }
-            return string.Format(@"create table {0} (
-    {1}
-);",
-                identifier,
-                columnSection);
+            return $@"create table {identifier} (
+    {columnSection}
+);";
         }
 
         public override string MakeDropTableScript(TableAttribute info)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, info.Name);
-            return string.Format("drop table if exists {0};", identifier);
+            return $"drop table if exists {identifier};";
         }
 
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
+            if (relation is null)
+            {
+                throw new ArgumentNullException(nameof(relation));
+            }
+
+            var fromSchemName = relation.From.Schema ?? DefaultSchemaName;
+            var fromTableName = MakeIdentifier(fromSchemName, relation.From.Name);
+            var constraintName = MakeIdentifier(relation.GetRelationshipName(this));
             var fromColumns = string.Join(", ", relation.FromColumns.Select(c => MakeIdentifier(c.Name)));
+            var toSchemaName = relation.To.Schema ?? DefaultSchemaName;
+            var toTableName = MakeIdentifier(toSchemaName, relation.To.Name);
             var toColumns = string.Join(", ", relation.To.PrimaryKey.KeyColumns.Select(c => MakeIdentifier(c.Name)));
-            return string.Format(
-@"alter table {0} add constraint {1}
-    foreign key({2})
-    references {3}({4});",
-                    MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    MakeIdentifier(relation.GetName(this)),
-                    fromColumns,
-                    MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
-                    toColumns);
+            return $@"alter table {fromTableName} add constraint {constraintName}
+    foreign key({fromColumns})
+    references {toTableName}({toColumns});";
         }
 
         public override string MakeDropRelationshipScript(Relationship relation)
         {
-            return string.Format(@"alter table if exists {0} drop constraint if exists {1};",
-                MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                MakeIdentifier(relation.GetName(this)));
+            if (relation is null)
+            {
+                throw new ArgumentNullException(nameof(relation));
+            }
+
+            var tableName = MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name);
+            var constraintName = MakeIdentifier(relation.GetRelationshipName(this));
+            return $@"alter table if exists {tableName} drop constraint if exists {constraintName};";
         }
 
         public override string MakeDropPrimaryKeyScript(PrimaryKey key)
         {
-            return string.Format(@"alter table if exists {0} drop constraint if exists {1};
-drop index if exists {2};",
-                MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
-                MakeIdentifier(key.Name),
-                MakeIdentifier("idx_" + key.Name));
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            var schemaName = key.Table.Schema ?? DefaultSchemaName;
+            var tableName = MakeIdentifier(schemaName, key.Table.Name);
+            var constraintName = MakeIdentifier(key.Name);
+            var indexName = MakeIdentifier("idx_" + key.Name);
+            return $@"alter table if exists {tableName} drop constraint if exists {constraintName};
+drop index if exists {indexName};";
         }
 
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var keys = string.Join(", ", key.KeyColumns.Select(c => MakeIdentifier(c.Name)));
-            return string.Format(
-@"create unique index {0} on {1} ({2});
-alter table {1} add constraint {3} primary key using index {0};",
-                MakeIdentifier("idx_" + key.Name),
-                MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
-                keys,
-                MakeIdentifier(key.Name));
+            var indexName = MakeIdentifier("idx_" + key.Name);
+            var schemaName = key.Table.Schema ?? DefaultSchemaName;
+            var tableName = MakeIdentifier(schemaName, key.Table.Name);
+            var constraintName = MakeIdentifier(key.Name);
+            return $@"create unique index {indexName} on {tableName} ({keys});
+alter table {tableName} add constraint {constraintName} primary key using index {indexName};";
         }
 
         public override string MakeCreateIndexScript(TableIndex idx)
         {
+            if (idx is null)
+            {
+                throw new ArgumentNullException(nameof(idx));
+            }
+
+            var indexName = MakeIdentifier(idx.Name);
             var columnSection = string.Join(",", idx.Columns.Select(c => MakeIdentifier(c)));
-            var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
-            return string.Format(
-@"create index {0} on {1}({2});",
-                MakeIdentifier(idx.Name),
-                tableName,
-                columnSection);
+            var schemaName = idx.Table.Schema ?? DefaultSchemaName;
+            var tableName = MakeIdentifier(schemaName, idx.Table.Name);
+            return $@"create index {indexName} on {tableName}({columnSection});";
         }
 
         public override string MakeDropIndexScript(TableIndex idx)
         {
-            return string.Format(@"drop index if exists {0};", idx.Name);
+            if (idx is null)
+            {
+                throw new ArgumentNullException(nameof(idx));
+            }
+
+            return $@"drop index if exists {idx.Name};";
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -904,7 +1023,22 @@ alter table {1} add constraint {3} primary key using index {0};",
 
         public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
         {
-            return string.Format("create user {0} with superuser password '{1}';", userName, password);
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new ArgumentException("User name is required", nameof(userName));
+            }
+
+            if (string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentException("Password is required", nameof(password));
+            }
+
+            if (string.IsNullOrEmpty(database))
+            {
+                throw new ArgumentException("Database is required", nameof(database));
+            }
+
+            return $"create user {userName} with superuser password '{password}';";
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1066,6 +1200,11 @@ where constraint_schema != 'information_schema'
 
         public override string MakeInsertScript(TableAttribute table, object value)
         {
+            if (table is null)
+            {
+                throw new ArgumentNullException(nameof(table));
+            }
+
             var columns = table.Properties
                 .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
                 .ToArray();
@@ -1082,13 +1221,18 @@ where constraint_schema != 'information_schema'
                 else
                 {
                     var t = v.GetType();
+                    if (t == typeof(string))
+                    {
+                        v = ((string)v).Replace("'", "''");
+                    }
+
                     if (DataConnector.IsTypeBarePrimitive(t))
                     {
                         val = v.ToString();
                     }
                     else if (DataConnector.IsTypeQuotedPrimitive(t))
                     {
-                        val = string.Format("'{0}'", v);
+                        val = $"'{v}'";
                     }
                     else
                     {
@@ -1098,10 +1242,10 @@ where constraint_schema != 'information_schema'
                 return val;
             }).ToArray();
 
-            return string.Format("insert into {0}({1}) values({2});",
-                MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
-                string.Join(", ", columnNames),
-                string.Join(", ", columnValues));
+            var tableName = MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name);
+            var columnNamesList = string.Join(", ", columnNames);
+            var columnValuesList = string.Join(", ", columnValues);
+            return $"insert into {tableName}({columnNamesList}) values({columnValuesList});";
         }
     }
 }

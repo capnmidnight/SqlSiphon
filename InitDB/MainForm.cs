@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -62,12 +63,14 @@ namespace InitDB
         private static string UnrollStackTrace(Exception e)
         {
             var sb = new System.Text.StringBuilder();
-            sb.AppendFormat(@"<stacktrace timestamp=""{0}"">
+            sb.AppendFormat(CultureInfo.InvariantCulture,
+                @"<stacktrace timestamp=""{0}"">
 ", DateTime.Now);
             var exp = e;
             for (var i = 0; exp != null; ++i)
             {
                 sb.AppendFormat(
+                    CultureInfo.InvariantCulture,
 @"<exception depth=""{0}"" type=""{1}"">
     <source>{2}</source>
     <message>{3}</message>
@@ -143,7 +146,7 @@ namespace InitDB
                     }
                 }
             }
-            throw new Exception(string.Format("Couldn't find any types with a constructor that takes the {0} expected parameter types ({1}).", constructorParams.Length, string.Join(", ", constructorParams.Select(p => p.FullName))));
+            throw new Exception($"Couldn't find any types with a constructor that takes the {constructorParams.Length} expected parameter types ({string.Join(", ", constructorParams.Select(p => p.FullName))}).");
         }
 
         private void SyncUI(Action act)
@@ -311,7 +314,7 @@ namespace InitDB
                         var delta = CreateDelta(ss);
                         DisplayDelta(delta);
                         var t = db.GetType();
-                        ToOutput(string.Format("Syncing {0}.{1}", t.Namespace, t.Name));
+                        ToOutput($"Syncing {t.Namespace}.{t.Name}");
 
                         succeeded = RunScripts(delta.Scripts, ss);
                         try
@@ -409,7 +412,7 @@ namespace InitDB
             }
 
             ToOutput(HORIZONTAL_LINE);
-            ToOutput(string.Format("{0} {1}...", script.ScriptType, script.Name));
+            ToOutput($"{script.ScriptType} {script.Name}...");
 
             if (script.ScriptType == ScriptType.CreateCatalogue
                 || script.ScriptType == ScriptType.CreateDatabaseLogin
@@ -598,7 +601,7 @@ namespace InitDB
             if (savedSessionList.SelectedItem is string sessionName
                 && sessions.ContainsKey(sessionName)
                 && MessageBox.Show(
-                    string.Format("Are you sure you want to delete session \"{0}\"?", sessionName),
+                    $"Are you sure you want to delete session \"{sessionName}\"?",
                     "Confirm delete",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question,
@@ -712,7 +715,7 @@ namespace InitDB
                     }, (exp) =>
                     {
                         tabControl1.SelectedTab = tabStatus;
-                        return string.Format("{0}: {1}", exp.GetType().Name, exp.Message);
+                        return $"{exp.GetType().Name}: {exp.Message}";
                     });
                 }
                 catch (ConnectionFailedException exp)
@@ -839,13 +842,12 @@ namespace InitDB
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(string.Format(
-@"               InitDB (v{0})
-           for SqlSiphon (v{1})
+            var initDBVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            var sqlSiphonVersion = typeof(ISqlSiphon).Assembly.GetName().Version;
+            MessageBox.Show($@"               InitDB (v{initDBVersion})
+           for SqlSiphon (v{sqlSiphonVersion})
 
-by Sean T. McBeth (v1) (sean@seanmcbeth.com)",
-                Assembly.GetExecutingAssembly().GetName().Version,
-                typeof(ISqlSiphon).Assembly.GetName().Version));
+by Sean T. McBeth (v1) (sean@seanmcbeth.com)");
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)

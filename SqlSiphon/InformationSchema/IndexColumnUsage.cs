@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -52,7 +52,7 @@ namespace SqlSiphon.InformationSchema
 
         public override string ToString()
         {
-            return string.Format("IndexColumnUsage: {0}({1}.{2})", index_name, table_name, column_name);
+            return $"IndexColumnUsage: {index_name}({table_name}.{column_name})";
         }
     }
 }

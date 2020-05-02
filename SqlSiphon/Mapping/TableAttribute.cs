@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -308,7 +308,7 @@ namespace SqlSiphon.Mapping
 
         public override string ToString()
         {
-            return string.Format("Table: {0}.{1}", Schema, Name);
+            return $"Table: {Schema}.{Name}";
         }
     }
 }

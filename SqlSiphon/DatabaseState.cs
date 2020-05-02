@@ -72,6 +72,21 @@ namespace SqlSiphon
         public DatabaseState(IEnumerable<Type> types, IAssemblyStateReader asm, IDatabaseScriptGenerator dal, string userName, string password)
             : this()
         {
+            if (types is null)
+            {
+                throw new ArgumentNullException(nameof(types));
+            }
+
+            if (asm is null)
+            {
+                throw new ArgumentNullException(nameof(asm));
+            }
+
+            if (dal is null)
+            {
+                throw new ArgumentNullException(nameof(dal));
+            }
+
             PostExecute = new List<Action<IDataConnector>>();
             if (!string.IsNullOrWhiteSpace(userName))
             {
@@ -167,10 +182,10 @@ namespace SqlSiphon
                         var tableColumns = columns[tableName];
                         if (filter == null || !filter.IsMatch(tableColumns[0].table_name))
                         {
-                            var tableConstraints = constraintsByTable.ContainsKey(tableName) ? constraintsByTable[tableName] : new InformationSchema.TableConstraints[] { };
-                            var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : new InformationSchema.KeyColumnUsage[] { };
-                            var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : new InformationSchema.ConstraintColumnUsage[] { };
-                            var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : new InformationSchema.IndexColumnUsage[] { };
+                            var tableConstraints = constraintsByTable.ContainsKey(tableName) ? constraintsByTable[tableName] : Array.Empty<InformationSchema.TableConstraints>();
+                            var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : Array.Empty<InformationSchema.KeyColumnUsage>();
+                            var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : Array.Empty<InformationSchema.ConstraintColumnUsage>();
+                            var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : Array.Empty<InformationSchema.IndexColumnUsage>();
                             var table = new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal);
                             Tables.Add(tableName.ToLowerInvariant(), table);
                             if (tableConstraints != null)
@@ -359,6 +374,26 @@ namespace SqlSiphon
 
         public void AddTable(Dictionary<string, TableAttribute> tableCollection, Type type, IDatabaseScriptGenerator dal, TableAttribute table)
         {
+            if (tableCollection is null)
+            {
+                throw new ArgumentNullException(nameof(tableCollection));
+            }
+
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (dal is null)
+            {
+                throw new ArgumentNullException(nameof(dal));
+            }
+
+            if (table is null)
+            {
+                throw new ArgumentNullException(nameof(table));
+            }
+
             table.Schema = table.Schema ?? dal.DefaultSchemaName;
             if (table.Include)
             {
@@ -395,14 +430,14 @@ namespace SqlSiphon
         }
 
 
-        public virtual DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        public virtual DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader assembly, IDatabaseScriptGenerator gen)
         {
-            return new DatabaseDelta(this, initial, asm, gen, true);
+            return new DatabaseDelta(this, initial, assembly, gen, true);
         }
 
-        public virtual DatabaseDelta MakeScripts(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        public virtual DatabaseDelta MakeScripts(DatabaseState initial, IAssemblyStateReader assembly, IDatabaseScriptGenerator gen)
         {
-            return new DatabaseDelta(this, initial, asm, gen, false);
+            return new DatabaseDelta(this, initial, assembly, gen, false);
         }
 
         public bool TypeExists<T>()
@@ -412,11 +447,10 @@ namespace SqlSiphon
                 || Tables.Values.SelectMany(t => t.Properties).Any(p => p.SystemType == type);
         }
 
-        private static readonly Dictionary<Type, string> TYPE_NAMES;
+        private static readonly Dictionary<Type, string> TYPE_NAMES = new Dictionary<Type, string>();
         private static void AddType<T>(string name) { TYPE_NAMES.Add(typeof(T), name); }
         static DatabaseState()
         {
-            TYPE_NAMES = new Dictionary<Type, string>();
             AddType<short>("short");
             AddType<ushort>("ushort");
             AddType<int>("int");
@@ -494,22 +528,23 @@ namespace SqlSiphon
                                 var sep = "";
                                 if (column.DefaultValue != null)
                                 {
-                                    columnAttrString += string.Format(@"{0}DefaultValue = ""{0}""", sep, column.DefaultValue);
+                                    columnAttrString += $@"{sep}DefaultValue = ""{sep}""";
                                     sep = ", ";
                                 }
                                 if (column.IsSizeSet)
                                 {
-                                    columnAttrString += string.Format(@"{0}Size = {1}", sep, column.Size);
+                                    columnAttrString += $@"{sep}Size = {column.Size}";
                                     sep = ", ";
                                 }
                                 if (column.IsPrecisionSet)
                                 {
-                                    columnAttrString += string.Format(@"{0}Precision = {1}", sep, column.Precision);
+                                    columnAttrString += $@"{sep}Precision = {column.Precision}";
                                     sep = ", ";
                                 }
                                 if (column.IsOptional && !column.SystemType.IsValueType)
                                 {
-                                    columnAttrString += string.Format(@"{0}IsOptional = {1}", sep, column.IsOptional ? "true" : "false");
+                                    var condition = column.IsOptional ? "true" : "false";
+                                    columnAttrString += $@"{sep}IsOptional = {condition}";
                                     sep = ", ";
                                 }
                                 columnAttrString += ")";
@@ -522,20 +557,16 @@ namespace SqlSiphon
 
                             var indexString = string.Join("", indexes
                                 .Where(i => i.Columns.Any(c => c == column.Name))
-                                .Select(i => string.Format(@"
-        [IncludeInIndex(""{0}"")]", i.Name)));
+                                .Select(i => $@"
+        [IncludeInIndex(""{i.Name}"")]"));
 
                             var typeName = TypeName(column.SystemType);
 
-                            columnStrings.Add(string.Format(@"
-        {0}{1}
-        public {2}{3} {4} {{ get; set; }}
-",
-                                indexString,
-                                columnAttrString,
-                                typeName,
-                                column.IsOptional && column.SystemType.IsValueType ? "?" : "",
-                                column.Name));
+                            var nullableFlag = column.IsOptional && column.SystemType.IsValueType ? "?" : "";
+                            columnStrings.Add($@"
+        {indexString}{columnAttrString}
+        public {typeName}{nullableFlag} {column.Name} {{ get; set; }}
+");
                         }
                     }
 
@@ -552,22 +583,23 @@ namespace SqlSiphon
                             .FirstOrDefault();
                         if (prefix != null && prefix.Length > 0)
                         {
-                            fkAttrString += string.Format(@"Prefix = ""{0}"", ", prefix);
+                            fkAttrString += $@"Prefix = ""{prefix}"", ";
                         }
 
-                        fkAttrString += string.Format("typeof({0}))]", fk.To.Name);
+                        fkAttrString += $"typeof({fk.To.Name}))]";
                     }
-                    var codeFile = string.Format(@"using System;
+                    var fieldDefs = string.Join("", columnStrings);
+                    var codeFile = $@"using System;
 using SqlSiphon.Mapping;
 
-namespace {0}
+namespace {nameSpace}
 {{
-    [Table]{1}
-    public class {2}
+    [Table]{fkAttrString}
+    public class {table.Name}
     {{
-        {3}
+        {fieldDefs}
     }}
-}}", nameSpace, fkAttrString, table.Name, string.Join("", columnStrings));
+}}";
                     File.WriteAllText(Path.Combine(directory, table.Name + ".cs"), codeFile);
                 }
                 var routineSectionStr = string.Join("", Functions.Values.Select(f =>
@@ -577,24 +609,25 @@ namespace {0}
                     var retTypeStr = TypeName(type) ?? "void";
                     if (isCollection)
                     {
-                        retTypeStr = string.Format("List<{0}>", retTypeStr);
+                        retTypeStr = $"List<{retTypeStr}>";
                     }
                     var paramSection = "";
                     var retKey = retTypeStr == "void" ? "" : "return ";
-                    var command = retTypeStr == "void" ? "Execute" : string.Format("Get{0}<{1}>", isCollection ? "List" : "", retTypeStr);
+                    var collectionT = isCollection ? "List" : "";
+                    var command = retTypeStr == "void" ? "Execute" : $"Get{collectionT}<{retTypeStr}>";
                     var callSection = "";
-                    return string.Format(@"
+                    return $@"
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@""{0}"")]
-        public {1} {2}({3})
+@""{f.Query}"")]
+        public {retTypeStr} {f.Name}({paramSection})
         {{
-            {4}this.{5}({6});
-        }}", f.Query, retTypeStr, f.Name, paramSection, retKey, command, callSection);
+            {retKey}this.{command}({callSection});
+        }}";
                 }));
-                var routineFile = string.Format(@"using System;
+                var routineFile = $@"using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -602,22 +635,22 @@ using System.Runtime.CompilerServices;
 using SqlSiphon.Mapping;
 
 
-namespace {0}
+namespace {nameSpace}
 {{
-    public class {1} : DataConnector
+    public class {name} : DataConnector
     {{
-        public {1}(IDataConnectorFactory factory, string server, string database, string userName, string password) :
+        public {name}(IDataConnectorFactory factory, string server, string database, string userName, string password) :
             base(factory, server, database, userName, password)
         {{
         }}
 
-        public static void FirstTimeSetup({1} db)
+        public static void FirstTimeSetup({name} db)
         {{
         }}
 
-        {2}
+        {routineSectionStr}
     }}
-}}", nameSpace, name, routineSectionStr);
+}}";
                 File.WriteAllText(Path.Combine(directory, name + ".cs"), routineFile);
             }
         }

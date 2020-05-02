@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SqlSiphon.Postgres
@@ -31,10 +31,11 @@ namespace SqlSiphon.Postgres
                 ProcessExtensions(dal, delta, pg.Extensions);
             }
 
+            var searchPath = string.Join(",", Schemata.Select(s => dal.MakeIdentifier(s)));
             delta.Scripts.Add(new ScriptStatus(
                 ScriptType.AlterSettings,
                 "set schema search path",
-                string.Format("set search_path = {0},public;", string.Join(",", Schemata.Select(s => dal.MakeIdentifier(s)))),
+                $"set search_path = {searchPath},public;",
                 "Schema search path needs to be set"));
 
             delta.Scripts.Sort();
@@ -68,24 +69,24 @@ namespace SqlSiphon.Postgres
         {
             foreach (var ext in Extensions)
             {
-                if (!extensions.ContainsKey(ext.Key))
+                var extensionName = ext.Key;
+                var requiredExtensionVersion = ext.Value.Version;
+                if (!extensions.TryGetValue(extensionName, out var currentExtension))
                 {
-                    var schemaName = dal.MakeIdentifier(ext.Key);
+                    var schemaName = dal.MakeIdentifier(extensionName);
                     delta.Scripts.Add(new ScriptStatus(
                         ScriptType.InstallExtension,
-                        string.Format("{0} v{1}", ext.Key, ext.Value.Version),
-                        string.Format("create extension if not exists \"{0}\" with schema {1};",
-                            ext.Key,
-                            schemaName),
+                        $"{extensionName} v{requiredExtensionVersion}",
+                        $"create extension if not exists \"{extensionName}\" with schema {schemaName};",
                             "Extension needs to be installed"));
                 }
-                else if (extensions[ext.Key].Version < ext.Value.Version)
+                else if (currentExtension.Version < requiredExtensionVersion)
                 {
                     delta.Scripts.Add(new ScriptStatus(
                         ScriptType.InstallExtension,
-                        string.Format("{0} v{1}", ext.Key, ext.Value.Version),
-                        string.Format("alter extension \"{0}\" update;", ext.Key),
-                        string.Format("Extension needs to be upgraded. Was v{0}, now v{1}", extensions[ext.Key].Version, ext.Value.Version)));
+                        $"{currentExtension.Version} v{requiredExtensionVersion}",
+                        $"alter extension \"{extensionName}\" update;",
+                        $"Extension needs to be upgraded. Was v{currentExtension.Version}, now v{requiredExtensionVersion}"));
                 }
             }
         }

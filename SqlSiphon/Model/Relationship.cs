@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -53,10 +53,21 @@ namespace SqlSiphon.Model
 
         public void ResolveColumns(Dictionary<Type, TableAttribute> tables, IDatabaseScriptGenerator dal)
         {
+            if (tables is null)
+            {
+                throw new ArgumentNullException(nameof(tables));
+            }
+
+            if (dal is null)
+            {
+                throw new ArgumentNullException(nameof(dal));
+            }
+
             To = tables[ToType];
             if (To.PrimaryKey == null)
             {
-                throw new Exception(string.Format("The target table {0} does not have a primary key defined.", dal.MakeIdentifier(To.Schema, To.Name)));
+                var toTableName = dal.MakeIdentifier(To.Schema, To.Name);
+                throw new Exception($"The target table {toTableName} does not have a primary key defined.");
             }
 
             if (fromColumnNames == null)
@@ -80,11 +91,9 @@ namespace SqlSiphon.Model
             if (To.PrimaryKey.KeyColumns.Length != FromColumns.Length)
             {
                 var availableColumns = FromColumns.Select(p => p.Name).ToList();
-                throw new Exception(string.Format(
-                    "Table {0}.{1} does not satisfy the constraints to relate to table {2}.{3}. Missing columns: {4}",
-                    From.Schema, From.Name,
-                    To.Schema, To.Name,
-                    string.Join(", ", To.PrimaryKey.KeyColumns.Where(p => !availableColumns.Contains(Prefix + p.Name)))));
+                var availableKeyColumns = To.PrimaryKey.KeyColumns.Where(p => !availableColumns.Contains(Prefix + p.Name));
+                var availableKeyColumnsStr = string.Join(", ", availableKeyColumns);
+                throw new Exception($"Table {From.Schema}.{From.Name} does not satisfy the constraints to relate to table {To.Schema}.{To.Name}. Missing columns: {availableKeyColumnsStr}");
             }
 
             for (var i = 0; i < To.PrimaryKey.KeyColumns.Length; ++i)
@@ -93,14 +102,10 @@ namespace SqlSiphon.Model
                 var b = FromColumns[i];
                 if (a.SystemType != b.SystemType)
                 {
-                    throw new Exception(string.Format(
-                        "FK column {0} in {1}.{2} does not match column {3} in {4}.{5}. Expected: {6}. Received: {7}.",
-                        b.Name, From.Schema, From.Name,
-                        a.Name, To.Schema, To.Name,
-                        a.SystemType.Name, b.SystemType.Name));
+                    throw new Exception($"FK column {b.Name} in {From.Schema}.{From.Name} does not match column {a.Name} in {To.Schema}.{To.Name}. Expected: {a.SystemType.Name}. Received: {b.SystemType.Name}.");
                 }
             }
-            Name = GetName(dal);
+            Name = GetRelationshipName(dal);
             if (AutoCreateIndex)
             {
                 var fkIndex = new TableIndex(From, "idx_" + Name);
@@ -110,20 +115,21 @@ namespace SqlSiphon.Model
             }
         }
 
-        public string GetName(IDatabaseScriptGenerator dal)
+        public string GetRelationshipName(IDatabaseScriptGenerator dal)
         {
-            return Name ?? string.Format(
-                "fk_{0}_from_{1}_{2}_to_{3}",
-                Prefix,
-                From.Schema ?? dal.DefaultSchemaName,
-                From.Name,
-                To.PrimaryKey.Name)
+            if (dal is null)
+            {
+                throw new ArgumentNullException(nameof(dal));
+            }
+
+            var fromSchemaName = From.Schema ?? dal.DefaultSchemaName;
+            return base.Name ?? $"fk_{Prefix}_from_{fromSchemaName}_{From.Name}_to_{To.PrimaryKey.Name}"
                 .Replace("__", "_");
         }
 
         public override string ToString()
         {
-            return string.Format("FK: {0} from {1} to {2}", Name, From.Name, To.Name);
+            return $"FK: {Name} from {From.Name} to {To.Name}";
         }
     }
 }

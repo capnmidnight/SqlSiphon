@@ -33,6 +33,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -127,7 +128,7 @@ namespace SqlSiphon.SqlServer
                     if ((STANDARD_OPTIONS & option) != SqlServerOptions.None
                         && (options & option) == SqlServerOptions.None)
                     {
-                        Execute(string.Format("SET {0} ON;", option));
+                        Execute($"SET {option} ON;");
                     }
                 }
             }
@@ -137,9 +138,9 @@ namespace SqlSiphon.SqlServer
             }
         }
 
-        private static readonly Dictionary<string, Type> stringToType;
-        private static readonly Dictionary<Type, string> typeToString;
-        private static readonly Dictionary<string, int> defaultTypePrecisions;
+        private static readonly Dictionary<string, Type> stringToType = new Dictionary<string, Type>();
+        private static readonly Dictionary<Type, string> typeToString = new Dictionary<Type, string>();
+        private static readonly Dictionary<string, int> defaultTypePrecisions = new Dictionary<string, int>();
 
 
         private static void SetTypeMappings<T>(string name, int? defaultPrecision = null)
@@ -156,10 +157,6 @@ namespace SqlSiphon.SqlServer
 
         static SqlServerDataAccessLayer()
         {
-            stringToType = new Dictionary<string, Type>();
-            typeToString = new Dictionary<Type, string>();
-            defaultTypePrecisions = new Dictionary<string, int>();
-
             SetTypeMappings<string>("nvarchar", 0);
             SetTypeMappings<string>("char");
             SetTypeMappings<string>("varchar");
@@ -236,6 +233,11 @@ namespace SqlSiphon.SqlServer
 
         public static string MakeUDTTName(Type t)
         {
+            if (t is null)
+            {
+                throw new ArgumentNullException(nameof(t));
+            }
+
             if (t.IsArray)
             {
                 t = t.GetElementType();
@@ -249,26 +251,37 @@ namespace SqlSiphon.SqlServer
         {
             if (!defaultTypePrecisions.ContainsKey(typeName))
             {
-                throw new Exception(string.Format("I don't know the default precision for type `{0}`. Perhaps it is {1}?", typeName, testPrecision));
+                throw new Exception($"I don't know the default precision for type `{typeName}`. Perhaps it is {testPrecision}?");
             }
             return defaultTypePrecisions[typeName];
         }
 
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
         {
+            if (routine is null)
+            {
+                throw new ArgumentNullException(nameof(routine));
+            }
+
             return MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
         }
 
         public override string MakeDropRoutineScript(RoutineAttribute info)
         {
-            return string.Format("drop procedure {0};", MakeRoutineIdentifier(info));
+            var routineName = MakeRoutineIdentifier(info);
+            return $"drop procedure {routineName};";
         }
 
         public override string MakeRoutineBody(RoutineAttribute info)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             if (info.SystemType != null)
             {
-                var table = DatabaseObjectAttribute.GetAttribute(DataConnector.CoalesceCollectionType(info.SystemType));
+                _ = DatabaseObjectAttribute.GetAttribute(DataConnector.CoalesceCollectionType(info.SystemType));
             }
 
             var query = info.Query.Replace("into returnValue", "")
@@ -276,67 +289,87 @@ namespace SqlSiphon.SqlServer
                 .Replace("perform ", "select ");
             if (info.EnableTransaction)
             {
-                var transactionName = string.Format("TRANS{0}{1}", info.Schema ?? DefaultSchemaName, info.Name);
+                var schemaName = info.Schema ?? DefaultSchemaName;
+                var transactionName = $"TRANS{schemaName}{info.Name}";
                 var len = transactionName.Length;
                 if (len > 32)
                 {
-                    var lenlen = (int)Math.Ceiling(Math.Log10(len));
-                    transactionName = transactionName.Substring(0, 32 - lenlen) + lenlen.ToString();
+                    var logLen = (int)Math.Ceiling(Math.Log10(len));
+                    transactionName = transactionName.Substring(0, 32 - logLen)
+                        + logLen.ToString(CultureInfo.InvariantCulture);
                 }
-                var transactionBegin = string.Format(@"begin try
-    begin transaction {0};", transactionName);
-                var transactionEnd = string.Format(@"commit transaction {0};
+                var transactionBegin = $@"begin try
+    begin transaction {transactionName};";
+                var transactionEnd = $@"commit transaction {transactionName};
 end try
 begin catch
     declare @msg nvarchar(4000), @lvl int, @stt int;
     select @msg = error_message(), @lvl = error_severity(), @stt = error_state();
-    rollback transaction {0};
+    rollback transaction {transactionName};
     raiserror(@msg, @lvl, @stt);
-end catch;", transactionName);
+end catch;";
                 query = string.Join(Environment.NewLine, transactionBegin, query, transactionEnd);
             }
             var identifier = MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
             var parameterSection = MakeParameterSection(info);
             var withRecompile = info.GetOtherAttribute<SqlServerWithRecompileAttribute>() != null;
-            return string.Format(
-@"create procedure {0}
-    {1}
-{2}as begin
+            var withRecompileStatement = withRecompile ? "with recompile\r\n" : "";
+            return $@"create procedure {identifier}
+    {parameterSection}
+{withRecompileStatement}as begin
     set nocount on;
-    {3}
-end",
-                identifier,
-                parameterSection,
-                withRecompile ? "with recompile\r\n" : "",
-                query);
+    {query}
+end";
         }
 
         public override string MakeCreateRoutineScript(RoutineAttribute info, bool createBody = true)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             return createBody ? MakeRoutineBody(info) : info.Query;
         }
 
         public override void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {
+            if (routineText is null)
+            {
+                throw new ArgumentNullException(nameof(routineText));
+            }
+
+            if (routine is null)
+            {
+                throw new ArgumentNullException(nameof(routine));
+            }
+
             base.AnalyzeQuery(routineText, routine);
             routine.EnableTransaction = routineText.IndexOf("begin transaction TRANS", StringComparison.InvariantCultureIgnoreCase) > -1;
         }
 
         public override string MakeCreateTableScript(TableAttribute info)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, info.Name);
             var columnSection = MakeColumnSection(info, false);
-            return string.Format(
-@"create table {0}(
-    {1}
-);",
-                identifier,
-                columnSection);
+            return $@"create table {identifier}(
+    {columnSection}
+);";
         }
 
         public string MakeCreateUDTTScript(TableAttribute info)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var columns = info.Properties
                 .Where(p => p.Include
                 && !p.IsIdentity
@@ -350,49 +383,67 @@ end",
 
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, info.Name);
-            return string.Format(
-@"create type {0} as table(
-    {1}
-);",
-                identifier,
-                columnSection);
+            return $@"create type {identifier} as table(
+    {columnSection}
+);";
         }
 
         public override string MakeDropTableScript(TableAttribute info)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, info.Name);
-            return string.Format(@"drop table {0};", identifier);
+            return $@"drop table {identifier};";
         }
 
         internal string MakeDropUDTTScript(TableAttribute info)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, info.Name);
-            return string.Format(@"drop type {0};", identifier);
+            return $@"drop type {identifier};";
         }
 
         public override string MakeCreateIndexScript(TableIndex idx)
         {
+            if (idx is null)
+            {
+                throw new ArgumentNullException(nameof(idx));
+            }
+
+            var indexName = MakeIdentifier(idx.Name);
             var columnSection = string.Join(",", idx.Columns.Select(c => MakeIdentifier(c)));
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
-            return string.Format(@"create {3}clustered index {0} on {1}({2});",
-                MakeIdentifier(idx.Name),
-                tableName,
-                columnSection,
-                idx.IsClustered ? "" : "non");
+            var clusterType = idx.IsClustered ? "" : "non";
+            return $@"create {clusterType}clustered index {indexName} on {tableName}({columnSection});";
         }
 
         public override string MakeDropIndexScript(TableIndex idx)
         {
+            if (idx is null)
+            {
+                throw new ArgumentNullException(nameof(idx));
+            }
+
             var tableName = MakeIdentifier(idx.Table.Schema ?? DefaultSchemaName, idx.Table.Name);
-            return string.Format(@"drop index {0} on {1};",
-                idx.Name,
-                tableName);
+            return $@"drop index {idx.Name} on {tableName};";
         }
 
         private static string GetDefaultValue(DatabaseObjectAttribute p)
         {
+            if (p is null)
+            {
+                throw new ArgumentNullException(nameof(p));
+            }
+
             var defaultValue = p.DefaultValue;
             if (defaultValue == null)
             {
@@ -408,52 +459,79 @@ end",
 
         protected override string MakeParameterString(ParameterAttribute p)
         {
+            if (p is null)
+            {
+                throw new ArgumentNullException(nameof(p));
+            }
+
             var typeStr = MakeSqlTypeString(p);
+            var defaultValue = GetDefaultValue(p);
             var isUDTT = p.IsUDTT || (p.SystemType != null && IsUDTT(p.SystemType));
-            return string.Join(" ",
-                "@" + p.Name,
-                typeStr,
-                GetDefaultValue(p),
-                isUDTT ? "readonly" : "").Trim();
+            var readonlyConstraint = isUDTT ? "readonly" : "";
+            return $"@{p.Name} {typeStr} {defaultValue} {readonlyConstraint}".Trim();
         }
 
         protected override string MakeColumnString(ColumnAttribute p, bool isReturnType)
         {
+            if (p is null)
+            {
+                throw new ArgumentNullException(nameof(p));
+            }
+
             var typeStr = MakeSqlTypeString(p);
             var defaultString = "";
             if (p.DefaultValue != null)
             {
-                defaultString = string.Format("default ({0})", GetDefaultValue(p));
+                var defaultValue = GetDefaultValue(p);
+                defaultString = $"default ({defaultValue})";
             }
             else if (p.IsIdentity)
             {
                 defaultString = "identity(1, 1)";
             }
 
-            return string.Format("{0} {1} {2} {3}",
-                MakeIdentifier(p.Name),
-                typeStr,
-                p.IsOptional ? "" : "NOT NULL",
-                defaultString);
+            var columnName = MakeIdentifier(p.Name);
+            var nullConstraint = p.IsOptional ? "" : "NOT NULL";
+            return $"{columnName} {typeStr} {nullConstraint} {defaultString}";
         }
 
         public override string MakeCreateColumnScript(ColumnAttribute prop)
         {
-            return string.Format("alter table {0} add {1} {2};",
-                MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
-                MakeIdentifier(prop.Name),
-                MakeSqlTypeString(prop));
+            if (prop is null)
+            {
+                throw new ArgumentNullException(nameof(prop));
+            }
+
+            var tableName = MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name);
+            var columnName = MakeIdentifier(prop.Name);
+            var columnType = MakeSqlTypeString(prop);
+            return $"alter table {tableName} add {columnName} {columnType};";
         }
 
         public override string MakeDropColumnScript(ColumnAttribute prop)
         {
-            return string.Format("alter table {0} drop column {1};",
-                MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name),
-                MakeIdentifier(prop.Name));
+            if (prop is null)
+            {
+                throw new ArgumentNullException(nameof(prop));
+            }
+
+            var tableName = MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name);
+            var columnName = MakeIdentifier(prop.Name);
+            return $"alter table {tableName} drop column {columnName};";
         }
 
         protected override string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial)
         {
+            if (final is null)
+            {
+                throw new ArgumentNullException(nameof(final));
+            }
+
+            if (initial is null)
+            {
+                throw new ArgumentNullException(nameof(initial));
+            }
+
             var valuesMatch = false;
             if (final.DefaultValue != null && initial.DefaultValue != null)
             {
@@ -490,63 +568,56 @@ end",
             }
             else
             {
-                return string.Format("Column default value has changed. Was {0}, now {1}.", initial.DefaultValue, final.DefaultValue);
+                return $"Column default value has changed. Was {initial.DefaultValue}, now {final.DefaultValue}.";
             }
         }
 
         public override string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial)
         {
-            var preamble = string.Format(
-                "alter table {0}",
-                MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name));
+            if (final is null)
+            {
+                throw new ArgumentNullException(nameof(final));
+            }
+
+            if (initial is null)
+            {
+                throw new ArgumentNullException(nameof(initial));
+            }
+
+            var tableName = MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name);
+            var preamble = $"alter table {tableName}";
+            var columnName = MakeIdentifier(final.Name);
+            var columnType = MakeSqlTypeString(final);
+            var conditionalColumnType = final.Include ? columnType : "";
 
             if (final.Include != initial.Include)
             {
-                return string.Format(
-                    "{0} {1} {2} {3};",
-                    preamble,
-                    final.Include ? "add" : "drop column",
-                    MakeIdentifier(final.Name),
-                    final.Include ? MakeSqlTypeString(final) : "")
-                    .Trim();
+                var modifier = final.Include ? "add" : "drop column";
+                return $"{preamble} {modifier} {columnName} {conditionalColumnType};".Trim();
             }
             else if (final.DefaultValue != initial.DefaultValue)
             {
+                var constraintName = MakeIdentifier("DEF_" + final.Name);
                 if (final.DefaultValue != null)
                 {
-                    return string.Format(
-                        "{0} add constraint {1} default({2}) for {3};",
-                        preamble,
-                        MakeIdentifier("DEF_" + final.Name),
-                        final.DefaultValue ?? "",
-                        final.Name);
+                    var defaultValue = final.DefaultValue ?? "";
+                    return $"{preamble} add constraint {constraintName} default({defaultValue}) for {final.Name};";
                 }
                 else
                 {
-                    return string.Format(
-                        "{0} drop constraint {1};",
-                        preamble,
-                        MakeIdentifier("DEF_" + final.Name));
+                    return $"{preamble} drop constraint {constraintName};";
                 }
             }
             else if (final.IsOptional != initial.IsOptional)
             {
-                return string.Format(
-                    "{0} alter column {1} {2} {3} null;",
-                    preamble,
-                    MakeIdentifier(final.Name),
-                    MakeSqlTypeString(final),
-                    final.IsOptional ? "" : "not");
+                var nullableType = final.IsOptional ? "" : "not";
+                return $"{preamble} alter column {columnName} {columnType} {nullableType} null;";
             }
             else if (final.SystemType != initial.SystemType
                 || final.Size != initial.Size
                 || final.Precision != initial.Precision)
             {
-                return string.Format(
-                    "{0} alter column {1} {2};",
-                    preamble,
-                    MakeIdentifier(final.Name),
-                    MakeSqlTypeString(final));
+                return $"{preamble} alter column {columnName} {columnType};";
             }
             else
             {
@@ -607,11 +678,9 @@ end",
             if (typeToString.ContainsKey(attr.SystemType))
             {
                 var typeStr = MakeSqlTypeString(attr);
-                return string.Format("{0} {1} {2}NULL {3}",
-                    attr.Name,
-                    typeStr,
-                    attr.IsOptional ? "" : "NOT ",
-                    !skipDefault ? attr.DefaultValue ?? "" : "").Trim();
+                var nullConstraintType = attr.IsOptional ? "" : "NOT ";
+                var defaultValue = !skipDefault ? attr.DefaultValue ?? "" : "";
+                return $"{attr.Name} {typeStr} {nullConstraintType}NULL {defaultValue}".Trim();
             }
             return null;
         }
@@ -655,46 +724,67 @@ end",
 
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
+            if (relation is null)
+            {
+                throw new ArgumentNullException(nameof(relation));
+            }
+
+            var fromTableName = MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name);
+            var constraintName = MakeIdentifier(relation.GetRelationshipName(this));
             var fromColumns = string.Join(", ", relation.FromColumns.Select(c => MakeIdentifier(c.Name)));
+            var toTableName = MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name);
             var toColumns = string.Join(", ", relation.To.PrimaryKey.KeyColumns.Select(c => MakeIdentifier(c.Name)));
 
-            return string.Format(
-@"alter table {0} add constraint {1}
-    foreign key({2})
-    references {3}({4});",
-                    MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    MakeIdentifier(relation.GetName(this)),
-                    fromColumns,
-                    MakeIdentifier(relation.To.Schema ?? DefaultSchemaName, relation.To.Name),
-                    toColumns);
+            return $@"alter table {fromTableName} add constraint {constraintName}
+    foreign key({fromColumns})
+    references {toTableName}({toColumns});";
         }
 
         public override string MakeDropRelationshipScript(Relationship relation)
         {
-            return string.Format(@"alter table {0} drop constraint {1}",
-                    MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name),
-                    MakeIdentifier(relation.GetName(this)));
+            if (relation is null)
+            {
+                throw new ArgumentNullException(nameof(relation));
+            }
+
+            var tableName = MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name);
+            var constraintName = MakeIdentifier(relation.GetRelationshipName(this));
+            return $@"alter table {tableName} drop constraint {constraintName}";
         }
 
         public override string MakeDropPrimaryKeyScript(PrimaryKey key)
         {
-            return string.Format(@"alter table {0} drop constraint {1};",
-                MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
-                MakeIdentifier(key.Name));
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            var tableName = MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name);
+            var constraintName = base.MakeIdentifier(key.Name);
+            return $@"alter table {tableName} drop constraint {constraintName};";
         }
 
         public override string MakeCreatePrimaryKeyScript(PrimaryKey key)
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            var tableName = MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name);
+            var constraintName = MakeIdentifier(key.Name);
             var keys = string.Join(", ", key.KeyColumns.Select(c => MakeIdentifier(c.Name)));
-            return string.Format(@"alter table {0} add constraint {1} primary key({2});",
-                MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name),
-                MakeIdentifier(key.Name),
-                keys);
+            return $@"alter table {tableName} add constraint {constraintName} primary key({keys});";
         }
 
 
         public override bool DescribesIdentity(InformationSchema.Columns column)
         {
+            if (column is null)
+            {
+                throw new ArgumentNullException(nameof(column));
+            }
+
             return column.is_identity == 1;
         }
 
@@ -707,11 +797,26 @@ end",
 
         public override string MakeCreateDatabaseLoginScript(string userName, string password, string database)
         {
-            return string.Format(@"create login {0} with password = '{1}', default_database = {2};
-use {2};
-create user {0} for login {0};
-alter user {0} with default_schema = dbo;
-alter role db_owner add member {0};", userName, password, database);
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new ArgumentException("Must provide a user name", nameof(userName));
+            }
+
+            if (string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentException("Must provide a password", nameof(password));
+            }
+
+            if (string.IsNullOrEmpty(database))
+            {
+                throw new ArgumentException("Must provide a database name", nameof(database));
+            }
+
+            return $@"create login {userName} with password = '{password}', default_database = {database};
+use {database};
+create user {userName} for login {userName};
+alter user {userName} with default_schema = dbo;
+alter role db_owner add member {userName};";
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -890,12 +995,12 @@ order by ordinal_position;")]
         /// <param name="data"></param>
         public override void InsertAll(Type t, System.Collections.IEnumerable data)
         {
-            if (data != null)
+            if (t != null && data != null)
             {
                 var attr = DatabaseObjectAttribute.GetAttribute(t);
                 if (attr == null)
                 {
-                    throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
+                    throw new Exception($"Type {t.Namespace}.{t.Name} could not be automatically inserted.");
                 }
                 using var tableData = MakeDataTable(attr.Name, t, data);
 
@@ -966,6 +1071,11 @@ order by ordinal_position;")]
 
         public TableAttribute MakeUDTTTableAttribute(Type type)
         {
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var elementType = type;
             if (elementType.IsArray)
             {
@@ -987,12 +1097,17 @@ order by ordinal_position;")]
             {
                 attr = DatabaseObjectAttribute.GetAttribute(elementType);
             }
-            attr.Name = elementType.Name + "UDTT";
+            attr.Name = $"{elementType.Name}UDTT";
             return attr;
         }
 
         public static bool IsUDTT(Type t)
         {
+            if (t is null)
+            {
+                throw new ArgumentNullException(nameof(t));
+            }
+
             var isUDTT = false;
             if (t.IsArray)
             {
@@ -1035,7 +1150,7 @@ order by ordinal_position;")]
                     string.IsNullOrWhiteSpace(adminUser) ? null : "-U " + adminUser,
                     string.IsNullOrWhiteSpace(adminPass) ? null : "-P " + adminPass,
                     (database == null) ? null : "-d " + database,
-                    string.Format("-Q \"{0}\"", query)
+                    $"-Q \"{query}\""
                 });
             OnStandardError -= onStdErrorOutput;
             return complete && succeeded;
@@ -1043,6 +1158,11 @@ order by ordinal_position;")]
 
         public override string MakeInsertScript(TableAttribute table, object value)
         {
+            if (table is null)
+            {
+                throw new ArgumentNullException(nameof(table));
+            }
+
             var columns = table.Properties
                 .Where(p => p.Include && !p.IsIdentity && (p.IsIncludeSet || p.DefaultValue == null))
                 .ToArray();
@@ -1059,13 +1179,18 @@ order by ordinal_position;")]
                 else
                 {
                     var t = v.GetType();
+                    if(t == typeof(string))
+                    {
+                        v = ((string)v).Replace("'", "''");
+                    }
+
                     if (DataConnector.IsTypeBarePrimitive(t))
                     {
                         val = v.ToString();
                     }
                     else if (DataConnector.IsTypeQuotedPrimitive(t))
                     {
-                        val = string.Format("'{0}'", v);
+                        val = $"'{v}'";
                     }
                     else
                     {
@@ -1075,10 +1200,10 @@ order by ordinal_position;")]
                 return val;
             }).ToArray();
 
-            return string.Format("insert into {0}({1}) values({2});",
-                MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name),
-                string.Join(", ", columnNames),
-                string.Join(", ", columnValues));
+            var tableName = MakeIdentifier(table.Schema ?? DefaultSchemaName, table.Name);
+            var columnNameList = string.Join(", ", columnNames);
+            var columnValueList = string.Join(", ", columnValues);
+            return $"insert into {tableName}({columnNameList}) values({columnValueList});";
         }
     }
 }

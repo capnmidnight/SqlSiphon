@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -30,6 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System;
+using System.Globalization;
 using System.Reflection;
 
 namespace SqlSiphon.Mapping
@@ -83,7 +84,17 @@ namespace SqlSiphon.Mapping
 
         public ColumnAttribute(TableAttribute table, InformationSchema.Columns column, bool includeInPK, IDatabaseStateReader dal)
         {
-            Table = table;
+            if (column is null)
+            {
+                throw new ArgumentNullException(nameof(column));
+            }
+
+            if (dal is null)
+            {
+                throw new ArgumentNullException(nameof(dal));
+            }
+
+            Table = table ?? throw new ArgumentNullException(nameof(table));
             Name = column.column_name;
             var defVal = column.column_default;
             IsIdentity = dal.DescribesIdentity(column);
@@ -122,7 +133,7 @@ namespace SqlSiphon.Mapping
                 }
                 else
                 {
-                    value = Convert.ChangeType(value, targetType);
+                    value = Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
                 }
             }
 
@@ -132,11 +143,7 @@ namespace SqlSiphon.Mapping
             }
             catch (Exception exp)
             {
-                throw new Exception(string.Format(
-                    "Cannot set property value for property {0}.{1}. Reason: {2}.",
-                    originalProperty.DeclaringType.Name,
-                    originalProperty.Name,
-                    exp.Message), exp);
+                throw new Exception($"Cannot set property value for property {originalProperty.DeclaringType.Name}.{originalProperty.Name}. Reason: {exp.Message}.", exp);
             }
         }
 
@@ -181,11 +188,7 @@ namespace SqlSiphon.Mapping
 
         public override string ToString()
         {
-            return string.Format("COLUMN [{0}].[{1}].[{2}] {3}",
-                Table?.Schema,
-                Table?.Name,
-                Name,
-                SystemType?.FullName);
+            return $"COLUMN [{Table?.Schema}].[{Table?.Name}].[{Name}] {SystemType?.FullName}";
         }
     }
 }

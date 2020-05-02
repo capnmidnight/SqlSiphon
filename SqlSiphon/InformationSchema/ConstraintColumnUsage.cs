@@ -1,4 +1,4 @@
-﻿namespace SqlSiphon.InformationSchema
+namespace SqlSiphon.InformationSchema
 {
     /// <summary>
     /// This is an entity object for the SQL standard 
@@ -20,7 +20,7 @@
 
         public override string ToString()
         {
-            return string.Format("ConstraintColumnUsage: {0}({1}.{2})", constraint_name, table_name, column_name);
+            return $"ConstraintColumnUsage: {constraint_name}({table_name}.{column_name})";
         }
     }
 }

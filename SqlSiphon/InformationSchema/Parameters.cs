@@ -1,4 +1,4 @@
-﻿using SqlSiphon.Mapping;
+using SqlSiphon.Mapping;
 
 namespace SqlSiphon.InformationSchema
 {
@@ -33,7 +33,7 @@ namespace SqlSiphon.InformationSchema
 
         public override string ToString()
         {
-            return string.Format("Parameter: {0}:({1})", parameter_name, data_type);
+            return $"Parameter: {parameter_name}:({data_type})";
         }
     }
 }

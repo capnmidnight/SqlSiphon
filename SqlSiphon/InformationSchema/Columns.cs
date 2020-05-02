@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -55,7 +55,7 @@ namespace SqlSiphon.InformationSchema
 
         public override string ToString()
         {
-            return string.Format("Column: {0}.{1}:({2})", table_name, column_name, data_type);
+            return $"Column: {table_name}.{column_name}:({data_type})";
         }
     }
 }

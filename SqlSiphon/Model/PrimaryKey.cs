@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 
 using SqlSiphon.Mapping;
 
@@ -59,10 +59,18 @@ namespace SqlSiphon.Model
         {
             get
             {
-                return base.Name ?? (Table != null ? string.Format(
-                "pk_{0}_{1}",
-                Table.Schema,
-                Table.Name).Replace("__", "_") : null);
+                if (base.Name is object)
+                {
+                    return base.Name;
+                }
+                else if (Table is object)
+                {
+                    return $"pk_{Table.Schema}_{Table.Name}".Replace("__", "_");
+                }
+                else
+                {
+                    return null;
+                }
             }
             set
             {

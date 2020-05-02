@@ -86,7 +86,7 @@ namespace SqlSiphon
                     var changeReason = isChanged(f, i);
                     if (changeReason != null)
                     {
-                        changeReason = string.Format("{0} has changed, {1}", name, changeReason);
+                        changeReason = $"{name} has changed, {changeReason}";
                         Scripts.Add(new ScriptStatus(dropType, key, makeDropScript(i), changeReason));
                         Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), changeReason));
                     }

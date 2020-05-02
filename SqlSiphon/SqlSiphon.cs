@@ -56,12 +56,7 @@ namespace SqlSiphon
         where DataAdapterT : DbDataAdapter, new()
         where DataReaderT : DbDataReader
     {
-        protected static readonly bool IsOnMonoRuntime;
-        static SqlSiphon()
-        {
-            IsOnMonoRuntime = Type.GetType("Mono.Runtime") != null;
-        }
-
+        protected static readonly bool IsOnMonoRuntime = Type.GetType("Mono.Runtime") != null;
         protected static List<ColumnAttribute> GetProperties(Type type)
         {
             var attr = DatabaseObjectAttribute.GetAttribute(type) ?? new TableAttribute(type);
@@ -98,7 +93,7 @@ namespace SqlSiphon
         private SqlSiphon(bool isConnectionOwned)
         {
             FKNameRegex = new Regex(
-                string.Format(@"add constraint \{0}([\w_]+)\{1}", IdentifierPartBegin, IdentifierPartEnd),
+                $@"add constraint \{IdentifierPartBegin}([\w_]+)\{IdentifierPartEnd}",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
             this.isConnectionOwned = isConnectionOwned;
         }
@@ -199,7 +194,7 @@ namespace SqlSiphon
         {
             var identifier = string.Join(IdentifierPartSeperator, parts
                 .Where(p => p != null)
-                .Select(p => string.Format("{0}{1}{2}", IdentifierPartBegin, p, IdentifierPartEnd))
+                .Select(p => $"{IdentifierPartBegin}{p}{IdentifierPartEnd}")
                 .ToArray());
             return identifier;
         }
@@ -216,6 +211,11 @@ namespace SqlSiphon
 
         public void AlterDatabase(ScriptStatus script)
         {
+            if (script is null)
+            {
+                throw new ArgumentNullException(nameof(script));
+            }
+
             ExecuteQuery(script.Script);
             if (script.ScriptType == ScriptType.InitializeData)
             {
@@ -235,6 +235,11 @@ namespace SqlSiphon
 
         public void MarkScriptAsRan(ScriptStatus script)
         {
+            if (script is null)
+            {
+                throw new ArgumentNullException(nameof(script));
+            }
+
             if (script.ScriptType == ScriptType.InitializeData)
             {
                 this.InsertOne(script);
@@ -250,12 +255,17 @@ namespace SqlSiphon
         /// <param name="data"></param>
         public virtual void InsertAll(Type t, System.Collections.IEnumerable data)
         {
+            if (t is null)
+            {
+                throw new ArgumentNullException(nameof(t));
+            }
+
             if (data != null)
             {
                 var attr = DatabaseObjectAttribute.GetAttribute(t);
                 if (attr == null)
                 {
-                    throw new Exception(string.Format("Type {0}.{1} could not be automatically inserted.", t.Namespace, t.Name));
+                    throw new Exception($"Type {t.Namespace}.{t.Name} could not be automatically inserted.");
                 }
 
                 // don't upload auto-incrementing identity columns
@@ -269,10 +279,10 @@ namespace SqlSiphon
                 var columnNames = columns.Select(c => c.Name);
                 var parameterNames = columnNames.Select(c => "@" + c);
 
-                var query = string.Format("insert into {0}({1}) values({2})",
-                    MakeIdentifier(attr.Schema ?? DefaultSchemaName, attr.Name),
-                    string.Join(", ", columnNames),
-                    string.Join(", ", parameterNames));
+                var tableName = MakeIdentifier(attr.Schema ?? DefaultSchemaName, attr.Name);
+                var columnNamesStr = string.Join(", ", columnNames);
+                var parameterNamesStr = string.Join(", ", parameterNames);
+                var query = $"insert into {tableName}({columnNamesStr}) values({parameterNamesStr})";
 
                 using (var command = BuildCommand(query, CommandType.Text, methParams))
                 {
@@ -443,7 +453,7 @@ namespace SqlSiphon
             }
             catch (Exception exp)
             {
-                throw new Exception(string.Format("Could not execute command: {0}. Reason: {1}.", command.CommandText, exp.Message), exp);
+                throw new Exception($"Could not execute command: {command.CommandText}. Reason: {exp.Message}.", exp);
             }
         }
 
@@ -451,19 +461,15 @@ namespace SqlSiphon
         {
             if (!string.IsNullOrWhiteSpace(query))
             {
-                using (var command = BuildCommand(query, CommandType.Text, null))
-                {
-                    Execute(command);
-                }
+                using var command = BuildCommand(query, CommandType.Text, null);
+                Execute(command);
             }
         }
 
         public void Execute(params object[] parameters)
         {
-            using (var command = ConstructCommand(parameters))
-            {
-                Execute(command, parameters);
-            }
+            using var command = ConstructCommand(parameters);
+            Execute(command, parameters);
         }
 
         /// <summary>
@@ -483,23 +489,22 @@ namespace SqlSiphon
 
         private DataSet GetDataSet(CommandT command, params object[] parameters)
         {
-            var result = new DataSet();
-            using (var adapter = new DataAdapterT())
+            using var adapter = new DataAdapterT
             {
-                adapter.SelectCommand = command;
-                //Open(); // open is not necessary for DataAdapter.Fill()
-                _ = adapter.Fill(result);
-            }
+                SelectCommand = command
+            };
+            //Open(); // open is not necessary for DataAdapter.Fill()
+
+            var result = new DataSet();
+            _ = adapter.Fill(result);
             CopyOutputParameters(parameters, command.Parameters);
             return result;
         }
 
         public DataSet GetDataSet(params object[] parameters)
         {
-            using (var command = ConstructCommand(parameters))
-            {
-                return GetDataSet(command, parameters);
-            }
+            using var command = ConstructCommand(parameters);
+            return GetDataSet(command, parameters);
         }
 
         private DataReaderT GetReader(CommandT command, params object[] parameters)
@@ -515,7 +520,7 @@ namespace SqlSiphon
                 }
                 catch (Exception exp)
                 {
-                    throw new Exception(string.Format("Could not execute: {0}. Reason: {1}.", command.CommandText, exp.Message), exp);
+                    throw new Exception($"Could not execute: {command.CommandText}. Reason: {exp.Message}.", exp);
                 }
             }
             return (DataReaderT)reader;
@@ -523,10 +528,8 @@ namespace SqlSiphon
 
         public DbDataReader GetReader(params object[] parameters)
         {
-            using (var command = ConstructCommand(parameters))
-            {
-                return GetReader(command, parameters);
-            }
+            using var command = ConstructCommand(parameters);
+            return GetReader(command, parameters);
         }
 
         /// <summary>
@@ -570,8 +573,9 @@ namespace SqlSiphon
                         constructor = type.GetConstructor(Type.EmptyTypes);
                         if (constructor == null)
                         {
-                            throw new Exception(string.Format("Entity classes need a default constructor or a constructor that matches the result set. This data reader had columns:\n{0}",
-                                string.Join("\n", columnNames.Select((n, i) => string.Format("{0}: {1} {2}", i, n, columnTypes[i].Name)))));
+                            var columnDefs = columnNames.Select((n, i) => $"{i}: {n} {columnTypes[i].Name}");
+                            var columnDefString = string.Join("\n", columnDefs);
+                            throw new Exception($"Entity classes need a default constructor or a constructor that matches the result set. This data reader had columns:\n{columnDefString}");
                         }
                     }
 
@@ -658,7 +662,8 @@ namespace SqlSiphon
         {
             var currentType = dalType;
             var types = new List<Type>();
-            while (currentType != typeof(object))
+            while (currentType != typeof(object)
+                && currentType is object)
             {
                 var asm = currentType.Assembly;
                 types.AddRange(asm.GetTypes());
@@ -671,13 +676,18 @@ namespace SqlSiphon
         protected string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
         {
             var arr = collect.ToArray();
-            separator = separator ?? "," + Environment.NewLine + "    ";
+            separator ??= $",{Environment.NewLine}    ";
             var str = string.Join(separator, arr.Select(format));
             return str;
         }
 
         protected string MakeColumnSection(TableAttribute info, bool isReturnType)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var columns = info.Properties.Where(p => p.Include).ToArray();
             return ArgumentList(columns, p => MakeColumnString(p, isReturnType).Trim());
         }
@@ -714,6 +724,16 @@ namespace SqlSiphon
 
         public virtual string RoutineChanged(RoutineAttribute a, RoutineAttribute b)
         {
+            if (a is null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (b is null)
+            {
+                throw new ArgumentNullException(nameof(b));
+            }
+
             var scriptA = MakeCreateRoutineScript(a);
             var scriptB = MakeCreateRoutineScript(b, false);
             if (scriptA == scriptB)
@@ -753,6 +773,16 @@ namespace SqlSiphon
 
         public virtual string ColumnChanged(ColumnAttribute final, ColumnAttribute initial)
         {
+            if (final is null)
+            {
+                throw new ArgumentNullException(nameof(final));
+            }
+
+            if (initial is null)
+            {
+                throw new ArgumentNullException(nameof(initial));
+            }
+
             string changeReason = null;
             var finalType = final.SystemType;
             if (finalType.IsEnum)
@@ -778,19 +808,19 @@ namespace SqlSiphon
             else if (final.Name.ToLowerInvariant() != initial.Name.ToLowerInvariant())
             {
                 // this should never happen, because we match columns by name anyway
-                changeReason = string.Format("Column name has changed. Was {0}, now {1}", initial.Name, final.Name);
+                changeReason = $"Column name has changed. Was {initial.Name}, now {final.Name}";
             }
             else if (finalType != initial.SystemType)
             {
-                changeReason = string.Format("Column type has changed. Was {0}, now {1}.", initial.SystemType.Name, finalType.Name);
+                changeReason = $"Column type has changed. Was {initial.SystemType.Name}, now {finalType.Name}.";
             }
             else if (final.Size != initial.Size)
             {
-                changeReason = string.Format("Column size has changed. Was {0}, now {1}.", initial.Size, final.Size);
+                changeReason = $"Column size has changed. Was {initial.Size}, now {final.Size}.";
             }
             else if (final.Precision != initial.Precision)
             {
-                changeReason = string.Format("Column precision has changed. Was {0}, now {1}.", initial.Precision, final.Precision);
+                changeReason = $"Column precision has changed. Was {initial.Precision}, now {final.Precision}.";
             }
             else if (final.DefaultValue != initial.DefaultValue)
             {
@@ -801,6 +831,16 @@ namespace SqlSiphon
 
         public virtual string RelationshipChanged(Relationship a, Relationship b)
         {
+            if (a is null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (b is null)
+            {
+                throw new ArgumentNullException(nameof(b));
+            }
+
             var aFromTableName = MakeIdentifier(a.From.Schema, a.From.Name).ToLowerInvariant();
             var aFromColumnNames = a.FromColumns.Select(c => c.Name.ToLowerInvariant());
             var aToTableName = MakeIdentifier(a.To.Schema, a.To.Name).ToLowerInvariant();
@@ -816,6 +856,16 @@ namespace SqlSiphon
 
         public virtual string IndexChanged(TableIndex a, TableIndex b)
         {
+            if (a is null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (b is null)
+            {
+                throw new ArgumentNullException(nameof(b));
+            }
+
             var aTableName = MakeIdentifier(a.Table.Schema, a.Table.Name).ToLowerInvariant();
             var bTableName = MakeIdentifier(b.Table.Schema, b.Table.Name).ToLowerInvariant();
             var aColumnNames = a.Columns.Select(c => c.ToLowerInvariant());
@@ -828,6 +878,16 @@ namespace SqlSiphon
 
         public virtual string KeyChanged(PrimaryKey final, PrimaryKey initial)
         {
+            if (final is null)
+            {
+                throw new ArgumentNullException(nameof(final));
+            }
+
+            if (initial is null)
+            {
+                throw new ArgumentNullException(nameof(initial));
+            }
+
             if (final.Name.ToLowerInvariant() != initial.Name.ToLowerInvariant())
             {
                 return "Primary key name changed";
@@ -868,12 +928,13 @@ namespace SqlSiphon
 
         public virtual string MakeCreateCatalogueScript(string catalogueName)
         {
-            return string.Format("create database {0};", catalogueName);
+            return $"create database {catalogueName};";
         }
 
         private string MakeSchemaScript(string op, string schemaName)
         {
-            return string.Format("{0} schema {1};", op, MakeIdentifier(schemaName));
+            schemaName = MakeIdentifier(schemaName);
+            return $"{op} schema {schemaName};";
         }
 
         public virtual string MakeCreateSchemaScript(string schemaName)
@@ -901,7 +962,8 @@ namespace SqlSiphon
         {
             var succeeded = true;
             var shortName = new System.IO.FileInfo(path).Name;
-            ToOutput(string.Format(":> {0} {1}\r\n", shortName, string.Join(" ", args)));
+            var argsString = string.Join(" ", args);
+            ToOutput($":> {shortName} {argsString}\r\n");
             var procInfo = new ProcessStartInfo
             {
                 FileName = path,
@@ -949,11 +1011,26 @@ namespace SqlSiphon
         protected abstract string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial);
         public virtual void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {
+            if (routineText is null)
+            {
+                throw new ArgumentNullException(nameof(routineText));
+            }
+
+            if (routine is null)
+            {
+                throw new ArgumentNullException(nameof(routine));
+            }
+
             routine.Query = routineText;
         }
 
         protected string MakeParameterSection(RoutineAttribute info)
         {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
             var parameters = info.Parameters.Select(MakeParameterString);
             var parameterSection = string.Join(", ", parameters);
             return parameterSection;
