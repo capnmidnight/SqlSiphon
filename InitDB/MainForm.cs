@@ -15,6 +15,8 @@ namespace InitDB
 {
     public partial class MainForm : Form
     {
+        private static Version AppVersion => Assembly.GetExecutingAssembly().GetName().Version;
+
         public const string DEFAULT_SESSION_NAME = "<none>";
         private const string SESSIONS_FILENAME = "sessions.dat";
         private const string OPTIONS_FILENAME = "options.dat";
@@ -108,9 +110,7 @@ namespace InitDB
             }
             Icon = Properties.Resources.InitDBLogo;
             statusRTB.Text = string.Empty;
-            var assembly = Assembly.GetExecutingAssembly();
-            var version = assembly.GetName().Version;
-            Text += " v" + version.ToString(4);
+            Text += " v" + AppVersion.ToString(4);
             LoadSessions();
             LoadOptions();
             optionsDialog.BrowseCommandPathClick += optionsDialog_BrowseCommandPathClick;
@@ -850,9 +850,8 @@ namespace InitDB
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var initDBVersion = Assembly.GetExecutingAssembly().GetName().Version;
             var sqlSiphonVersion = typeof(ISqlSiphon).Assembly.GetName().Version;
-            MessageBox.Show($@"               InitDB (v{initDBVersion})
+            MessageBox.Show($@"               InitDB (v{AppVersion})
            for SqlSiphon (v{sqlSiphonVersion})
 
 by Sean T. McBeth (v1) (sean@seanmcbeth.com)");
