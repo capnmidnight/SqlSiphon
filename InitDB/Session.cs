@@ -70,7 +70,10 @@ namespace InitDB
                     }
                     else if (k == "ScriptTypes")
                     {
-                        o = v.Split(ARRAY_VALUE_SEPARATOR).Select(p => (ScriptType)System.Enum.Parse(typeof(ScriptType), p)).ToArray();
+                        o = v.Split(ARRAY_VALUE_SEPARATOR)
+                            .Where(p => p.Length > 0)
+                            .Select(p => (ScriptType)Enum.Parse(typeof(ScriptType), p))
+                            .ToArray();
                     }
                     else
                     {
