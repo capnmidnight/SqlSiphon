@@ -13,24 +13,14 @@ namespace SqlSiphon.Examples.SqlServer.Runner
     {
         public static void Main()
         {
-            var factories = new IDataConnectorFactory[]{
-                new SqlSiphon.SqlServer.SqlServerDataConnectorFactory(),
-                new Postgres.PostgresDataConnectorFactory()
-            };
+            var factory = new Postgres.PostgresDataConnectorFactory();
             using var db = new BasicDAL();
-            foreach (var factory in factories)
+            var dbTypeName = DataConnector.GetDatabaseVendorName(factory.GetType());
+            var server = "localhost";
+            using (db.Connection = factory.MakeConnector(server, "TestDB", "TestDBUser", "TestDBPassword"))
             {
-                var dbTypeName = DataConnector.GetDatabaseVendorName(factory.GetType());
-                var server = "localhost";
-                if (factory is SqlSiphon.SqlServer.SqlServerDataConnectorFactory)
-                {
-                    server += "\\SQLEXPRESS";
-                }
-                using (db.Connection = factory.MakeConnector(server, "TestDB", "TestDBUser", "TestDBPassword"))
-                {
-                    Console.WriteLine("Getting data from {0}", dbTypeName);
-                    Console.WriteLine(string.Join(", ", db.GetAllRoles()));
-                }
+                Console.WriteLine("Getting data from {0}", dbTypeName);
+                Console.WriteLine(string.Join(", ", db.GetAllRoles()));
             }
         }
     }
