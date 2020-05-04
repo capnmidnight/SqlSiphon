@@ -129,9 +129,20 @@ namespace SqlSiphon.Postgres
 
         private static readonly Dictionary<string, int> defaultTypeSizes = new Dictionary<string, int>
         {
-            ["float4"] = 24,
+            ["double precision"] = 53,
             ["float8"] = 53,
-            ["integer"] = 32
+            ["int8"] = 64,
+            ["real"] = 24,
+            ["float4"] = 24,
+            ["integer"] = 32,
+            ["int"] = 32,
+            ["int4"] = 32,
+            ["serial"] = 32,
+            ["serial4"] = 32,
+            ["smallint"] = 16,
+            ["int2"] = 16,
+            ["smallserial"] = 16,
+            ["serial2"] = 16,
         };
 
 
