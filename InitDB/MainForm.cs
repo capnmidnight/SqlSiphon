@@ -274,7 +274,7 @@ namespace InitDB
                         {
                             return new Session(l);
                         }
-                        catch
+                        catch(Exception exp)
                         {
                             return null;
                         }
