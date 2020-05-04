@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
@@ -7,7 +7,7 @@ namespace SqlSiphon
 {
     public interface IAssemblyStateReader
     {
-        DatabaseState GetFinalState(Type dalType, string userName, string password);
+        DatabaseState GetFinalState(Type dalType, string userName, string password, string database);
 
         string ColumnChanged(ColumnAttribute final, ColumnAttribute initial);
         string RoutineChanged(RoutineAttribute final, RoutineAttribute initial);

@@ -1048,9 +1048,9 @@ order by ordinal_position;")]
             return ssState;
         }
 
-        public override DatabaseState GetFinalState(Type dalType, string userName, string password)
+        public override DatabaseState GetFinalState(Type dalType, string userName, string password, string database)
         {
-            var state = base.GetFinalState(dalType, userName, password);
+            var state = base.GetFinalState(dalType, userName, password, database);
             var ssState = new SqlServerDatabaseState(state);
             var types = new HashSet<Type>();
             foreach (var parameter in ssState.Functions.Values.SelectMany(f => f.Parameters))

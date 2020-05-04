@@ -69,7 +69,7 @@ namespace SqlSiphon
         /// mappings to database objects.
         /// </summary>
         /// <param name="asm"></param>
-        public DatabaseState(IEnumerable<Type> types, IAssemblyStateReader asm, IDatabaseScriptGenerator dal, string userName, string password)
+        public DatabaseState(IEnumerable<Type> types, IAssemblyStateReader asm, IDatabaseScriptGenerator dal, string userName, string password, string database)
             : this()
         {
             if (types is null)
@@ -86,6 +86,8 @@ namespace SqlSiphon
             {
                 throw new ArgumentNullException(nameof(dal));
             }
+
+            CatalogueName = database;
 
             PostExecute = new List<Action<IDataConnector>>();
             if (!string.IsNullOrWhiteSpace(userName))

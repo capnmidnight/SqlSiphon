@@ -432,11 +432,14 @@ namespace InitDB
 
                 db.OnStandardError += db_OnStandardError;
                 db.OnStandardOutput += db_OnStandardOutput;
+                var exe = GetExecutable(db);
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var database = script.ScriptType == ScriptType.InstallExtension ? databaseTB.Text : null;
                 succeeded = db.RunCommandLine(
-                    GetExecutable(db),
-                    Application.UserAppDataPath,
+                    exe,
+                    appData,
                     serverTB.Text,
-                    script.ScriptType == ScriptType.InstallExtension ? databaseTB.Text : null,
+                    database,
                     adminUserTB.Text,
                     adminPassTB.Text,
                     script.Script);
@@ -470,7 +473,7 @@ namespace InitDB
         {
             var r = ObjectFilter;
             var initial = db.GetInitialState(databaseTB.Text, r);
-            var final = db.GetFinalState(CurrentDataAccessLayerType, sqlUserTB.Text, sqlPassTB.Text);
+            var final = db.GetFinalState(CurrentDataAccessLayerType, sqlUserTB.Text, sqlPassTB.Text, databaseTB.Text);
             return final.Diff(initial, db, db);
         }
 

@@ -658,7 +658,7 @@ namespace SqlSiphon
             return new DatabaseState(catalogueName, filter, this);
         }
 
-        public virtual DatabaseState GetFinalState(Type dalType, string userName, string password)
+        public virtual DatabaseState GetFinalState(Type dalType, string userName, string password, string database)
         {
             var currentType = dalType;
             var types = new List<Type>();
@@ -669,7 +669,7 @@ namespace SqlSiphon
                 types.AddRange(asm.GetTypes());
                 currentType = currentType.BaseType;
             }
-            var final = new DatabaseState(types, this, this, userName, password);
+            var final = new DatabaseState(types, this, this, userName, password, database);
             return final;
         }
 

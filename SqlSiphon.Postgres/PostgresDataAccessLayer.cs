@@ -429,9 +429,9 @@ namespace SqlSiphon.Postgres
             return pgState;
         }
 
-        public override DatabaseState GetFinalState(Type dalType, string userName, string password)
+        public override DatabaseState GetFinalState(Type dalType, string userName, string password, string database)
         {
-            var state = base.GetFinalState(dalType, userName, password);
+            var state = base.GetFinalState(dalType, userName, password, database);
             var pgState = new PostgresDatabaseState(state);
             var guidType = typeof(Guid);
 
