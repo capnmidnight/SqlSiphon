@@ -419,11 +419,13 @@ namespace InitDB
             ToOutput(HORIZONTAL_LINE);
             ToOutput($"{script.ScriptType} {script.Name}...");
 
-            if (script.ScriptType == ScriptType.CreateCatalogue
-                || script.ScriptType == ScriptType.CreateDatabaseLogin
-                || script.ScriptType == ScriptType.InstallExtension)
+            if (script.ScriptType != ScriptType.CreateCatalogue
+                && script.ScriptType != ScriptType.CreateDatabaseLogin)
             {
-
+                db.AlterDatabase(script);
+            }
+            else
+            {
                 var db_OnStandardError = new IOEventHandler((sender, args) =>
                 {
                     succeeded = false;
@@ -451,10 +453,6 @@ namespace InitDB
                     // wait a beat for the database to catch up.
                     System.Threading.Thread.Sleep(5000);
                 }
-            }
-            else
-            {
-                db.AlterDatabase(script);
             }
 
             ToOutput(succeeded ? "succeeded!" : "failed.");
