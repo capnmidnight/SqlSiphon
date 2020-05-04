@@ -25,6 +25,10 @@ namespace InitDB
         public static readonly Type[] CONNECTION_TYPES = GetConnectionTypes().ToArray();
         private static IEnumerable<Type> GetConnectionTypes()
         {
+#if DEBUG
+            yield return typeof(SqlSiphon.Postgres.PostgresDataConnectorFactory);
+            yield return typeof(SqlSiphon.SqlServer.SqlServerDataConnectorFactory);
+#else
             var assemblies = new List<Assembly>();
 
             foreach (var directory in new FileInfo(Application.ExecutablePath)
@@ -58,6 +62,7 @@ namespace InitDB
                     }
                 }
             }
+#endif
         }
 
         private static string UnrollStackTrace(Exception e)
