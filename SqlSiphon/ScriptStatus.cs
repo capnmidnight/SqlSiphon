@@ -11,6 +11,7 @@ namespace SqlSiphon
         CreateDatabaseLogin,
         CreateSchema,
         InstallExtension,
+        AlterSettings,
         CreateTable,
         CreateColumn,
         TranslateData,
@@ -28,7 +29,6 @@ namespace SqlSiphon
         CreateRoutine,
         DropIndex,
         CreateIndex,
-        AlterSettings,
         InitializeData
     }
 
