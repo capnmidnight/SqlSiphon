@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <UseWindowsForms>True</UseWindowsForms>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>InitDB</RootNamespace>
     <AssemblyName>InitDB</AssemblyName>
@@ -10,7 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
     <PackageReference Include="jacobslusser.ScintillaNET" Version="3.6.3" />
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj" />
   </ItemGroup>
