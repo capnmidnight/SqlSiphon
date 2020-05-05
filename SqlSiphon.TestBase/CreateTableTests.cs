@@ -16,62 +16,60 @@ namespace SqlSiphon.TestBase
         {
             // We aren't opening a connection, we're just trying to generate scripts
             // so it shouldn't be a problem to provide no connection string.
-            using (var ss = MakeConnector())
+            using var ss = MakeConnector();
+            var t = typeof(T);
+            var table = DatabaseObjectAttribute.GetAttribute(t);
+            var sb = new System.Text.StringBuilder();
+            sb.Append(ss.MakeCreateTableScript(table));
+            if (table.PrimaryKey != null)
             {
-                var t = typeof(T);
-                var table = DatabaseObjectAttribute.GetAttribute(t);
-                var sb = new System.Text.StringBuilder();
-                sb.Append(ss.MakeCreateTableScript(table));
-                if (table.PrimaryKey != null)
-                {
-                    sb.AppendLine();
-                    sb.AppendLine("--");
-                    sb.Append(ss.MakeCreatePrimaryKeyScript(table.PrimaryKey));
-                }
+                sb.AppendLine();
+                sb.AppendLine("--");
+                sb.Append(ss.MakeCreatePrimaryKeyScript(table.PrimaryKey));
+            }
 
-                var relationships = table.GetRelationships();
-                if (relationships.Count > 0)
-                {
-                    var tables = new Dictionary<Type, TableAttribute>
+            var relationships = table.GetRelationships();
+            if (relationships.Count > 0)
+            {
+                var tables = new Dictionary<Type, TableAttribute>
                     {
                         { t, table }
                     };
-                    sb.AppendLine();
-                    sb.Append("--");
-                    foreach (var rel in relationships)
-                    {
-                        if (!tables.ContainsKey(rel.ToType))
-                        {
-                            tables.Add(rel.ToType, DatabaseObjectAttribute.GetAttribute(rel.ToType));
-                        }
-                        rel.ResolveColumns(tables, ss);
-                        sb.AppendLine();
-                        sb.Append(ss.MakeCreateRelationshipScript(rel));
-                    }
-                }
-
-                if (table.Indexes.Count > 0)
+                sb.AppendLine();
+                sb.Append("--");
+                foreach (var rel in relationships)
                 {
-                    sb.AppendLine();
-                    sb.Append("--");
-                    foreach (var val in table.Indexes.Values)
+                    if (!tables.ContainsKey(rel.ToType))
                     {
-                        sb.AppendLine();
-                        sb.Append(ss.MakeCreateIndexScript(val));
+                        tables.Add(rel.ToType, DatabaseObjectAttribute.GetAttribute(rel.ToType));
                     }
-                }
-                if (table.EnumValues.Count > 0)
-                {
+                    rel.ResolveColumns(tables, ss);
                     sb.AppendLine();
-                    sb.Append("--");
-                    foreach (var val in table.EnumValues)
-                    {
-                        sb.AppendLine();
-                        sb.Append(ss.MakeInsertScript(table, val));
-                    }
+                    sb.Append(ss.MakeCreateRelationshipScript(rel));
                 }
-                return sb.ToString();
             }
+
+            if (table.Indexes.Count > 0)
+            {
+                sb.AppendLine();
+                sb.Append("--");
+                foreach (var val in table.Indexes.Values)
+                {
+                    sb.AppendLine();
+                    sb.Append(ss.MakeCreateIndexScript(val));
+                }
+            }
+            if (table.EnumValues.Count > 0)
+            {
+                sb.AppendLine();
+                sb.Append("--");
+                foreach (var val in table.EnumValues)
+                {
+                    sb.AppendLine();
+                    sb.Append(ss.MakeInsertScript(table, val));
+                }
+            }
+            return sb.ToString();
         }
 
         public abstract void CantCreateEmptyTables();

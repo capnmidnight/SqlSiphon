@@ -590,13 +590,13 @@ namespace SqlSiphon.Postgres
                 if (column.DefaultValue != null)
                 {
                     var val = column.DefaultValue.ToString().ToLowerInvariant();
-                    if (val == "getdate()")
-                    {
-                        val = "current_date";
-                    }
-                    else if (val == "newid()")
+                    if (val == "newid()")
                     {
                         val = "uuid_generate_v4()";
+                    }
+                    else if (val == "getdate()")
+                    {
+                        val = "current_date";
                     }
                     defaultString = "default " + val;
                 }

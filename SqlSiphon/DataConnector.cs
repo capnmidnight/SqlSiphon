@@ -133,10 +133,7 @@ namespace SqlSiphon
             }
         }
 
-        public ISqlSiphon GetSqlSiphon()
-        {
-            return (ISqlSiphon)Connection;
-        }
+        public ISqlSiphon SqlSiphon => (ISqlSiphon)Connection;
 
         public void Execute(params object[] parameters)
         {

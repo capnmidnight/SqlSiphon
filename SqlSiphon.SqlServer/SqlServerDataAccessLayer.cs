@@ -463,8 +463,9 @@ end";
             }
             else if (p.SystemType == typeof(bool))
             {
-                var testValue = defaultValue.ToLowerInvariant();
-                defaultValue = testValue == "true" ? "1" : "0";
+                defaultValue = "true".Equals(defaultValue, StringComparison.InvariantCultureIgnoreCase)
+                    ? "1"
+                    : "0";
             }
             return defaultValue;
         }
@@ -549,7 +550,9 @@ end";
             {
                 if (final.SystemType == typeof(bool))
                 {
-                    var xb = final.DefaultValue.Replace("'", "").ToLowerInvariant();
+                    var xb = final.DefaultValue
+                        .Replace("'", "")
+                        .ToLowerInvariant();
                     var xbb = xb == "true" || xb == "1";
                     var yb = initial.DefaultValue
                         .Replace("'", "")

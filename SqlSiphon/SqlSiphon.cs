@@ -284,18 +284,16 @@ namespace SqlSiphon
                 var parameterNamesStr = string.Join(", ", parameterNames);
                 var query = $"insert into {tableName}({columnNamesStr}) values({parameterNamesStr})";
 
-                using (var command = BuildCommand(query, CommandType.Text, methParams))
+                using var command = BuildCommand(query, CommandType.Text, methParams);
+                foreach (var obj in data)
                 {
-                    foreach (var obj in data)
+                    var parameterValues = new object[columns.Length];
+                    for (var i = 0; i < columns.Length; ++i)
                     {
-                        var parameterValues = new object[columns.Length];
-                        for (var i = 0; i < columns.Length; ++i)
-                        {
-                            parameterValues[i] = columns[i].GetValue<object>(obj);
-                        }
-                        CopyParameterValues(command, parameterValues.ToArray());
-                        _ = command.ExecuteNonQuery();
+                        parameterValues[i] = columns[i].GetValue<object>(obj);
                     }
+                    CopyParameterValues(command, parameterValues.ToArray());
+                    _ = command.ExecuteNonQuery();
                 }
             }
         }
@@ -426,16 +424,14 @@ namespace SqlSiphon
 
         public EntityT Return<EntityT>(params object[] parameters)
         {
-            using (var cmd = ConstructCommand(parameters))
+            using var cmd = ConstructCommand(parameters);
+            var p = new ParameterT
             {
-                var p = new ParameterT
-                {
-                    Direction = ParameterDirection.ReturnValue
-                };
-                _ = cmd.Parameters.Add(p);
-                _ = cmd.ExecuteNonQuery();
-                return (EntityT)p.Value;
-            }
+                Direction = ParameterDirection.ReturnValue
+            };
+            _ = cmd.Parameters.Add(p);
+            _ = cmd.ExecuteNonQuery();
+            return (EntityT)p.Value;
         }
 
         /// <summary>
@@ -532,99 +528,6 @@ namespace SqlSiphon
             return GetReader(command, parameters);
         }
 
-        /// <summary>
-        /// IteratePrimitive maps a single column from a result set to a collection of primitive .NET data types.
-        /// </summary>
-        /// <typeparam name="EntityT"></typeparam>
-        /// <param name="reader"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private IEnumerable<EntityT> Iterate<EntityT>(DataReaderT reader, object key)
-        {
-            using (reader)
-            {
-                Func<object> getter = null;
-
-                if (key is string)
-                {
-                    throw new Exception("String keys are no longer supported. Use integer index instead.");
-                }
-                else if (key is int)
-                {
-                    getter = () => reader[(int)key];
-                }
-                else if (key is Type type) // A raw entity type must have a default constructor. We need to be able to create an
-                                           // uninitialized version of the object so that we can set the fields to the
-                                           // mapped values later
-                {
-                    var columnNames = new string[reader.FieldCount];
-                    var columnTypes = new Type[reader.FieldCount];
-                    for (var i = 0; i < reader.FieldCount; ++i)
-                    {
-                        columnNames[i] = reader.GetName(i).ToUpperInvariant();
-                        columnTypes[i] = reader.GetFieldType(i);
-                    }
-
-                    var useTypedConstructor = true;
-                    var constructor = type.GetConstructor(columnTypes);
-                    if (constructor == null)
-                    {
-                        useTypedConstructor = false;
-                        constructor = type.GetConstructor(Type.EmptyTypes);
-                        if (constructor == null)
-                        {
-                            var columnDefs = columnNames.Select((n, i) => $"{i}: {n} {columnTypes[i].Name}");
-                            var columnDefString = string.Join("\n", columnDefs);
-                            throw new Exception($"Entity classes need a default constructor or a constructor that matches the result set. This data reader had columns:\n{columnDefString}");
-                        }
-                    }
-
-                    if (useTypedConstructor)
-                    {
-                        var values = new object[reader.FieldCount];
-                        getter = delegate ()
-                        {
-                            _ = reader.GetValues(values);
-                            return (EntityT)constructor.Invoke(values);
-                        };
-                    }
-                    else
-                    {
-                        var props = GetProperties(type).ToDictionary(p => p.Name.ToUpperInvariant());
-                        getter = delegate ()
-                        {
-                            var inst = (EntityT)constructor.Invoke(null);
-
-                            for (var i = 0; i < columnNames.Length; ++i)
-                            {
-                                if (props.ContainsKey(columnNames[i]))
-                                {
-                                    props[columnNames[i]].SetValue(inst, reader[columnNames[i]]);
-                                }
-                            }
-
-                            return inst;
-                        };
-                    }
-                }
-                else
-                {
-                    throw new ArgumentException("When retrieving a primitive data type, the first parameter to the procedure must be an integer column index. Given: " + key.GetType().Name);
-                }
-                while (reader.Read())
-                {
-                    var val = getter();
-                    if (val == DBNull.Value)
-                    {
-                        yield return default;
-                    }
-                    else
-                    {
-                        yield return (EntityT)val;
-                    }
-                }
-            }
-        }
 
 
         /// <summary>
@@ -640,16 +543,93 @@ namespace SqlSiphon
         /// <returns>the populated list of objects that represent the rows in the database</returns>
         public IEnumerable<EntityT> GetEnumerator<EntityT>(params object[] parameters)
         {
-            var type = typeof(EntityT);
+            var entityType = typeof(EntityT);
 
             // If we're returning a primitive value, we assume it's in the first position
             // of the result set.
-            var key = DataConnector.IsTypePrimitive(type) ? (object)0 : type;
+            var key = DataConnector.IsTypePrimitive(entityType) ? (object)0 : entityType;
 
-            using (var command = ConstructCommand(parameters))
+            using var command = ConstructCommand(parameters);
+            using var reader = GetReader(command, parameters);
+            Func<object> getter = null;
+
+            if (key is string)
             {
-                var reader = GetReader(command, parameters);
-                return Iterate<EntityT>(reader, key);
+                throw new Exception("String keys are no longer supported. Use integer index instead.");
+            }
+            else if (key is int)
+            {
+                getter = () => reader[(int)key];
+            }
+            else if (key is Type type) // A raw entity type must have a default constructor. We need to be able to create an
+                                       // uninitialized version of the object so that we can set the fields to the
+                                       // mapped values later
+            {
+                var columnNames = new string[reader.FieldCount];
+                var columnTypes = new Type[reader.FieldCount];
+                for (var i = 0; i < reader.FieldCount; ++i)
+                {
+                    columnNames[i] = reader.GetName(i);
+                    columnTypes[i] = reader.GetFieldType(i);
+                }
+
+                var useTypedConstructor = true;
+                var constructor = type.GetConstructor(columnTypes);
+                if (constructor == null)
+                {
+                    useTypedConstructor = false;
+                    constructor = type.GetConstructor(Type.EmptyTypes);
+                    if (constructor == null)
+                    {
+                        var columnDefs = columnNames.Select((n, i) => $"{i}: {n} {columnTypes[i].Name}");
+                        var columnDefString = string.Join("\n", columnDefs);
+                        throw new Exception($"Entity classes need a default constructor or a constructor that matches the result set. This data reader had columns:\n{columnDefString}");
+                    }
+                }
+
+                if (useTypedConstructor)
+                {
+                    var values = new object[reader.FieldCount];
+                    getter = delegate ()
+                    {
+                        _ = reader.GetValues(values);
+                        return (EntityT)constructor.Invoke(values);
+                    };
+                }
+                else
+                {
+                    var props = GetProperties(type).ToDictionary(p => p.Name);
+                    getter = delegate ()
+                    {
+                        var inst = (EntityT)constructor.Invoke(null);
+
+                        for (var i = 0; i < columnNames.Length; ++i)
+                        {
+                            if (props.ContainsKey(columnNames[i]))
+                            {
+                                props[columnNames[i]].SetValue(inst, reader[columnNames[i]]);
+                            }
+                        }
+
+                        return inst;
+                    };
+                }
+            }
+            else
+            {
+                throw new ArgumentException("When retrieving a primitive data type, the first parameter to the procedure must be an integer column index. Given: " + key.GetType().Name);
+            }
+            while (reader.Read())
+            {
+                var val = getter();
+                if (val == DBNull.Value)
+                {
+                    yield return default;
+                }
+                else
+                {
+                    yield return (EntityT)val;
+                }
             }
         }
 
@@ -975,11 +955,15 @@ namespace SqlSiphon
                 CreateNoWindow = true,
                 ErrorDialog = true,
             };
-            using (var proc = new Process())
+
+            using var proc = new Process
             {
-                proc.StartInfo = procInfo;
-                proc.EnableRaisingEvents = true;
-                _ = proc.Start();
+                StartInfo = procInfo,
+                EnableRaisingEvents = true
+            };
+
+            if (succeeded = proc.Start())
+            {
                 proc.WaitForExit();
                 while (proc.StandardOutput.Peek() != -1)
                 {
@@ -991,6 +975,7 @@ namespace SqlSiphon
                     ToError(proc.StandardError.ReadLine());
                 }
             }
+
             return succeeded;
         }
 

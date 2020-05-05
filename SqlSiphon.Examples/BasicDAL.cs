@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -49,9 +49,9 @@ namespace SqlSiphon.Examples
             var roleNames = roles.Select(r => r.LoweredRoleName).ToList();
             foreach (var roleName in new[] { "User", "Admin" })
             {
-                if (!roleNames.Contains(roleName.ToLower()))
+                if (!roleNames.Contains(roleName))
                 {
-                    db.CreateRole(roleName, appName, "basic " + roleName.ToLower() + " role");
+                    db.CreateRole(roleName, appName, $"basic {roleName} role");
                 }
             }
             roles = db.GetRoles(appID);
@@ -62,33 +62,26 @@ namespace SqlSiphon.Examples
                 var userID = db.GetUserID(userName);
                 if (userID == Guid.Empty)
                 {
-                    userID = Guid.NewGuid();
-                    if (userID != db.CreateUser(userID, userName, appName))
-                    {
-                        // why did the database change the UserID?
-                    }
-                    else
-                    {
-                        db.CreateMembershipUser(
-                            userID,
-                            userName.ToLower() + "password",
-                            "asdf12345",
-                            userName + "@test.com",
-                            "no question",
-                            "no answer",
-                            true,
-                            DateTime.Now,
-                            appName,
-                            false);
-                    }
+                    userID = db.CreateUser(Guid.NewGuid(), userName, appName);
+                    _ = db.CreateMembershipUser(
+                        userID,
+                        $"{userName}password",
+                        "asdf12345",
+                        $"{userName}@test.com",
+                        "no question",
+                        "no answer",
+                        true,
+                        DateTime.Now,
+                        appName,
+                        false);
                 }
 
-                var userRoles = db.GetRolesForUser(userName).Select(r => r.ToLower()).ToList();
-                if (!userRoles.Contains("user"))
+                var userRoles = db.GetRolesForUser(userName).ToList();
+                if (!userRoles.Contains("User"))
                 {
                     db.AddUserToRole(userName, "User");
                 }
-                if (userName == "Anna" && !userRoles.Contains("admin"))
+                if (userName == "Anna" && !userRoles.Contains("Admin"))
                 {
                     db.AddUserToRole(userName, "Admin");
                 }

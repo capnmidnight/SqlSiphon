@@ -101,10 +101,24 @@ namespace SqlSiphon
 
         public DatabaseDelta(DatabaseState final, DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
         {
+            if (final is null)
+            {
+                throw new ArgumentNullException(nameof(final));
+            }
+
+            if (asm is null)
+            {
+                throw new ArgumentNullException(nameof(asm));
+            }
+
+            if (gen is null)
+            {
+                throw new ArgumentNullException(nameof(gen));
+            }
+
             Scripts = new List<ScriptStatus>();
             Initial = new List<ScriptStatus>();
             Final = new List<ScriptStatus>();
-
             if (initial?.CatalogueExists == false)
             {
                 Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, final.CatalogueName, gen.MakeCreateCatalogueScript(final.CatalogueName), "Database doesn't exist"));

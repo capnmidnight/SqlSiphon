@@ -11,17 +11,23 @@ namespace SqlSiphon.Examples.SqlServer.Runner
 
     public static class Program
     {
+        private const string Server = "localhost";
+        private const string Database = "TestDB";
+        private const string UserName = "TestDBUser";
+        private const string Password = "TestDBPassword";
+
         public static void Main()
         {
             var factory = new Postgres.PostgresDataConnectorFactory();
-            using var db = new BasicDAL();
             var dbTypeName = DataConnector.GetDatabaseVendorName(factory.GetType());
-            var server = "localhost";
-            using (db.Connection = factory.MakeConnector(server, "TestDB", "TestDBUser", "TestDBPassword"))
+
+            using var connection = factory.MakeConnector(Server, Database, UserName, Password);
+            using var db = new BasicDAL()
             {
-                Console.WriteLine("Getting data from {0}", dbTypeName);
-                Console.WriteLine(string.Join(", ", db.GetAllRoles()));
-            }
+                Connection = connection
+            };
+            Console.WriteLine("Getting data from {0}", dbTypeName);
+            Console.WriteLine(string.Join(", ", db.GetAllRoles()));
         }
     }
 }
