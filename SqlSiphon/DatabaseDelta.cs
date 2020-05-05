@@ -80,7 +80,8 @@ namespace SqlSiphon
                         }
                     }
                 },
-                (key, f) => Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), name + " does not exist")),
+                (key, f) =>
+                    Scripts.Add(new ScriptStatus(createType, key, makeCreateScript(f), name + " does not exist")),
                 (key, f, i) =>
                 {
                     var changeReason = isChanged(f, i);

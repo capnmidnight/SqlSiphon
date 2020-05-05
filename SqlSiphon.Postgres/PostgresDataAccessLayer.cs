@@ -63,8 +63,8 @@ namespace SqlSiphon.Postgres
             ["varbit"] = typeof(bool[]),
             ["bit varying"] = typeof(bool[]),
 
-            ["bool"] = typeof(bool),
             ["boolean"] = typeof(bool),
+            ["bool"] = typeof(bool),
 
             ["bytea"] = typeof(byte[]),
 
@@ -91,8 +91,8 @@ namespace SqlSiphon.Postgres
             ["float4"] = typeof(float),
             ["real"] = typeof(float),
 
-            ["int4"] = typeof(int),
             ["integer"] = typeof(int),
+            ["int4"] = typeof(int),
             ["int"] = typeof(int),
             ["serial"] = typeof(int),
             ["serial4"] = typeof(int),
@@ -142,8 +142,8 @@ namespace SqlSiphon.Postgres
             ["int4"] = 32,
             ["serial"] = 32,
             ["serial4"] = 32,
-            ["boolean"] = 32,
             ["bool"] = 32,
+            ["boolean"] = 32,
             ["smallint"] = 16,
             ["int2"] = 16,
             ["smallserial"] = 16,
@@ -512,6 +512,13 @@ namespace SqlSiphon.Postgres
             }
 
             var typeA = MakeSqlTypeString(a) ?? "void";
+            var isArray = typeA.EndsWith("[]", StringComparison.InvariantCulture);
+            if (isArray)
+            {
+                typeA = typeA.Substring(0, typeA.Length - 2);
+                typeA = NormalizeSqlType(typeA);
+                typeA += "[]";
+            }
             var changedReturnType = typeA != b.SqlType;
             return changedReturnType ? "Return type changed" : base.RoutineChanged(a, b);
         }

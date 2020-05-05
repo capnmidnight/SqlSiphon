@@ -711,7 +711,7 @@ namespace SqlSiphon
                 throw new ArgumentNullException(nameof(b));
             }
 
-            var scriptA = MakeCreateRoutineScript(a);
+            var scriptA = MakeCreateRoutineScript(a, false);
             var scriptB = MakeCreateRoutineScript(b, false);
             if (scriptA == scriptB)
             {
@@ -742,9 +742,11 @@ namespace SqlSiphon
                 var finalScript = MakeRoutineBody(a).Trim();
                 var initialScript = b.Query.Trim();
                 var changedQuery = finalScript != initialScript;
-                var changed = changedParameters
-                    || changedQuery;
-                return changed ? "IDK" : null;
+                return changedParameters
+                    ? "Parameters have changed"
+                    : changedQuery
+                        ? "Routine body has changed"
+                        : null;
             }
         }
 
