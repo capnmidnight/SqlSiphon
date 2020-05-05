@@ -52,7 +52,7 @@ namespace SqlSiphon.Postgres
     {
         public override string DataSource => Connection.DataSource;
 
-        private static readonly Dictionary<string, Type> typeMapping = new Dictionary<string, Type>
+        private static readonly Dictionary<string, Type> stringToType = new Dictionary<string, Type>
         {
             ["int8"] = typeof(long),
             ["bigint"] = typeof(long),
@@ -152,36 +152,36 @@ namespace SqlSiphon.Postgres
 
         private static readonly Dictionary<Type, int> defaultTypeSizes = TypeInfo.typeSizes.ToDictionary(kv => kv.Key, kv => kv.Value);
 
-        private static readonly Dictionary<Type, string> reverseTypeMapping = typeMapping
+        private static readonly Dictionary<Type, string> typeToString = stringToType
                 .GroupBy(kv => kv.Value, kv => kv.Key)
                 .ToDictionary(g => g.Key, g => g.First());
 
         static PostgresDataAccessLayer()
         {
-            reverseTypeMapping.Add(typeof(int?), "int");
-            reverseTypeMapping.Add(typeof(uint), "int");
-            reverseTypeMapping.Add(typeof(uint?), "int");
+            typeToString.Add(typeof(int?), "int");
+            typeToString.Add(typeof(uint), "int");
+            typeToString.Add(typeof(uint?), "int");
 
-            reverseTypeMapping.Add(typeof(long?), "bigint");
-            reverseTypeMapping.Add(typeof(ulong), "bigint");
-            reverseTypeMapping.Add(typeof(ulong?), "bigint");
+            typeToString.Add(typeof(long?), "bigint");
+            typeToString.Add(typeof(ulong), "bigint");
+            typeToString.Add(typeof(ulong?), "bigint");
 
-            reverseTypeMapping.Add(typeof(short?), "smallint");
-            reverseTypeMapping.Add(typeof(ushort), "smallint");
-            reverseTypeMapping.Add(typeof(ushort?), "smallint");
-            reverseTypeMapping.Add(typeof(byte), "smallint");
-            reverseTypeMapping.Add(typeof(byte?), "smallint");
-            reverseTypeMapping.Add(typeof(sbyte), "smallint");
-            reverseTypeMapping.Add(typeof(sbyte?), "smallint");
-            reverseTypeMapping.Add(typeof(char), "smallint");
-            reverseTypeMapping.Add(typeof(char?), "smallint");
+            typeToString.Add(typeof(short?), "smallint");
+            typeToString.Add(typeof(ushort), "smallint");
+            typeToString.Add(typeof(ushort?), "smallint");
+            typeToString.Add(typeof(byte), "smallint");
+            typeToString.Add(typeof(byte?), "smallint");
+            typeToString.Add(typeof(sbyte), "smallint");
+            typeToString.Add(typeof(sbyte?), "smallint");
+            typeToString.Add(typeof(char), "smallint");
+            typeToString.Add(typeof(char?), "smallint");
 
-            reverseTypeMapping.Add(typeof(decimal?), "decimal");
-            reverseTypeMapping.Add(typeof(bool?), "boolean");
-            reverseTypeMapping.Add(typeof(float?), "real");
-            reverseTypeMapping.Add(typeof(double?), "double precision");
-            reverseTypeMapping.Add(typeof(DateTime?), "time with time zone");
-            reverseTypeMapping.Add(typeof(Guid?), "uuid");
+            typeToString.Add(typeof(decimal?), "decimal");
+            typeToString.Add(typeof(bool?), "boolean");
+            typeToString.Add(typeof(float?), "real");
+            typeToString.Add(typeof(double?), "double precision");
+            typeToString.Add(typeof(DateTime?), "time with time zone");
+            typeToString.Add(typeof(Guid?), "uuid");
 
             defaultTypeSizes[typeof(bool)] = 4;
             defaultTypeSizes[typeof(bool?)] = 4;
@@ -291,6 +291,26 @@ namespace SqlSiphon.Postgres
             return defaultTypeSizes[type];
         }
 
+        public override string NormalizeSqlType(string sqlType)
+        {
+            if (!stringToType.ContainsKey(sqlType))
+            {
+                return sqlType;
+            }
+            else
+            {
+                var type = stringToType[sqlType];
+                if (!typeToString.ContainsKey(type))
+                {
+                    return sqlType;
+                }
+                else
+                {
+                    return typeToString[type];
+                }
+            }
+        }
+
         public override string MakeIdentifier(params string[] parts)
         {
             var goodParts = parts.Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
@@ -308,7 +328,7 @@ namespace SqlSiphon.Postgres
 
         public override Type GetSystemType(string sqlType)
         {
-            return typeMapping.ContainsKey(sqlType) ? typeMapping[sqlType] : null;
+            return stringToType.ContainsKey(sqlType) ? stringToType[sqlType] : null;
         }
 
         public override DatabaseState GetInitialState(string catalogueName, Regex filter)
@@ -390,9 +410,9 @@ namespace SqlSiphon.Postgres
             }
             else if (systemType != null)
             {
-                if (reverseTypeMapping.ContainsKey(systemType))
+                if (typeToString.ContainsKey(systemType))
                 {
-                    typeName = reverseTypeMapping[systemType];
+                    typeName = typeToString[systemType];
                 }
 
                 if (typeName == null)
@@ -490,7 +510,7 @@ namespace SqlSiphon.Postgres
 
             var typeA = MakeSqlTypeString(a) ?? "void";
             var changedReturnType = typeA != b.SqlType;
-            return changedReturnType ? "IDK" : base.RoutineChanged(a, b);
+            return changedReturnType ? "Return type changed" : base.RoutineChanged(a, b);
         }
 
         private string MakeComplexSqlTypeString(Type systemType)
@@ -502,9 +522,9 @@ namespace SqlSiphon.Postgres
             {
                 sqlType = "void";
             }
-            else if (reverseTypeMapping.ContainsKey(baseType))
+            else if (typeToString.ContainsKey(baseType))
             {
-                sqlType = reverseTypeMapping[baseType];
+                sqlType = typeToString[baseType];
             }
             else
             {
@@ -827,9 +847,9 @@ end;";
         public string NormalizeTypeName(string name)
         {
             var newName = name.ToLowerInvariant();
-            if (typeMapping.ContainsKey(name) && reverseTypeMapping.ContainsKey(typeMapping[name]))
+            if (stringToType.ContainsKey(name) && typeToString.ContainsKey(stringToType[name]))
             {
-                newName = reverseTypeMapping[typeMapping[name]];
+                newName = typeToString[stringToType[name]];
             }
             return newName;
         }

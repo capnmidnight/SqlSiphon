@@ -990,6 +990,7 @@ namespace SqlSiphon
         public abstract bool HasDefaultTypeSize(Type type);
         public abstract int GetDefaultTypeSize(Type type);
         public abstract Type GetSystemType(string sqlType);
+        public abstract string NormalizeSqlType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         protected abstract string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial);
         public virtual void AnalyzeQuery(string routineText, RoutineAttribute routine)

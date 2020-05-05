@@ -19,6 +19,7 @@ namespace SqlSiphon
         bool HasDefaultTypeSize(Type type);
         int GetDefaultTypeSize(Type type);
         Type GetSystemType(string sqlType);
+        string NormalizeSqlType(string sqlType);
 
         List<string> GetSchemata();
         List<string> GetScriptStatus();

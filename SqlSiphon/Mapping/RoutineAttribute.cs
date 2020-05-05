@@ -94,9 +94,11 @@ namespace SqlSiphon.Mapping
             Name = routine.routine_name;
             CommandType = CommandType.StoredProcedure;
             Parameters = new List<ParameterAttribute>();
-            SqlType = routine.data_type;
-            var begin = routine.routine_definition
-                .IndexOf("set nocount on;", StringComparison.InvariantCultureIgnoreCase);
+            SqlType = dal.NormalizeSqlType(routine.data_type);
+            if (routine.is_array)
+            {
+                SqlType += "[]";
+            }
 
             dal.AnalyzeQuery(routine.routine_definition, this);
             if (parameters != null)

@@ -286,6 +286,26 @@ namespace SqlSiphon.SqlServer
             return defaultTypeSizes[type];
         }
 
+        public override string NormalizeSqlType(string sqlType)
+        {
+            if (!stringToType.ContainsKey(sqlType))
+            {
+                return sqlType;
+            }
+            else
+            {
+                var type = stringToType[sqlType];
+                if (!typeToString.ContainsKey(type))
+                {
+                    return sqlType;
+                }
+                else
+                {
+                    return typeToString[type];
+                }
+            }
+        }
+
         public override bool SupportsScriptType(ScriptType type)
         {
             return type != ScriptType.CreateCatalogue

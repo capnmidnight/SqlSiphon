@@ -1,4 +1,4 @@
-﻿using SqlSiphon.Mapping;
+using SqlSiphon.Mapping;
 
 namespace SqlSiphon.InformationSchema
 {
@@ -15,6 +15,7 @@ namespace SqlSiphon.InformationSchema
         public string routine_name { get; set; }
         public string routine_definition { get; set; }
         public string data_type { get; set; }
+        public bool is_array { get; set; }
         /*
         public string specific_catalog { get; set; }
         public string routine_catalog { get; set; }
