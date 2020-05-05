@@ -312,7 +312,7 @@ namespace SqlSiphon.SqlServer
                 && type != ScriptType.CreateDatabaseLogin;
         }
 
-        public override string MakeRoutineIdentifier(RoutineAttribute routine)
+        public override string MakeRoutineIdentifier(RoutineAttribute routine, bool withParamNames)
         {
             if (routine is null)
             {
@@ -324,7 +324,7 @@ namespace SqlSiphon.SqlServer
 
         public override string MakeDropRoutineScript(RoutineAttribute info)
         {
-            var routineName = MakeRoutineIdentifier(info);
+            var routineName = MakeRoutineIdentifier(info, false);
             return $"drop procedure {routineName};";
         }
 
@@ -367,7 +367,7 @@ end catch;";
                 query = string.Join(Environment.NewLine, transactionBegin, query, transactionEnd);
             }
             var identifier = MakeIdentifier(info.Schema ?? DefaultSchemaName, info.Name);
-            var parameterSection = MakeParameterSection(info);
+            var parameterSection = MakeParameterSection(info, true);
             var withRecompile = info.GetOtherAttribute<SqlServerWithRecompileAttribute>() != null;
             var withRecompileStatement = withRecompile ? "with recompile\r\n" : "";
             return $@"create procedure {identifier}
@@ -514,7 +514,7 @@ end";
             return defaultValue;
         }
 
-        protected override string MakeParameterString(ParameterAttribute p)
+        protected override string MakeParameterString(ParameterAttribute p, bool withName)
         {
             if (p is null)
             {
@@ -685,7 +685,7 @@ end";
             }
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize)
         {
             if (sqlType == null)
             {
@@ -708,20 +708,25 @@ end";
                 else
                 {
                     var typeStr = new StringBuilder(sqlType);
-                    if (size.HasValue && (systemType != typeof(int) || size.Value > 0))
+                    if (!skipSize)
                     {
-                        _ = typeStr.AppendFormat("({0}", size);
-                        if (precision.HasValue)
+                        if (size.HasValue
+                            && (systemType != typeof(int)
+                                || size.Value > 0))
                         {
-                            _ = typeStr.AppendFormat(", {0}", precision);
+                            _ = typeStr.AppendFormat("({0}", size);
+                            if (precision.HasValue)
+                            {
+                                _ = typeStr.AppendFormat(", {0}", precision);
+                            }
+                            _ = typeStr.Append(")");
                         }
-                        _ = typeStr.Append(")");
-                    }
 
-                    if (sqlType.Contains("var")
-                        && typeStr[typeStr.Length - 1] != ')')
-                    {
-                        _ = typeStr.Append("(MAX)");
+                        if (sqlType.Contains("var")
+                            && typeStr[typeStr.Length - 1] != ')')
+                        {
+                            _ = typeStr.Append("(MAX)");
+                        }
                     }
                     return typeStr.ToString();
                 }

@@ -195,7 +195,7 @@ namespace SqlSiphon
             return identifier;
         }
 
-        public abstract string MakeRoutineIdentifier(RoutineAttribute routine);
+        public abstract string MakeRoutineIdentifier(RoutineAttribute routine, bool withParamNames);
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text,
@@ -668,7 +668,7 @@ namespace SqlSiphon
             return ArgumentList(columns, p => MakeColumnString(p, isReturnType).Trim());
         }
 
-        protected string MakeSqlTypeString(DatabaseObjectAttribute p)
+        protected string MakeSqlTypeString(DatabaseObjectAttribute p, bool skipSize = true)
         {
             if (p != null && p.Include)
             {
@@ -688,9 +688,10 @@ namespace SqlSiphon
                 return MakeSqlTypeString(
                     p.SqlType,
                     systemType,
-                    p.IsSizeSet ? new Nullable<int>(p.Size) : null,
-                    p.IsPrecisionSet ? new Nullable<int>(p.Precision) : null,
-                    isIdentity);
+                    p.IsSizeSet ? new int?(p.Size) : null,
+                    p.IsPrecisionSet ? new int?(p.Precision) : null,
+                    isIdentity,
+                    skipSize);
             }
             else
             {
@@ -1008,22 +1009,22 @@ namespace SqlSiphon
             routine.Query = routineText;
         }
 
-        protected string MakeParameterSection(RoutineAttribute info)
+        protected virtual string MakeParameterSection(RoutineAttribute info, bool withNames)
         {
             if (info is null)
             {
                 throw new ArgumentNullException(nameof(info));
             }
 
-            var parameters = info.Parameters.Select(MakeParameterString);
+            var parameters = info.Parameters.Select(p => MakeParameterString(p, withNames));
             var parameterSection = string.Join(", ", parameters);
             return parameterSection;
         }
 
 
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity);
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
-        protected abstract string MakeParameterString(ParameterAttribute p);
+        protected abstract string MakeParameterString(ParameterAttribute p, bool withName);
 
         public abstract bool SupportsScriptType(ScriptType type);
         public abstract string MakeInsertScript(TableAttribute table, object value);

@@ -265,7 +265,7 @@ namespace SqlSiphon
                             ? parameters[rIdent]
                             : null;
                         var function = new RoutineAttribute(routine, routineParameters, dal);
-                        var fIdent = dal.MakeRoutineIdentifier(function);
+                        var fIdent = dal.MakeRoutineIdentifier(function, true);
                         if (!Functions.ContainsKey(fIdent))
                         {
                             Functions.Add(fIdent, function);
@@ -326,7 +326,7 @@ namespace SqlSiphon
                     var function = RoutineAttribute.GetCommandDescription(method);
                     if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
                     {
-                        var functionName = dal.MakeRoutineIdentifier(function);
+                        var functionName = dal.MakeRoutineIdentifier(function, true);
                         if (!Functions.ContainsKey(functionName))
                         {
                             Functions.Add(functionName, function);

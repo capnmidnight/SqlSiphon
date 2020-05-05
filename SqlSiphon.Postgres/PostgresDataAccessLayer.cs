@@ -400,7 +400,7 @@ namespace SqlSiphon.Postgres
             return pgState;
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize)
         {
             string typeName = null;
 
@@ -441,7 +441,10 @@ namespace SqlSiphon.Postgres
                 {
                     typeName = "varchar";
                 }
-                typeName += sizeStr;
+                if (!skipSize)
+                {
+                    typeName += sizeStr;
+                }
                 if (bracketsIndex > -1)
                 {
                     typeName += "[]";
@@ -647,7 +650,7 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        protected override string MakeParameterString(ParameterAttribute param)
+        protected override string MakeParameterString(ParameterAttribute param, bool withName)
         {
             if (param is null)
             {
@@ -672,7 +675,14 @@ namespace SqlSiphon.Postgres
                 defaultString = " default = " + param.DefaultValue.ToString();
             }
 
-            return $"{dirString} _{param.Name} {typeStr}{defaultString}".Trim();
+            if (withName)
+            {
+                return $"{dirString} _{param.Name} {typeStr}{defaultString}".Trim();
+            }
+            else
+            {
+                return $"{dirString} {typeStr}".Trim();
+            }
         }
 
         protected override string MakeColumnString(ColumnAttribute column, bool isReturnType)
@@ -718,11 +728,16 @@ namespace SqlSiphon.Postgres
                 throw new ArgumentNullException(nameof(routine));
             }
 
-            var routineName = MakeRoutineIdentifier(routine);
+            var routineName = MakeRoutineIdentifier(routine, false);
             return $@"drop function if exists {routineName} cascade;";
         }
 
-        public override string MakeRoutineIdentifier(RoutineAttribute routine)
+        protected override string MakeParameterSection(RoutineAttribute info, bool withNames)
+        {
+            return base.MakeParameterSection(info, withNames).ToLowerInvariant();
+        }
+
+        public override string MakeRoutineIdentifier(RoutineAttribute routine, bool withParameterNames)
         {
             if (routine is null)
             {
@@ -730,9 +745,8 @@ namespace SqlSiphon.Postgres
             }
 
             var identifier = MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var parameterSection = MakeParameterSection(routine);
-            var returnType = MakeSqlTypeString(routine);
-            return $@"{identifier}({parameterSection}) returns {returnType}";
+            var parameterSection = MakeParameterSection(routine, withParameterNames);
+            return $@"{identifier}({parameterSection})";
         }
 
         private static readonly Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -753,7 +767,7 @@ namespace SqlSiphon.Postgres
                 returnType = "setof " + returnType.Substring(0, returnType.Length - 2);
             }
 
-            var parameterSection = MakeParameterSection(routine);
+            var parameterSection = MakeParameterSection(routine, true);
             var query = $@"create function {identifier}({parameterSection})
 returns {returnType} 
 as $$
@@ -1113,7 +1127,8 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
     r.routine_schema,
     r.routine_name,
     r.data_type,
-    p.prosrc as routine_definition
+    p.prosrc as routine_definition,
+	p.proretset as is_array
 from information_schema.routines as r
     inner join pg_proc as p on p.proname = r.routine_name
     left outer join (select specific_name, count(*) as argcount

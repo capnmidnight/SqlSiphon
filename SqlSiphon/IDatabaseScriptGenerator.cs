@@ -10,7 +10,7 @@ namespace SqlSiphon
 
         string MakeInsertScript(TableAttribute table, object value);
 
-        string MakeRoutineIdentifier(RoutineAttribute routine);
+        string MakeRoutineIdentifier(RoutineAttribute routine, bool withParamNames);
 
         string MakeCreateDatabaseLoginScript(string userName, string password, string database);
         string MakeCreateCatalogueScript(string catalogueName);
