@@ -142,10 +142,16 @@ namespace SqlSiphon
 
         private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
         {
-            var names = initial?.Select(s => s.ToLowerInvariant())?.ToArray();
+            var names = initial?.Select(s => s.ToLowerInvariant())?.ToArray()
+                ?? Array.Empty<string>();
+
             Scripts.AddRange(final
-                .Where(u => !names?.Contains(u.Key.ToLowerInvariant()) ?? true)
-                .Select(u => new ScriptStatus(ScriptType.CreateDatabaseLogin, u.Key, gen.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName), "Database login doesn't exist")));
+                .Where(u => !names.Contains(u.Key))
+                .Select(u => new ScriptStatus(
+                    ScriptType.CreateDatabaseLogin,
+                    u.Key,
+                    gen.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName),
+                    "Database login doesn't exist")));
         }
 
         private void ProcessSchemas(Dictionary<string, string> finalSchemas, Dictionary<string, string> initialSchemas, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
@@ -235,8 +241,8 @@ namespace SqlSiphon
                 (tableName, finalTable) => Scripts.Add(new ScriptStatus(ScriptType.CreateTable, tableName, gen.MakeCreateTableScript(finalTable), "Table does not exist")),
                 (tableName, finalTable, initialTable) =>
                 {
-                    var finalColumns = finalTable.Properties.ToDictionary(p => gen.MakeIdentifier(finalTable.Schema ?? gen.DefaultSchemaName, finalTable.Name, p.Name).ToLowerInvariant());
-                    var initialColumns = initialTable?.Properties?.ToDictionary(p => gen.MakeIdentifier(initialTable.Schema ?? gen.DefaultSchemaName, initialTable.Name, p.Name).ToLowerInvariant());
+                    var finalColumns = finalTable.Properties.ToDictionary(p => gen.MakeIdentifier(finalTable.Schema ?? gen.DefaultSchemaName, finalTable.Name, p.Name));
+                    var initialColumns = initialTable?.Properties?.ToDictionary(p => gen.MakeIdentifier(initialTable.Schema ?? gen.DefaultSchemaName, initialTable.Name, p.Name));
 
                     Traverse(
                         finalColumns,

@@ -36,6 +36,7 @@ using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -147,7 +148,7 @@ namespace SqlSiphon.SqlServer
         private static readonly Dictionary<string, Type> stringToType = new Dictionary<string, Type>();
         private static readonly Dictionary<Type, string> typeToString = new Dictionary<Type, string>();
         private static readonly Dictionary<string, int> defaultTypePrecisions = new Dictionary<string, int>();
-
+        private static readonly Dictionary<Type, int> defaultTypeSizes = TypeInfo.typeSizes.ToDictionary(kv => kv.Key, kv => kv.Value);
 
         private static void SetTypeMappings<T>(string name, int? defaultPrecision = null)
         {
@@ -253,13 +254,36 @@ namespace SqlSiphon.SqlServer
             return (attr?.Name ?? t.Name) + "UDTT";
         }
 
-        public override int DefaultTypePrecision(string typeName, int testPrecision)
+        public override int GetDefaultTypePrecision(string typeName, int testPrecision)
         {
             if (!defaultTypePrecisions.ContainsKey(typeName))
             {
                 throw new Exception($"I don't know the default precision for type `{typeName}`. Perhaps it is {testPrecision}?");
             }
             return defaultTypePrecisions[typeName];
+        }
+
+        public override bool HasDefaultTypeSize(Type type)
+        {
+            return type != null
+                && (defaultTypeSizes.ContainsKey(type)
+                    || type.IsEnum
+                        && defaultTypeSizes.ContainsKey(type.GetEnumUnderlyingType()));
+        }
+
+        public override int GetDefaultTypeSize(Type type)
+        {
+            if (!HasDefaultTypeSize(type))
+            {
+                throw new Exception($"I don't know the default precision for type `{type}`. Perhaps it is {Marshal.SizeOf(type)}?");
+            }
+
+            if (type.IsEnum)
+            {
+                type = type.GetEnumUnderlyingType();
+            }
+
+            return defaultTypeSizes[type];
         }
 
         public override bool SupportsScriptType(ScriptType type)
@@ -775,7 +799,7 @@ end";
             }
 
             var tableName = MakeIdentifier(key.Table.Schema ?? DefaultSchemaName, key.Table.Name);
-            var constraintName = base.MakeIdentifier(key.Name);
+            var constraintName = MakeIdentifier(key.Name);
             return $@"alter table {tableName} drop constraint {constraintName};";
         }
 
@@ -1194,7 +1218,7 @@ order by ordinal_position;")]
                 else
                 {
                     var t = v.GetType();
-                    if(t == typeof(string))
+                    if (t == typeof(string))
                     {
                         v = ((string)v).Replace("'", "''");
                     }

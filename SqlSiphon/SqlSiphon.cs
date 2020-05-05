@@ -56,6 +56,7 @@ namespace SqlSiphon
         where DataAdapterT : DbDataAdapter, new()
         where DataReaderT : DbDataReader
     {
+
         protected static readonly bool IsOnMonoRuntime = Type.GetType("Mono.Runtime") != null;
         protected static List<ColumnAttribute> GetProperties(Type type)
         {
@@ -77,8 +78,6 @@ namespace SqlSiphon
 
         private readonly bool isConnectionOwned;
 
-        private readonly Regex FKNameRegex;
-
         protected virtual string IdentifierPartBegin => "";
         protected virtual string IdentifierPartEnd => "";
         protected virtual string IdentifierPartSeperator => ".";
@@ -92,9 +91,6 @@ namespace SqlSiphon
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
         private SqlSiphon(bool isConnectionOwned)
         {
-            FKNameRegex = new Regex(
-                $@"add constraint \{IdentifierPartBegin}([\w_]+)\{IdentifierPartEnd}",
-                RegexOptions.Compiled | RegexOptions.IgnoreCase);
             this.isConnectionOwned = isConnectionOwned;
         }
 
@@ -846,8 +842,8 @@ namespace SqlSiphon
                 throw new ArgumentNullException(nameof(b));
             }
 
-            var aTableName = MakeIdentifier(a.Table.Schema, a.Table.Name).ToLowerInvariant();
-            var bTableName = MakeIdentifier(b.Table.Schema, b.Table.Name).ToLowerInvariant();
+            var aTableName = MakeIdentifier(a.Table.Schema, a.Table.Name);
+            var bTableName = MakeIdentifier(b.Table.Schema, b.Table.Name);
             var aColumnNames = a.Columns.Select(c => c.ToLowerInvariant());
             var bColumnNames = b.Columns.Select(c => c.ToLowerInvariant());
             var changed = aTableName != bTableName
@@ -990,7 +986,9 @@ namespace SqlSiphon
         public abstract List<InformationSchema.KeyColumnUsage> GetKeyColumns();
 
         public abstract string DefaultSchemaName { get; }
-        public abstract int DefaultTypePrecision(string typeName, int testPrecision);
+        public abstract int GetDefaultTypePrecision(string typeName, int testPrecision);
+        public abstract bool HasDefaultTypeSize(Type type);
+        public abstract int GetDefaultTypeSize(Type type);
         public abstract Type GetSystemType(string sqlType);
         public abstract bool DescribesIdentity(InformationSchema.Columns column);
         protected abstract string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial);

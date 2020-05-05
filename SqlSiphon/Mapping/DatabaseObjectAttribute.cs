@@ -175,7 +175,7 @@ namespace SqlSiphon.Mapping
             {
                 return DatabaseObjectAttribute.GetAttributes<T>(SourceObject);
             }
-            return new T[] { };
+            return Array.Empty<T>();
         }
 
         public T GetOtherAttribute<T>()
@@ -366,7 +366,7 @@ namespace SqlSiphon.Mapping
                 }
 
                 if (obj.numeric_precision.HasValue
-                    && obj.numeric_precision.Value != dal.DefaultTypePrecision(SqlType, obj.numeric_precision.Value))
+                    && obj.numeric_precision.Value != dal.GetDefaultTypePrecision(SqlType, obj.numeric_precision.Value))
                 {
                     Precision = obj.numeric_precision.Value;
                 }

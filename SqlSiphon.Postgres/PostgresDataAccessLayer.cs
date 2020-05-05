@@ -32,9 +32,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 using Npgsql;
@@ -54,8 +54,8 @@ namespace SqlSiphon.Postgres
 
         private static readonly Dictionary<string, Type> typeMapping = new Dictionary<string, Type>
         {
-            ["bigint"] = typeof(long),
             ["int8"] = typeof(long),
+            ["bigint"] = typeof(long),
             ["bigserial"] = typeof(long),
             ["serial8"] = typeof(long),
 
@@ -63,8 +63,8 @@ namespace SqlSiphon.Postgres
             ["varbit"] = typeof(bool[]),
             ["bit varying"] = typeof(bool[]),
 
-            ["boolean"] = typeof(bool),
             ["bool"] = typeof(bool),
+            ["boolean"] = typeof(bool),
 
             ["bytea"] = typeof(byte[]),
 
@@ -85,27 +85,27 @@ namespace SqlSiphon.Postgres
             ["datetime"] = typeof(DateTime), // included for tranlating T-SQL to PG/PSQL
             ["datetime2"] = typeof(DateTime), // included for tranlating T-SQL to PG/PSQL
 
-            ["double precision"] = typeof(double),
             ["float8"] = typeof(double),
+            ["double precision"] = typeof(double),
 
+            ["float4"] = typeof(float),
+            ["real"] = typeof(float),
+
+            ["int4"] = typeof(int),
             ["integer"] = typeof(int),
             ["int"] = typeof(int),
-            ["int4"] = typeof(int),
             ["serial"] = typeof(int),
             ["serial4"] = typeof(int),
+
+            ["int2"] = typeof(short),
+            ["smallint"] = typeof(short),
+            ["smallserial"] = typeof(short),
+            ["serial2"] = typeof(short),
 
             ["interval"] = typeof(TimeSpan),
 
             ["money"] = typeof(decimal),
             ["numeric"] = typeof(decimal),
-
-            ["real"] = typeof(float),
-            ["float4"] = typeof(float),
-
-            ["smallint"] = typeof(short),
-            ["int2"] = typeof(short),
-            ["smallserial"] = typeof(short),
-            ["serial2"] = typeof(short),
 
             ["time"] = typeof(DateTime),
             ["time with time zone"] = typeof(DateTime),
@@ -127,24 +127,30 @@ namespace SqlSiphon.Postgres
             ["tsvector"] = typeof(string)
         };
 
-        private static readonly Dictionary<string, int> defaultTypeSizes = new Dictionary<string, int>
+        private static readonly Dictionary<string, int> defaultTypePrecisions = new Dictionary<string, int>
         {
-            ["double precision"] = 53,
             ["float8"] = 53,
+            ["double precision"] = 53,
             ["int8"] = 64,
-            ["real"] = 24,
+            ["bigint"] = 64,
+            ["bigserial"] = 64,
+            ["serial8"] = 64,
             ["float4"] = 24,
+            ["real"] = 24,
             ["integer"] = 32,
             ["int"] = 32,
             ["int4"] = 32,
             ["serial"] = 32,
             ["serial4"] = 32,
+            ["boolean"] = 32,
+            ["bool"] = 32,
             ["smallint"] = 16,
             ["int2"] = 16,
             ["smallserial"] = 16,
-            ["serial2"] = 16,
+            ["serial2"] = 16
         };
 
+        private static readonly Dictionary<Type, int> defaultTypeSizes = TypeInfo.typeSizes.ToDictionary(kv => kv.Key, kv => kv.Value);
 
         private static readonly Dictionary<Type, string> reverseTypeMapping = typeMapping
                 .GroupBy(kv => kv.Value, kv => kv.Key)
@@ -176,6 +182,9 @@ namespace SqlSiphon.Postgres
             reverseTypeMapping.Add(typeof(double?), "double precision");
             reverseTypeMapping.Add(typeof(DateTime?), "time with time zone");
             reverseTypeMapping.Add(typeof(Guid?), "uuid");
+
+            defaultTypeSizes[typeof(bool)] = 4;
+            defaultTypeSizes[typeof(bool?)] = 4;
         }
 
         /// <summary>
@@ -250,13 +259,36 @@ namespace SqlSiphon.Postgres
         protected override string IdentifierPartBegin => "\"";
         protected override string IdentifierPartEnd => "\"";
         public override string DefaultSchemaName => "public";
-        public override int DefaultTypePrecision(string typeName, int testSize)
+        public override int GetDefaultTypePrecision(string typeName, int testSize)
         {
-            if (!defaultTypeSizes.ContainsKey(typeName))
+            if (!defaultTypePrecisions.ContainsKey(typeName))
             {
                 throw new Exception($"I don't know the default type size for `{typeName}`. Perhaps it is {testSize}?\n\ndefaultTypeSizes.Add(\"{typeName}\", {testSize});\n\n");
             }
-            return defaultTypeSizes[typeName];
+            return defaultTypePrecisions[typeName];
+        }
+
+        public override bool HasDefaultTypeSize(Type type)
+        {
+            return type != null
+                && (defaultTypeSizes.ContainsKey(type)
+                    || type.IsEnum
+                        && defaultTypeSizes.ContainsKey(type.GetEnumUnderlyingType()));
+        }
+
+        public override int GetDefaultTypeSize(Type type)
+        {
+            if (!HasDefaultTypeSize(type))
+            {
+                throw new Exception($"I don't know the default precision for type `{type}`. Perhaps it is {Marshal.SizeOf(type)}?");
+            }
+
+            if (type.IsEnum)
+            {
+                type = type.GetEnumUnderlyingType();
+            }
+
+            return defaultTypeSizes[type];
         }
 
         public override string MakeIdentifier(params string[] parts)
@@ -283,10 +315,30 @@ namespace SqlSiphon.Postgres
         {
             var state = base.GetInitialState(catalogueName, filter);
             var pgState = new PostgresDatabaseState(state);
-            if (pgState.CatalogueExists.HasValue && pgState.CatalogueExists.Value)
+            if (pgState.CatalogueExists == true)
             {
                 GetExtensions().ForEach(pgState.AddExtension);
+                var userSettings = GetUserSettings()
+                    .ToDictionary(v => v.usename, v => v.useconfig
+                        .Select(line =>
+                        {
+                            var sep = line.IndexOf('=');
+                            var key = line.Substring(0, sep);
+                            var value = line.Substring(sep + 1);
+                            return new KeyValuePair<string, string>(key, value);
+                        })
+                        .ToDictionary(kv => kv.Key, kv => kv.Value));
+                foreach(var userName in userSettings.Keys)
+                {
+                    var settings = userSettings[userName];
+                    foreach (var settingName in settings.Keys)
+                    {
+                        pgState.AddUserSetting(userName, settingName, settings[settingName]);
+                    }
+                }
             }
+
+            
             return pgState;
         }
 
@@ -294,6 +346,7 @@ namespace SqlSiphon.Postgres
         {
             var state = base.GetFinalState(dalType, userName, password, database);
             var pgState = new PostgresDatabaseState(state);
+            pgState.DatabaseLogins.Add("postgres", null);
             var guidType = typeof(Guid);
 
             if (pgState.TypeExists<Guid>())
@@ -302,6 +355,28 @@ namespace SqlSiphon.Postgres
             }
             pgState.AddExtension("postgis", "2.1.1");
             pgState.Schemata.AddRange(pgState.Extensions.Keys.Where(e => !pgState.Schemata.Contains(e)));
+
+            var searchPath = string.Join(",", pgState.Schemata.Select(s => MakeIdentifier(s))) + ",public";
+            foreach (var uName in pgState.DatabaseLogins.Keys)
+            {
+                pgState.AddUserSetting(uName, "search_path", searchPath);
+            }
+
+            foreach(var table in pgState.Tables.Values)
+            {
+                foreach(var column in table.Properties)
+                {
+                    if (column.IsSizeSet)
+                    {
+
+                    }
+                    else if (HasDefaultTypeSize(column.SystemType))
+                    {
+                        column.Size = GetDefaultTypeSize(column.SystemType);
+                    }
+                }
+            }
+
             return pgState;
         }
 
@@ -630,7 +705,8 @@ namespace SqlSiphon.Postgres
 
             var identifier = MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
             var parameterSection = MakeParameterSection(routine);
-            return $@"{identifier}({parameterSection})";
+            var returnType = MakeSqlTypeString(routine);
+            return $@"{identifier}({parameterSection}) returns {returnType}";
         }
 
         private static readonly Regex HoistPattern = new Regex(@"declare\s+(@\w+\s+\w+(,\s+@\w+\s+\w+)*);?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -725,7 +801,7 @@ language plpgsql;";
                     .Select(p => p.Trim())
                     .Where(p => p.Length > 0)
                     .ToArray();
-                parts[1] = NormalizeTypeName(parts[1].ToLowerInvariant());
+                parts[1] = NormalizeTypeName(parts[1]);
                 declarations[i] = "\n\t" + string.Join(" ", parts) + ";";
             }
             var declarationString = "";
@@ -744,7 +820,7 @@ end;";
 
         public string NormalizeTypeName(string name)
         {
-            var newName = name;
+            var newName = name.ToLowerInvariant();
             if (typeMapping.ContainsKey(name) && reverseTypeMapping.ContainsKey(typeMapping[name]))
             {
                 newName = reverseTypeMapping[typeMapping[name]];
@@ -878,6 +954,13 @@ alter table {tableName} add constraint {constraintName} primary key using index 
             }
 
             return $@"drop index if exists {idx.Name};";
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query = @"select usename, useconfig from pg_catalog.pg_user")]
+        internal List<pg_user> GetUserSettings()
+        {
+            return GetList<pg_user>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

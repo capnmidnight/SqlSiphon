@@ -40,8 +40,8 @@ namespace SqlSiphon.SqlServer
                 (UDTTName, finalUDTT) => delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist")),
                 (UDTTName, finalUDTT, initialUDTT) =>
                 {
-                    var finalColumns = finalUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(finalUDTT.Schema ?? gen.DefaultSchemaName, finalUDTT.Name, p.Name).ToLower());
-                    var initialColumns = initialUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(initialUDTT.Schema ?? gen.DefaultSchemaName, initialUDTT.Name, p.Name).ToLower());
+                    var finalColumns = finalUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(finalUDTT.Schema ?? gen.DefaultSchemaName, finalUDTT.Name, p.Name));
+                    var initialColumns = initialUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(initialUDTT.Schema ?? gen.DefaultSchemaName, initialUDTT.Name, p.Name));
 
                     var changed = false;
                     DatabaseDelta.Traverse(

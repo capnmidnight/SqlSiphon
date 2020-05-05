@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -14,7 +14,10 @@ namespace SqlSiphon
 
         void AnalyzeQuery(string routineText, RoutineAttribute routine);
 
-        int DefaultTypePrecision(string typeName, int testPrecision);
+        int GetDefaultTypePrecision(string typeName, int testPrecision);
+
+        bool HasDefaultTypeSize(Type type);
+        int GetDefaultTypeSize(Type type);
         Type GetSystemType(string sqlType);
 
         List<string> GetSchemata();

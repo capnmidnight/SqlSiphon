@@ -248,38 +248,35 @@ namespace SqlSiphon
                         }
                     }
 
-                    var xxx = dal.GetRoutines()
-                        .Where(r => filter == null || !filter.IsMatch(r.routine_name))
-                        .ToList();
-                    var routines = new Dictionary<string, InformationSchema.Routines>();
-                    foreach (var prm in xxx)
-                    {
-                        var ident = dal.MakeIdentifier(prm.specific_schema, prm.specific_name);
-                        if (!routines.ContainsKey(ident))
-                        {
-                            routines.Add(ident.ToLowerInvariant(), prm);
-                        }
-                    }
                     var parameters = dal.GetParameters()
-                        .GroupBy(prm => dal.MakeIdentifier(prm.specific_schema, prm.specific_name).ToLowerInvariant())
+                        .GroupBy(r => dal.MakeIdentifier(r.specific_schema, r.specific_name))
                         .ToDictionary(g => g.Key, g => g.ToArray());
-                    foreach (var key in routines.Keys)
+
+                    var routines = dal.GetRoutines()
+                        .Where(r => filter == null || !filter.IsMatch(r.routine_name))
+                        .GroupBy(r => dal.MakeIdentifier(r.specific_schema, r.specific_name))
+                        .ToDictionary(g => g.Key, g => g.First());
+
+                    foreach (var r in routines)
                     {
-                        var routine = routines[key];
-                        var routineParameters = parameters.ContainsKey(key) ? parameters[key] : null;
+                        var rIdent = r.Key;
+                        var routine = r.Value;
+                        var routineParameters = parameters.ContainsKey(rIdent)
+                            ? parameters[rIdent]
+                            : null;
                         var function = new RoutineAttribute(routine, routineParameters, dal);
-                        var ident = dal.MakeRoutineIdentifier(function);
-                        if (!Functions.ContainsKey(ident))
+                        var fIdent = dal.MakeRoutineIdentifier(function);
+                        if (!Functions.ContainsKey(fIdent))
                         {
-                            Functions.Add(ident.ToLowerInvariant(), function);
+                            Functions.Add(fIdent, function);
                         }
                     }
 
                     foreach (var idxName in indexedColumnsByName.Keys)
                     {
-                        var idxKey = dal.MakeIdentifier(dal.DefaultSchemaName, idxName).ToLowerInvariant();
+                        var idxKey = dal.MakeIdentifier(dal.DefaultSchemaName, idxName);
                         var idx = indexedColumnsByName[idxName];
-                        var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name).ToLowerInvariant();
+                        var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name);
                         if (Tables.ContainsKey(tableName))
                         {
                             var table = Tables[tableName];
@@ -330,13 +327,9 @@ namespace SqlSiphon
                     if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
                     {
                         var functionName = dal.MakeRoutineIdentifier(function);
-                        if (Functions.ContainsKey(functionName))
+                        if (!Functions.ContainsKey(functionName))
                         {
-
-                        }
-                        else
-                        {
-                            Functions.Add(functionName.ToLowerInvariant(), function);
+                            Functions.Add(functionName, function);
                         }
                     }
                 }
@@ -364,7 +357,7 @@ namespace SqlSiphon
                         {
                             var fkIndex = new TableIndex(relationship.From, "IDX_" + relationship.Name);
                             fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
-                            var fkIndexNameKey = dal.MakeIdentifier(relationship.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
+                            var fkIndexNameKey = dal.MakeIdentifier(relationship.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name);
                             Indexes.Add(fkIndexNameKey, fkIndex);
                         }
                     }
@@ -410,16 +403,17 @@ namespace SqlSiphon
                 throw new ArgumentNullException(nameof(table));
             }
 
-            table.Schema = table.Schema ?? dal.DefaultSchemaName;
+            table.Schema ??= dal.DefaultSchemaName;
+
             if (table.Include)
             {
-                var tableKey = dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name).ToLowerInvariant();
+                var tableKey = dal.MakeIdentifier(table.Schema ?? dal.DefaultSchemaName, table.Name);
                 if (!tableCollection.ContainsKey(tableKey))
                 {
                     tableCollection.Add(tableKey, table);
                     if (type != null && table.Properties.Any(p => p.IncludeInPrimaryKey))
                     {
-                        var pkNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.Name).ToLowerInvariant();
+                        var pkNameKey = dal.MakeIdentifier(table.PrimaryKey.Schema ?? dal.DefaultSchemaName, table.PrimaryKey.Name);
                         PrimaryKeys.Add(pkNameKey, table.PrimaryKey);
                         Indexes.Add(pkNameKey, table.PrimaryKey.ToIndex());
                     }
