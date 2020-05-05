@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -38,7 +38,27 @@ namespace InitDB
             scintilla.Styles[Style.Sql.Word].ForeColor = Color.DarkBlue;
             scintilla.Styles[Style.Sql.Word2].ForeColor = Color.DarkRed;
 
-            var keywords = "ADD EXTERNAL PROCEDURE ALL FETCH PUBLIC ALTER FILE RAISERROR AND FILLFACTOR READ ANY FOR READTEXT AS FOREIGN RECONFIGURE ASC FREETEXT REFERENCES AUTHORIZATION FREETEXTTABLE REPLICATION BACKUP FROM RESTORE BEGIN FULL RESTRICT BETWEEN FUNCTION RETURN BREAK GOTO REVERT BROWSE GRANT REVOKE BULK GROUP RIGHT BY HAVING ROLLBACK CASCADE HOLDLOCK ROWCOUNT CASE IDENTITY ROWGUIDCOL CHECK IDENTITY_INSERT RULE CHECKPOINT IDENTITYCOL SAVE CLOSE IF SCHEMA CLUSTERED IN SECURITYAUDIT COALESCE INDEX SELECT COLLATE INNER SEMANTICKEYPHRASETABLE COLUMN INSERT SEMANTICSIMILARITYDETAILSTABLE COMMIT INTERSECT SEMANTICSIMILARITYTABLE COMPUTE INTO SESSION_USER CONSTRAINT IS SET CONTAINS JOIN SETUSER CONTAINSTABLE KEY SHUTDOWN CONTINUE KILL SOME CONVERT LEFT STATISTICS CREATE LIKE SYSTEM_USER CROSS LINENO TABLE CURRENT LOAD TABLESAMPLE CURRENT_DATE MERGE TEXTSIZE CURRENT_TIME NATIONAL THEN CURRENT_TIMESTAMP NOCHECK TO CURRENT_USER NONCLUSTERED TOP CURSOR NOT TRAN DATABASE NULL TRANSACTION DBCC NULLIF TRIGGER DEALLOCATE OF TRUNCATE DECLARE OFF TRY_CONVERT DEFAULT OFFSETS TSEQUAL DELETE ON UNION DENY OPEN UNIQUE DESC OPENDATASOURCE UNPIVOT DISK OPENQUERY UPDATE DISTINCT OPENROWSET UPDATETEXT DISTRIBUTED OPENXML USE DOUBLE OPTION USER DROP OR VALUES DUMP ORDER VARYING ELSE OUTER VIEW END OVER WAITFOR ERRLVL PERCENT WHEN ESCAPE PIVOT WHERE EXCEPT PLAN WHILE EXEC PRECISION WITH EXECUTE PRIMARY WITHIN GROUP EXISTS PRINT WRITETEXT EXIT PROC".ToLowerInvariant();
+            var keywords = "add external procedure all fetch public alter file " +
+                "raiserror and fillfactor read any for readtext as foreign reconfigure " +
+                "asc freetext references authorization freetexttable replication backup " +
+                "from restore begin full restrict between function return break goto " +
+                "revert browse grant revoke bulk group right by having rollback " +
+                "cascade holdlock rowcount case identity rowguidcol check identity_insert " +
+                "rule checkpoint identitycol save close if schema clustered in " +
+                "securityaudit coalesce index select collate inner semantickeyphrasetable " +
+                "column insert semanticsimilaritydetailstable commit intersect " +
+                "semanticsimilaritytable compute into session_user constraint is set " +
+                "contains join setuser containstable key shutdown continue kill some " +
+                "convert left statistics create like system_user cross lineno table " +
+                "current load tablesample current_date merge textsize current_time " +
+                "national then current_timestamp nocheck to current_user nonclustered top " +
+                "cursor not tran database null transaction dbcc nullif trigger deallocate " +
+                "of truncate declare off try_convert default offsets tsequal delete on " +
+                "union deny open unique desc opendatasource unpivot disk openquery update " +
+                "distinct openrowset updatetext distributed openxml use double option " +
+                "user drop or values dump order varying else outer view end over waitfor " +
+                "errlvl percent when escape pivot where except plan while exec precision " +
+                "with execute primary within group exists print writetext exit proc";
             scintilla.SetKeywords(0, keywords);
             scintilla.SetKeywords(1, "bool bit byte char short int long bigint real float varchar nvarchar varbinary uniqueidentifier datetime datetime2");
             scintilla.Margins[0].Width = 16;
@@ -47,7 +67,7 @@ namespace InitDB
         public void Prompt(string title, string text)
         {
             Text = title;
-            DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            DialogResult = DialogResult.Cancel;
             scintilla.Text = text;
             Show();
         }
@@ -56,7 +76,7 @@ namespace InitDB
         {
             FormClosing += (o, e) =>
             {
-                if (DialogResult == System.Windows.Forms.DialogResult.OK)
+                if (DialogResult == DialogResult.OK)
                 {
                     callback(scintilla.Text);
                 }
