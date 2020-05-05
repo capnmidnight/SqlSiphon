@@ -101,11 +101,7 @@ namespace SqlSiphon.Mapping
             DefaultValue = defVal;
             IncludeInPrimaryKey = includeInPK;
             Include = true;
-
-            if (column.is_nullable != null && column.is_nullable.ToLowerInvariant() == "yes")
-            {
-                IsOptional = true;
-            }
+            IsOptional = "yes".Equals(column.is_nullable, StringComparison.InvariantCultureIgnoreCase);
 
             InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
         }

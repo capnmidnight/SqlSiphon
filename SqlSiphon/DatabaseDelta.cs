@@ -105,7 +105,7 @@ namespace SqlSiphon
             Initial = new List<ScriptStatus>();
             Final = new List<ScriptStatus>();
 
-            if (initial != null && initial.CatalogueExists == false)
+            if (initial?.CatalogueExists == false)
             {
                 Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, final.CatalogueName, gen.MakeCreateCatalogueScript(final.CatalogueName), "Database doesn't exist"));
             }

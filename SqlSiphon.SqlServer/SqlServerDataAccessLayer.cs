@@ -86,17 +86,23 @@ namespace SqlSiphon.SqlServer
         {
             var builder = new SqlConnectionStringBuilder
             {
-                DataSource = server,
-                InitialCatalog = database
+                DataSource = server
             };
 
-            builder.IntegratedSecurity = string.IsNullOrWhiteSpace(userName)
-                || string.IsNullOrWhiteSpace(password);
-            if (!builder.IntegratedSecurity)
+            builder.IntegratedSecurity = true;
+            if (!string.IsNullOrWhiteSpace(userName)
+                && !string.IsNullOrWhiteSpace(password))
             {
+                builder.IntegratedSecurity = false;
                 builder.UserID = userName.Trim();
                 builder.Password = password.Trim();
+            };
+
+            if (database is object)
+            {
+                builder.InitialCatalog = database;
             }
+
             return builder.ConnectionString;
         }
 

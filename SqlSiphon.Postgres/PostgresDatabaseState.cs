@@ -32,11 +32,14 @@ namespace SqlSiphon.Postgres
             }
 
             var searchPath = string.Join(",", Schemata.Select(s => dal.MakeIdentifier(s)));
-            delta.Scripts.Add(new ScriptStatus(
-                ScriptType.AlterSettings,
-                "set schema search path",
-                $"set search_path = {searchPath},public;",
-                "Schema search path needs to be set"));
+            foreach (var userName in DatabaseLogins.Keys)
+            {
+                delta.Scripts.Add(new ScriptStatus(
+                    ScriptType.AlterSettings,
+                    $"set schema search path for {userName}",
+                    $"alter user {userName} set search_path = {searchPath},public;",
+                    "Schema search path needs to be set"));
+            }
 
             delta.Scripts.Sort();
             delta.Initial.Sort();

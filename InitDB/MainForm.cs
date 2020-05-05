@@ -116,7 +116,7 @@ namespace InitDB
             optionsDialog.BrowseCommandPathClick += optionsDialog_BrowseCommandPathClick;
         }
 
-        public DataConnector MakeDatabaseConnection()
+        public DataConnector MakeDatabaseConnection(bool withCatalogue)
         {
             var constructorParams = new[] {
                 typeof(IDataConnector)
@@ -139,7 +139,8 @@ namespace InitDB
                         var factoryType = CONNECTION_TYPES[databaseTypeList.SelectedIndex];
                         var factoryConstructor = factoryType.GetConstructor(Type.EmptyTypes);
                         var factory = (IDataConnectorFactory)factoryConstructor.Invoke(Type.EmptyTypes);
-                        var connector = factory.MakeConnector(serverTB.Text, databaseTB.Text, adminUserTB.Text, adminPassTB.Text);
+                        var catalogueName = withCatalogue ? databaseTB.Text.ToLowerInvariant() : null;
+                        var connector = factory.MakeConnector(serverTB.Text, catalogueName, adminUserTB.Text, adminPassTB.Text);
                         constructorArgs = new object[] { connector };
                         constructor = type.GetConstructor(constructorParams);
                     });
@@ -170,7 +171,7 @@ namespace InitDB
         {
             SyncUI(() =>
             {
-                if (!txt.EndsWith("...", StringComparison.InvariantCultureIgnoreCase))
+                if (!txt.EndsWith("...", StringComparison.InvariantCulture))
                 {
                     txt += Environment.NewLine;
                 }
@@ -274,7 +275,7 @@ namespace InitDB
                         {
                             return new Session(l);
                         }
-                        catch(Exception exp)
+                        catch (Exception exp)
                         {
                             return null;
                         }
@@ -313,44 +314,42 @@ namespace InitDB
                 WithErrorCapture(() =>
                 {
                     var succeeded = false;
-                    using (var db = MakeDatabaseConnection())
-                    {
-                        var ss = db.GetSqlSiphon();
-                        var delta = CreateDelta(ss);
-                        DisplayDelta(delta);
-                        var t = db.GetType();
-                        ToOutput($"Syncing {t.Namespace}.{t.Name}");
+                    using var db = MakeDatabaseConnection(true);
+                    var ss = db.SqlSiphon;
+                    var delta = CreateDelta(ss);
+                    DisplayDelta(delta);
+                    var t = db.GetType();
+                    ToOutput($"Syncing {t.Namespace}.{t.Name}");
 
-                        succeeded = RunScripts(delta.Scripts, ss);
-                        try
+                    succeeded = RunScripts(delta.Scripts, ss);
+                    try
+                    {
+                        if (delta.PostExecute != null)
                         {
-                            if (delta.PostExecute != null)
+                            foreach (var post in delta.PostExecute)
                             {
-                                foreach (var post in delta.PostExecute)
-                                {
-                                    post(db);
-                                }
+                                post(db);
                             }
                         }
-                        catch (Exception exp)
-                        {
-                            succeeded = false;
-                            ToError(exp);
-                        }
-
-                        if (succeeded)
-                        {
-                            ToOutput("All done", true);
-                        }
-                        else
-                        {
-                            ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
-                        }
-
-                        delta = CreateDelta(ss);
-                        DisplayDelta(delta);
-                        SyncUI(() => runToolStripMenuItem.Enabled = true);
                     }
+                    catch (Exception exp)
+                    {
+                        succeeded = false;
+                        ToError(exp);
+                    }
+
+                    if (succeeded)
+                    {
+                        ToOutput("All done", true);
+                    }
+                    else
+                    {
+                        ToError("There was an error. Rerun in debug mode and step through the program in the debugger.", true);
+                    }
+
+                    delta = CreateDelta(ss);
+                    DisplayDelta(delta);
+                    SyncUI(() => runToolStripMenuItem.Enabled = true);
                     return succeeded;
                 });
             }
@@ -494,22 +493,20 @@ namespace InitDB
         {
             if (PathsAreCorrect())
             {
-                Task.Run(() =>
-                {
-                    try
-                    {
-                        ToOutput("Synchronizing schema.");
-                        using (var db = MakeDatabaseConnection().GetSqlSiphon())
-                        {
-                            DisplayDelta(CreateDelta(db));
-                        }
-                        ToOutput("Schema synched.");
-                    }
-                    catch (Exception exp)
-                    {
-                        ToError(exp);
-                    }
-                });
+                _ = Task.Run(() =>
+                  {
+                      try
+                      {
+                          ToOutput("Synchronizing schema.");
+                          using var db = MakeDatabaseConnection(true).SqlSiphon;
+                          DisplayDelta(CreateDelta(db));
+                          ToOutput("Schema synched.");
+                      }
+                      catch (Exception exp)
+                      {
+                          ToError(exp);
+                      }
+                  });
             }
         }
 
@@ -680,49 +677,45 @@ namespace InitDB
                 gv.Enabled = false;
                 try
                 {
-                    WithErrorCapture(() =>
-                    {
-                        var row = gv.Rows[e.RowIndex];
-                        var scriptObject = (ScriptStatus)row.DataBoundItem;
-                        var selectedCell = row.Cells[e.ColumnIndex];
-                        var stringValue = selectedCell.Value as string;
-                        var succeeded = true;
-                        Application.DoEvents();
-                        if (stringValue == scriptObject.Script)
-                        {
-                            var sv = new ScriptView();
-                            if (gv == pendingScriptsGV)
-                            {
-                                sv.Prompt(scriptObject.Name, scriptObject.Script, s => selectedCell.Value = s);
-                            }
-                            else
-                            {
-                                sv.Prompt(scriptObject.Name, scriptObject.Script);
-                            }
-                            // forms get disposed when they get closed, no need to dispose them here.
-                        }
-                        else if (gv == pendingScriptsGV && stringValue == "run")
-                        {
-                            using (var db = MakeDatabaseConnection())
-                            {
-                                succeeded = RunScript(scriptObject, true, db.GetSqlSiphon());
-                            }
-                            gv.Rows.RemoveAt(e.RowIndex);
-                        }
-                        else if (gv == pendingScriptsGV && stringValue == "skip")
-                        {
-                            using (var db = MakeDatabaseConnection())
-                            {
-                                db.GetSqlSiphon().MarkScriptAsRan(scriptObject);
-                            }
-                            gv.Rows.RemoveAt(e.RowIndex);
-                        }
-                        return succeeded;
-                    }, (exp) =>
-                    {
-                        tabControl1.SelectedTab = tabStatus;
-                        return $"{exp.GetType().Name}: {exp.Message}";
-                    });
+                    _ = WithErrorCapture(() =>
+                      {
+                          var row = gv.Rows[e.RowIndex];
+                          var scriptObject = (ScriptStatus)row.DataBoundItem;
+                          var selectedCell = row.Cells[e.ColumnIndex];
+                          var stringValue = selectedCell.Value as string;
+                          var succeeded = true;
+                          Application.DoEvents();
+                          if (stringValue == scriptObject.Script)
+                          {
+                              var sv = new ScriptView();
+                              if (gv == pendingScriptsGV)
+                              {
+                                  sv.Prompt(scriptObject.Name, scriptObject.Script, s => selectedCell.Value = s);
+                              }
+                              else
+                              {
+                                  sv.Prompt(scriptObject.Name, scriptObject.Script);
+                              }
+                              // forms get disposed when they get closed, no need to dispose them here.
+                          }
+                          else if (gv == pendingScriptsGV && stringValue == "run")
+                          {
+                              using var db = MakeDatabaseConnection(scriptObject.ScriptType != ScriptType.CreateCatalogue);
+                              succeeded = RunScript(scriptObject, true, db.SqlSiphon);
+                              gv.Rows.RemoveAt(e.RowIndex);
+                          }
+                          else if (gv == pendingScriptsGV && stringValue == "skip")
+                          {
+                              using var db = MakeDatabaseConnection(scriptObject.ScriptType != ScriptType.CreateCatalogue);
+                              db.SqlSiphon.MarkScriptAsRan(scriptObject);
+                              gv.Rows.RemoveAt(e.RowIndex);
+                          }
+                          return succeeded;
+                      }, (exp) =>
+                      {
+                          tabControl1.SelectedTab = tabStatus;
+                          return $"{exp.GetType().Name}: {exp.Message}";
+                      });
                 }
                 catch (ConnectionFailedException exp)
                 {
@@ -790,10 +783,8 @@ namespace InitDB
                 }
                 var scriptObj = new ScriptStatus(ScriptType.InstallExtension, "none", script, null);
 
-                using (var db = MakeDatabaseConnection().GetSqlSiphon())
-                {
-                    RunScript(scriptObj, true, db);
-                }
+                using var db = MakeDatabaseConnection(true).SqlSiphon;
+                RunScript(scriptObj, true, db);
             }
         }
 
@@ -867,29 +858,25 @@ by Sean T. McBeth (v1) (sean@seanmcbeth.com)");
 
         private void exportToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                using (var db = MakeDatabaseConnection().GetSqlSiphon())
+                using var db = MakeDatabaseConnection(true).SqlSiphon;
+                var delta = CreateDelta(db);
+                var sb = new System.Text.StringBuilder();
+                foreach (var script in delta.Scripts)
                 {
-                    var delta = CreateDelta(db);
-                    var sb = new System.Text.StringBuilder();
-                    foreach (var script in delta.Scripts)
-                    {
-                        sb.AppendLine(script.Script);
-                        sb.AppendLine("GO");
-                    }
-                    File.WriteAllText(saveFileDialog1.FileName, sb.ToString());
+                    sb.AppendLine(script.Script);
+                    sb.AppendLine("GO");
                 }
+                File.WriteAllText(saveFileDialog1.FileName, sb.ToString());
             }
         }
 
         private void generateCodeBTN_Click(object sender, EventArgs e)
         {
-            using (var db = MakeDatabaseConnection().GetSqlSiphon())
-            {
-                var initial = db.GetInitialState(databaseTB.Text, ObjectFilter);
-                initial.WriteCodeFiles(@"D:\\Sean\\Desktop", "TestProject.Data", "TestConnector");
-            }
+            using var db = MakeDatabaseConnection(true).SqlSiphon;
+            var initial = db.GetInitialState(databaseTB.Text, ObjectFilter);
+            initial.WriteCodeFiles(@"D:\\Sean\\Desktop", "TestProject.Data", "TestConnector");
         }
 
         private void MainForm_Shown(object sender, EventArgs e)

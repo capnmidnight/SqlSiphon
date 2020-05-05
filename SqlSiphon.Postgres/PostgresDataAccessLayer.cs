@@ -210,15 +210,11 @@ namespace SqlSiphon.Postgres
                 throw new ArgumentNullException(nameof(server));
             }
 
-            if (database is null)
+            var builder = new NpgsqlConnectionStringBuilder();
+            if (database is object)
             {
-                throw new ArgumentNullException(nameof(database));
+                builder.Database = database;
             }
-
-            var builder = new NpgsqlConnectionStringBuilder
-            {
-                Database = database.ToLowerInvariant()
-            };
 
             if (!string.IsNullOrWhiteSpace(userName)
                 && !string.IsNullOrWhiteSpace(password))
@@ -275,11 +271,6 @@ namespace SqlSiphon.Postgres
             {
                 throw new ArgumentNullException(nameof(query));
             }
-
-            // Postgres is case-insensitive to database names in general, but
-            // the psql program is not. You can't make a mixed-case database,
-            // but psql will not match mixed-case names to their lowercase version.
-            database = database?.ToLowerInvariant();
 
             query = query.Replace("\"", "\\\"");
 

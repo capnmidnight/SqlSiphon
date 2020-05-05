@@ -13,7 +13,21 @@ namespace SqlSiphon
     public class DatabaseState
     {
         public bool? CatalogueExists { get; private set; }
-        public string CatalogueName { get; private set; }
+
+        private string _cName;
+        public string CatalogueName
+        {
+            get
+            {
+                return _cName;
+            }
+
+            private set
+            {
+                _cName = value?.ToLowerInvariant();
+            }
+        }
+
         public Dictionary<string, TableAttribute> Tables { get; private set; }
         public Dictionary<string, TableIndex> Indexes { get; private set; }
         public Dictionary<string, RoutineAttribute> Functions { get; private set; }
@@ -69,7 +83,7 @@ namespace SqlSiphon
         /// mappings to database objects.
         /// </summary>
         /// <param name="asm"></param>
-        public DatabaseState(IEnumerable<Type> types, IAssemblyStateReader asm, IDatabaseScriptGenerator dal, string userName, string password, string database)
+        public DatabaseState(IEnumerable<Type> types, IAssemblyStateReader asm, IDatabaseScriptGenerator dal, string userName, string password, string catalogueName)
             : this()
         {
             if (types is null)
@@ -87,7 +101,7 @@ namespace SqlSiphon
                 throw new ArgumentNullException(nameof(dal));
             }
 
-            CatalogueName = database;
+            CatalogueName = catalogueName;
 
             PostExecute = new List<Action<IDataConnector>>();
             if (!string.IsNullOrWhiteSpace(userName))
