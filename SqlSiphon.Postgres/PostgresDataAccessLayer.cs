@@ -242,149 +242,8 @@ namespace SqlSiphon.Postgres
 
         public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
         {
-            if (string.IsNullOrEmpty(executablePath))
-            {
-                throw new ArgumentException("message", nameof(executablePath));
-            }
-
-            if (configurationPath is null)
-            {
-                throw new ArgumentNullException(nameof(configurationPath));
-            }
-
-            if (server is null)
-            {
-                throw new ArgumentNullException(nameof(server));
-            }
-
-            if (database is null)
-            {
-                throw new ArgumentNullException(nameof(database));
-            }
-
-            if (string.IsNullOrWhiteSpace(adminUser) || string.IsNullOrWhiteSpace(adminPass))
-            {
-                throw new Exception("PSQL does not support Windows Authentication. Please provide a username and password for the server process.");
-            }
-
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
-            query = query.Replace("\"", "\\\"");
-
-            // I prefer colon-separated address/port specifications.
-            string port = null;
-            var i = server.IndexOf(":", StringComparison.InvariantCultureIgnoreCase);
-            if (i > -1)
-            {
-                port = server.Substring(i + 1);
-                server = server.Substring(0, i);
-            }
-
-            configurationPath = FindConfigurationFile(configurationPath);
-
-            var originalConf = InjectUserCredentials(configurationPath, server, port, database, adminUser, adminPass);
-
-            var succeeded = false;
-            try
-            {
-                succeeded = RunProcess(
-                    executablePath,
-                    new string[]{
-                            "-h " + server,
-                            string.IsNullOrWhiteSpace(port) ? null : "-p " + port,
-                            "-U " + adminUser,
-                            (database == null) ? null : "-d " + database,
-                            $"-c \"{query}\""
-                });
-            }
-            finally
-            {
-                RevertConfigurationFile(configurationPath, originalConf);
-            }
-
-            return succeeded;
-        }
-
-        private static void RevertConfigurationFile(string configurationPath, string[] originalConf)
-        {
-            if (originalConf != null)
-            {
-                if (originalConf.Length == 0)
-                {
-                    File.Delete(configurationPath);
-                }
-                else
-                {
-                    File.WriteAllLines(configurationPath, originalConf);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Starting from InitDB's configuration file, finds the Postgres configuration file.
-        /// </summary>
-        /// <param name="configurationPath"></param>
-        /// <returns></returns>
-        private static string FindConfigurationFile(string configurationPath)
-        {
-            // If either InitDB or Postgres' configuration file moves, this will break. But
-            // for now, they are both in the User's AppData directory.
-            var j = configurationPath.IndexOf("InitDB", StringComparison.InvariantCultureIgnoreCase);
-            configurationPath = Path.Combine(configurationPath.Substring(0, j), "postgresql", "pgpass.conf");
-            return configurationPath;
-        }
-
-        /// <summary>
-        /// We can't send a password to the server directly, so we have twiddle the user's
-        /// pgpass.conf file. See this page for more information on the pgpass.conf file:
-        ///     http://www.postgresql.org/docs/current/static/libpq-pgpass.html
-        /// </summary>
-        /// <param name="configurationPath"></param>
-        /// <param name="server"></param>
-        /// <param name="port"></param>
-        /// <param name="database"></param>
-        /// <param name="adminUser"></param>
-        /// <param name="adminPass"></param>
-        /// <returns></returns>
-        private static string[] InjectUserCredentials(string configurationPath, string server, string port, string database, string adminUser, string adminPass)
-        {
-            string[] originalConf = null;
-            if (File.Exists(configurationPath))
-            {
-                originalConf = File.ReadAllLines(configurationPath);
-            }
-
-            port ??= "*";
-            database ??= "*";
-
-            var lineToAdd = $"{server}:{port}:{database}:{adminUser}:{adminPass}";
-
-            if (originalConf == null)
-            {
-                // No configuration file exists, so make one.
-                originalConf = Array.Empty<string>();
-                File.WriteAllText(configurationPath, lineToAdd);
-            }
-            else
-            {
-                var conf = originalConf.ToList();
-                var i = conf.IndexOf(lineToAdd);
-                if (i == -1)
-                {
-                    conf.Add(lineToAdd);
-                    File.WriteAllLines(configurationPath, conf);
-                }
-                else
-                {
-                    // the configuration file is already setup for us,
-                    // so don't make any changes to it.
-                    originalConf = null;
-                }
-            }
-            return originalConf;
+            /// This is no longer necessary. It's only here to satisfy the interface.
+            return false;
         }
 
 
@@ -510,6 +369,11 @@ namespace SqlSiphon.Postgres
                 return true;
             }
             return false;
+        }
+
+        public override bool SupportsScriptType(ScriptType type)
+        {
+            return true;
         }
 
         public override string MakeCreateColumnScript(ColumnAttribute prop)

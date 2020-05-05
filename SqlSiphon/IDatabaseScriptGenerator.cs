@@ -1,10 +1,12 @@
-﻿using SqlSiphon.Mapping;
+using SqlSiphon.Mapping;
 using SqlSiphon.Model;
 
 namespace SqlSiphon
 {
     public interface IDatabaseScriptGenerator : IDatabaseObjectHandler
     {
+        bool SupportsScriptType(ScriptType type);
+
         string MakeInsertScript(TableAttribute table, object value);
 
         string MakeRoutineIdentifier(RoutineAttribute routine);

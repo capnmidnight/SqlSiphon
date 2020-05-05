@@ -262,6 +262,12 @@ namespace SqlSiphon.SqlServer
             return defaultTypePrecisions[typeName];
         }
 
+        public override bool SupportsScriptType(ScriptType type)
+        {
+            return type != ScriptType.CreateCatalogue
+                && type != ScriptType.CreateDatabaseLogin;
+        }
+
         public override string MakeRoutineIdentifier(RoutineAttribute routine)
         {
             if (routine is null)

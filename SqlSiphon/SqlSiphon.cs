@@ -1041,6 +1041,7 @@ namespace SqlSiphon
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(ParameterAttribute p);
 
+        public abstract bool SupportsScriptType(ScriptType type);
         public abstract string MakeInsertScript(TableAttribute table, object value);
         public abstract string MakeCreateDatabaseLoginScript(string userName, string password, string database);
 

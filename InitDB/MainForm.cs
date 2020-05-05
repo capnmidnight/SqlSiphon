@@ -418,8 +418,7 @@ namespace InitDB
             ToOutput(HORIZONTAL_LINE);
             ToOutput($"{script.ScriptType} {script.Name}...");
 
-            if (script.ScriptType != ScriptType.CreateCatalogue
-                && script.ScriptType != ScriptType.CreateDatabaseLogin)
+            if (db.SupportsScriptType(script.ScriptType))
             {
                 db.AlterDatabase(script);
             }
