@@ -712,18 +712,6 @@ end";
             }
         }
 
-        private string MaybeMakeColumnTypeString(ColumnAttribute attr, bool skipDefault = false)
-        {
-            if (typeToString.ContainsKey(attr.SystemType))
-            {
-                var typeStr = MakeSqlTypeString(attr);
-                var nullConstraintType = attr.IsOptional ? "" : "NOT ";
-                var defaultValue = !skipDefault ? attr.DefaultValue ?? "" : "";
-                return $"{attr.Name} {typeStr} {nullConstraintType}NULL {defaultValue}".Trim();
-            }
-            return null;
-        }
-
         private static DataTable MakeDataTable(string tableName, Type t, System.Collections.IEnumerable array)
         {
             var table = new DataTable(tableName);

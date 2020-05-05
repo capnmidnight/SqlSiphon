@@ -598,14 +598,20 @@ namespace SqlSiphon.Postgres
                 valuesMatch = (final.DefaultValue == "'9999/12/31 23:59:59.99999'"
                         && initial.DefaultValue == "'9999-12-31'::date")
                     || (final.DefaultValue == "getdate()"
-                        && initial.DefaultValue == "('now'::text)::date");
+                        && (initial.DefaultValue == "('now'::text)::date"
+                            || initial.DefaultValue == "CURRENT_DATE"));
             }
             else if (final.SystemType == typeof(double))
             {
                 valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
                     || initial.DefaultValue == "(" + final.DefaultValue + ")";
             }
-            else if (final.DefaultValue != "newid()" || initial.DefaultValue != "uuid_generate_v4()")
+            else if ((final.DefaultValue == "newid()" && initial.DefaultValue == "uuid_generate_v4()")
+                || (final.IsIdentity && initial.IsIdentity))
+            {
+                valuesMatch = true;
+            }
+            else
             {
                 valuesMatch = false;
             }
