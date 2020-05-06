@@ -165,7 +165,7 @@ where lower(Email) = lower(@email)
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"return query select 
+@"select 
     UserID, 
     UserName, 
     Email, 
@@ -178,6 +178,7 @@ where lower(Email) = lower(@email)
     LastPasswordChangedDate, 
     LastLockoutDate,
     Comment
+into returnValue
 from MembershipUser
 where UserID = @userID;")]
         public MembershipUser GetUserByID(Guid userID)
