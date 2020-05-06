@@ -396,6 +396,7 @@ namespace SqlSiphon
             for (var i = 0; i < command.Parameters.Count; ++i)
             {
                 command.Parameters[i].Value = PrepareParameter(parameterValues[i]) ?? DBNull.Value;
+                JiggerParameter((ParameterT)command.Parameters[i], command.CommandType == CommandType.StoredProcedure);
             }
         }
 
@@ -404,19 +405,19 @@ namespace SqlSiphon
             var procedureParams = new List<ParameterT>();
             for (var i = 0; methParams != null && i < methParams.Length; ++i)
             {
-                var name = methParams[i].Name;
-                if (isProc)
-                {
-                    name = PrepareParameterName(name);
-                }
                 var p = new ParameterT
                 {
-                    ParameterName = name,
+                    ParameterName = methParams[i].Name,
                     Direction = methParams[i].Direction
                 };
+
                 procedureParams.Add(p);
             }
             return procedureParams.ToArray();
+        }
+
+        protected virtual void JiggerParameter(ParameterT p, bool isProc)
+        {
         }
 
         /// <summary>
@@ -905,11 +906,6 @@ namespace SqlSiphon
                     .ToArray();
                 return mismatchedColumns.Length > 0 ? string.Join(", ", mismatchedColumns) : null;
             }
-        }
-
-        protected virtual string PrepareParameterName(string name)
-        {
-            return name;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]

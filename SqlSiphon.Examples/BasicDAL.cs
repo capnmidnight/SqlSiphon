@@ -128,19 +128,7 @@ from @vals;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select 
-    UserID, 
-    UserName, 
-    Email, 
-    PasswordQuestion,
-    Comment, 
-    IsApproved, 
-    IsLockedOut, 
-    CreateDate, 
-    LastLoginDate,
-    LastActivityDate, 
-    LastPasswordChangedDate, 
-    LastLockoutDate
+@"select *
 from MembershipUser
 where userName = @userName
     and ApplicationName = @applicationName;")]
@@ -165,19 +153,7 @@ where lower(Email) = lower(@email)
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select 
-    UserID, 
-    UserName, 
-    Email, 
-    PasswordQuestion, 
-    IsApproved, 
-    IsLockedOut, 
-    CreateDate, 
-    LastLoginDate,
-    LastActivityDate, 
-    LastPasswordChangedDate, 
-    LastLockoutDate,
-    Comment
+@"select *
 into returnValue
 from MembershipUser
 where UserID = @userID;")]
@@ -347,19 +323,7 @@ where UserID = @userID
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"return query select 
-    UserID, 
-    UserName, 
-    Email, 
-    PasswordQuestion,
-    IsApproved, 
-    IsLockedOut, 
-    CreateDate, 
-    LastLoginDate,
-    LastActivityDate, 
-    LastPasswordChangedDate, 
-    LastLockoutDate,
-    Comment
+@"return query select *
 from MembershipUser
 where ApplicationName = @applicationName
 order by userName asc;")]
@@ -592,19 +556,7 @@ where UserID = @userID
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"return query select 
-    UserID, 
-    userName, 
-    Email, 
-    PasswordQuestion,
-    Comment, 
-    IsApproved, 
-    IsLockedOut, 
-    CreateDate, 
-    LastLoginDate,
-    LastActivityDate, 
-    LastPasswordChangedDate, 
-    LastLockoutDate
+@"return query select *
 from MembershipUser
 where userName LIKE @userNameToMatch
     and ApplicationName = @applicationName;")]
@@ -616,20 +568,8 @@ where userName LIKE @userNameToMatch
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"return query select 
-    UserID, 
-    UserName, 
-    Email, 
-    PasswordQuestion,
-    Comment, 
-    IsApproved, 
-    IsLockedOut, 
-    CreateDate, 
-    LastLoginDate,
-    LastActivityDate, 
-    LastPasswordChangedDate, 
-    LastLockoutDate
-from MembershipUser m
+@"return query select *
+from MembershipUser
 where lower(Email) like lower(@emailToMatch)
     and ApplicationName = @applicationName;")]
         public List<MembershipUser> FindUsersByEmail(string emailToMatch, string applicationName)

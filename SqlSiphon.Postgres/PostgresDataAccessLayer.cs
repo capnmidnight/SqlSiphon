@@ -291,9 +291,18 @@ namespace SqlSiphon.Postgres
             return defaultTypeSizes[type];
         }
 
-        protected override string PrepareParameterName(string name)
+        protected override void JiggerParameter(NpgsqlParameter p, bool isProc)
         {
-            return "_" + name.ToLowerInvariant();
+            if (isProc)
+            {
+                p.ParameterName = "_" + p.ParameterName.ToLowerInvariant();
+                if (p.Value is DateTime)
+                {
+                    p.NpgsqlDbType = NpgsqlTypes.NpgsqlDbType.Date;
+                }
+            }
+
+            base.JiggerParameter(p, isProc);
         }
 
         public override string NormalizeSqlType(string sqlType)
