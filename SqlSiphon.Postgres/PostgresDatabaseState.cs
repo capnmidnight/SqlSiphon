@@ -24,7 +24,14 @@ namespace SqlSiphon.Postgres
             var pg = initial as PostgresDatabaseState;
             if (pg != null)
             {
-                RemoveExtensionObjects(pg);
+                /// Remove any references to functions, tables, etc. that were installed
+                /// by a Postgres Extension Module, which we will not want to uninstall.
+                var extSchema = Extensions.Keys.ToList();
+                RemoveExtensionObjects(extSchema, pg.Functions);
+                RemoveExtensionObjects(extSchema, pg.Indexes);
+                RemoveExtensionObjects(extSchema, pg.PrimaryKeys);
+                RemoveExtensionObjects(extSchema, pg.Relationships);
+                RemoveExtensionObjects(extSchema, pg.Tables);
             }
 
             var delta = base.Diff(initial, asm, dal);
@@ -39,16 +46,6 @@ namespace SqlSiphon.Postgres
             delta.Initial.Sort();
             delta.Final.Sort();
             return delta;
-        }
-
-        private void RemoveExtensionObjects(PostgresDatabaseState pg)
-        {
-            var extSchema = Extensions.Keys.ToList();
-            RemoveExtensionObjects(extSchema, pg.Functions);
-            RemoveExtensionObjects(extSchema, pg.Indexes);
-            RemoveExtensionObjects(extSchema, pg.PrimaryKeys);
-            RemoveExtensionObjects(extSchema, pg.Relationships);
-            RemoveExtensionObjects(extSchema, pg.Tables);
         }
 
         private void RemoveExtensionObjects<T>(List<string> extSchema, Dictionary<string, T> collect) where T : SqlSiphon.Mapping.DatabaseObjectAttribute

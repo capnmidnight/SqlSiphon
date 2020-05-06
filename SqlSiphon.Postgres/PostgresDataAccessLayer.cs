@@ -349,14 +349,16 @@ namespace SqlSiphon.Postgres
         {
             var state = base.GetFinalState(dalType, userName, password, database);
             var pgState = new PostgresDatabaseState(state);
+
             pgState.DatabaseLogins.Add("postgres", null);
-            var guidType = typeof(Guid);
 
             if (pgState.TypeExists<Guid>())
             {
                 pgState.AddExtension("uuid-ossp", "1.0");
             }
+
             pgState.AddExtension("postgis", "2.1.1");
+
             pgState.Schemata.AddRange(pgState.Extensions.Keys.Where(e => !pgState.Schemata.Contains(e)));
 
             var searchPath = string.Join(",", pgState.Schemata.Select(s => MakeIdentifier(s))) + ",public";
@@ -365,15 +367,12 @@ namespace SqlSiphon.Postgres
                 pgState.AddUserSetting(uName, "search_path", searchPath);
             }
 
-            foreach(var table in pgState.Tables.Values)
+            foreach (var table in pgState.Tables.Values)
             {
-                foreach(var column in table.Properties)
+                foreach (var column in table.Properties)
                 {
-                    if (column.IsSizeSet)
-                    {
-
-                    }
-                    else if (HasDefaultTypeSize(column.SystemType))
+                    if (!column.IsSizeSet
+                        && HasDefaultTypeSize(column.SystemType))
                     {
                         column.Size = GetDefaultTypeSize(column.SystemType);
                     }
