@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSiphon.Examples.SqlServer.Runner
+namespace SqlSiphon.Examples.Runner
 {
     [Mapping.Table]
     public class MyTable : BoundObject

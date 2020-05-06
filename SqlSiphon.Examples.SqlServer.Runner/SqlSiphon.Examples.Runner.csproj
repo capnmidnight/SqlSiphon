@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <RootNamespace>SqlSiphon.Examples.SqlServer.Runner</RootNamespace>
-    <AssemblyName>SqlSiphon.Examples.SqlServer.Runner</AssemblyName>
+    <RootNamespace>SqlSiphon.Examples.Runner</RootNamespace>
+    <AssemblyName>SqlSiphon.Examples.Runner</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
