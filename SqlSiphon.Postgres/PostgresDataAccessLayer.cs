@@ -293,18 +293,16 @@ namespace SqlSiphon.Postgres
 
         public override string NormalizeSqlType(string sqlType)
         {
-            if (sqlType is null)
+            if (sqlType is object)
             {
-                throw new ArgumentNullException(nameof(sqlType));
-            }
-
-            sqlType = sqlType.ToLowerInvariant();
-            if (stringToType.ContainsKey(sqlType))
-            {
-                var type = stringToType[sqlType];
-                if (typeToString.ContainsKey(type))
+                sqlType = sqlType.ToLowerInvariant();
+                if (stringToType.ContainsKey(sqlType))
                 {
-                    sqlType = typeToString[type];
+                    var type = stringToType[sqlType];
+                    if (typeToString.ContainsKey(type))
+                    {
+                        sqlType = typeToString[type];
+                    }
                 }
             }
 
@@ -1098,7 +1096,13 @@ where table_schema != 'information_schema'
 order by table_catalog, table_schema, table_name, ordinal_position;")]
         private List<InformationSchema.Columns> GetColumns(string isUpdatable)
         {
-            return GetList<InformationSchema.Columns>(isUpdatable);
+            var columns = GetList<InformationSchema.Columns>(isUpdatable);
+            foreach (var column in columns)
+            {
+                column.data_type = NormalizeSqlType(column.data_type);
+                column.udt_name = NormalizeSqlType(column.udt_name);
+            }
+            return columns;
         }
 
         public override List<InformationSchema.Columns> GetTableColumns()
@@ -1240,7 +1244,14 @@ where specific_schema != 'information_schema'
 order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
         public override List<InformationSchema.Parameters> GetParameters()
         {
-            return GetList<InformationSchema.Parameters>();
+            var parameters = GetList<InformationSchema.Parameters>();
+            foreach (var parameter in parameters)
+            {
+                parameter.data_type = NormalizeSqlType(parameter.data_type);
+                parameter.user_defined_type_name = NormalizeSqlType(parameter.user_defined_type_name);
+                parameter.udt_name = NormalizeSqlType(parameter.udt_name);
+            }
+            return parameters;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
