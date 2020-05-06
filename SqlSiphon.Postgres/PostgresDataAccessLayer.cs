@@ -293,22 +293,22 @@ namespace SqlSiphon.Postgres
 
         public override string NormalizeSqlType(string sqlType)
         {
-            if (!stringToType.ContainsKey(sqlType))
+            if (sqlType is null)
             {
-                return sqlType;
+                throw new ArgumentNullException(nameof(sqlType));
             }
-            else
+
+            sqlType = sqlType.ToLowerInvariant();
+            if (stringToType.ContainsKey(sqlType))
             {
                 var type = stringToType[sqlType];
-                if (!typeToString.ContainsKey(type))
+                if (typeToString.ContainsKey(type))
                 {
-                    return sqlType;
-                }
-                else
-                {
-                    return typeToString[type];
+                    sqlType = typeToString[type];
                 }
             }
+
+            return sqlType;
         }
 
         public override string MakeIdentifier(params string[] parts)
@@ -848,7 +848,7 @@ language plpgsql;";
                     .Select(p => p.Trim())
                     .Where(p => p.Length > 0)
                     .ToArray();
-                parts[1] = NormalizeTypeName(parts[1]);
+                parts[1] = NormalizeSqlType(parts[1]);
                 declarations[i] = "\n\t" + string.Join(" ", parts) + ";";
             }
             var declarationString = "";
@@ -863,16 +863,6 @@ begin
 end;";
             queryBody = queryBody.Replace("@", "_");
             return queryBody.Trim();
-        }
-
-        public string NormalizeTypeName(string name)
-        {
-            var newName = name.ToLowerInvariant();
-            if (stringToType.ContainsKey(name) && typeToString.ContainsKey(stringToType[name]))
-            {
-                newName = typeToString[stringToType[name]];
-            }
-            return newName;
         }
 
         public override string MakeCreateTableScript(TableAttribute table)
