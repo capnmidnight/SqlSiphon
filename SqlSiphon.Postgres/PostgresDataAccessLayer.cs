@@ -382,7 +382,7 @@ namespace SqlSiphon.Postgres
             return pgState;
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize, bool isArray)
         {
             string typeName = null;
 
@@ -400,11 +400,9 @@ namespace SqlSiphon.Postgres
                 if (typeName == null)
                 {
                     typeName = MakeComplexSqlTypeString(systemType);
-
                     if (typeName == null && systemType.Name != "Void")
                     {
-                        var systemTypeName = systemType?.FullName ?? "N/A";
-                        throw new Exception($"Couldn't find type description for type: {systemTypeName}");
+                        throw new Exception($"Couldn't find type description for type: {systemType.FullName}");
                     }
                 }
             }
@@ -414,9 +412,11 @@ namespace SqlSiphon.Postgres
                 var sizeStr = precision.HasValue
                     ? $"({size},{precision})"
                     : $"({size})";
+
                 var bracketsIndex = typeName.IndexOf("[]", StringComparison.InvariantCultureIgnoreCase);
                 if (bracketsIndex > -1)
                 {
+                    isArray = true;
                     typeName = typeName.Substring(0, bracketsIndex);
                 }
                 if (typeName == "text")
@@ -427,11 +427,13 @@ namespace SqlSiphon.Postgres
                 {
                     typeName += sizeStr;
                 }
-                if (bracketsIndex > -1)
-                {
-                    typeName += "[]";
-                }
             }
+
+            if (isArray)
+            {
+                typeName += "[]";
+            }
+
             return typeName;
         }
 
@@ -465,7 +467,7 @@ namespace SqlSiphon.Postgres
 
             var tableName = MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name);
             var columnName = MakeIdentifier(prop.Name);
-            var columnType = MakeSqlTypeString(prop);
+            var columnType = MakeSqlTypeString(prop, true, false);
             return $"alter table if exists {tableName} add column {columnName} {columnType};";
         }
 
@@ -493,7 +495,7 @@ namespace SqlSiphon.Postgres
                 throw new ArgumentNullException(nameof(b));
             }
 
-            var typeA = MakeSqlTypeString(a) ?? "void";
+            var typeA = MakeSqlTypeString(a, true, false) ?? "void";
             var isArray = typeA.EndsWith("[]", StringComparison.InvariantCulture);
             if (isArray)
             {
@@ -550,9 +552,9 @@ namespace SqlSiphon.Postgres
             }
             else
             {
-                var attr = DatabaseObjectAttribute.GetAttribute(baseType) ?? new TableAttribute(baseType);
-                var tableDef = MakeColumnSection(attr, true);
-                sqlType = $"table ({tableDef})";
+                var attr = DatabaseObjectAttribute.GetAttribute(baseType)
+                    ?? new TableAttribute(baseType);
+                sqlType = MakeIdentifier(attr.Schema ?? DefaultSchemaName, attr.Name);
             }
 
             if (DataConnector.IsTypeCollection(systemType))
@@ -578,7 +580,7 @@ namespace SqlSiphon.Postgres
             var tableName = MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name);
             var preamble = $"alter table if exists {tableName}";
             var columnName = MakeIdentifier(final.Name);
-            var columnType = MakeSqlTypeString(final);
+            var columnType = MakeSqlTypeString(final, true, false);
 
             if (final.Include != initial.Include)
             {
@@ -626,7 +628,7 @@ namespace SqlSiphon.Postgres
                 throw new ArgumentNullException(nameof(initial));
             }
 
-            var valuesMatch = true;
+            bool valuesMatch;
             if (final.SystemType == typeof(bool))
             {
                 var xb = final.DefaultValue.Replace("'", "").ToLowerInvariant();
@@ -648,14 +650,10 @@ namespace SqlSiphon.Postgres
                 valuesMatch = final.DefaultValue == "(" + initial.DefaultValue + ")"
                     || initial.DefaultValue == "(" + final.DefaultValue + ")";
             }
-            else if ((final.DefaultValue == "newid()" && initial.DefaultValue == "uuid_generate_v4()")
-                || (final.IsIdentity && initial.IsIdentity))
-            {
-                valuesMatch = true;
-            }
             else
             {
-                valuesMatch = false;
+                valuesMatch = (final.DefaultValue == "newid()" && initial.DefaultValue == "uuid_generate_v4()")
+                    || (final.IsIdentity && initial.IsIdentity);
             }
 
             if (valuesMatch)
@@ -676,7 +674,7 @@ namespace SqlSiphon.Postgres
                 throw new ArgumentNullException(nameof(column));
             }
 
-            var typeStr = MakeSqlTypeString(column);
+            var typeStr = MakeSqlTypeString(column, true, false);
             var nullString = "";
             var defaultString = "";
             if (!isReturnType)
@@ -739,7 +737,7 @@ namespace SqlSiphon.Postgres
 
             var queryBody = createBody ? MakeRoutineBody(routine) : routine.Query.Trim();
             var identifier = MakeIdentifier(routine.Schema ?? DefaultSchemaName, routine.Name);
-            var returnType = MakeSqlTypeString(routine) ?? "void";
+            var returnType = MakeSqlTypeString(routine, true, false) ?? "void";
 
             if (returnType.Contains("[]"))
             {
@@ -838,7 +836,7 @@ language plpgsql;";
             }));
 
 
-            var returnType = MakeSqlTypeString(routine);
+            var returnType = MakeSqlTypeString(routine, true, false);
             if (returnType != null)
             {
                 if (returnType.Contains("[]") || returnType.StartsWith("table", StringComparison.InvariantCultureIgnoreCase))

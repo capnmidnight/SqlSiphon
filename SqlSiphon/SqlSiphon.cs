@@ -679,7 +679,7 @@ namespace SqlSiphon
             return ArgumentList(columns, p => MakeColumnString(p, isReturnType).Trim());
         }
 
-        protected string MakeSqlTypeString(DatabaseObjectAttribute p, bool skipSize = true)
+        protected string MakeSqlTypeString(DatabaseObjectAttribute p, bool skipSize, bool isArray)
         {
             if (p != null && p.Include)
             {
@@ -702,7 +702,8 @@ namespace SqlSiphon
                     p.IsSizeSet ? new int?(p.Size) : null,
                     p.IsPrecisionSet ? new int?(p.Precision) : null,
                     isIdentity,
-                    skipSize);
+                    skipSize,
+                    isArray);
             }
             else
             {
@@ -1073,7 +1074,7 @@ namespace SqlSiphon
         }
 
 
-        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize);
+        protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize, bool isArray);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(ParameterAttribute p, bool withName);
 

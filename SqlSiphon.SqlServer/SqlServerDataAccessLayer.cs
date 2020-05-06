@@ -485,7 +485,7 @@ end";
                 throw new ArgumentNullException(nameof(p));
             }
 
-            var typeStr = MakeSqlTypeString(p);
+            var typeStr = MakeSqlTypeString(p, true, p.IsArray);
             var defaultValue = GetDefaultValue(p);
             var isUDTT = p.IsUDTT || (p.SystemType != null && IsUDTT(p.SystemType));
             var readonlyConstraint = isUDTT ? "readonly" : "";
@@ -499,7 +499,7 @@ end";
                 throw new ArgumentNullException(nameof(p));
             }
 
-            var typeStr = MakeSqlTypeString(p);
+            var typeStr = MakeSqlTypeString(p, true, false);
             var defaultString = "";
             if (p.DefaultValue != null)
             {
@@ -525,7 +525,7 @@ end";
 
             var tableName = MakeIdentifier(prop.Table.Schema ?? DefaultSchemaName, prop.Table.Name);
             var columnName = MakeIdentifier(prop.Name);
-            var columnType = MakeSqlTypeString(prop);
+            var columnType = MakeSqlTypeString(prop, true, false);
             return $"alter table {tableName} add {columnName} {columnType};";
         }
 
@@ -610,7 +610,7 @@ end";
             var tableName = MakeIdentifier(final.Table.Schema ?? DefaultSchemaName, final.Table.Name);
             var preamble = $"alter table {tableName}";
             var columnName = MakeIdentifier(final.Name);
-            var columnType = MakeSqlTypeString(final);
+            var columnType = MakeSqlTypeString(final, true, false);
             var conditionalColumnType = final.Include ? columnType : "";
 
             if (final.Include != initial.Include)
@@ -649,7 +649,7 @@ end";
             }
         }
 
-        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize)
+        protected override string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize, bool isArray)
         {
             if (sqlType == null)
             {

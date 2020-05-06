@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -67,6 +67,8 @@ namespace SqlSiphon.Mapping
 
         public bool IsUDTT { get; private set; }
 
+        public bool IsArray { get; private set; }
+
         public ParameterAttribute() { }
 
         public ParameterAttribute(ParameterInfo param)
@@ -83,7 +85,7 @@ namespace SqlSiphon.Mapping
                 Name = parameter.parameter_name.Substring(1);
             }
 
-            InferTypeInfo(parameter, parameter.user_defined_type_name ?? parameter.data_type, dal);
+            InferTypeInfo(parameter, parameter.TypeName, dal);
 
             switch (parameter.parameter_mode)
             {
@@ -95,7 +97,9 @@ namespace SqlSiphon.Mapping
                 break;
             }
 
-            IsUDTT = parameter.user_defined_type_name != null;
+            Schema = parameter.TypeSchema;
+            IsUDTT = parameter.IsUDTT;
+            IsArray = parameter.IsArray;
         }
 
         /// <summary>

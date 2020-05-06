@@ -8,6 +8,8 @@ namespace SqlSiphon
     {
         bool SupportsScriptType(ScriptType type);
 
+        bool IsUDTT(Type systemType);
+
         string MakeInsertScript(TableAttribute table, object value);
 
         string MakeRoutineIdentifier(RoutineAttribute routine, bool withParamNames);
