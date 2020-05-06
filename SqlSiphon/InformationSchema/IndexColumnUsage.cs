@@ -44,6 +44,7 @@ namespace SqlSiphon.InformationSchema
     {
         public string table_schema { get; set; }
         public string table_name { get; set; }
+        public string index_schema { get; set; }
         public string index_name { get; set; }
         public string column_name { get; set; }
         public bool is_primary_key { get; set; }
@@ -52,7 +53,7 @@ namespace SqlSiphon.InformationSchema
 
         public override string ToString()
         {
-            return $"IndexColumnUsage: {index_name}({table_name}.{column_name})";
+            return $"IndexColumnUsage: {index_schema}::{index_name}({table_schema}::{table_name}.{column_name})";
         }
     }
 }

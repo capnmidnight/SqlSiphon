@@ -108,7 +108,7 @@ namespace SqlSiphon.Model
             Name = GetRelationshipName(dal);
             if (AutoCreateIndex)
             {
-                var fkIndex = new TableIndex(From, "idx_" + Name);
+                var fkIndex = new TableIndex(From, Schema, "idx_" + Name);
                 fkIndex.Columns.AddRange(FromColumns.Select(c => c.Name));
                 var fkIndexNameKey = dal.MakeIdentifier(From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
                 From.Indexes.Add(fkIndexNameKey, fkIndex);

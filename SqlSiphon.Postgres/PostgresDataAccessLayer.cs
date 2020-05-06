@@ -1050,22 +1050,24 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
 @"select
-    n.nspname as table_schema,
+    nt.nspname as table_schema,
     t.relname as table_name,
+	ni.nspname as index_schema,
     i.relname as index_name,
     a.attname as column_name
 from
     pg_class t
-    inner join pg_namespace n on n.oid = t.relnamespace
+    inner join pg_namespace nt on nt.oid = t.relnamespace
     inner join pg_index ix on t.oid = ix.indrelid
     inner join pg_class i on i.oid = ix.indexrelid
     inner join pg_attribute a on a.attrelid = t.oid and a.attnum = ANY(ix.indkey)
+	inner join pg_namespace ni on ni.oid = i.relnamespace
 where
 	t.relkind = 'r'
-    and t.relname like 'test%'
 order by
-    n.nspname,
+    nt.nspname,
     t.relname,
+	ni.nspname,
     i.relname;")]
         public override List<InformationSchema.IndexColumnUsage> GetIndexColumns()
         {

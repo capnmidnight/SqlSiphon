@@ -187,7 +187,7 @@ namespace SqlSiphon
 
                     var indexedColumns = dal.GetIndexColumns();
                     var indexedColumnsByTable = indexedColumns.ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
-                    var indexedColumnsByName = indexedColumns.ToHash(col => col.index_name);
+                    var indexedColumnsByName = indexedColumns.ToHash(col => dal.MakeIdentifier(col.index_schema, col.index_name));
 
                     foreach (var tableName in columns.Keys)
                     {
@@ -272,16 +272,16 @@ namespace SqlSiphon
                         }
                     }
 
-                    foreach (var idxName in indexedColumnsByName.Keys)
+                    foreach (var idxKey in indexedColumnsByName.Keys)
                     {
-                        var idxKey = dal.MakeIdentifier(dal.DefaultSchemaName, idxName);
-                        var idx = indexedColumnsByName[idxName];
-                        var tableName = dal.MakeIdentifier(idx[0].table_schema, idx[0].table_name);
+                        var idxColumns = indexedColumnsByName[idxKey];
+                        var idx = idxColumns[0];
+                        var tableName = dal.MakeIdentifier(idx.table_schema, idx.table_name);
                         if (Tables.ContainsKey(tableName))
                         {
                             var table = Tables[tableName];
-                            Indexes.Add(idxKey, new TableIndex(table, idxName));
-                            foreach (var idxCol in idx)
+                            Indexes.Add(idxKey, new TableIndex(table, idx.index_schema, idx.index_name));
+                            foreach (var idxCol in idxColumns)
                             {
                                 Indexes[idxKey].Columns.Add(idxCol.column_name);
                             }
@@ -355,9 +355,10 @@ namespace SqlSiphon
                         Relationships.Add(id.ToLowerInvariant(), relationship);
                         if (relationship.AutoCreateIndex)
                         {
-                            var fkIndex = new TableIndex(relationship.From, "IDX_" + relationship.Name);
+                            var fkSchema = relationship.Schema ?? dal.DefaultSchemaName;
+                            var fkIndex = new TableIndex(relationship.From, fkSchema, "IDX_" + relationship.Name);
                             fkIndex.Columns.AddRange(relationship.FromColumns.Select(c => c.Name));
-                            var fkIndexNameKey = dal.MakeIdentifier(relationship.From.Schema ?? dal.DefaultSchemaName, fkIndex.Name);
+                            var fkIndexNameKey = dal.MakeIdentifier(fkSchema, fkIndex.Name);
                             Indexes.Add(fkIndexNameKey, fkIndex);
                         }
                     }

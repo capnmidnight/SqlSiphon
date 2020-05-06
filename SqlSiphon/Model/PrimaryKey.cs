@@ -80,7 +80,7 @@ namespace SqlSiphon.Model
 
         internal TableIndex ToIndex()
         {
-            var idx = new TableIndex(Table, Name)
+            var idx = new TableIndex(Table, Schema, Name)
             {
                 IsClustered = true
             };

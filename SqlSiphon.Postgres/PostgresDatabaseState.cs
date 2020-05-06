@@ -48,7 +48,8 @@ namespace SqlSiphon.Postgres
             return delta;
         }
 
-        private void RemoveExtensionObjects<T>(List<string> extSchema, Dictionary<string, T> collect) where T : SqlSiphon.Mapping.DatabaseObjectAttribute
+        private void RemoveExtensionObjects<T>(List<string> extSchema, Dictionary<string, T> collect)
+            where T : Mapping.DatabaseObjectAttribute
         {
             var remove = collect
                 .Where(f => extSchema.Contains(f.Value.Schema))

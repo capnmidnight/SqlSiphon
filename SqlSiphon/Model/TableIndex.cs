@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using SqlSiphon.Mapping;
 
@@ -11,8 +11,9 @@ namespace SqlSiphon.Model
 
         public bool IsClustered { get; set; }
 
-        internal TableIndex(TableAttribute table, string name)
+        internal TableIndex(TableAttribute table, string schema, string name)
         {
+            Schema = schema;
             Name = name;
             Table = table;
             Columns = new List<string>();

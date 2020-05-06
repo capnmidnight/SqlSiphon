@@ -145,7 +145,7 @@ namespace SqlSiphon.Mapping
                 {
                     if (!Indexes.ContainsKey(idxCol.index_name))
                     {
-                        Indexes.Add(idxCol.index_name, new TableIndex(this, idxCol.index_name));
+                        Indexes.Add(idxCol.index_name, new TableIndex(this, idxCol.index_schema, idxCol.index_name));
                     }
                     Indexes[idxCol.index_name].Columns.Add(idxCol.column_name);
                 }
@@ -238,7 +238,7 @@ namespace SqlSiphon.Mapping
                         {
                             if (!Indexes.ContainsKey(idxInc.Name))
                             {
-                                Indexes.Add(idxInc.Name, new TableIndex(this, idxInc.Name));
+                                Indexes.Add(idxInc.Name, new TableIndex(this, idxInc.Schema ?? Schema, idxInc.Name));
                             }
                             Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
                         }
