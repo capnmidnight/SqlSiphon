@@ -94,7 +94,16 @@ namespace SqlSiphon.Mapping
             Name = routine.routine_name;
             CommandType = CommandType.StoredProcedure;
             Parameters = new List<ParameterAttribute>();
-            SqlType = dal.NormalizeSqlType(routine.data_type);
+
+            if (routine.IsUDTT)
+            {
+                SqlType = dal.MakeIdentifier(routine.type_udt_schema, routine.type_udt_name);
+            }
+            else
+            {
+                SqlType = dal.NormalizeSqlType(routine.data_type);
+            }
+
             if (routine.is_array)
             {
                 SqlType += "[]";

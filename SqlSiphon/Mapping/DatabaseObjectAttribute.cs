@@ -152,9 +152,19 @@ namespace SqlSiphon.Mapping
                 }).FirstOrDefault();
         }
 
-        public static TableAttribute GetAttribute(Type obj)
+        public static TableAttribute GetTable(Type obj)
         {
             return GetAttributes<TableAttribute>(obj)
+                .Select(attr =>
+                {
+                    attr.InferProperties(obj);
+                    return attr;
+                }).FirstOrDefault();
+        }
+
+        public static ViewAttribute GetView(Type obj)
+        {
+            return GetAttributes<ViewAttribute>(obj)
                 .Select(attr =>
                 {
                     attr.InferProperties(obj);
@@ -352,33 +362,36 @@ namespace SqlSiphon.Mapping
         protected void InferTypeInfo(InformationSchema.Typed obj, string sqlType, IDatabaseStateReader dal)
         {
             SqlType = sqlType;
-            if (SqlType[0] == '_')
+            if (SqlType is object)
             {
-                SqlType = SqlType.Substring(1);
-            }
-
-            SystemType = dal.GetSystemType(SqlType);
-            if (SystemType != null)
-            {
-                if (SystemType.IsPrimitive)
+                if (SqlType[0] == '_')
                 {
-                    Size = System.Runtime.InteropServices.Marshal.SizeOf(SystemType);
+                    SqlType = SqlType.Substring(1);
                 }
 
-                if (obj.numeric_precision.HasValue
-                    && obj.numeric_precision.Value != dal.GetDefaultTypePrecision(SqlType, obj.numeric_precision.Value))
+                SystemType = dal.GetSystemType(SqlType);
+                if (SystemType != null)
                 {
-                    Precision = obj.numeric_precision.Value;
-                }
+                    if (SystemType.IsPrimitive)
+                    {
+                        Size = System.Runtime.InteropServices.Marshal.SizeOf(SystemType);
+                    }
 
-                if (obj.character_maximum_length.HasValue && obj.character_maximum_length.Value > 0)
-                {
-                    Size = obj.character_maximum_length.Value;
-                }
+                    if (obj.numeric_precision.HasValue
+                        && obj.numeric_precision.Value != dal.GetDefaultTypePrecision(SqlType, obj.numeric_precision.Value))
+                    {
+                        Precision = obj.numeric_precision.Value;
+                    }
 
-                if (obj.numeric_scale.HasValue && obj.numeric_scale.Value > 0)
-                {
-                    Precision = obj.numeric_scale.Value;
+                    if (obj.character_maximum_length.HasValue && obj.character_maximum_length.Value > 0)
+                    {
+                        Size = obj.character_maximum_length.Value;
+                    }
+
+                    if (obj.numeric_scale.HasValue && obj.numeric_scale.Value > 0)
+                    {
+                        Precision = obj.numeric_scale.Value;
+                    }
                 }
             }
         }

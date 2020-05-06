@@ -512,7 +512,7 @@ namespace SqlSiphon.Postgres
             var baseType = DataConnector.CoalesceCollectionType(systemType);
             return baseType != typeof(void)
                 && !typeToString.ContainsKey(baseType)
-                && DatabaseObjectAttribute.GetAttribute(baseType) == null;
+                && DatabaseObjectAttribute.GetTable(baseType) == null;
         }
 
 
@@ -532,7 +532,7 @@ namespace SqlSiphon.Postgres
                 }
             }
 
-            var attr = DatabaseObjectAttribute.GetAttribute(type);
+            var attr = DatabaseObjectAttribute.GetTable(type);
             attr.Name = $"{type.Name}UDTT";
             return attr;
         }
@@ -552,7 +552,7 @@ namespace SqlSiphon.Postgres
             }
             else
             {
-                var attr = DatabaseObjectAttribute.GetAttribute(baseType)
+                var attr = DatabaseObjectAttribute.GetTable(baseType)
                     ?? new TableAttribute(baseType);
                 sqlType = MakeIdentifier(attr.Schema ?? DefaultSchemaName, attr.Name);
             }
@@ -917,6 +917,31 @@ end;";
             return $"drop table if exists {identifier};";
         }
 
+        public override string MakeCreateViewScript(ViewAttribute view)
+        {
+            if (view is null)
+            {
+                throw new ArgumentNullException(nameof(view));
+            }
+
+            var schema = view.Schema ?? DefaultSchemaName;
+            var identifier = MakeIdentifier(schema, view.Name);
+            return $@"create view {identifier}
+    as {view.Query};";
+        }
+
+        public override string MakeDropViewScript(ViewAttribute info)
+        {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = MakeIdentifier(schema, info.Name);
+            return $"drop view if exists {identifier};";
+        }
+
         public override string MakeCreateRelationshipScript(Relationship relation)
         {
             if (relation is null)
@@ -1069,10 +1094,21 @@ alter table {tableName} add constraint {constraintName} primary key using index 
 from information_schema.columns
 where table_schema != 'information_schema'
     and table_schema != 'pg_catalog'
+	and is_updatable = @isUpdatable
 order by table_catalog, table_schema, table_name, ordinal_position;")]
-        public override List<InformationSchema.Columns> GetColumns()
+        private List<InformationSchema.Columns> GetColumns(string isUpdatable)
         {
-            return GetList<InformationSchema.Columns>();
+            return GetList<InformationSchema.Columns>(isUpdatable);
+        }
+
+        public override List<InformationSchema.Columns> GetTableColumns()
+        {
+            return GetColumns("YES");
+        }
+
+        public override List<InformationSchema.Columns> GetViewColumns()
+        {
+            return GetColumns("NO");
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1132,6 +1168,22 @@ order by
             return GetList<InformationSchema.IndexColumnUsage>();
         }
 
+
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query =
+@"select 
+	table_schema, 
+	table_name, 
+	view_definition 
+from information_schema.views
+where table_schema != 'information_schema'
+    and table_schema != 'pg_catalog';")]
+        public override List<InformationSchema.Views> GetViews()
+        {
+            return GetList<InformationSchema.Views>();
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
 @"select *
@@ -1170,12 +1222,6 @@ order by constraint_catalog, constraint_schema, constraint_name;")]
 	p.proretset as is_array
 from information_schema.routines as r
     inner join pg_proc as p on p.proname = r.routine_name
-    left outer join (select specific_name, count(*) as argcount
-	    from information_schema.parameters
-	    where parameter_mode in ('IN', 'INOUT')
-	    group by specific_name) as q 
-		    on r.specific_name = q.specific_name
-		    and p.pronargs = q.argcount
 where specific_schema != 'information_schema'
     and specific_schema != 'pg_catalog'
 order by specific_catalog, specific_schema, specific_name;")]

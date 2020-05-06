@@ -251,7 +251,7 @@ namespace SqlSiphon.SqlServer
                 t = t.GetElementType();
             }
 
-            var attr = DatabaseObjectAttribute.GetAttribute(t) as SqlServerTableAttribute;
+            var attr = DatabaseObjectAttribute.GetTable(t) as SqlServerTableAttribute;
             return (attr?.Name ?? t.Name) + "UDTT";
         }
 
@@ -338,7 +338,7 @@ namespace SqlSiphon.SqlServer
 
             if (info.SystemType != null)
             {
-                _ = DatabaseObjectAttribute.GetAttribute(DataConnector.CoalesceCollectionType(info.SystemType));
+                _ = DatabaseObjectAttribute.GetTable(DataConnector.CoalesceCollectionType(info.SystemType));
             }
 
             var query = info.Query.Replace("into returnValue", "")
@@ -430,6 +430,16 @@ end";
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, info.Name);
             return $@"drop table {identifier};";
+        }
+
+        public override string MakeCreateViewScript(ViewAttribute view)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string MakeDropViewScript(ViewAttribute view)
+        {
+            throw new NotImplementedException();
         }
 
         public override string MakeCreateIndexScript(TableIndex idx)
@@ -874,12 +884,22 @@ order by s.name, tt.name, c.column_id;")]
 from information_schema.columns
 where table_schema != 'information_schema'
 order by table_catalog, table_schema, table_name, ordinal_position;")]
-        public override List<InformationSchema.Columns> GetColumns()
+        public override List<InformationSchema.Columns> GetTableColumns()
         {
             var columns = GetEnumerator<InformationSchema.Columns>()
                 .Select(RemoveDefaultValueParens)
                 .ToList();
             return columns;
+        }
+
+        public override List<InformationSchema.Views> GetViews()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<InformationSchema.Columns> GetViewColumns()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -1013,7 +1033,7 @@ order by ordinal_position;")]
         {
             if (t != null && data != null)
             {
-                var attr = DatabaseObjectAttribute.GetAttribute(t);
+                var attr = DatabaseObjectAttribute.GetTable(t);
                 if (attr == null)
                 {
                     throw new Exception($"Type {t.Namespace}.{t.Name} could not be automatically inserted.");
@@ -1062,7 +1082,7 @@ order by ordinal_position;")]
                 t = t.GetElementType();
                 isUDTT = t != typeof(byte) && DataConnector.IsTypePrimitive(t);
             }
-            var attr = Mapping.DatabaseObjectAttribute.GetAttribute(t) as SqlServerTableAttribute;
+            var attr = Mapping.DatabaseObjectAttribute.GetTable(t) as SqlServerTableAttribute;
             return (attr != null && attr.IsUploadable) || isUDTT;
         }
 
@@ -1092,7 +1112,7 @@ order by ordinal_position;")]
             }
             else
             {
-                attr = DatabaseObjectAttribute.GetAttribute(elementType);
+                attr = DatabaseObjectAttribute.GetTable(elementType);
             }
             attr.Name = $"{elementType.Name}UDTT";
             return attr;

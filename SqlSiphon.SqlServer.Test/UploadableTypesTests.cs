@@ -39,7 +39,7 @@ namespace SqlSiphon.SqlServer.Test
             {
                 throw new Exception("Field " + fieldName + " doesn't exist");
             }
-            var attr = DatabaseObjectAttribute.GetAttribute(t);
+            var attr = DatabaseObjectAttribute.GetTable(t);
             using var testDB = new SqlServerDataAccessLayer((string)null);
             var script = testDB.MakeCreateUDTTScript(attr);
             return script.IndexOf(fieldName, StringComparison.InvariantCultureIgnoreCase) > -1;

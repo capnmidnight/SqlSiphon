@@ -60,7 +60,7 @@ namespace SqlSiphon
         protected static readonly bool IsOnMonoRuntime = Type.GetType("Mono.Runtime") != null;
         protected static List<ColumnAttribute> GetProperties(Type type)
         {
-            var attr = DatabaseObjectAttribute.GetAttribute(type) ?? new TableAttribute(type);
+            var attr = DatabaseObjectAttribute.GetTable(type) ?? new TableAttribute(type);
             return attr.Properties;
         }
 
@@ -269,7 +269,7 @@ namespace SqlSiphon
 
             if (data != null)
             {
-                var attr = DatabaseObjectAttribute.GetAttribute(t);
+                var attr = DatabaseObjectAttribute.GetTable(t);
                 if (attr == null)
                 {
                     throw new Exception($"Type {t.Namespace}.{t.Name} could not be automatically inserted.");
@@ -780,6 +780,7 @@ namespace SqlSiphon
             {
                 finalType = typeof(int);
             }
+
             if (final.Include && !initial.Include)
             {
                 changeReason = "Column doesn't exist";
@@ -803,7 +804,7 @@ namespace SqlSiphon
             }
             else if (finalType != initial.SystemType)
             {
-                changeReason = $"Column type has changed. Was {initial.SystemType.Name}, now {finalType.Name}.";
+                changeReason = $"Column type has changed. Was {initial.SystemType?.Name ?? initial.SqlType}, now {finalType.Name}.";
             }
             else if (final.Size != initial.Size)
             {
@@ -991,8 +992,10 @@ namespace SqlSiphon
         }
 
         public abstract List<string> GetDatabaseLogins();
-        public abstract List<InformationSchema.Columns> GetColumns();
+        public abstract List<InformationSchema.Columns> GetTableColumns();
         public abstract List<InformationSchema.Columns> GetUDTTColumns();
+        public abstract List<InformationSchema.Views> GetViews();
+        public abstract List<InformationSchema.Columns> GetViewColumns();
         public abstract List<InformationSchema.IndexColumnUsage> GetIndexColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
         public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
@@ -1086,6 +1089,9 @@ namespace SqlSiphon
 
         public abstract string MakeCreateTableScript(TableAttribute table);
         public abstract string MakeDropTableScript(TableAttribute table);
+
+        public abstract string MakeCreateViewScript(ViewAttribute view);
+        public abstract string MakeDropViewScript(ViewAttribute view);
 
         public abstract string MakeCreateColumnScript(ColumnAttribute column);
         public abstract string MakeDropColumnScript(ColumnAttribute column);

@@ -129,23 +129,21 @@ from @vals;")]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
 @"select 
-    u.UserID, 
-    u.userName, 
-    m.Email, 
-    m.PasswordQuestion,
-    m.Comment, 
-    m.IsApproved, 
-    m.IsLockedOut, 
-    m.CreateDate, 
-    m.LastLoginDate,
-    u.LastActivityDate, 
-    m.LastPasswordChangedDate, 
-    m.LastLockoutDate
-from Membership m
-inner join Users u on u.UserID = m.UserID
-inner join Applications a on a.ApplicationID = m.ApplicationID
-where u.userName = @userName
-    and a.ApplicationName = @applicationName;")]
+    UserID, 
+    UserName, 
+    Email, 
+    PasswordQuestion,
+    Comment, 
+    IsApproved, 
+    IsLockedOut, 
+    CreateDate, 
+    LastLoginDate,
+    LastActivityDate, 
+    LastPasswordChangedDate, 
+    LastLockoutDate
+from MembershipUser
+where userName = @userName
+    and ApplicationName = @applicationName;")]
         public MembershipUser GetUserByUserName(string userName, string applicationName)
         {
             return Get<MembershipUser>(userName, applicationName);
@@ -154,14 +152,12 @@ where u.userName = @userName
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"select u.userName
+@"select userName
 into returnValue
-from Users u
-inner join Membership m on m.UserID = u.UserID
-inner join Application a on u.ApplicationID = a.ApplicationID
-where m.LoweredEmail = lower(@email)
-    and u.ApplicatoinName = @applicationName;")]
-        public string GetuserNameByEmail(string email, string applicationName)
+from MembershipUser
+where lower(Email) = lower(@email)
+    and ApplicationName = @applicationName;")]
+        public string GetUserNameByEmail(string email, string applicationName)
         {
             return Get<string>(email, applicationName);
         }
@@ -170,21 +166,20 @@ where m.LoweredEmail = lower(@email)
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
 @"return query select 
-    u.UserID, 
-    u.UserName, 
-    m.Email, 
-    m.PasswordQuestion, 
-    m.IsApproved, 
-    m.IsLockedOut, 
-    m.CreateDate, 
-    m.LastLoginDate,
-    u.LastActivityDate, 
-    m.LastPasswordChangedDate, 
-    m.LastLockoutDate,
-    m.Comment
-from Membership m
-inner join Users u on u.UserID = m.UserID
-where m.UserID = @userID;")]
+    UserID, 
+    UserName, 
+    Email, 
+    PasswordQuestion, 
+    IsApproved, 
+    IsLockedOut, 
+    CreateDate, 
+    LastLoginDate,
+    LastActivityDate, 
+    LastPasswordChangedDate, 
+    LastLockoutDate,
+    Comment
+from MembershipUser
+where UserID = @userID;")]
         public MembershipUser GetUserByID(Guid userID)
         {
             return Get<MembershipUser>(userID);
@@ -351,28 +346,21 @@ where UserID = @userID
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationID uniqueidentifier;
-
-select @applicationID = ApplicationID
-from Applications
-where ApplicationName = @applicationName;
-
-return query select 
-    u.UserID, 
-    u.UserName, 
-    m.Email, 
-    m.PasswordQuestion,
-    m.IsApproved, 
-    m.IsLockedOut, 
-    m.CreateDate, 
-    m.LastLoginDate,
-    u.LastActivityDate, 
-    m.LastPasswordChangedDate, 
-    m.LastLockoutDate,
-    m.Comment
-from Membership m
-inner join Users u on u.UserID = m.UserID
-where m.ApplicationID = @applicationID
+@"return query select 
+    UserID, 
+    UserName, 
+    Email, 
+    PasswordQuestion,
+    IsApproved, 
+    IsLockedOut, 
+    CreateDate, 
+    LastLoginDate,
+    LastActivityDate, 
+    LastPasswordChangedDate, 
+    LastLockoutDate,
+    Comment
+from MembershipUser
+where ApplicationName = @applicationName
 order by userName asc;")]
         public List<MembershipUser> GetAllUsers(string applicationName)
         {
@@ -603,30 +591,22 @@ where UserID = @userID
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationID uniqueidentifier;
-
-select @applicationID = ApplicationID
-from Applications
-where ApplicationName = @applicationName;
-
-return query select 
-    u.UserID, 
-    u.userName, 
-    m.Email, 
-    m.PasswordQuestion,
-    m.Comment, 
-    m.IsApproved, 
-    m.IsLockedOut, 
-    m.CreateDate, 
-    m.LastLoginDate,
-    u.LastActivityDate, 
-    m.LastPasswordChangedDate, 
-    m.LastLockoutDate
-from Membership m
-inner join Users u on u.UserID = m.UserID
-inner join Applications a on a.ApplicationID = m.ApplicationID
-where u.userName LIKE @userNameToMatch
-    and m.ApplicationID = @applicationID;")]
+@"return query select 
+    UserID, 
+    userName, 
+    Email, 
+    PasswordQuestion,
+    Comment, 
+    IsApproved, 
+    IsLockedOut, 
+    CreateDate, 
+    LastLoginDate,
+    LastActivityDate, 
+    LastPasswordChangedDate, 
+    LastLockoutDate
+from MembershipUser
+where userName LIKE @userNameToMatch
+    and ApplicationName = @applicationName;")]
         public List<MembershipUser> FindUsersByName(string userNameToMatch, string applicationName)
         {
             return GetList<MembershipUser>(userNameToMatch, applicationName);
@@ -635,30 +615,22 @@ where u.userName LIKE @userNameToMatch
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.StoredProcedure,
             Query =
-@"declare @applicationID uniqueidentifier;
-
-select @applicationID = ApplicationID
-from Applications
-where ApplicationName = @applicationName;
-
-return query select 
-    u.UserID, 
-    u.userName, 
-    m.Email, 
-    m.PasswordQuestion,
-    m.Comment, 
-    m.IsApproved, 
-    m.IsLockedOut, 
-    m.CreateDate, 
-    m.LastLoginDate,
-    u.LastActivityDate, 
-    m.LastPasswordChangedDate, 
-    m.LastLockoutDate
-from Membership m
-inner join Users u on u.UserID = m.UserID
-inner join Applications a on a.ApplicationID = m.ApplicationID
-where Email like @emailToMatch
-    and m.ApplicationID = @applicationID;")]
+@"return query select 
+    UserID, 
+    UserName, 
+    Email, 
+    PasswordQuestion,
+    Comment, 
+    IsApproved, 
+    IsLockedOut, 
+    CreateDate, 
+    LastLoginDate,
+    LastActivityDate, 
+    LastPasswordChangedDate, 
+    LastLockoutDate
+from MembershipUser m
+where lower(Email) like lower(@emailToMatch)
+    and ApplicationName = @applicationName;")]
         public List<MembershipUser> FindUsersByEmail(string emailToMatch, string applicationName)
         {
             return GetList<MembershipUser>(emailToMatch, applicationName);

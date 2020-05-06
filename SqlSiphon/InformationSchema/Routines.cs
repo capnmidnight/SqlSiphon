@@ -15,7 +15,11 @@ namespace SqlSiphon.InformationSchema
         public string routine_name { get; set; }
         public string routine_definition { get; set; }
         public string data_type { get; set; }
+        public string type_udt_catalog { get; set; }
+        public string type_udt_schema { get; set; }
+        public string type_udt_name { get; set; }
         public bool is_array { get; set; }
+        public bool IsUDTT => "USER-DEFINED".Equals(data_type, System.StringComparison.InvariantCultureIgnoreCase);
         /*
         public string specific_catalog { get; set; }
         public string routine_catalog { get; set; }
@@ -42,9 +46,6 @@ namespace SqlSiphon.InformationSchema
         public short datetime_precision { get; set; }
         public string interval_type { get; set; }
         public short interval_precision { get; set; }
-        public string type_udt_catalog { get; set; }
-        public string type_udt_schema { get; set; }
-        public string type_udt_name { get; set; }
         public string scope_catalog { get; set; }
         public string scope_schema { get; set; }
         public string scope_name { get; set; }

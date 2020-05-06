@@ -4,34 +4,6 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon
 {
-    public enum ScriptType
-    {
-        None,
-        CreateCatalogue,
-        CreateDatabaseLogin,
-        CreateSchema,
-        InstallExtension,
-        AlterSettings,
-        CreateTable,
-        CreateColumn,
-        TranslateData,
-        DropRoutine,
-        DropRelationship,
-        DropUDTT,
-        DropPrimaryKey,
-        AlterColumn,
-        DropColumn,
-        DropTable,
-        DropSchema,
-        CreatePrimaryKey,
-        CreateRelationship,
-        CreateUDTT,
-        CreateRoutine,
-        DropIndex,
-        CreateIndex,
-        InitializeData
-    }
-
     [Table]
     public class ScriptStatus : BoundObject, IComparable<ScriptStatus>
     {

@@ -32,6 +32,8 @@ namespace SqlSiphon.Postgres
                 RemoveExtensionObjects(extSchema, pg.PrimaryKeys);
                 RemoveExtensionObjects(extSchema, pg.Relationships);
                 RemoveExtensionObjects(extSchema, pg.Tables);
+                RemoveExtensionObjects(extSchema, pg.UDTTs);
+                RemoveExtensionObjects(extSchema, pg.Views);
             }
 
             var delta = base.Diff(initial, asm, dal);

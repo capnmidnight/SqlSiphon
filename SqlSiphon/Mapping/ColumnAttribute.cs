@@ -60,6 +60,7 @@ namespace SqlSiphon.Mapping
         public bool IncludeInPrimaryKey { get; set; }
 
         public TableAttribute Table { get; set; }
+        public ViewAttribute View { get; set; }
 
         /// <summary>
         /// Specifies the property maps to a column in a table that
@@ -100,6 +101,30 @@ namespace SqlSiphon.Mapping
             IsIdentity = dal.DescribesIdentity(column);
             DefaultValue = defVal;
             IncludeInPrimaryKey = includeInPK;
+            Include = true;
+            IsOptional = "yes".Equals(column.is_nullable, StringComparison.InvariantCultureIgnoreCase);
+
+            InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
+        }
+
+        public ColumnAttribute(ViewAttribute view, InformationSchema.Columns column, IDatabaseStateReader dal)
+        {
+            if (column is null)
+            {
+                throw new ArgumentNullException(nameof(column));
+            }
+
+            if (dal is null)
+            {
+                throw new ArgumentNullException(nameof(dal));
+            }
+
+            View = view ?? throw new ArgumentNullException(nameof(view));
+            Name = column.column_name;
+            var defVal = column.column_default;
+            IsIdentity = dal.DescribesIdentity(column);
+            DefaultValue = defVal;
+            IncludeInPrimaryKey = false;
             Include = true;
             IsOptional = "yes".Equals(column.is_nullable, StringComparison.InvariantCultureIgnoreCase);
 

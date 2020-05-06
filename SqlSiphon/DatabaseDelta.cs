@@ -9,7 +9,7 @@ namespace SqlSiphon
 {
     public class DatabaseDelta
     {
-        public static void Traverse<T>(
+        private static void Traverse<T>(
             Dictionary<string, T> final,
             Dictionary<string, T> initial,
             Action<string, T> remove,
@@ -17,7 +17,7 @@ namespace SqlSiphon
             Action<string, T, T> change,
             bool makeChangeScripts)
         {
-            if (initial != null)
+            if (final != null && initial != null)
             {
                 var all = initial.Keys
                     .Union(final.Keys)
@@ -44,15 +44,15 @@ namespace SqlSiphon
             }
         }
 
-        public static void DumpAll<T>(List<ScriptStatus> outCollect, Dictionary<string, T> inCollect, ScriptType type, Func<T, string> makeScript)
+        private static void DumpAll<T>(List<ScriptStatus> outCollect, Dictionary<string, T> inCollect, ScriptType type, Func<T, string> makeScript)
         {
-            if (inCollect != null)
+            if (outCollect != null && inCollect != null)
             {
                 outCollect.AddRange(inCollect.Select(i => new ScriptStatus(type, i.Key, makeScript(i.Value), null)));
             }
         }
 
-        internal void Traverse<T>(
+        private void Traverse<T>(
             string name,
             Dictionary<string, T> final,
             Dictionary<string, T> initial,
@@ -128,6 +128,8 @@ namespace SqlSiphon
             ProcessDatabaseLogins(final.DatabaseLogins, initial?.DatabaseLogins?.Keys?.ToList(), final.CatalogueName, asm, gen);
             ProcessSchemas(final.Schemata.ToDictionary(k => k), initial?.Schemata?.ToDictionary(k => k), asm, gen, makeChangeScripts);
             ProcessTables(final.Tables, initial?.Tables, asm, gen, makeChangeScripts);
+            ProcessUDTTs(final.UDTTs, initial?.UDTTs, asm, gen, makeChangeScripts);
+            ProcessViews(final.Views, initial?.Views, asm, gen, makeChangeScripts);
             ProcessIndexes(final.Indexes, initial?.Indexes, asm, gen, makeChangeScripts);
             ProcessRelationships(final.Relationships, initial?.Relationships, asm, gen, makeChangeScripts);
             ProcessPrimaryKeys(final.PrimaryKeys, initial?.PrimaryKeys, asm, gen, makeChangeScripts);
@@ -258,6 +260,72 @@ namespace SqlSiphon
                                 Scripts.Add(new ScriptStatus(ScriptType.AlterColumn, columnName, gen.MakeAlterColumnScript(finalColumn, initialColumn), reason));
                             }
                         }, makeChangeScripts);
+                }, makeChangeScripts);
+        }
+
+        private void ProcessUDTTs(Dictionary<string, TableAttribute> finalUDTTs, Dictionary<string, TableAttribute> initialUDTTs, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        {
+            DumpAll(Initial, initialUDTTs, ScriptType.CreateUDTT, gen.MakeCreateUDTTScript);
+            DumpAll(Final, finalUDTTs, ScriptType.CreateUDTT, gen.MakeCreateUDTTScript);
+            Traverse(
+                finalUDTTs,
+                initialUDTTs,
+                (UDTTName, initialUDTT) => Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type no longer exists")),
+                (UDTTName, finalUDTT) => Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist")),
+                (UDTTName, finalUDTT, initialUDTT) =>
+                {
+                    var finalColumns = finalUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(finalUDTT.Schema ?? gen.DefaultSchemaName, finalUDTT.Name, p.Name));
+                    var initialColumns = initialUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(initialUDTT.Schema ?? gen.DefaultSchemaName, initialUDTT.Name, p.Name));
+
+                    var changed = false;
+                    Traverse(
+                        finalColumns,
+                        initialColumns,
+                        (columnName, initialColumn) => changed = true,
+                        (columnName, finalColumn) => changed = true,
+                        (columnName, finalColumn, initialColumn) =>
+                        {
+                            var colDiff = asm.ColumnChanged(finalColumn, initialColumn);
+                            changed = changed || colDiff != null;
+                        }, true);
+                    if (changed)
+                    {
+                        Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type has changed"));
+                        Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type has changed"));
+                    }
+                }, makeChangeScripts);
+        }
+
+        private void ProcessViews(Dictionary<string, ViewAttribute> finalViews, Dictionary<string, ViewAttribute> initialViews, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        {
+            DumpAll(Initial, initialViews, ScriptType.CreateUDTT, gen.MakeCreateViewScript);
+            DumpAll(Final, finalViews, ScriptType.CreateUDTT, gen.MakeCreateViewScript);
+            Traverse(
+                finalViews,
+                initialViews,
+                (viewName, initialView) => Scripts.Add(new ScriptStatus(ScriptType.DropView, viewName, gen.MakeDropViewScript(initialView), "View no longer exists")),
+                (viewName, finalView) => Scripts.Add(new ScriptStatus(ScriptType.CreateView, viewName, gen.MakeCreateViewScript(finalView), "View does not exist")),
+                (viewName, finalView, initialView) =>
+                {
+                    var finalColumns = finalView.Properties.ToDictionary(p => gen.MakeIdentifier(finalView.Schema ?? gen.DefaultSchemaName, finalView.Name, p.Name));
+                    var initialColumns = initialView.Properties.ToDictionary(p => gen.MakeIdentifier(initialView.Schema ?? gen.DefaultSchemaName, initialView.Name, p.Name));
+
+                    var changed = false;
+                    Traverse(
+                        finalColumns,
+                        initialColumns,
+                        (columnName, initialColumn) => changed = true,
+                        (columnName, finalColumn) => changed = true,
+                        (columnName, finalColumn, initialColumn) =>
+                        {
+                            var colDiff = asm.ColumnChanged(finalColumn, initialColumn);
+                            changed = changed || colDiff != null;
+                        }, true);
+                    if (changed)
+                    {
+                        Scripts.Add(new ScriptStatus(ScriptType.DropView, viewName, gen.MakeDropViewScript(initialView), "View has changed"));
+                        Scripts.Add(new ScriptStatus(ScriptType.CreateView, viewName, gen.MakeCreateViewScript(finalView), "View has changed"));
+                    }
                 }, makeChangeScripts);
         }
     }

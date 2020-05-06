@@ -18,7 +18,7 @@ namespace SqlSiphon.TestBase
             // so it shouldn't be a problem to provide no connection string.
             using var ss = MakeConnector();
             var t = typeof(T);
-            var table = DatabaseObjectAttribute.GetAttribute(t);
+            var table = DatabaseObjectAttribute.GetTable(t);
             var sb = new System.Text.StringBuilder();
             sb.Append(ss.MakeCreateTableScript(table));
             if (table.PrimaryKey != null)
@@ -41,7 +41,7 @@ namespace SqlSiphon.TestBase
                 {
                     if (!tables.ContainsKey(rel.ToType))
                     {
-                        tables.Add(rel.ToType, DatabaseObjectAttribute.GetAttribute(rel.ToType));
+                        tables.Add(rel.ToType, DatabaseObjectAttribute.GetTable(rel.ToType));
                     }
                     rel.ResolveColumns(tables, ss);
                     sb.AppendLine();

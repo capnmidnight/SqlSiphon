@@ -1,0 +1,32 @@
+namespace SqlSiphon
+{
+    public enum ScriptType
+    {
+        None,
+        CreateCatalogue,
+        CreateDatabaseLogin,
+        InstallExtension,
+        AlterSettings,
+        TranslateData,
+        DropIndex,
+        DropRoutine,
+        DropUDTT,
+        DropView,
+        DropRelationship,
+        DropPrimaryKey,
+        DropColumn,
+        DropTable,
+        DropSchema,
+        CreateSchema,
+        CreateTable,
+        CreateColumn,
+        AlterColumn,
+        CreatePrimaryKey,
+        CreateRelationship,
+        CreateView,
+        CreateUDTT,
+        CreateRoutine,
+        CreateIndex,
+        InitializeData
+    }
+}

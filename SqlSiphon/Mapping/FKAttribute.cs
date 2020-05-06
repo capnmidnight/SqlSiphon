@@ -67,7 +67,7 @@ namespace SqlSiphon.Mapping
                 FromColumnName = columnDef.Name;
             }
 
-            var targetTableDef = DatabaseObjectAttribute.GetAttribute(Target) ?? new TableAttribute(Target);
+            var targetTableDef = DatabaseObjectAttribute.GetTable(Target) ?? new TableAttribute(Target);
 
             foreach (var targetColumnDef in targetTableDef.Properties)
             {
