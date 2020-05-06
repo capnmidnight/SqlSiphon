@@ -191,7 +191,17 @@ namespace SqlSiphon
         {
             var identifier = string.Join(IdentifierPartSeperator, parts
                 .Where(p => p != null)
-                .Select(p => $"{IdentifierPartBegin}{p}{IdentifierPartEnd}")
+                .Select(p =>
+                {
+                    if (p.StartsWith(IdentifierPartBegin, StringComparison.InvariantCulture))
+                    {
+                        return p;
+                    }
+                    else
+                    {
+                        return $"{IdentifierPartBegin}{p}{IdentifierPartEnd}";
+                    }
+                })
                 .ToArray());
             return identifier;
         }
