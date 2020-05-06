@@ -410,14 +410,10 @@ namespace SqlSiphon
             }
         }
 
-        private void FindTables(Type type, IDatabaseScriptGenerator dal)
+        private void FindTables(Type rootType, IDatabaseScriptGenerator dal)
         {
-            var queue = new Queue<Type>();
-            queue.Enqueue(type);
-            type.Assembly.GetTypes().Distinct().ToList().ForEach(queue.Enqueue);
-            while (queue.Count > 0)
+            foreach(var type in rootType.Assembly.GetTypes())
             {
-                type = queue.Dequeue();
                 var table = DatabaseObjectAttribute.GetAttribute(type);
                 if (table != null)
                 {
