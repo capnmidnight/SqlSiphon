@@ -335,30 +335,13 @@ namespace SqlSiphon.Postgres
         {
             var state = base.GetInitialState(catalogueName, filter);
             var pgState = new PostgresDatabaseState(state);
+
             if (pgState.CatalogueExists == true)
             {
                 GetExtensions().ForEach(pgState.AddExtension);
-                var userSettings = GetUserSettings()
-                    .ToDictionary(v => v.usename, v => v.useconfig
-                        .Select(line =>
-                        {
-                            var sep = line.IndexOf('=');
-                            var key = line.Substring(0, sep);
-                            var value = line.Substring(sep + 1);
-                            return new KeyValuePair<string, string>(key, value);
-                        })
-                        .ToDictionary(kv => kv.Key, kv => kv.Value));
-                foreach(var userName in userSettings.Keys)
-                {
-                    var settings = userSettings[userName];
-                    foreach (var settingName in settings.Keys)
-                    {
-                        pgState.AddUserSetting(userName, settingName, settings[settingName]);
-                    }
-                }
+                GetUserSettings().ForEach(pgState.AddUserSettings);
             }
 
-            
             return pgState;
         }
 

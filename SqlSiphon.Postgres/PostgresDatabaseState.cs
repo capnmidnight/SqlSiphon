@@ -166,6 +166,19 @@ namespace SqlSiphon.Postgres
             Extensions.Add(name, new pg_extension(name, version));
         }
 
+        public void AddUserSettings(pg_user row)
+        {
+            var userName = row.usename;
+            var config = row.useconfig;
+            foreach (var line in config)
+            {
+                var sep = line.IndexOf('=');
+                var key = line.Substring(0, sep);
+                var value = line.Substring(sep + 1);
+                AddUserSetting(userName, key, value);
+            }
+        }
+
         public void AddUserSetting(string userName, string settingName, string value)
         {
             if (!Settings.ContainsKey(userName))
