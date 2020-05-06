@@ -291,6 +291,11 @@ namespace SqlSiphon.Postgres
             return defaultTypeSizes[type];
         }
 
+        protected override string PrepareParameterName(string name)
+        {
+            return "_" + name.ToLowerInvariant();
+        }
+
         public override string NormalizeSqlType(string sqlType)
         {
             if (sqlType is object)

@@ -381,7 +381,7 @@ namespace SqlSiphon
                 // meta.Query defaults to null, so default behavior is to use the procedure name
                 CommandText = procName
             };
-            command.Parameters.AddRange(MakeProcedureParameters(methParams));
+            command.Parameters.AddRange(MakeProcedureParameters(methParams, commandType == CommandType.StoredProcedure));
             return command;
         }
 
@@ -399,14 +399,19 @@ namespace SqlSiphon
             }
         }
 
-        private ParameterT[] MakeProcedureParameters(ParameterAttribute[] methParams)
+        private ParameterT[] MakeProcedureParameters(ParameterAttribute[] methParams, bool isProc)
         {
             var procedureParams = new List<ParameterT>();
             for (var i = 0; methParams != null && i < methParams.Length; ++i)
             {
+                var name = methParams[i].Name;
+                if (isProc)
+                {
+                    name = PrepareParameterName(name);
+                }
                 var p = new ParameterT
                 {
-                    ParameterName = methParams[i].Name,
+                    ParameterName = name,
                     Direction = methParams[i].Direction
                 };
                 procedureParams.Add(p);
@@ -900,6 +905,11 @@ namespace SqlSiphon
                     .ToArray();
                 return mismatchedColumns.Length > 0 ? string.Join(", ", mismatchedColumns) : null;
             }
+        }
+
+        protected virtual string PrepareParameterName(string name)
+        {
+            return name;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
