@@ -29,6 +29,7 @@ namespace SqlSiphon
         }
 
         public Dictionary<string, TableAttribute> Tables { get; private set; }
+        public Dictionary<string, TableAttribute> UDTTs { get; private set; }
         public Dictionary<string, TableIndex> Indexes { get; private set; }
         public Dictionary<string, RoutineAttribute> Functions { get; private set; }
         public Dictionary<string, Relationship> Relationships { get; private set; }
@@ -37,6 +38,40 @@ namespace SqlSiphon
         public Dictionary<string, string> DatabaseLogins { get; private set; }
         public List<string> InitScripts { get; private set; }
         public List<Action<IDataConnector>> PostExecute { get; private set; }
+
+        private void ProcessUDTTs(DatabaseDelta delta, Dictionary<string, TableAttribute> finalUDTTs, Dictionary<string, TableAttribute> initialUDTTs, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        {
+            DatabaseDelta.DumpAll(delta.Initial, initialUDTTs, ScriptType.CreateUDTT, gen.MakeCreateUDTTScript);
+            DatabaseDelta.DumpAll(delta.Final, finalUDTTs, ScriptType.CreateUDTT, gen.MakeCreateUDTTScript);
+            DatabaseDelta.Traverse(
+                finalUDTTs,
+                initialUDTTs,
+                (UDTTName, initialUDTT) => delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type no longer exists")),
+                (UDTTName, finalUDTT) => delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist")),
+                (UDTTName, finalUDTT, initialUDTT) =>
+                {
+                    var finalColumns = finalUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(finalUDTT.Schema ?? gen.DefaultSchemaName, finalUDTT.Name, p.Name));
+                    var initialColumns = initialUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(initialUDTT.Schema ?? gen.DefaultSchemaName, initialUDTT.Name, p.Name));
+
+                    var changed = false;
+                    DatabaseDelta.Traverse(
+                        finalColumns,
+                        initialColumns,
+                        (columnName, initialColumn) => changed = true,
+                        (columnName, finalColumn) => changed = true,
+                        (columnName, finalColumn, initialColumn) =>
+                        {
+                            var colDiff = asm.ColumnChanged(finalColumn, initialColumn);
+                            changed = changed || colDiff != null;
+                        }, true);
+                    if (changed)
+                    {
+                        delta.Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type has changed"));
+                        delta.Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type has changed"));
+                    }
+                },
+                true);
+        }
 
         /// <summary>
         /// True-base constructor, forces the other constructors onto a path of correct initialization
@@ -48,12 +83,13 @@ namespace SqlSiphon
         /// <param name="pks"></param>
         /// <param name="schemata"></param>
         /// <param name="logins"></param>
-        private DatabaseState(Dictionary<string, TableAttribute> tables, Dictionary<string, TableIndex> indexes,
+        private DatabaseState(Dictionary<string, TableAttribute> tables, Dictionary<string, TableAttribute> udtts, Dictionary<string, TableIndex> indexes,
             Dictionary<string, RoutineAttribute> routines, Dictionary<string, Relationship> relationships,
             Dictionary<string, PrimaryKey> pks, List<string> schemata, Dictionary<string, string> logins,
             List<string> initScripts, List<Action<IDataConnector>> postExecute, string catalogueName, bool? catalogueExists)
         {
             Tables = tables;
+            UDTTs = udtts;
             Indexes = indexes;
             Functions = routines;
             Relationships = relationships;
@@ -67,14 +103,14 @@ namespace SqlSiphon
         }
 
         private DatabaseState()
-            : this(new Dictionary<string, TableAttribute>(), new Dictionary<string, TableIndex>(), new Dictionary<string, RoutineAttribute>(),
+            : this(new Dictionary<string, TableAttribute>(), new Dictionary<string, TableAttribute>(), new Dictionary<string, TableIndex>(), new Dictionary<string, RoutineAttribute>(),
             new Dictionary<string, Relationship>(), new Dictionary<string, PrimaryKey>(), new List<string>(), new Dictionary<string, string>(),
             new List<string>(), null, null, null)
         {
         }
 
         public DatabaseState(DatabaseState copy)
-            : this(copy.Tables, copy.Indexes, copy.Functions, copy.Relationships, copy.PrimaryKeys, copy.Schemata, copy.DatabaseLogins, copy.InitScripts, copy.PostExecute, copy.CatalogueName, copy.CatalogueExists)
+            : this(copy.Tables, copy.UDTTs, copy.Indexes, copy.Functions, copy.Relationships, copy.PrimaryKeys, copy.Schemata, copy.DatabaseLogins, copy.InitScripts, copy.PostExecute, copy.CatalogueName, copy.CatalogueExists)
         {
         }
 
@@ -142,6 +178,8 @@ namespace SqlSiphon
             CreateRoutines(routineDefTypes, dal);
 
             Schemata.AddRange(GetSchemata(dal));
+
+            CreateUDTTs(dal);
         }
 
         /// <summary>
@@ -265,11 +303,17 @@ namespace SqlSiphon
                             ? parameters[rIdent]
                             : null;
                         var function = new RoutineAttribute(routine, routineParameters, dal);
-                        var fIdent = dal.MakeRoutineIdentifier(function, true);
+                        var fIdent = dal.MakeRoutineIdentifier(function, true, true);
                         if (!Functions.ContainsKey(fIdent))
                         {
                             Functions.Add(fIdent, function);
                         }
+                    }
+
+                    var udttColumns = dal.GetUDTTColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                    foreach (var udtt in udttColumns)
+                    {
+                        UDTTs.Add(udtt.Key.ToLowerInvariant(), new TableAttribute(udtt.Value, dal));
                     }
 
                     foreach (var idxKey in indexedColumnsByName.Keys)
@@ -326,7 +370,7 @@ namespace SqlSiphon
                     var function = RoutineAttribute.GetCommandDescription(method);
                     if (function != null && function.CommandType == System.Data.CommandType.StoredProcedure)
                     {
-                        var functionName = dal.MakeRoutineIdentifier(function, true);
+                        var functionName = dal.MakeRoutineIdentifier(function, true, true);
                         if (!Functions.ContainsKey(functionName))
                         {
                             Functions.Add(functionName, function);
@@ -437,6 +481,25 @@ namespace SqlSiphon
 
                     InitScripts.AddRange(table.EnumValues.Select(val => dal.MakeInsertScript(table, val)));
                 }
+            }
+        }
+
+        private void CreateUDTTs(IDatabaseScriptGenerator dal)
+        {
+            var types = new List<Type>();
+            foreach (var parameter in Functions.Values.SelectMany(f => f.Parameters))
+            {
+                if (dal.IsUDTT(parameter.SystemType))
+                {
+                    types.Add(parameter.SystemType);
+                }
+            }
+
+            foreach (var type in types
+                .Distinct())
+            {
+                var attr = dal.MakeUDTTTableAttribute(type);
+                AddTable(UDTTs, DataConnector.IsTypePrimitive(type) ? null : type, dal, attr);
             }
         }
 

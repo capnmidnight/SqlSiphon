@@ -21,6 +21,10 @@ namespace SqlSiphon
         string MakeCreateTableScript(TableAttribute table);
         string MakeDropTableScript(TableAttribute table);
 
+        TableAttribute MakeUDTTTableAttribute(Type type);
+        string MakeCreateUDTTScript(TableAttribute info);
+        string MakeDropUDTTScript(TableAttribute info);
+
         string MakeCreateColumnScript(ColumnAttribute column);
         string MakeDropColumnScript(ColumnAttribute column);
         string MakeAlterColumnScript(ColumnAttribute final, ColumnAttribute initial);

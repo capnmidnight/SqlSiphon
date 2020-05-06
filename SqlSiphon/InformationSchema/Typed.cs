@@ -1,4 +1,4 @@
-﻿/*
+/*
 https://www.github.com/capnmidnight/SqlSiphon
 Copyright (c) 2009 - 2014 Sean T. McBeth
 All rights reserved.
@@ -35,6 +35,8 @@ namespace SqlSiphon.InformationSchema
     {
         public int? ordinal_position { get; set; }
         public string data_type { get; set; }
+        public string udt_catalog { get; set; }
+        public string udt_schema { get; set; }
         public string udt_name { get; set; }
         public int? character_maximum_length { get; set; }
         public int? character_octet_length { get; set; }

@@ -81,6 +81,7 @@ namespace SqlSiphon
         protected virtual string IdentifierPartBegin => "";
         protected virtual string IdentifierPartEnd => "";
         protected virtual string IdentifierPartSeperator => ".";
+        protected virtual string UDTTDeclarationPrefix => "";
 
         public ConnectionT Connection { get; private set; }
 
@@ -645,8 +646,8 @@ namespace SqlSiphon
                 types.AddRange(asm.GetTypes());
                 currentType = currentType.BaseType;
             }
-            var final = new DatabaseState(types, this, this, userName, password, database);
-            return final;
+
+            return new DatabaseState(types, this, this, userName, password, database);
         }
 
         protected string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)
@@ -980,6 +981,7 @@ namespace SqlSiphon
 
         public abstract List<string> GetDatabaseLogins();
         public abstract List<InformationSchema.Columns> GetColumns();
+        public abstract List<InformationSchema.Columns> GetUDTTColumns();
         public abstract List<InformationSchema.IndexColumnUsage> GetIndexColumns();
         public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
         public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
@@ -1023,12 +1025,51 @@ namespace SqlSiphon
             return parameterSection;
         }
 
+        public string MakeCreateUDTTScript(TableAttribute info)
+        {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            var columns = info.Properties
+                .Where(p => p.Include
+                && !p.IsIdentity
+                && (p.DefaultValue == null || p.IsIncludeSet))
+                .ToArray();
+            if (columns.Length == 0)
+            {
+                throw new TableHasNoColumnsException(info);
+            }
+            var columnSection = ArgumentList(columns, p => MakeColumnString(p, false).Trim());
+
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = MakeIdentifier(schema, info.Name);
+            return $@"create type {identifier} as {UDTTDeclarationPrefix}(
+    {columnSection}
+);";
+        }
+
+        public string MakeDropUDTTScript(TableAttribute info)
+        {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            var schema = info.Schema ?? DefaultSchemaName;
+            var identifier = MakeIdentifier(schema, info.Name);
+            return $@"drop type {identifier};";
+        }
+
 
         protected abstract string MakeSqlTypeString(string sqlType, Type systemType, int? size, int? precision, bool isIdentity, bool skipSize);
         protected abstract string MakeColumnString(ColumnAttribute p, bool isReturnType);
         protected abstract string MakeParameterString(ParameterAttribute p, bool withName);
 
         public abstract bool SupportsScriptType(ScriptType type);
+        public abstract bool IsUDTT(Type systemType);
+        public abstract TableAttribute MakeUDTTTableAttribute(Type type);
         public abstract string MakeInsertScript(TableAttribute table, object value);
         public abstract string MakeCreateDatabaseLoginScript(string userName, string password, string database);
 

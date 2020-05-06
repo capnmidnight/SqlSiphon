@@ -25,6 +25,7 @@ namespace SqlSiphon
         List<string> GetScriptStatus();
         List<string> GetDatabaseLogins();
         List<InformationSchema.Columns> GetColumns();
+        List<InformationSchema.Columns> GetUDTTColumns();
         List<InformationSchema.IndexColumnUsage> GetIndexColumns();
         List<InformationSchema.Routines> GetRoutines();
         List<InformationSchema.Parameters> GetParameters();

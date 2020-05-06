@@ -505,6 +505,36 @@ namespace SqlSiphon.Postgres
             return changedReturnType ? "Return type changed" : base.RoutineChanged(a, b);
         }
 
+        public override bool IsUDTT(Type systemType)
+        {
+            var baseType = DataConnector.CoalesceCollectionType(systemType);
+            return baseType != typeof(void)
+                && !typeToString.ContainsKey(baseType)
+                && DatabaseObjectAttribute.GetAttribute(baseType) == null;
+        }
+
+
+        public override TableAttribute MakeUDTTTableAttribute(Type type)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (type.IsArray)
+            {
+                type = type.GetElementType();
+                if (type is null)
+                {
+                    throw new ArgumentException($"Array {nameof(type)} Element Type is null");
+                }
+            }
+
+            var attr = DatabaseObjectAttribute.GetAttribute(type);
+            attr.Name = $"{type.Name}UDTT";
+            return attr;
+        }
+
         private string MakeComplexSqlTypeString(Type systemType)
         {
             var baseType = DataConnector.CoalesceCollectionType(systemType);
@@ -639,41 +669,6 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        protected override string MakeParameterString(ParameterAttribute param, bool withName)
-        {
-            if (param is null)
-            {
-                throw new ArgumentNullException(nameof(param));
-            }
-
-            var dirString = "";
-            var typeStr = MakeSqlTypeString(param);
-            switch (param.Direction)
-            {
-                case ParameterDirection.InputOutput:
-                dirString = "inout";
-                break;
-                case ParameterDirection.Output:
-                dirString = "out";
-                break;
-            }
-
-            var defaultString = "";
-            if (param.DefaultValue != null)
-            {
-                defaultString = " default = " + param.DefaultValue.ToString();
-            }
-
-            if (withName)
-            {
-                return $"{dirString} _{param.Name} {typeStr}{defaultString}".Trim();
-            }
-            else
-            {
-                return $"{dirString} {typeStr}".Trim();
-            }
-        }
-
         protected override string MakeColumnString(ColumnAttribute column, bool isReturnType)
         {
             if (column is null)
@@ -721,11 +716,6 @@ namespace SqlSiphon.Postgres
             return $@"drop function if exists {routineName} cascade;";
         }
 
-        protected override string MakeParameterSection(RoutineAttribute info, bool withNames)
-        {
-            return base.MakeParameterSection(info, withNames).ToLowerInvariant();
-        }
-
         public override string MakeRoutineIdentifier(RoutineAttribute routine, bool withParameterNames)
         {
             if (routine is null)
@@ -764,6 +754,46 @@ as $$
 $$
 language plpgsql;";
             return query;
+        }
+
+        protected override string MakeParameterSection(RoutineAttribute info, bool withNames)
+        {
+            return base.MakeParameterSection(info, withNames).ToLowerInvariant();
+        }
+
+        protected override string MakeParameterString(ParameterAttribute param, bool withName)
+        {
+            if (param is null)
+            {
+                throw new ArgumentNullException(nameof(param));
+            }
+
+            var dirString = "";
+            var typeStr = MakeSqlTypeString(param, true, param.IsArray);
+            switch (param.Direction)
+            {
+                case ParameterDirection.InputOutput:
+                dirString = "inout";
+                break;
+                case ParameterDirection.Output:
+                dirString = "out";
+                break;
+            }
+
+            var defaultString = "";
+            if (param.DefaultValue != null)
+            {
+                defaultString = " default = " + param.DefaultValue.ToString();
+            }
+
+            if (withName)
+            {
+                return $"{dirString} _{param.Name} {typeStr}{defaultString}".Trim();
+            }
+            else
+            {
+                return $"{dirString} {typeStr}".Trim();
+            }
         }
 
         private static readonly Regex SetVariablePattern = new Regex("select (@\\w+) = (\\w+)", RegexOptions.Compiled);
@@ -1043,6 +1073,36 @@ where table_schema != 'information_schema'
     and table_schema != 'pg_catalog'
 order by table_catalog, table_schema, table_name, ordinal_position;")]
         public override List<InformationSchema.Columns> GetColumns()
+        {
+            return GetList<InformationSchema.Columns>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
+        [Routine(CommandType = CommandType.Text, Query =
+@"select         
+    ordinal_position,
+    character_maximum_length,
+    character_octet_length,
+    numeric_precision,
+    numeric_precision_radix,
+    numeric_scale,
+    datetime_precision,
+    udt_catalog as table_catalog,
+    udt_schema as table_schema,
+    udt_name as table_name,
+    attribute_name as column_name,
+    attribute_default as column_default,
+    is_nullable,
+    data_type,
+    udt_catalog,
+    udt_schema,
+    udt_name,
+    0 as is_identity
+from information_schema.attributes
+where udt_schema != 'information_schema'
+    and udt_schema != 'pg_catalog'
+order by udt_catalog, udt_schema, udt_name, ordinal_position;")]
+        public override List<InformationSchema.Columns> GetUDTTColumns()
         {
             return GetList<InformationSchema.Columns>();
         }

@@ -109,6 +109,7 @@ namespace SqlSiphon.SqlServer
 
         protected override string IdentifierPartBegin => "[";
         protected override string IdentifierPartEnd => "]";
+        protected override string UDTTDeclarationPrefix => "table";
         public override string DefaultSchemaName => "dbo";
 
         private const SqlServerOptions STANDARD_OPTIONS = SqlServerOptions.ANSI_WARNINGS | SqlServerOptions.ANSI_PADDING | SqlServerOptions.ANSI_NULLS | SqlServerOptions.ARITHABORT | SqlServerOptions.QUOTED_IDENTIFIER | SqlServerOptions.ANSI_NULL_DFLT_ON | SqlServerOptions.CONCAT_NULL_YIELDS_NULL;
@@ -419,31 +420,6 @@ end";
 );";
         }
 
-        public string MakeCreateUDTTScript(TableAttribute info)
-        {
-            if (info is null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
-
-            var columns = info.Properties
-                .Where(p => p.Include
-                && !p.IsIdentity
-                && (p.DefaultValue == null || p.IsIncludeSet))
-                .ToArray();
-            if (columns.Length == 0)
-            {
-                throw new TableHasNoColumnsException(info);
-            }
-            var columnSection = ArgumentList(columns, p => MakeColumnString(p, false).Trim());
-
-            var schema = info.Schema ?? DefaultSchemaName;
-            var identifier = MakeIdentifier(schema, info.Name);
-            return $@"create type {identifier} as table(
-    {columnSection}
-);";
-        }
-
         public override string MakeDropTableScript(TableAttribute info)
         {
             if (info is null)
@@ -454,18 +430,6 @@ end";
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, info.Name);
             return $@"drop table {identifier};";
-        }
-
-        internal string MakeDropUDTTScript(TableAttribute info)
-        {
-            if (info is null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
-
-            var schema = info.Schema ?? DefaultSchemaName;
-            var identifier = MakeIdentifier(schema, info.Name);
-            return $@"drop type {identifier};";
         }
 
         public override string MakeCreateIndexScript(TableIndex idx)
@@ -889,7 +853,7 @@ from sys.table_types tt
 	left outer join sys.default_constraints d on d.object_id = c.default_object_id
 where t.name != 'sysname'
 order by s.name, tt.name, c.column_id;")]
-        private List<InformationSchema.Columns> GetUDTTColumns()
+        public override List<InformationSchema.Columns> GetUDTTColumns()
         {
             var columns = GetEnumerator<InformationSchema.Columns>()
                 .Select(RemoveDefaultValueParens)
@@ -1085,43 +1049,24 @@ order by ordinal_position;")]
             return stringToType.ContainsKey(sqlType) ? stringToType[sqlType] : null;
         }
 
-        public override DatabaseState GetInitialState(string catalogueName, Regex filter)
+        public override bool IsUDTT(Type t)
         {
-            var state = base.GetInitialState(catalogueName, filter);
-            var ssState = new SqlServerDatabaseState(state);
-            if (ssState.CatalogueExists.HasValue && ssState.CatalogueExists.Value)
+            if (t is null)
             {
-                var udttColumns = GetUDTTColumns().ToHash(col => MakeIdentifier(col.table_schema, col.table_name));
-                foreach (var udtt in udttColumns)
-                {
-                    ssState.UDTTs.Add(udtt.Key.ToLowerInvariant(), new TableAttribute(udtt.Value, this));
-                }
+                throw new ArgumentNullException(nameof(t));
             }
-            return ssState;
+
+            var isUDTT = false;
+            if (t.IsArray)
+            {
+                t = t.GetElementType();
+                isUDTT = t != typeof(byte) && DataConnector.IsTypePrimitive(t);
+            }
+            var attr = Mapping.DatabaseObjectAttribute.GetAttribute(t) as SqlServerTableAttribute;
+            return (attr != null && attr.IsUploadable) || isUDTT;
         }
 
-        public override DatabaseState GetFinalState(Type dalType, string userName, string password, string database)
-        {
-            var state = base.GetFinalState(dalType, userName, password, database);
-            var ssState = new SqlServerDatabaseState(state);
-            var types = new HashSet<Type>();
-            foreach (var parameter in ssState.Functions.Values.SelectMany(f => f.Parameters))
-            {
-                if (IsUDTT(parameter.SystemType))
-                {
-                    _ = types.Add(parameter.SystemType);
-                }
-            }
-
-            foreach (var type in types)
-            {
-                var attr = MakeUDTTTableAttribute(type);
-                ssState.AddTable(ssState.UDTTs, DataConnector.IsTypePrimitive(type) ? null : type, this, attr);
-            }
-            return ssState;
-        }
-
-        public TableAttribute MakeUDTTTableAttribute(Type type)
+        public override TableAttribute MakeUDTTTableAttribute(Type type)
         {
             if (type is null)
             {
@@ -1151,23 +1096,6 @@ order by ordinal_position;")]
             }
             attr.Name = $"{elementType.Name}UDTT";
             return attr;
-        }
-
-        public static bool IsUDTT(Type t)
-        {
-            if (t is null)
-            {
-                throw new ArgumentNullException(nameof(t));
-            }
-
-            var isUDTT = false;
-            if (t.IsArray)
-            {
-                t = t.GetElementType();
-                isUDTT = t != typeof(byte) && DataConnector.IsTypePrimitive(t);
-            }
-            var attr = Mapping.DatabaseObjectAttribute.GetAttribute(t) as SqlServerTableAttribute;
-            return (attr != null && attr.IsUploadable) || isUDTT;
         }
 
         protected override void ToOutput(string value)
