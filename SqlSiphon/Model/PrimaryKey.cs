@@ -14,7 +14,7 @@ namespace SqlSiphon.Model
             InformationSchema.TableConstraints uniqueConstraint,
             InformationSchema.ConstraintColumnUsage[] uniqueConstraintColumns,
             InformationSchema.Columns[] uniqueTableColumns,
-            IDatabaseStateReader dal)
+            ISqlSiphon dal)
         {
             Schema = constraint.constraint_schema;
             Name = constraint.constraint_name;

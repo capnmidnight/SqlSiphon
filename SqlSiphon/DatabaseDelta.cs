@@ -99,21 +99,16 @@ namespace SqlSiphon
         public List<ScriptStatus> Final { get; private set; }
         public List<Action<IDataConnector>> PostExecute { get; private set; }
 
-        public DatabaseDelta(DatabaseState final, DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        public DatabaseDelta(DatabaseState final, DatabaseState initial, ISqlSiphon dal, bool makeChangeScripts)
         {
             if (final is null)
             {
                 throw new ArgumentNullException(nameof(final));
             }
 
-            if (asm is null)
+            if (dal is null)
             {
-                throw new ArgumentNullException(nameof(asm));
-            }
-
-            if (gen is null)
-            {
-                throw new ArgumentNullException(nameof(gen));
+                throw new ArgumentNullException(nameof(dal));
             }
 
             Scripts = new List<ScriptStatus>();
@@ -121,18 +116,18 @@ namespace SqlSiphon
             Final = new List<ScriptStatus>();
             if (initial?.CatalogueExists == false)
             {
-                Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, final.CatalogueName, gen.MakeCreateCatalogueScript(final.CatalogueName), "Database doesn't exist"));
+                Scripts.Add(new ScriptStatus(ScriptType.CreateCatalogue, final.CatalogueName, dal.MakeCreateCatalogueScript(final.CatalogueName), "Database doesn't exist"));
             }
 
-            ProcessDatabaseLogins(final.DatabaseLogins, initial?.DatabaseLogins?.Keys?.ToList(), final.CatalogueName, asm, gen);
-            ProcessSchemas(final.Schemata.ToDictionary(k => k), initial?.Schemata?.ToDictionary(k => k), asm, gen, makeChangeScripts);
-            ProcessTables(final.Tables, initial?.Tables, asm, gen, makeChangeScripts);
-            ProcessUDTTs(final.UDTTs, initial?.UDTTs, asm, gen, makeChangeScripts);
-            ProcessViews(final.Views, initial?.Views, asm, gen, makeChangeScripts);
-            ProcessIndexes(final.Indexes, initial?.Indexes, asm, gen, makeChangeScripts);
-            ProcessRelationships(final.Relationships, initial?.Relationships, asm, gen, makeChangeScripts);
-            ProcessPrimaryKeys(final.PrimaryKeys, initial?.PrimaryKeys, asm, gen, makeChangeScripts);
-            ProcessRoutines(final.Functions, initial?.Functions, asm, gen, makeChangeScripts);
+            ProcessDatabaseLogins(final.DatabaseLogins, initial?.DatabaseLogins?.Keys?.ToList(), final.CatalogueName, dal);
+            ProcessSchemas(final.Schemata.ToDictionary(k => k), initial?.Schemata?.ToDictionary(k => k), dal, makeChangeScripts);
+            ProcessTables(final.Tables, initial?.Tables, dal, makeChangeScripts);
+            ProcessUDTTs(final.UDTTs, initial?.UDTTs, dal, makeChangeScripts);
+            ProcessViews(final.Views, initial?.Views, dal, makeChangeScripts);
+            ProcessIndexes(final.Indexes, initial?.Indexes, dal, makeChangeScripts);
+            ProcessRelationships(final.Relationships, initial?.Relationships, dal, makeChangeScripts);
+            ProcessPrimaryKeys(final.PrimaryKeys, initial?.PrimaryKeys, dal, makeChangeScripts);
+            ProcessRoutines(final.Functions, initial?.Functions, dal, makeChangeScripts);
             Scripts.AddRange(final.InitScripts
                 .Where(s => initial?.InitScripts?.Contains(s) ?? true)
                 .Select(s => new ScriptStatus(ScriptType.InitializeData, "init", s, "Initialize data in database")));
@@ -142,7 +137,7 @@ namespace SqlSiphon
             PostExecute = final.PostExecute;
         }
 
-        private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, IAssemblyStateReader asm, IDatabaseScriptGenerator gen)
+        private void ProcessDatabaseLogins(Dictionary<string, string> final, List<string> initial, string databaseName, ISqlSiphon dal)
         {
             var names = initial?.Select(s => s.ToLowerInvariant())?.ToArray()
                 ?? Array.Empty<string>();
@@ -152,11 +147,11 @@ namespace SqlSiphon
                 .Select(u => new ScriptStatus(
                     ScriptType.CreateDatabaseLogin,
                     u.Key,
-                    gen.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName),
+                    dal.MakeCreateDatabaseLoginScript(u.Key, u.Value, databaseName),
                     "Database login doesn't exist")));
         }
 
-        private void ProcessSchemas(Dictionary<string, string> finalSchemas, Dictionary<string, string> initialSchemas, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        private void ProcessSchemas(Dictionary<string, string> finalSchemas, Dictionary<string, string> initialSchemas, ISqlSiphon dal, bool makeChangeScripts)
         {
             Traverse(
                 "Schema",
@@ -165,13 +160,13 @@ namespace SqlSiphon
                 ScriptType.DropSchema,
                 ScriptType.CreateSchema,
                 (a, b) => null,
-                gen.MakeDropSchemaScript,
-                gen.MakeCreateSchemaScript,
+                dal.MakeDropSchemaScript,
+                dal.MakeCreateSchemaScript,
                 null,
                 makeChangeScripts);
         }
 
-        private void ProcessRoutines(Dictionary<string, RoutineAttribute> finalRoutines, Dictionary<string, RoutineAttribute> initialRoutines, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        private void ProcessRoutines(Dictionary<string, RoutineAttribute> finalRoutines, Dictionary<string, RoutineAttribute> initialRoutines, ISqlSiphon dal, bool makeChangeScripts)
         {
             Traverse(
                 "Routine",
@@ -179,14 +174,14 @@ namespace SqlSiphon
                 initialRoutines,
                 ScriptType.DropRoutine,
                 ScriptType.CreateRoutine,
-                asm.RoutineChanged,
-                gen.MakeDropRoutineScript,
-                f => gen.MakeCreateRoutineScript(f, true),
-                f => gen.MakeCreateRoutineScript(f, false),
+                dal.RoutineChanged,
+                dal.MakeDropRoutineScript,
+                f => dal.MakeCreateRoutineScript(f, true),
+                f => dal.MakeCreateRoutineScript(f, false),
                 makeChangeScripts);
         }
 
-        private void ProcessPrimaryKeys(Dictionary<string, PrimaryKey> finalKeys, Dictionary<string, PrimaryKey> initialKeys, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        private void ProcessPrimaryKeys(Dictionary<string, PrimaryKey> finalKeys, Dictionary<string, PrimaryKey> initialKeys, ISqlSiphon dal, bool makeChangeScripts)
         {
             Traverse(
                 "Primary key",
@@ -194,14 +189,14 @@ namespace SqlSiphon
                 initialKeys,
                 ScriptType.DropPrimaryKey,
                 ScriptType.CreatePrimaryKey,
-                asm.KeyChanged,
-                gen.MakeDropPrimaryKeyScript,
-                gen.MakeCreatePrimaryKeyScript,
+                dal.KeyChanged,
+                dal.MakeDropPrimaryKeyScript,
+                dal.MakeCreatePrimaryKeyScript,
                 null,
                 makeChangeScripts);
         }
 
-        private void ProcessRelationships(Dictionary<string, Relationship> finalRelations, Dictionary<string, Relationship> initialRelations, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        private void ProcessRelationships(Dictionary<string, Relationship> finalRelations, Dictionary<string, Relationship> initialRelations, ISqlSiphon dal, bool makeChangeScripts)
         {
             Traverse(
                 "Relationship",
@@ -209,14 +204,14 @@ namespace SqlSiphon
                 initialRelations,
                 ScriptType.DropRelationship,
                 ScriptType.CreateRelationship,
-                asm.RelationshipChanged,
-                gen.MakeDropRelationshipScript,
-                gen.MakeCreateRelationshipScript,
+                dal.RelationshipChanged,
+                dal.MakeDropRelationshipScript,
+                dal.MakeCreateRelationshipScript,
                 null,
                 makeChangeScripts);
         }
 
-        private void ProcessIndexes(Dictionary<string, TableIndex> finalIndexes, Dictionary<string, TableIndex> initialIndexes, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        private void ProcessIndexes(Dictionary<string, TableIndex> finalIndexes, Dictionary<string, TableIndex> initialIndexes, ISqlSiphon dal, bool makeChangeScripts)
         {
             Traverse(
                 "Index",
@@ -224,57 +219,57 @@ namespace SqlSiphon
                 initialIndexes,
                 ScriptType.DropIndex,
                 ScriptType.CreateIndex,
-                asm.IndexChanged,
-                gen.MakeDropIndexScript,
-                gen.MakeCreateIndexScript,
+                dal.IndexChanged,
+                dal.MakeDropIndexScript,
+                dal.MakeCreateIndexScript,
                 null,
                 makeChangeScripts);
         }
 
-        private void ProcessTables(Dictionary<string, TableAttribute> finalTables, Dictionary<string, TableAttribute> initialTables, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        private void ProcessTables(Dictionary<string, TableAttribute> finalTables, Dictionary<string, TableAttribute> initialTables, ISqlSiphon dal, bool makeChangeScripts)
         {
-            DumpAll(Initial, initialTables, ScriptType.CreateTable, gen.MakeCreateTableScript);
-            DumpAll(Final, finalTables, ScriptType.CreateTable, gen.MakeCreateTableScript);
+            DumpAll(Initial, initialTables, ScriptType.CreateTable, dal.MakeCreateTableScript);
+            DumpAll(Final, finalTables, ScriptType.CreateTable, dal.MakeCreateTableScript);
 
             Traverse(
                 finalTables,
                 initialTables,
-                (tableName, initialTable) => Scripts.Add(new ScriptStatus(ScriptType.DropTable, tableName, gen.MakeDropTableScript(initialTable), "Table no longer exists")),
-                (tableName, finalTable) => Scripts.Add(new ScriptStatus(ScriptType.CreateTable, tableName, gen.MakeCreateTableScript(finalTable), "Table does not exist")),
+                (tableName, initialTable) => Scripts.Add(new ScriptStatus(ScriptType.DropTable, tableName, dal.MakeDropTableScript(initialTable), "Table no longer exists")),
+                (tableName, finalTable) => Scripts.Add(new ScriptStatus(ScriptType.CreateTable, tableName, dal.MakeCreateTableScript(finalTable), "Table does not exist")),
                 (tableName, finalTable, initialTable) =>
                 {
-                    var finalColumns = finalTable.Properties.ToDictionary(p => gen.MakeIdentifier(finalTable.Schema ?? gen.DefaultSchemaName, finalTable.Name, p.Name));
-                    var initialColumns = initialTable?.Properties?.ToDictionary(p => gen.MakeIdentifier(initialTable.Schema ?? gen.DefaultSchemaName, initialTable.Name, p.Name));
+                    var finalColumns = finalTable.Properties.ToDictionary(p => dal.MakeIdentifier(finalTable.Schema ?? dal.DefaultSchemaName, finalTable.Name, p.Name));
+                    var initialColumns = initialTable?.Properties?.ToDictionary(p => dal.MakeIdentifier(initialTable.Schema ?? dal.DefaultSchemaName, initialTable.Name, p.Name));
 
                     Traverse(
                         finalColumns,
                         initialColumns,
-                        (columnName, initialColumn) => Scripts.Add(new ScriptStatus(ScriptType.DropColumn, columnName, gen.MakeDropColumnScript(initialColumn), "Column no longer exists")),
-                        (columnName, finalColumn) => Scripts.Add(new ScriptStatus(ScriptType.CreateColumn, columnName, gen.MakeCreateColumnScript(finalColumn), "Column doesn't exist")),
+                        (columnName, initialColumn) => Scripts.Add(new ScriptStatus(ScriptType.DropColumn, columnName, dal.MakeDropColumnScript(initialColumn), "Column no longer exists")),
+                        (columnName, finalColumn) => Scripts.Add(new ScriptStatus(ScriptType.CreateColumn, columnName, dal.MakeCreateColumnScript(finalColumn), "Column doesn't exist")),
                         (columnName, finalColumn, initialColumn) =>
                         {
-                            var reason = asm.ColumnChanged(finalColumn, initialColumn);
+                            var reason = dal.ColumnChanged(finalColumn, initialColumn);
                             if (reason != null)
                             {
-                                Scripts.Add(new ScriptStatus(ScriptType.AlterColumn, columnName, gen.MakeAlterColumnScript(finalColumn, initialColumn), reason));
+                                Scripts.Add(new ScriptStatus(ScriptType.AlterColumn, columnName, dal.MakeAlterColumnScript(finalColumn, initialColumn), reason));
                             }
                         }, makeChangeScripts);
                 }, makeChangeScripts);
         }
 
-        private void ProcessUDTTs(Dictionary<string, TableAttribute> finalUDTTs, Dictionary<string, TableAttribute> initialUDTTs, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        private void ProcessUDTTs(Dictionary<string, TableAttribute> finalUDTTs, Dictionary<string, TableAttribute> initialUDTTs, ISqlSiphon dal, bool makeChangeScripts)
         {
-            DumpAll(Initial, initialUDTTs, ScriptType.CreateUDTT, gen.MakeCreateUDTTScript);
-            DumpAll(Final, finalUDTTs, ScriptType.CreateUDTT, gen.MakeCreateUDTTScript);
+            DumpAll(Initial, initialUDTTs, ScriptType.CreateUDTT, dal.MakeCreateUDTTScript);
+            DumpAll(Final, finalUDTTs, ScriptType.CreateUDTT, dal.MakeCreateUDTTScript);
             Traverse(
                 finalUDTTs,
                 initialUDTTs,
-                (UDTTName, initialUDTT) => Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type no longer exists")),
-                (UDTTName, finalUDTT) => Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist")),
+                (UDTTName, initialUDTT) => Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, dal.MakeDropUDTTScript(initialUDTT), "User-defined table type no longer exists")),
+                (UDTTName, finalUDTT) => Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, dal.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist")),
                 (UDTTName, finalUDTT, initialUDTT) =>
                 {
-                    var finalColumns = finalUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(finalUDTT.Schema ?? gen.DefaultSchemaName, finalUDTT.Name, p.Name));
-                    var initialColumns = initialUDTT.Properties.ToDictionary(p => gen.MakeIdentifier(initialUDTT.Schema ?? gen.DefaultSchemaName, initialUDTT.Name, p.Name));
+                    var finalColumns = finalUDTT.Properties.ToDictionary(p => dal.MakeIdentifier(finalUDTT.Schema ?? dal.DefaultSchemaName, finalUDTT.Name, p.Name));
+                    var initialColumns = initialUDTT.Properties.ToDictionary(p => dal.MakeIdentifier(initialUDTT.Schema ?? dal.DefaultSchemaName, initialUDTT.Name, p.Name));
 
                     var changed = false;
                     Traverse(
@@ -284,30 +279,30 @@ namespace SqlSiphon
                         (columnName, finalColumn) => changed = true,
                         (columnName, finalColumn, initialColumn) =>
                         {
-                            var colDiff = asm.ColumnChanged(finalColumn, initialColumn);
+                            var colDiff = dal.ColumnChanged(finalColumn, initialColumn);
                             changed = changed || colDiff != null;
                         }, true);
                     if (changed)
                     {
-                        Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, gen.MakeDropUDTTScript(initialUDTT), "User-defined table type has changed"));
-                        Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, gen.MakeCreateUDTTScript(finalUDTT), "User-defined table type has changed"));
+                        Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, dal.MakeDropUDTTScript(initialUDTT), "User-defined table type has changed"));
+                        Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, dal.MakeCreateUDTTScript(finalUDTT), "User-defined table type has changed"));
                     }
                 }, makeChangeScripts);
         }
 
-        private void ProcessViews(Dictionary<string, ViewAttribute> finalViews, Dictionary<string, ViewAttribute> initialViews, IAssemblyStateReader asm, IDatabaseScriptGenerator gen, bool makeChangeScripts)
+        private void ProcessViews(Dictionary<string, ViewAttribute> finalViews, Dictionary<string, ViewAttribute> initialViews, ISqlSiphon dal, bool makeChangeScripts)
         {
-            DumpAll(Initial, initialViews, ScriptType.CreateUDTT, gen.MakeCreateViewScript);
-            DumpAll(Final, finalViews, ScriptType.CreateUDTT, gen.MakeCreateViewScript);
+            DumpAll(Initial, initialViews, ScriptType.CreateUDTT, dal.MakeCreateViewScript);
+            DumpAll(Final, finalViews, ScriptType.CreateUDTT, dal.MakeCreateViewScript);
             Traverse(
                 finalViews,
                 initialViews,
-                (viewName, initialView) => Scripts.Add(new ScriptStatus(ScriptType.DropView, viewName, gen.MakeDropViewScript(initialView), "View no longer exists")),
-                (viewName, finalView) => Scripts.Add(new ScriptStatus(ScriptType.CreateView, viewName, gen.MakeCreateViewScript(finalView), "View does not exist")),
+                (viewName, initialView) => Scripts.Add(new ScriptStatus(ScriptType.DropView, viewName, dal.MakeDropViewScript(initialView), "View no longer exists")),
+                (viewName, finalView) => Scripts.Add(new ScriptStatus(ScriptType.CreateView, viewName, dal.MakeCreateViewScript(finalView), "View does not exist")),
                 (viewName, finalView, initialView) =>
                 {
-                    var finalColumns = finalView.Properties.ToDictionary(p => gen.MakeIdentifier(finalView.Schema ?? gen.DefaultSchemaName, finalView.Name, p.Name));
-                    var initialColumns = initialView.Properties.ToDictionary(p => gen.MakeIdentifier(initialView.Schema ?? gen.DefaultSchemaName, initialView.Name, p.Name));
+                    var finalColumns = finalView.Properties.ToDictionary(p => dal.MakeIdentifier(finalView.Schema ?? dal.DefaultSchemaName, finalView.Name, p.Name));
+                    var initialColumns = initialView.Properties.ToDictionary(p => dal.MakeIdentifier(initialView.Schema ?? dal.DefaultSchemaName, initialView.Name, p.Name));
 
                     var changed = false;
                     Traverse(
@@ -317,13 +312,13 @@ namespace SqlSiphon
                         (columnName, finalColumn) => changed = true,
                         (columnName, finalColumn, initialColumn) =>
                         {
-                            var colDiff = asm.ColumnChanged(finalColumn, initialColumn);
+                            var colDiff = dal.ColumnChanged(finalColumn, initialColumn);
                             changed = changed || colDiff != null;
                         }, true);
                     if (changed)
                     {
-                        Scripts.Add(new ScriptStatus(ScriptType.DropView, viewName, gen.MakeDropViewScript(initialView), "View has changed"));
-                        Scripts.Add(new ScriptStatus(ScriptType.CreateView, viewName, gen.MakeCreateViewScript(finalView), "View has changed"));
+                        Scripts.Add(new ScriptStatus(ScriptType.DropView, viewName, dal.MakeDropViewScript(initialView), "View has changed"));
+                        Scripts.Add(new ScriptStatus(ScriptType.CreateView, viewName, dal.MakeCreateViewScript(finalView), "View has changed"));
                     }
                 }, makeChangeScripts);
         }

@@ -29,7 +29,7 @@ namespace SqlSiphon.Model
             InformationSchema.TableConstraints toTablePKConstraint,
             InformationSchema.ConstraintColumnUsage[] toTablePKConstraintColumns,
             InformationSchema.KeyColumnUsage[] toTableKeyColumns,
-            IDatabaseStateReader dal)
+            ISqlSiphon dal)
         {
             Schema = fromTableFKConstraint.constraint_schema;
             Name = fromTableFKConstraint.constraint_name;
@@ -51,7 +51,7 @@ namespace SqlSiphon.Model
             fromColumnNames = fromColumns;
         }
 
-        public void ResolveColumns(Dictionary<Type, TableAttribute> tables, IDatabaseScriptGenerator dal)
+        public void ResolveColumns(Dictionary<Type, TableAttribute> tables, ISqlSiphon dal)
         {
             if (tables is null)
             {
@@ -115,7 +115,7 @@ namespace SqlSiphon.Model
             }
         }
 
-        public string GetRelationshipName(IDatabaseScriptGenerator dal)
+        public string GetRelationshipName(ISqlSiphon dal)
         {
             if (dal is null)
             {

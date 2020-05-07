@@ -663,7 +663,7 @@ namespace SqlSiphon
                 currentType = currentType.BaseType;
             }
 
-            return new DatabaseState(types, this, this, userName, password, database);
+            return new DatabaseState(types, this, userName, password, database);
         }
 
         protected string ArgumentList<T>(IEnumerable<T> collect, Func<T, string> format, string separator = null)

@@ -19,7 +19,7 @@ namespace SqlSiphon.Postgres
             Settings = new Dictionary<string, Dictionary<string, string>>();
         }
 
-        public override DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader asm, IDatabaseScriptGenerator dal)
+        public override DatabaseDelta Diff(DatabaseState initial, ISqlSiphon dal)
         {
             var pg = initial as PostgresDatabaseState;
             if (pg != null)
@@ -36,7 +36,7 @@ namespace SqlSiphon.Postgres
                 RemoveExtensionObjects(extSchema, pg.Views);
             }
 
-            var delta = base.Diff(initial, asm, dal);
+            var delta = base.Diff(initial, dal);
 
             if (pg != null)
             {
@@ -62,7 +62,7 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        private void ProcessExtensions(IDatabaseObjectHandler dal, DatabaseDelta delta, Dictionary<string, pg_extension> extensions)
+        private void ProcessExtensions(ISqlSiphon dal, DatabaseDelta delta, Dictionary<string, pg_extension> extensions)
         {
             foreach (var ext in Extensions)
             {
@@ -88,7 +88,7 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        private void ProcessSettings(IDatabaseScriptGenerator dal, DatabaseDelta delta, Dictionary<string, Dictionary<string, string>> initialUserSettings)
+        private void ProcessSettings(ISqlSiphon dal, DatabaseDelta delta, Dictionary<string, Dictionary<string, string>> initialUserSettings)
         {
             foreach (var userName in Settings.Keys)
             {

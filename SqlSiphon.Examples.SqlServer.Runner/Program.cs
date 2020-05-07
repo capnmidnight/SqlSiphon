@@ -22,10 +22,7 @@ namespace SqlSiphon.Examples.Runner
             var dbTypeName = DataConnector.GetDatabaseVendorName(factory.GetType());
 
             using var connection = factory.MakeConnector(Server, Database, UserName, Password);
-            using var db = new BasicDAL()
-            {
-                Connection = connection
-            };
+            using var db = new BasicDAL(connection);
             Console.WriteLine("Getting data from {0}", dbTypeName);
             Console.WriteLine(string.Join(", ", db.GetAllRoles()));
         }

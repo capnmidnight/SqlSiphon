@@ -70,7 +70,7 @@ namespace SqlSiphon.Mapping
         public ViewAttribute(
             string query,
             InformationSchema.Columns[] columns,
-            IDatabaseStateReader dal)
+            ISqlSiphon dal)
             : this(query)
         {
             var testColumn = columns.First();

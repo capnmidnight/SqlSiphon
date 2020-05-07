@@ -385,7 +385,7 @@ namespace InitDB
             return cmdGood.All(kv => kv.Value) && assemblyGood;
         }
 
-        private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon db)
+        private bool RunScripts(IEnumerable<ScriptStatus> scripts, ISqlSiphon dal)
         {
             var succeeded = true;
             try
@@ -394,7 +394,7 @@ namespace InitDB
                 {
                     if (script.Run)
                     {
-                        succeeded = WithErrorCapture(() => RunScript(script, false, db)) && succeeded;
+                        succeeded = WithErrorCapture(() => RunScript(script, false, dal)) && succeeded;
                     }
                 }
             }
@@ -407,7 +407,7 @@ namespace InitDB
             return succeeded;
         }
 
-        private bool RunScript(ScriptStatus script, bool selectTab, ISqlSiphon db)
+        private bool RunScript(ScriptStatus script, bool selectTab, ISqlSiphon dal)
         {
             var succeeded = true;
             if (selectTab)
@@ -418,9 +418,9 @@ namespace InitDB
             ToOutput(HORIZONTAL_LINE);
             ToOutput($"{script.ScriptType} {script.Name}...");
 
-            if (db.SupportsScriptType(script.ScriptType))
+            if (dal.SupportsScriptType(script.ScriptType))
             {
-                db.AlterDatabase(script);
+                dal.AlterDatabase(script);
             }
             else
             {
@@ -430,12 +430,12 @@ namespace InitDB
                     ToError(args.Text);
                 });
 
-                db.OnStandardError += db_OnStandardError;
-                db.OnStandardOutput += db_OnStandardOutput;
-                var exe = GetExecutable(db);
+                dal.OnStandardError += db_OnStandardError;
+                dal.OnStandardOutput += db_OnStandardOutput;
+                var exe = GetExecutable(dal);
                 var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 var database = script.ScriptType == ScriptType.InstallExtension ? databaseTB.Text : null;
-                succeeded = db.RunCommandLine(
+                succeeded = dal.RunCommandLine(
                     exe,
                     appData,
                     serverTB.Text,
@@ -443,8 +443,8 @@ namespace InitDB
                     adminUserTB.Text,
                     adminPassTB.Text,
                     script.Script);
-                db.OnStandardOutput -= db_OnStandardOutput;
-                db.OnStandardError -= db_OnStandardError;
+                dal.OnStandardOutput -= db_OnStandardOutput;
+                dal.OnStandardError -= db_OnStandardError;
 
                 if (succeeded && script.ScriptType == ScriptType.CreateDatabaseLogin)
                 {
@@ -465,12 +465,12 @@ namespace InitDB
 
         private Type CurrentDataAccessLayerType;
 
-        private DatabaseDelta CreateDelta(ISqlSiphon db)
+        private DatabaseDelta CreateDelta(ISqlSiphon dal)
         {
             var r = ObjectFilter;
-            var initial = db.GetInitialState(databaseTB.Text, r);
-            var final = db.GetFinalState(CurrentDataAccessLayerType, sqlUserTB.Text, sqlPassTB.Text, databaseTB.Text);
-            return final.Diff(initial, db, db);
+            var initial = dal.GetInitialState(databaseTB.Text, r);
+            var final = dal.GetFinalState(CurrentDataAccessLayerType, sqlUserTB.Text, sqlPassTB.Text, databaseTB.Text);
+            return final.Diff(initial, dal);
         }
 
         private Regex ObjectFilter
@@ -787,9 +787,9 @@ namespace InitDB
             }
         }
 
-        private string GetExecutable(ISqlSiphon connector)
+        private string GetExecutable(ISqlSiphon dal)
         {
-            var type = connector.GetType();
+            var type = dal.GetType();
             var asm = type.Assembly;
             var factoryType = (from t in asm.GetTypes()
                                let interfaces = t.GetInterfaces()

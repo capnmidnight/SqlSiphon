@@ -68,7 +68,7 @@ namespace SqlSiphon.Mapping
 
         public TableAttribute(
             InformationSchema.Columns[] columns,
-            IDatabaseStateReader dal)
+            ISqlSiphon dal)
             : this(columns, null, null, null, null, dal)
         {
         }
@@ -91,7 +91,7 @@ namespace SqlSiphon.Mapping
             InformationSchema.KeyColumnUsage[] keyColumns,
             InformationSchema.ConstraintColumnUsage[] constraintColumns,
             InformationSchema.IndexColumnUsage[] indexedColumns,
-            IDatabaseStateReader dal)
+            ISqlSiphon dal)
             : this()
         {
             var testColumn = columns.First();

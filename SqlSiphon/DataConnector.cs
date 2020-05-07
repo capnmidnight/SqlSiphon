@@ -107,11 +107,6 @@ namespace SqlSiphon
             Connection = connection;
         }
 
-        protected DataConnector(IDataConnectorFactory factory, string connectionString)
-            : this(factory.MakeConnector(connectionString))
-        {
-        }
-
         protected DataConnector(IDataConnectorFactory factory, string server, string database, string userName, string password)
             : this(factory.MakeConnector(server, database, userName, password))
         {

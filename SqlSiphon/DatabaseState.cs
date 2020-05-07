@@ -121,17 +121,12 @@ namespace SqlSiphon
         /// mappings to database objects.
         /// </summary>
         /// <param name="asm"></param>
-        public DatabaseState(IEnumerable<Type> types, IAssemblyStateReader asm, IDatabaseScriptGenerator dal, string userName, string password, string catalogueName)
+        public DatabaseState(IEnumerable<Type> types, ISqlSiphon dal, string userName, string password, string catalogueName)
             : this()
         {
             if (types is null)
             {
                 throw new ArgumentNullException(nameof(types));
-            }
-
-            if (asm is null)
-            {
-                throw new ArgumentNullException(nameof(asm));
             }
 
             if (dal is null)
@@ -361,7 +356,7 @@ namespace SqlSiphon
             }
         }
 
-        private List<string> GetSchemata(IDatabaseScriptGenerator dal)
+        private List<string> GetSchemata(ISqlSiphon dal)
         {
             var schemata = Tables.Values.Select(t => t.Schema)
                 .Union(Functions.Values.Select(f => f.Schema))
@@ -373,7 +368,7 @@ namespace SqlSiphon
             return schemata;
         }
 
-        private void CreateRoutines(List<Type> routineDefTypes, IDatabaseScriptGenerator dal)
+        private void CreateRoutines(List<Type> routineDefTypes, ISqlSiphon dal)
         {
             foreach (var type in routineDefTypes)
             {
@@ -393,7 +388,7 @@ namespace SqlSiphon
             }
         }
 
-        private void CreateRelationships(IDatabaseScriptGenerator dal)
+        private void CreateRelationships(ISqlSiphon dal)
         {
             var tablesBySystemType = Tables.Values.ToDictionary(t => t.SystemType);
             foreach (var table in Tables.Values)
@@ -423,7 +418,7 @@ namespace SqlSiphon
             }
         }
 
-        private void FindTables(Type rootType, IDatabaseScriptGenerator dal)
+        private void FindTables(Type rootType, ISqlSiphon dal)
         {
             foreach (var type in rootType.Assembly.GetTypes())
             {
@@ -440,7 +435,7 @@ namespace SqlSiphon
             }
         }
 
-        public void AddTable(Dictionary<string, TableAttribute> tableCollection, Type type, IDatabaseScriptGenerator dal, TableAttribute table)
+        public void AddTable(Dictionary<string, TableAttribute> tableCollection, Type type, ISqlSiphon dal, TableAttribute table)
         {
             if (tableCollection is null)
             {
@@ -498,7 +493,7 @@ namespace SqlSiphon
             }
         }
 
-        public void AddView(Dictionary<string, ViewAttribute> viewCollection, Type type, IDatabaseScriptGenerator dal, ViewAttribute view)
+        public void AddView(Dictionary<string, ViewAttribute> viewCollection, Type type, ISqlSiphon dal, ViewAttribute view)
         {
             if (viewCollection is null)
             {
@@ -532,7 +527,7 @@ namespace SqlSiphon
             }
         }
 
-        private void CreateUDTTs(IDatabaseScriptGenerator dal)
+        private void CreateUDTTs(ISqlSiphon dal)
         {
             foreach (var type in Functions.Values.SelectMany(f => f.Parameters)
                 .Select(p => p.SystemType)
@@ -545,14 +540,14 @@ namespace SqlSiphon
         }
 
 
-        public virtual DatabaseDelta Diff(DatabaseState initial, IAssemblyStateReader assembly, IDatabaseScriptGenerator gen)
+        public virtual DatabaseDelta Diff(DatabaseState initial, ISqlSiphon dal)
         {
-            return new DatabaseDelta(this, initial, assembly, gen, true);
+            return new DatabaseDelta(this, initial, dal, true);
         }
 
-        public virtual DatabaseDelta MakeScripts(DatabaseState initial, IAssemblyStateReader assembly, IDatabaseScriptGenerator gen)
+        public virtual DatabaseDelta MakeScripts(DatabaseState initial, ISqlSiphon dal)
         {
-            return new DatabaseDelta(this, initial, assembly, gen, false);
+            return new DatabaseDelta(this, initial, dal, false);
         }
 
         public bool TypeExists<T>()
