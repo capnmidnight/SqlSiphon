@@ -1,10 +1,12 @@
+using SqlSiphon.Mapping;
+
 namespace SqlSiphon.InformationSchema
 {
     /// <summary>
     /// This is an entity object for the SQL standard 
     /// INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE view.
     /// </summary>
-    [Mapping.Table(
+    [Table(
         Include = false,
         Schema = "information_schema",
         Name = "referential_constraints")]

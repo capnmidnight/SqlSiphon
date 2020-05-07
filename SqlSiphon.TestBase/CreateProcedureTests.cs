@@ -32,7 +32,7 @@ namespace SqlSiphon.TestBase
                 throw new EntryPointNotFoundException("Couldn't find a method to test");
             }
 
-            var methodInfo = DatabaseObjectAttribute.GetAttribute(method);
+            var methodInfo = DatabaseObjectAttribute.GetRoutine(method);
 
             // We aren't opening a connection, we're just trying to generate scripts
             // so it shouldn't be a problem to provide no connection string.
