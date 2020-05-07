@@ -48,10 +48,7 @@ namespace SqlSiphon.InformationSchema
         public string column_name { get; set; }
         public string column_default { get; set; }
         public string is_nullable { get; set; }
-
         public int? is_identity { get; set; }
-        public string udt_catalog { get; set; }
-        public string udt_schema { get; set; }
 
         public override string ToString()
         {
