@@ -12,7 +12,7 @@ namespace SqlSiphon.InformationSchema
         Include = false,
         Schema = "information_schema",
         Name = "Columns")]
-    public class Columns : Typed
+    public class Column : Typed
     {
         public string table_catalog { get; set; }
         public string table_schema { get; set; }

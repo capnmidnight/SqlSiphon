@@ -6,7 +6,7 @@ namespace SqlSiphon.InformationSchema
         Include = false,
         Schema = "information_schema",
         Name = "views")]
-    public class Views
+    public class View
     {
         public string table_schema { get; set; }
         public string table_name { get; set; }

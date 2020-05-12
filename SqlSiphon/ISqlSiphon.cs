@@ -20,7 +20,7 @@ namespace SqlSiphon
         string IndexChanged(TableIndex finalIndex, TableIndex initialIndex);
         DatabaseState GetInitialState(string catalogueName, Regex filterObjects);
 
-        bool DescribesIdentity(InformationSchema.Columns column);
+        bool DescribesIdentity(InformationSchema.Column column);
 
         void AnalyzeQuery(string routineText, RoutineAttribute routine);
 
@@ -34,17 +34,17 @@ namespace SqlSiphon
         List<string> GetSchemata();
         List<string> GetScriptStatus();
         List<string> GetDatabaseLogins();
-        List<InformationSchema.Columns> GetTableColumns();
-        List<InformationSchema.Columns> GetUDTTColumns();
-        List<InformationSchema.Views> GetViews();
-        List<InformationSchema.Columns> GetViewColumns();
+        List<InformationSchema.Column> GetTableColumns();
+        List<InformationSchema.Column> GetUDTTColumns();
+        List<InformationSchema.View> GetViews();
+        List<InformationSchema.Column> GetViewColumns();
         List<InformationSchema.IndexColumnUsage> GetIndexColumns();
-        List<InformationSchema.Routines> GetRoutines();
-        List<InformationSchema.Parameters> GetParameters();
+        List<InformationSchema.Routine> GetRoutines();
+        List<InformationSchema.Parameter> GetParameters();
         List<InformationSchema.KeyColumnUsage> GetKeyColumns();
         List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns();
-        List<InformationSchema.TableConstraints> GetTableConstraints();
-        List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
+        List<InformationSchema.TableConstraint> GetTableConstraints();
+        List<InformationSchema.ReferentialConstraint> GetReferentialConstraints();
         bool SupportsScriptType(ScriptType type);
 
         bool IsUDTT(Type systemType);

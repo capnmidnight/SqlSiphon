@@ -57,7 +57,7 @@ namespace SqlSiphon.Mapping
             EnableTransaction = false;
         }
 
-        public RoutineAttribute(InformationSchema.Routines routine, InformationSchema.Parameters[] parameters, ISqlSiphon dal)
+        public RoutineAttribute(InformationSchema.Routine routine, InformationSchema.Parameter[] parameters, ISqlSiphon dal)
         {
             Schema = routine.routine_schema;
             Name = routine.routine_name;

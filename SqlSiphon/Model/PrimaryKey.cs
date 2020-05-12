@@ -11,15 +11,15 @@ namespace SqlSiphon.Model
         public ColumnAttribute[] KeyColumns { get; private set; }
 
         internal PrimaryKey(
-            InformationSchema.TableConstraints constraint,
-            InformationSchema.TableConstraints uniqueConstraint,
+            InformationSchema.TableConstraint constraint,
+            InformationSchema.TableConstraint uniqueConstraint,
             InformationSchema.ConstraintColumnUsage[] uniqueConstraintColumns,
-            InformationSchema.Columns[] uniqueTableColumns,
+            InformationSchema.Column[] uniqueTableColumns,
             ISqlSiphon dal)
         {
             Schema = constraint.constraint_schema;
             Name = constraint.constraint_name;
-            Table = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraints[] { uniqueConstraint }, null, uniqueConstraintColumns, null, dal);
+            Table = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraint[] { uniqueConstraint }, null, uniqueConstraintColumns, null, dal);
             KeyColumns = Table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();

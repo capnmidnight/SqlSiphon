@@ -35,7 +35,7 @@ namespace SqlSiphon.Mapping
         }
 
         public TableAttribute(
-            InformationSchema.Columns[] columns,
+            InformationSchema.Column[] columns,
             ISqlSiphon dal)
             : this(columns, null, null, null, null, dal)
         {
@@ -54,8 +54,8 @@ namespace SqlSiphon.Mapping
         }
 
         public TableAttribute(
-            InformationSchema.Columns[] columns,
-            InformationSchema.TableConstraints[] constraints,
+            InformationSchema.Column[] columns,
+            InformationSchema.TableConstraint[] constraints,
             InformationSchema.KeyColumnUsage[] keyColumns,
             InformationSchema.ConstraintColumnUsage[] constraintColumns,
             InformationSchema.IndexColumnUsage[] indexedColumns,

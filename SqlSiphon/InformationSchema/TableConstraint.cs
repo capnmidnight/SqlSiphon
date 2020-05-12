@@ -10,7 +10,7 @@ namespace SqlSiphon.InformationSchema
         Include = false,
         Schema = "information_schema",
         Name = "table_constraints")]
-    public class TableConstraints
+    public class TableConstraint
     {
         public string constraint_catalog { get; set; }
         public string constraint_schema { get; set; }

@@ -382,7 +382,7 @@ namespace SqlSiphon.Postgres
             return typeName;
         }
 
-        public override bool DescribesIdentity(InformationSchema.Columns column)
+        public override bool DescribesIdentity(InformationSchema.Column column)
         {
             if (column is null)
             {
@@ -1041,9 +1041,9 @@ where table_schema != 'information_schema'
     and table_schema != 'pg_catalog'
 	and is_updatable = @isUpdatable
 order by table_catalog, table_schema, table_name, ordinal_position;")]
-        private List<InformationSchema.Columns> GetColumns(string isUpdatable)
+        private List<InformationSchema.Column> GetColumns(string isUpdatable)
         {
-            var columns = GetList<InformationSchema.Columns>(isUpdatable);
+            var columns = GetList<InformationSchema.Column>(isUpdatable);
             foreach (var column in columns)
             {
                 column.data_type = NormalizeSqlType(column.data_type);
@@ -1052,12 +1052,12 @@ order by table_catalog, table_schema, table_name, ordinal_position;")]
             return columns;
         }
 
-        public override List<InformationSchema.Columns> GetTableColumns()
+        public override List<InformationSchema.Column> GetTableColumns()
         {
             return GetColumns("YES");
         }
 
-        public override List<InformationSchema.Columns> GetViewColumns()
+        public override List<InformationSchema.Column> GetViewColumns()
         {
             return GetColumns("NO");
         }
@@ -1087,9 +1087,9 @@ from information_schema.attributes
 where udt_schema != 'information_schema'
     and udt_schema != 'pg_catalog'
 order by udt_catalog, udt_schema, udt_name, ordinal_position;")]
-        public override List<InformationSchema.Columns> GetUDTTColumns()
+        public override List<InformationSchema.Column> GetUDTTColumns()
         {
-            return GetList<InformationSchema.Columns>();
+            return GetList<InformationSchema.Column>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1130,9 +1130,9 @@ order by
 from information_schema.views
 where table_schema != 'information_schema'
     and table_schema != 'pg_catalog';")]
-        public override List<InformationSchema.Views> GetViews()
+        public override List<InformationSchema.View> GetViews()
         {
-            return GetList<InformationSchema.Views>();
+            return GetList<InformationSchema.View>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1142,9 +1142,9 @@ from information_schema.table_constraints
 where table_schema != 'information_schema'
     and table_schema != 'pg_catalog'
 order by table_catalog, table_schema, table_name;")]
-        public override List<InformationSchema.TableConstraints> GetTableConstraints()
+        public override List<InformationSchema.TableConstraint> GetTableConstraints()
         {
-            return GetList<InformationSchema.TableConstraints>();
+            return GetList<InformationSchema.TableConstraint>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1154,9 +1154,9 @@ from information_schema.referential_constraints
 where constraint_schema != 'information_schema'
     and constraint_schema != 'pg_catalog'
 order by constraint_catalog, constraint_schema, constraint_name;")]
-        public override List<InformationSchema.ReferentialConstraints> GetReferentialConstraints()
+        public override List<InformationSchema.ReferentialConstraint> GetReferentialConstraints()
         {
-            return GetList<InformationSchema.ReferentialConstraints>();
+            return GetList<InformationSchema.ReferentialConstraint>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1176,9 +1176,9 @@ from information_schema.routines as r
 where specific_schema != 'information_schema'
     and specific_schema != 'pg_catalog'
 order by specific_catalog, specific_schema, specific_name;")]
-        public override List<InformationSchema.Routines> GetRoutines()
+        public override List<InformationSchema.Routine> GetRoutines()
         {
-            return GetList<InformationSchema.Routines>();
+            return GetList<InformationSchema.Routine>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1189,9 +1189,9 @@ where specific_schema != 'information_schema'
     and specific_schema != 'pg_catalog'
     and parameter_mode in ('IN', 'INOUT')
 order by specific_catalog, specific_schema, specific_name, ordinal_position;")]
-        public override List<InformationSchema.Parameters> GetParameters()
+        public override List<InformationSchema.Parameter> GetParameters()
         {
-            var parameters = GetList<InformationSchema.Parameters>();
+            var parameters = GetList<InformationSchema.Parameter>();
             foreach (var parameter in parameters)
             {
                 parameter.data_type = NormalizeSqlType(parameter.data_type);

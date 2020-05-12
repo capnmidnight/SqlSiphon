@@ -941,15 +941,15 @@ namespace SqlSiphon
         }
 
         public abstract List<string> GetDatabaseLogins();
-        public abstract List<InformationSchema.Columns> GetTableColumns();
-        public abstract List<InformationSchema.Columns> GetUDTTColumns();
-        public abstract List<InformationSchema.Views> GetViews();
-        public abstract List<InformationSchema.Columns> GetViewColumns();
+        public abstract List<InformationSchema.Column> GetTableColumns();
+        public abstract List<InformationSchema.Column> GetUDTTColumns();
+        public abstract List<InformationSchema.View> GetViews();
+        public abstract List<InformationSchema.Column> GetViewColumns();
         public abstract List<InformationSchema.IndexColumnUsage> GetIndexColumns();
-        public abstract List<InformationSchema.TableConstraints> GetTableConstraints();
-        public abstract List<InformationSchema.ReferentialConstraints> GetReferentialConstraints();
-        public abstract List<InformationSchema.Routines> GetRoutines();
-        public abstract List<InformationSchema.Parameters> GetParameters();
+        public abstract List<InformationSchema.TableConstraint> GetTableConstraints();
+        public abstract List<InformationSchema.ReferentialConstraint> GetReferentialConstraints();
+        public abstract List<InformationSchema.Routine> GetRoutines();
+        public abstract List<InformationSchema.Parameter> GetParameters();
         public abstract List<InformationSchema.ConstraintColumnUsage> GetConstraintColumns();
         public abstract List<InformationSchema.KeyColumnUsage> GetKeyColumns();
 
@@ -959,7 +959,7 @@ namespace SqlSiphon
         public abstract int GetDefaultTypeSize(Type type);
         public abstract Type GetSystemType(string sqlType);
         public abstract string NormalizeSqlType(string sqlType);
-        public abstract bool DescribesIdentity(InformationSchema.Columns column);
+        public abstract bool DescribesIdentity(InformationSchema.Column column);
         protected abstract string CheckDefaultValueDifference(ColumnAttribute final, ColumnAttribute initial);
         public virtual void AnalyzeQuery(string routineText, RoutineAttribute routine)
         {

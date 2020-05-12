@@ -54,7 +54,7 @@ namespace SqlSiphon.Mapping
             InferProperties(obj);
         }
 
-        public ColumnAttribute(TableAttribute table, InformationSchema.Columns column, bool includeInPK, ISqlSiphon dal)
+        public ColumnAttribute(TableAttribute table, InformationSchema.Column column, bool includeInPK, ISqlSiphon dal)
         {
             if (column is null)
             {
@@ -78,7 +78,7 @@ namespace SqlSiphon.Mapping
             InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
         }
 
-        public ColumnAttribute(ViewAttribute view, InformationSchema.Columns column, ISqlSiphon dal)
+        public ColumnAttribute(ViewAttribute view, InformationSchema.Column column, ISqlSiphon dal)
         {
             if (column is null)
             {

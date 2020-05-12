@@ -45,7 +45,7 @@ namespace SqlSiphon.Mapping
             InferProperties(param);
         }
 
-        public ParameterAttribute(InformationSchema.Parameters parameter, ISqlSiphon dal)
+        public ParameterAttribute(InformationSchema.Parameter parameter, ISqlSiphon dal)
         {
             Include = true;
 

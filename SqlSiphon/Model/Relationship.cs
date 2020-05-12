@@ -22,22 +22,22 @@ namespace SqlSiphon.Model
         public string Prefix { get; private set; }
 
         internal Relationship(
-            InformationSchema.Columns[] fromTableColumns,
-            InformationSchema.TableConstraints fromTableFKConstraint,
+            InformationSchema.Column[] fromTableColumns,
+            InformationSchema.TableConstraint fromTableFKConstraint,
             InformationSchema.KeyColumnUsage[] fromTableFKConstraintColumns,
-            InformationSchema.Columns[] toTableColumns,
-            InformationSchema.TableConstraints toTablePKConstraint,
+            InformationSchema.Column[] toTableColumns,
+            InformationSchema.TableConstraint toTablePKConstraint,
             InformationSchema.ConstraintColumnUsage[] toTablePKConstraintColumns,
             InformationSchema.KeyColumnUsage[] toTableKeyColumns,
             ISqlSiphon dal)
         {
             Schema = fromTableFKConstraint.constraint_schema;
             Name = fromTableFKConstraint.constraint_name;
-            To = new TableAttribute(toTableColumns, new InformationSchema.TableConstraints[] { toTablePKConstraint }, fromTableFKConstraintColumns, toTablePKConstraintColumns, null, dal)
+            To = new TableAttribute(toTableColumns, new InformationSchema.TableConstraint[] { toTablePKConstraint }, fromTableFKConstraintColumns, toTablePKConstraintColumns, null, dal)
             {
                 PrimaryKey = new PrimaryKey(fromTableFKConstraint, toTablePKConstraint, toTablePKConstraintColumns, toTableColumns, dal)
             };
-            From = new TableAttribute(fromTableColumns, new InformationSchema.TableConstraints[] { fromTableFKConstraint }, fromTableFKConstraintColumns, null, null, dal);
+            From = new TableAttribute(fromTableColumns, new InformationSchema.TableConstraint[] { fromTableFKConstraint }, fromTableFKConstraintColumns, null, null, dal);
             var fromColumns = fromTableColumns.ToDictionary(c => dal.MakeIdentifier(c.column_name));
             FromColumns = fromTableFKConstraintColumns.Select(c => new ColumnAttribute(From, fromColumns[dal.MakeIdentifier(c.column_name)], false, dal)).ToArray();
         }

@@ -54,7 +54,7 @@ namespace SqlSiphon.Mapping
 
         public ViewAttribute(
             string query,
-            InformationSchema.Columns[] columns,
+            InformationSchema.Column[] columns,
             ISqlSiphon dal)
             : this(query)
         {

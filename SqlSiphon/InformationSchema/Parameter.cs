@@ -11,7 +11,7 @@ namespace SqlSiphon.InformationSchema
         Include = false,
         Schema = "information_schema",
         Name = "parameters")]
-    public class Parameters : Typed
+    public class Parameter : Typed
     {
         public string specific_catalog { get; set; }
         public string specific_schema { get; set; }

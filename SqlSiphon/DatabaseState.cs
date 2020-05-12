@@ -233,7 +233,7 @@ namespace SqlSiphon
                         {
                             var tableConstraints = constraintsByTable.ContainsKey(tableName)
                                 ? constraintsByTable[tableName]
-                                : Array.Empty<InformationSchema.TableConstraints>();
+                                : Array.Empty<InformationSchema.TableConstraint>();
                             var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName)
                                 ? keyColumnsByTable[tableName]
                                 : Array.Empty<InformationSchema.KeyColumnUsage>();

@@ -10,7 +10,7 @@ namespace SqlSiphon.InformationSchema
         Include = false,
         Schema = "information_schema",
         Name = "routines")]
-    public class Routines : Typed
+    public class Routine : Typed
     {
         public string specific_schema { get; set; }
         public string specific_name { get; set; }
