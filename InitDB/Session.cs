@@ -1,11 +1,12 @@
 using System;
+using System.Globalization;
 using System.Linq;
 
 using SqlSiphon;
 
 namespace InitDB
 {
-    internal class Session : SqlSiphon.BoundObject
+    internal class Session : BoundObject
     {
         public string Name { get { return Get<string>(); } set { Set(value); } }
         public string Server { get { return Get<string>(); } set { Set(value); } }
@@ -20,9 +21,12 @@ namespace InitDB
         {
             get
             {
-                return int.Parse(Get<string>());
+                return int.Parse(Get<string>(), NumberStyles.Integer, CultureInfo.InvariantCulture);
             }
-            set { Set(value.ToString()); }
+            set
+            {
+                Set(value.ToString(CultureInfo.InvariantCulture));
+            }
         }
         public ScriptType[] ScriptTypes { get { return Get<ScriptType[]>(); } set { Set(value); } }
 
@@ -31,7 +35,11 @@ namespace InitDB
         public static char ARRAY_VALUE_SEPARATOR = ',';
 
         public Session()
-            : this(InitDB.MainForm.DEFAULT_SESSION_NAME, "localhost\\SQLEXPRESS", "", "", "", "", "", "", "", 0, new ScriptType[] { })
+            : this(
+                  MainForm.DEFAULT_SESSION_NAME,
+                  "localhost",
+                  "", "", "", "", "", "", "",
+                  0, Array.Empty<ScriptType>())
         {
         }
 
@@ -54,33 +62,32 @@ namespace InitDB
 
         public Session(string line)
         {
-            values = line
-                .Split(PAIR_SEPARATOR)
-                .Select(pair => pair.Split(KEY_VALUE_SEPARATOR))
-                .ToDictionary(pair => pair.FirstOrDefault(), pair =>
+            foreach (var pair in line.Split(PAIR_SEPARATOR))
+            {
+                var parts = pair.Split(KEY_VALUE_SEPARATOR);
+                var k = parts.FirstOrDefault() ?? "";
+                var v = parts.LastOrDefault() ?? "";
+                var isTrue = v.Equals("True", StringComparison.InvariantCultureIgnoreCase);
+                var isFalse = v.Equals("False", StringComparison.InvariantCultureIgnoreCase);
+                object o = null;
+                if (isTrue || isFalse)
                 {
-                    var k = pair.FirstOrDefault() ?? "";
-                    var v = pair.LastOrDefault() ?? "";
-                    object o = null;
-                    var isTrue = v.Equals("True", StringComparison.InvariantCultureIgnoreCase);
-                    var isFalse = v.Equals("False", StringComparison.InvariantCultureIgnoreCase);
-                    if (isTrue || isFalse)
-                    {
-                        o = isTrue;
-                    }
-                    else if (k == "ScriptTypes")
-                    {
-                        o = v.Split(ARRAY_VALUE_SEPARATOR)
-                            .Where(p => p.Length > 0)
-                            .Select(p => (ScriptType)Enum.Parse(typeof(ScriptType), p))
-                            .ToArray();
-                    }
-                    else
-                    {
-                        o = v;
-                    }
-                    return o;
-                });
+                    o = isTrue;
+                }
+                else if (k == "ScriptTypes")
+                {
+                    o = v.Split(ARRAY_VALUE_SEPARATOR)
+                        .Where(p => p.Length > 0)
+                        .Select(p => (ScriptType)Enum.Parse(typeof(ScriptType), p))
+                        .ToArray();
+                }
+                else
+                {
+                    o = v;
+                }
+
+                Values.Add(k, o);
+            }
         }
 
         private string Serialize(object obj)
@@ -99,7 +106,7 @@ namespace InitDB
         {
             return
                 string.Join(PAIR_SEPARATOR.ToString(),
-                    values.Select(pair =>
+                    Values.Select(pair =>
                         string.Join(KEY_VALUE_SEPARATOR.ToString(), pair.Key, Serialize(pair.Value))));
         }
     }

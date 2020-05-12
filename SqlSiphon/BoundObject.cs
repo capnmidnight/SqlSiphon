@@ -21,12 +21,7 @@ namespace SqlSiphon
             return name;
         }
 
-        protected Dictionary<string, object> values;
-
-        public BoundObject()
-        {
-            values = new Dictionary<string, object>();
-        }
+        protected Dictionary<string, object> Values { get; } = new Dictionary<string, object>();
 
         protected T Get<T>()
         {
@@ -42,11 +37,11 @@ namespace SqlSiphon
             }
 
             OnPropertyAccessed(propertyName);
-            if (values.ContainsKey(propertyName) && values[propertyName] != null)
+            if (Values.ContainsKey(propertyName) && Values[propertyName] != null)
             {
                 try
                 {
-                    return (T)values[propertyName];
+                    return (T)Values[propertyName];
                 }
                 catch { }
             }
@@ -62,27 +57,26 @@ namespace SqlSiphon
 
         protected void Set<T>(T value, string propertyName)
         {
-            if (propertyName == null)
-            {
-                propertyName = GetMethodName();
-            }
+            propertyName ??= GetMethodName();
 
-            if (!values.ContainsKey(propertyName))
+            OnPropertyChanging(propertyName);
+
+            if (!Values.ContainsKey(propertyName))
             {
-                values.Add(propertyName, value);
+                Values.Add(propertyName, value);
                 OnPropertyChanged(propertyName);
             }
-            else if (values[propertyName] == null)
+            else if (Values[propertyName] == null)
             {
                 if ((value as object) != null)
                 {
-                    values[propertyName] = value;
+                    Values[propertyName] = value;
                     OnPropertyChanged(propertyName);
                 }
             }
-            else if (!values[propertyName].Equals(value))
+            else if (!Values[propertyName].Equals(value))
             {
-                values[propertyName] = value;
+                Values[propertyName] = value;
                 OnPropertyChanged(propertyName);
             }
         }
@@ -90,27 +84,21 @@ namespace SqlSiphon
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string property)
         {
-            if (PropertyChanged != null)
-            {
-                if (!propertyChangedCache.ContainsKey(property))
-                {
-                    propertyChangedCache.Add(property, new PropertyChangedEventArgs(property));
-                }
-                PropertyChanged(this, propertyChangedCache[property]);
-            }
+            PropertyChanged?.Invoke(
+                this,
+                propertyChangedCache.Cache(
+                    property,
+                    v => new PropertyChangedEventArgs(v)));
         }
 
         public event PropertyChangingEventHandler PropertyChanging;
         private void OnPropertyChanging(string property)
         {
-            if (PropertyChanging != null)
-            {
-                if (!propertyChangingCache.ContainsKey(property))
-                {
-                    propertyChangingCache.Add(property, new PropertyChangingEventArgs(property));
-                }
-                PropertyChanging(this, propertyChangingCache[property]);
-            }
+            PropertyChanging?.Invoke(
+                this,
+                propertyChangingCache.Cache(
+                    property,
+                    v => new PropertyChangingEventArgs(v)));
         }
 
         public delegate void PropertyAccessedEventHandler(object sender, string propertyName);
@@ -123,16 +111,16 @@ namespace SqlSiphon
         private bool CompareFields(object obj)
         {
             if (!(obj is BoundObject b)
-                || values.Count != b.values.Count)
+                || Values.Count != b.Values.Count)
             {
                 return false;
             }
 
-            foreach (var key in values.Keys)
+            foreach (var key in Values.Keys)
             {
-                if (!b.values.ContainsKey(key)
-                    || (values[key] != null && !values[key].Equals(b.values[key]))
-                    || (b.values[key] != null && !b.values[key].Equals(values[key])))
+                if (!b.Values.ContainsKey(key)
+                    || (Values[key] != null && !Values[key].Equals(b.Values[key]))
+                    || (b.Values[key] != null && !b.Values[key].Equals(Values[key])))
                 {
                     return false;
                 }
