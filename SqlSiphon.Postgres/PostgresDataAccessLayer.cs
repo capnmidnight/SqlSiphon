@@ -11,6 +11,7 @@ using Npgsql;
 
 using SqlSiphon.Mapping;
 using SqlSiphon.Model;
+using SqlSiphon.Postgres.PgCatalog;
 
 namespace SqlSiphon.Postgres
 {
@@ -1016,9 +1017,9 @@ alter table {tableName} add constraint {constraintName} primary key using index 
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query = @"select usename, useconfig from pg_catalog.pg_user")]
-        internal List<pg_user> GetUserSettings()
+        internal List<User> GetUserSettings()
         {
-            return GetList<pg_user>();
+            return GetList<User>();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
@@ -1267,9 +1268,9 @@ where constraint_schema != 'information_schema'
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization | MethodImplOptions.PreserveSig)]
         [Routine(CommandType = CommandType.Text, Query =
 @"select extname, extversion from pg_extension where extname != 'plpgsql';")]
-        internal List<pg_extension> GetExtensions()
+        internal List<Extension> GetExtensions()
         {
-            return GetList<pg_extension>();
+            return GetList<Extension>();
         }
 
         public override string MakeInsertScript(TableAttribute table, object value)

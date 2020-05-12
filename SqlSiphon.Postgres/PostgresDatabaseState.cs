@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using SqlSiphon.Postgres.PgCatalog;
 
 namespace SqlSiphon.Postgres
 {
@@ -9,13 +10,13 @@ namespace SqlSiphon.Postgres
     /// </summary>
     internal class PostgresDatabaseState : DatabaseState
     {
-        public Dictionary<string, pg_extension> Extensions { get; private set; }
+        public Dictionary<string, Extension> Extensions { get; private set; }
         public Dictionary<string, Dictionary<string, string>> Settings { get; private set; }
 
         public PostgresDatabaseState(DatabaseState state)
             : base(state)
         {
-            Extensions = new Dictionary<string, pg_extension>();
+            Extensions = new Dictionary<string, Extension>();
             Settings = new Dictionary<string, Dictionary<string, string>>();
         }
 
@@ -62,7 +63,7 @@ namespace SqlSiphon.Postgres
             }
         }
 
-        private void ProcessExtensions(ISqlSiphon dal, DatabaseDelta delta, Dictionary<string, pg_extension> extensions)
+        private void ProcessExtensions(ISqlSiphon dal, DatabaseDelta delta, Dictionary<string, Extension> extensions)
         {
             foreach (var ext in Extensions)
             {
@@ -156,20 +157,20 @@ namespace SqlSiphon.Postgres
             return true;
         }
 
-        public void AddExtension(pg_extension ext)
+        public void AddExtension(Extension ext)
         {
-            AddExtension(ext.extname, ext.extversion);
+            AddExtension(ext.Name, ext.VersionString);
         }
 
         public void AddExtension(string name, string version)
         {
-            Extensions.Add(name, new pg_extension(name, version));
+            Extensions.Add(name, new Extension(name, version));
         }
 
-        public void AddUserSettings(pg_user row)
+        public void AddUserSettings(User row)
         {
-            var userName = row.usename;
-            var config = row.useconfig;
+            var userName = row.Name;
+            var config = row.Config;
             foreach (var line in config)
             {
                 var sep = line.IndexOf('=');
