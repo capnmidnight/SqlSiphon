@@ -22,10 +22,10 @@ namespace SqlSiphon
 
         public string Script { get { return Get<string>(); } set { Set(value); } }
 
-        [Exclude]
+        [Column(Include = false)]
         public bool Run { get { return Get<bool>(); } set { Set(value); } }
 
-        [Exclude]
+        [Column(Include = false)]
         public string Reason { get; private set; }
 
         /// <summary>

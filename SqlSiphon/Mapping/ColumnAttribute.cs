@@ -28,8 +28,6 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public bool IncludeInPrimaryKey { get; set; }
 
-        public bool IsUnique { get; set; }
-
         public TableAttribute Table { get; set; }
         public ViewAttribute View { get; set; }
 
@@ -102,7 +100,7 @@ namespace SqlSiphon.Mapping
             InferTypeInfo(column, column.udt_name ?? column.data_type, dal);
         }
 
-        private PropertyInfo originalProperty => (PropertyInfo)SourceObject;
+        private PropertyInfo OriginalProperty => (PropertyInfo)SourceObject;
 
         public void SetValue(object obj, object value)
         {
@@ -111,7 +109,7 @@ namespace SqlSiphon.Mapping
                 value = null;
             }
 
-            var targetType = DataConnector.CoalesceNullableValueType(originalProperty.PropertyType);
+            var targetType = DataConnector.CoalesceNullableValueType(OriginalProperty.PropertyType);
 
             if (value != null)
             {
@@ -131,22 +129,22 @@ namespace SqlSiphon.Mapping
 
             try
             {
-                originalProperty.SetValue(obj, value, null);
+                OriginalProperty.SetValue(obj, value, null);
             }
             catch (Exception exp)
             {
-                throw new Exception($"Cannot set property value for property {originalProperty.DeclaringType.Name}.{originalProperty.Name}. Reason: {exp.Message}.", exp);
+                throw new Exception($"Cannot set property value for property {OriginalProperty.DeclaringType.Name}.{OriginalProperty.Name}. Reason: {exp.Message}.", exp);
             }
         }
 
         public virtual T GetValue<T>(object obj)
         {
-            return (T)originalProperty.GetValue(obj, null);
+            return (T)OriginalProperty.GetValue(obj, null);
         }
 
         public virtual object GetValue(object obj)
         {
-            return originalProperty.GetValue(obj, null);
+            return OriginalProperty.GetValue(obj, null);
         }
 
         public ParameterAttribute ToParameter()

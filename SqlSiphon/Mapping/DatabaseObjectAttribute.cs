@@ -62,7 +62,7 @@ namespace SqlSiphon.Mapping
         /// <summary>
         /// As this class is abstract, it can't be instantiated.
         /// </summary>
-        public DatabaseObjectAttribute()
+        protected DatabaseObjectAttribute()
         {
             _include = true;
         }
