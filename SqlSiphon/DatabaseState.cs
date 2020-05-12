@@ -494,8 +494,6 @@ namespace SqlSiphon
                             }
                         }
                     }
-
-                    InitScripts.AddRange(table.EnumValues.Select(val => dal.MakeInsertScript(table, val)));
                 }
             }
         }

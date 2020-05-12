@@ -59,16 +59,7 @@ namespace SqlSiphon.TestBase
                     sb.Append(ss.MakeCreateIndexScript(val));
                 }
             }
-            if (table.EnumValues.Count > 0)
-            {
-                sb.AppendLine();
-                sb.Append("--");
-                foreach (var val in table.EnumValues)
-                {
-                    sb.AppendLine();
-                    sb.Append(ss.MakeInsertScript(table, val));
-                }
-            }
+
             return sb.ToString();
         }
 

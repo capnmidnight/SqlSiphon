@@ -18,13 +18,11 @@ namespace SqlSiphon.Mapping
     {
         public PrimaryKey PrimaryKey { get; set; }
         public List<ColumnAttribute> Properties { get; private set; }
-        public Dictionary<int, string> EnumValues { get; private set; }
         public Dictionary<string, TableIndex> Indexes { get; private set; }
 
         public TableAttribute()
         {
             Properties = new List<ColumnAttribute>();
-            EnumValues = new Dictionary<int, string>();
             Indexes = new Dictionary<string, TableIndex>();
         }
 
@@ -154,74 +152,51 @@ namespace SqlSiphon.Mapping
         protected override void InferProperties(ISqlSiphon dal, Type obj)
         {
             base.InferProperties(dal, obj);
-            if (obj.IsEnum)
-            {
-                var valueColumn = new EnumerationTableColumn(obj, this, "Value", typeof(int))
+            var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .OrderByDescending(p =>
                 {
-                    IncludeInPrimaryKey = true
-                };
-
-                var descriptionColumn = new EnumerationTableColumn(obj, this, "Description", typeof(string));
-
-                Properties.Add(valueColumn);
-                Properties.Add(descriptionColumn);
-
-                PrimaryKey = new PrimaryKey(dal, this);
-
-                var names = obj.GetEnumNames();
-                foreach (var name in names)
-                {
-                    EnumValues.Add((int)Enum.Parse(obj, name), name);
-                }
-            }
-            else
-            {
-                var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .OrderByDescending(p =>
+                    var depth = 0;
+                    var top = obj;
+                    while (top != null && p.DeclaringType != top)
                     {
-                        var depth = 0;
-                        var top = obj;
-                        while (top != null && p.DeclaringType != top)
-                        {
-                            depth++;
-                            top = top.BaseType;
-                        }
-                        return depth;
-                    }).ToArray();
-                var hasPK = false;
-                foreach (var prop in props)
+                        depth++;
+                        top = top.BaseType;
+                    }
+                    return depth;
+                }).ToArray();
+            var hasPK = false;
+            foreach (var prop in props)
+            {
+                var columnDescription = DatabaseObjectAttribute.GetColumn(prop) ?? new ColumnAttribute(prop);
+                if (columnDescription.Include)
                 {
-                    var columnDescription = DatabaseObjectAttribute.GetColumn(prop) ?? new ColumnAttribute(prop);
-                    if (columnDescription.Include)
+                    columnDescription.Table = this;
+                    Properties.Add(columnDescription);
+                    if (columnDescription.IncludeInPrimaryKey)
                     {
-                        columnDescription.Table = this;
-                        Properties.Add(columnDescription);
-                        if (columnDescription.IncludeInPrimaryKey)
-                        {
-                            hasPK = true;
-                        }
+                        hasPK = true;
+                    }
 
-                        var indexInclusions = columnDescription.GetOtherAttributes<IndexAttribute>();
-                        foreach (var idxInc in indexInclusions)
+                    var indexInclusions = columnDescription.GetOtherAttributes<IndexAttribute>();
+                    foreach (var idxInc in indexInclusions)
+                    {
+                        if (!Indexes.ContainsKey(idxInc.Name))
                         {
-                            if (!Indexes.ContainsKey(idxInc.Name))
-                            {
-                                Indexes.Add(idxInc.Name, new TableIndex(this, idxInc.Schema ?? Schema, idxInc.Name));
-                            }
-                            Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
+                            Indexes.Add(idxInc.Name, new TableIndex(this, idxInc.Schema ?? Schema, idxInc.Name));
                         }
+                        Indexes[idxInc.Name].Columns.Add(columnDescription.Name);
                     }
                 }
+            }
 
-                if (hasPK)
-                {
-                    PrimaryKey = new PrimaryKey(dal, this);
-                }
+            if (hasPK)
+            {
+                PrimaryKey = new PrimaryKey(dal, this);
+            }
 
-                if (Properties.All(f => !f.Include))
-                {
-                    throw new TableHasNoColumnsException(this);
-                }
+            if (Properties.All(f => !f.Include))
+            {
+                throw new TableHasNoColumnsException(this);
             }
         }
 
