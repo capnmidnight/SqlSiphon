@@ -29,7 +29,7 @@ namespace InitDB
         {
 #if DEBUG
             yield return typeof(SqlSiphon.Postgres.PostgresDataConnectorFactory);
-            yield return typeof(SqlSiphon.SqlServer.SqlServerDataConnectorFactory);
+            //yield return typeof(SqlSiphon.SqlServer.SqlServerDataConnectorFactory);
 #else
             var assemblies = new List<Assembly>();
 

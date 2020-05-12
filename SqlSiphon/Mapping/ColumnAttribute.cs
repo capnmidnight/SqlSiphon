@@ -28,6 +28,8 @@ namespace SqlSiphon.Mapping
         /// </summary>
         public bool IncludeInPrimaryKey { get; set; }
 
+        public bool IsUnique { get; set; }
+
         public TableAttribute Table { get; set; }
         public ViewAttribute View { get; set; }
 
@@ -157,13 +159,13 @@ namespace SqlSiphon.Mapping
                 Schema = Schema,
                 SqlType = SqlType
             };
-            if (IsPrecisionSet)
+            if (IsNumericPrecisionSet)
             {
-                p.Precision = Precision;
+                p.NumericPrecision = NumericPrecision;
             }
-            if (IsSizeSet)
+            if (IsStringLengthSet)
             {
-                p.Size = Size;
+                p.StringLength = StringLength;
             }
             if (IsOptionalSet)
             {

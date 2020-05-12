@@ -2,7 +2,10 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.InformationSchema
 {
-    [Table(Include = false, Schema = "information_schema")]
+    [View(
+        Include = false,
+        Schema = "information_schema",
+        Name = "views")]
     public class Views
     {
         public string table_schema { get; set; }

@@ -23,24 +23,24 @@ inner join Users u on u.UserID = m.UserID
 inner join Applications a on a.ApplicationID = m.ApplicationID")]
     public class MembershipUser
     {
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string ApplicationName { get; set; }
 
         public Guid UserID { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string UserName { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string Email { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string PasswordQuestion { get; set; }
 
-        [Column(Size = 4)]
+        [Column(StringLength = 4)]
         public bool IsApproved { get; set; }
 
-        [Column(Size = 4)]
+        [Column(StringLength = 4)]
         public bool IsLockedOut { get; set; }
 
         public DateTime CreateDate { get; set; }
@@ -53,7 +53,7 @@ inner join Applications a on a.ApplicationID = m.ApplicationID")]
 
         public DateTime LastLockoutDate { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string Comment { get; set; }
     }
 }

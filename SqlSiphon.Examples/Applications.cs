@@ -10,13 +10,13 @@ namespace SqlSiphon.Examples
         [PK(DefaultValue = "newid()")]
         public Guid ApplicationID { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string ApplicationName { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string LoweredApplicationName { get; set; }
 
-        [Column(Size = 256, IsOptional = true)]
+        [Column(StringLength = 256, IsOptional = true)]
         public string Description { get; set; }
     }
 }

@@ -6,7 +6,7 @@ namespace SqlSiphon.InformationSchema
     /// This is an entity object for the SQL standard 
     /// INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE view.
     /// </summary>
-    [Table(
+    [View(
         Include = false,
         Schema = "information_schema",
         Name = "constraint_column_usage")]

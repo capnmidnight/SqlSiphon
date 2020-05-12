@@ -707,7 +707,7 @@ where ApplicationID = @applicationID;")]
 from UsersInRoles
 	inner join Users on Users.UserID = UsersInRoles.UserID
 	inner join Roles on Roles.RoleID = UsersInRoles.RoleID
-where Users.userName = @userName;", Size = 256)]
+where Users.userName = @userName;", StringLength = 256)]
         public string[] GetRolesForUser(string userName)
         {
             return GetList<string>(userName).ToArray();

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 using SqlSiphon.Mapping;
@@ -26,8 +27,8 @@ namespace SqlSiphon.Model
 
         internal PrimaryKey(TableAttribute table)
         {
+            Table = table ?? throw new ArgumentNullException(nameof(table));
             Schema = table.Schema;
-            Table = table;
             KeyColumns = table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();
@@ -36,7 +37,7 @@ namespace SqlSiphon.Model
             {
                 throw new PrimaryKeyColumnNotNullableException(Table, nullableColumns);
             }
-            var tooLongStringColumns = KeyColumns.Where(c => c.SystemType == typeof(string) && !c.IsSizeSet).ToArray();
+            var tooLongStringColumns = KeyColumns.Where(c => c.SystemType == typeof(string) && !c.IsStringLengthSet).ToArray();
             if (tooLongStringColumns.Length > 0)
             {
                 throw new MustSetStringSizeInPrimaryKeyException(Table, tooLongStringColumns);

@@ -674,8 +674,8 @@ namespace SqlSiphon
                 return MakeSqlTypeString(
                     p.SqlType,
                     systemType,
-                    p.IsSizeSet ? new int?(p.Size) : null,
-                    p.IsPrecisionSet ? new int?(p.Precision) : null,
+                    p.IsStringLengthSet ? new int?(p.StringLength) : null,
+                    p.IsNumericPrecisionSet ? new int?(p.NumericPrecision) : null,
                     isIdentity,
                     skipSize,
                     isArray);
@@ -718,8 +718,8 @@ namespace SqlSiphon
                             p1.Direction != p2.Direction,
                             p1.IsOptional != p2.IsOptional,
                             p1.SystemType != p2.SystemType,
-                            p1.Precision != p2.Precision,
-                            p1.Size != p2.Size
+                            p1.NumericPrecision != p2.NumericPrecision,
+                            p1.StringLength != p2.StringLength
                         };
                         var changed2 = tests.Any(t => t);
                         return changed2;
@@ -781,13 +781,13 @@ namespace SqlSiphon
             {
                 changeReason = $"Column type has changed. Was {initial.SystemType?.Name ?? initial.SqlType}, now {finalType.Name}.";
             }
-            else if (final.Size != initial.Size)
+            else if (final.StringLength != initial.StringLength)
             {
-                changeReason = $"Column size has changed. Was {initial.Size}, now {final.Size}.";
+                changeReason = $"Column size has changed. Was {initial.StringLength}, now {final.StringLength}.";
             }
-            else if (final.Precision != initial.Precision)
+            else if (final.NumericPrecision != initial.NumericPrecision)
             {
-                changeReason = $"Column precision has changed. Was {initial.Precision}, now {final.Precision}.";
+                changeReason = $"Column precision has changed. Was {initial.NumericPrecision}, now {final.NumericPrecision}.";
             }
             else if (final.DefaultValue != initial.DefaultValue)
             {

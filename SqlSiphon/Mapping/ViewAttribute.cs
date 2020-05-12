@@ -14,13 +14,29 @@ namespace SqlSiphon.Mapping
         AllowMultiple = false)]
     public class ViewAttribute : DatabaseObjectAttribute
     {
-        public List<ColumnAttribute> Properties { get; private set; }
+        public List<ColumnAttribute> Properties { get; } = new List<ColumnAttribute>();
 
-        public string Query { get; private set; }
+        private string _query;
+        public string Query
+        {
+            get
+            {
+                return _query;
+            }
+            private set
+            {
+                _query = value;
+                Include = _query is object;
+            }
+        }
+
+        public ViewAttribute()
+        {
+            Include = false;
+        }
 
         public ViewAttribute(string query)
         {
-            Properties = new List<ColumnAttribute>();
             Query = query;
         }
 
@@ -45,7 +61,6 @@ namespace SqlSiphon.Mapping
             var testColumn = columns.First();
             Schema = testColumn.table_schema;
             Name = testColumn.table_name;
-            Include = true;
 
             foreach (var column in columns)
             {
@@ -83,7 +98,8 @@ namespace SqlSiphon.Mapping
 
             foreach (var prop in props)
             {
-                var columnDescription = DatabaseObjectAttribute.GetColumn(prop) ?? new ColumnAttribute(prop);
+                var columnDescription = GetColumn(prop)
+                    ?? new ColumnAttribute(prop);
                 if (columnDescription.Include)
                 {
                     columnDescription.IsOptional = true;

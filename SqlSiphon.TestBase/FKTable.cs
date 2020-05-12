@@ -9,7 +9,7 @@ namespace SqlSiphon.TestBase
         public int Stuff { get; set; }
 
         [FK(typeof(PrimaryKeyColumnTable))]
-        [Column(Size = 255)]
+        [Column(StringLength = 255)]
         public string KeyColumn { get; set; }
     }
 }

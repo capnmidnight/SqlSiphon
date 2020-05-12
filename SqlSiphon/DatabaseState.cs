@@ -231,8 +231,12 @@ namespace SqlSiphon
                         var tableColumns = columns[tableName];
                         if (filter == null || !filter.IsMatch(tableColumns[0].table_name))
                         {
-                            var tableConstraints = constraintsByTable.ContainsKey(tableName) ? constraintsByTable[tableName] : Array.Empty<InformationSchema.TableConstraints>();
-                            var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName) ? keyColumnsByTable[tableName] : Array.Empty<InformationSchema.KeyColumnUsage>();
+                            var tableConstraints = constraintsByTable.ContainsKey(tableName)
+                                ? constraintsByTable[tableName]
+                                : Array.Empty<InformationSchema.TableConstraints>();
+                            var tableKeyColumns = keyColumnsByTable.ContainsKey(tableName)
+                                ? keyColumnsByTable[tableName]
+                                : Array.Empty<InformationSchema.KeyColumnUsage>();
                             var tableConstraintColumns = constraintsColumnsByTable.ContainsKey(tableName) ? constraintsColumnsByTable[tableName] : Array.Empty<InformationSchema.ConstraintColumnUsage>();
                             var tableIndexedColumns = indexedColumnsByTable.ContainsKey(tableName) ? indexedColumnsByTable[tableName] : Array.Empty<InformationSchema.IndexColumnUsage>();
                             var table = new TableAttribute(tableColumns, tableConstraints, tableKeyColumns, tableConstraintColumns, tableIndexedColumns, dal);
@@ -245,7 +249,9 @@ namespace SqlSiphon
                                     if (keyColumnsByName.ContainsKey(constraintName))
                                     {
                                         var constraintColumns = keyColumnsByName[constraintName];
-                                        var uniqueConstraintName = constraint.constraint_type == "FOREIGN KEY" ? xref[constraintName] : constraintName;
+                                        var uniqueConstraintName = constraint.constraint_type == "FOREIGN KEY"
+                                            ? xref[constraintName]
+                                            : constraintName;
                                         var uniqueConstraint = constraintsByName[uniqueConstraintName];
                                         var uniqueConstraintColumns = constraintsColumnsByName[uniqueConstraintName];
                                         var uniqueTableName = dal.MakeIdentifier(uniqueConstraint.table_schema, uniqueConstraint.table_name);
@@ -610,8 +616,8 @@ namespace SqlSiphon
                         {
                             var columnAttrString = "";
                             var hasOptions = column.DefaultValue != null
-                                || column.IsPrecisionSet
-                                || column.IsSizeSet
+                                || column.IsNumericPrecisionSet
+                                || column.IsStringLengthSet
                                 || (column.IsOptional
                                     && !column.SystemType.IsValueType);
                             if (column.IncludeInPrimaryKey)
@@ -641,14 +647,14 @@ namespace SqlSiphon
                                     columnAttrString += $@"{sep}DefaultValue = ""{sep}""";
                                     sep = ", ";
                                 }
-                                if (column.IsSizeSet)
+                                if (column.IsStringLengthSet)
                                 {
-                                    columnAttrString += $@"{sep}Size = {column.Size}";
+                                    columnAttrString += $@"{sep}Size = {column.StringLength}";
                                     sep = ", ";
                                 }
-                                if (column.IsPrecisionSet)
+                                if (column.IsNumericPrecisionSet)
                                 {
-                                    columnAttrString += $@"{sep}Precision = {column.Precision}";
+                                    columnAttrString += $@"{sep}Precision = {column.NumericPrecision}";
                                     sep = ", ";
                                 }
                                 if (column.IsOptional && !column.SystemType.IsValueType)

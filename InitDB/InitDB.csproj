@@ -16,8 +16,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug'">
-    <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj" />
-    <ProjectReference Include="..\SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj" />    
+    <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj" />    
   </ItemGroup>
 
   <ItemGroup>

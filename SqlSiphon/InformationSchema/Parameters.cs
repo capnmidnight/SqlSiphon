@@ -7,7 +7,10 @@ namespace SqlSiphon.InformationSchema
     /// This is an entity object for the SQL standard 
     /// INFORMATION_SCHEMA.PARAMETERS view.
     /// </summary>
-    [Table(Include = false, Schema = "information_schema")]
+    [View(
+        Include = false,
+        Schema = "information_schema",
+        Name = "parameters")]
     public class Parameters : Typed
     {
         public string specific_catalog { get; set; }

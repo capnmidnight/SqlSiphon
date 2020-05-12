@@ -191,22 +191,37 @@ namespace SqlSiphon.Mapping
         /// Returns true if a size was specified for the database type. This
         /// doesn't mean anything for .NET types.
         /// </summary>
-        public bool IsSizeSet { get; private set; }
+        public bool IsStringLengthSet { get; private set; }
 
-        private int typeSize;
+        private int typeStringLength;
 
         /// <summary>
         /// Get or set the size of the database type. If the size is not set,
         /// (i.e. IsSizeSet returns false) then no size or precision will be
         /// included in the type specification. Use 0 to mean "MAX".
         /// </summary>
-        public int Size
+        public int StringLength
         {
-            get { return typeSize; }
+            get { return typeStringLength; }
             set
             {
-                IsSizeSet = true;
-                typeSize = value;
+                IsStringLengthSet = true;
+                typeStringLength = value;
+            }
+        }
+
+        public int? NullableStringLength
+        {
+            get
+            {
+                if (IsStringLengthSet)
+                {
+                    return typeStringLength;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -214,22 +229,66 @@ namespace SqlSiphon.Mapping
         /// Returns true if the precision was specified for the database type.
         /// This doesn't mean anything for .NET types.
         /// </summary>
-        public bool IsPrecisionSet { get; private set; }
+        public bool IsNumericPrecisionSet { get; private set; }
 
-        private int typePrecision;
+        private int typeNumericPrecision;
 
         /// <summary>
         /// Get or set the precision of the database type. If the precision
         /// is not set (i.e. IsPrecisionSet returns false), then no precision
         /// will be included in the type specification.
         /// </summary>
-        public int Precision
+        public int NumericPrecision
         {
-            get { return typePrecision; }
+            get { return typeNumericPrecision; }
             set
             {
-                IsPrecisionSet = true;
-                typePrecision = value;
+                IsNumericPrecisionSet = true;
+                typeNumericPrecision = value;
+            }
+        }
+
+        public int? NullableNumericPrecision
+        {
+            get
+            {
+                if (IsNumericPrecisionSet)
+                {
+                    return typeNumericPrecision;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        public bool IsNumericScaleSet { get; private set; }
+        private int typeNumericScale;
+        public int NumericScale { get
+            {
+                return typeNumericScale;
+            }
+            set
+            {
+                typeNumericScale = value;
+                IsNumericScaleSet = true;
+            }
+        }
+
+
+        public int? NullableNumericScale
+        {
+            get
+            {
+                if (IsNumericScaleSet)
+                {
+                    return typeNumericScale;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -341,23 +400,23 @@ namespace SqlSiphon.Mapping
                 {
                     if (SystemType.IsPrimitive)
                     {
-                        Size = System.Runtime.InteropServices.Marshal.SizeOf(SystemType);
+                        StringLength = System.Runtime.InteropServices.Marshal.SizeOf(SystemType);
                     }
 
                     if (obj.numeric_precision.HasValue
                         && obj.numeric_precision.Value != dal.GetDefaultTypePrecision(SqlType, obj.numeric_precision.Value))
                     {
-                        Precision = obj.numeric_precision.Value;
+                        NumericPrecision = obj.numeric_precision.Value;
                     }
 
                     if (obj.character_maximum_length.HasValue && obj.character_maximum_length.Value > 0)
                     {
-                        Size = obj.character_maximum_length.Value;
+                        StringLength = obj.character_maximum_length.Value;
                     }
 
                     if (obj.numeric_scale.HasValue && obj.numeric_scale.Value > 0)
                     {
-                        Precision = obj.numeric_scale.Value;
+                        NumericPrecision = obj.numeric_scale.Value;
                     }
                 }
             }

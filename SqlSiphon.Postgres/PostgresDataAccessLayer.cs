@@ -101,6 +101,7 @@ namespace SqlSiphon.Postgres
         {
             ["float8"] = 53,
             ["double precision"] = 53,
+            ["money"] = 64,
             ["int8"] = 64,
             ["bigint"] = 64,
             ["bigserial"] = 64,
@@ -343,7 +344,10 @@ namespace SqlSiphon.Postgres
 
             pgState.Schemata.AddRange(pgState.Extensions.Keys.Where(e => !pgState.Schemata.Contains(e)));
 
-            var searchPath = string.Join(",", pgState.Schemata.Select(s => MakeIdentifier(s))) + ",public";
+            var schemata = pgState.Schemata
+                .Select(s => MakeIdentifier(s))
+                .Prepend("public");
+            var searchPath = string.Join(",", schemata);
             foreach (var uName in pgState.DatabaseLogins.Keys)
             {
                 pgState.AddUserSetting(uName, "search_path", searchPath);
@@ -353,10 +357,10 @@ namespace SqlSiphon.Postgres
             {
                 foreach (var column in table.Properties)
                 {
-                    if (!column.IsSizeSet
+                    if (!column.IsStringLengthSet
                         && HasDefaultTypeSize(column.SystemType))
                     {
-                        column.Size = GetDefaultTypeSize(column.SystemType);
+                        column.StringLength = GetDefaultTypeSize(column.SystemType);
                     }
                 }
             }
@@ -584,8 +588,8 @@ namespace SqlSiphon.Postgres
                 return $"{preamble} alter column {columnName} {op} not null;";
             }
             else if (final.SystemType != initial.SystemType
-                || final.Size != initial.Size
-                || final.Precision != initial.Precision
+                || final.StringLength != initial.StringLength
+                || final.NumericPrecision != initial.NumericPrecision
                 || final.IsIdentity != initial.IsIdentity)
             {
                 return $"{preamble} alter column {columnName} set data type {columnType};";

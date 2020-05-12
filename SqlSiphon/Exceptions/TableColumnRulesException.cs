@@ -7,7 +7,7 @@ namespace SqlSiphon
 {
     public class TableColumnRulesException : Exception
     {
-        public TableColumnRulesException(TableAttribute table, Mapping.ColumnAttribute[] columns, string message)
+        public TableColumnRulesException(TableAttribute table, ColumnAttribute[] columns, string message)
             : base(MakeMessage(table, columns, message))
         {
         }

@@ -13,28 +13,28 @@ namespace SqlSiphon.Examples
         [FK(typeof(Applications), AutoCreateIndex = false)]
         public Guid ApplicationID { get; set; }
 
-        [Column(Size = 128)]
+        [Column(StringLength = 128)]
         public string Password { get; set; }
 
         [Column(DefaultValue = "0")]
         public int PasswordFormat { get; set; }
 
-        [Column(Size = 128)]
+        [Column(StringLength = 128)]
         public string PasswordSalt { get; set; }
 
-        [Column(Size = 16, IsOptional = true)]
+        [Column(StringLength = 16, IsOptional = true)]
         public string MobilePIN { get; set; }
 
-        [Column(Size = 256, IsOptional = true)]
+        [Column(StringLength = 256, IsOptional = true)]
         public string Email { get; set; }
 
-        [Column(Size = 256, IsOptional = true)]
+        [Column(StringLength = 256, IsOptional = true)]
         public string LoweredEmail { get; set; }
 
-        [Column(Size = 256, IsOptional = true)]
+        [Column(StringLength = 256, IsOptional = true)]
         public string PasswordQuestion { get; set; }
 
-        [Column(Size = 256, IsOptional = true)]
+        [Column(StringLength = 256, IsOptional = true)]
         public string PasswordAnswer { get; set; }
 
         [Column(DefaultValue = "false")]
@@ -60,7 +60,7 @@ namespace SqlSiphon.Examples
 
         public DateTime FailedPasswordAnswerAttemptWindowStart { get; set; }
 
-        [Column(Size = 256, IsOptional = true)]
+        [Column(StringLength = 256, IsOptional = true)]
         public string Comment { get; set; }
     }
 }

@@ -8,7 +8,10 @@ namespace SqlSiphon.InformationSchema
     /// http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt
     /// (text-search "CREATE VIEW COLUMNS")
     /// </summary>
-    [Table(Include = false, Schema = "information_schema")]
+    [View(
+        Include = false,
+        Schema = "information_schema",
+        Name = "Columns")]
     public class Columns : Typed
     {
         public string table_catalog { get; set; }

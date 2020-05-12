@@ -10,7 +10,6 @@
     <ProjectReference Include="..\SqlSiphon\SqlSiphon.csproj" />
     <ProjectReference Include="..\SqlSiphon.Examples\SqlSiphon.Examples.csproj" />
     <ProjectReference Include="..\SqlSiphon.Postgres\SqlSiphon.Postgres.csproj" />
-    <ProjectReference Include="..\SqlSiphon.SqlServer\SqlSiphon.SqlServer.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using SqlSiphon.Mapping;
 
@@ -13,13 +13,13 @@ namespace SqlSiphon.Examples
         [FK(typeof(Applications))]
         public Guid ApplicationID { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string UserName { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string LoweredUserName { get; set; }
 
-        [Column(Size = 16, IsOptional = true)]
+        [Column(StringLength = 16, IsOptional = true)]
         public string MobileAlias { get; set; }
 
         [Column(IsOptional = true, DefaultValue = "false")]

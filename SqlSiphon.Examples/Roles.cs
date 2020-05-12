@@ -13,13 +13,13 @@ namespace SqlSiphon.Examples
         [FK(typeof(Applications))]
         public Guid ApplicationID { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string RoleName { get; set; }
 
-        [Column(Size = 256)]
+        [Column(StringLength = 256)]
         public string LoweredRoleName { get; set; }
 
-        [Column(Size = 256, IsOptional = true)]
+        [Column(StringLength = 256, IsOptional = true)]
         public string Description { get; set; }
     }
 }

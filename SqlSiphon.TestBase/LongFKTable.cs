@@ -11,7 +11,7 @@ namespace SqlSiphon.TestBase
         public int Stuff { get; set; }
 
         [FK(typeof(PrimaryKeyTwoColumnsTable))]
-        [Column(Size = 255)]
+        [Column(StringLength = 255)]
         public string KeyColumn1 { get; set; }
 
         [FK(typeof(PrimaryKeyTwoColumnsTable))]

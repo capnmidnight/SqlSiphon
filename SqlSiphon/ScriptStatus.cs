@@ -5,7 +5,9 @@ using SqlSiphon.Mapping;
 namespace SqlSiphon
 {
     [Table]
-    public class ScriptStatus : BoundObject, IComparable<ScriptStatus>
+    public class ScriptStatus :
+        BoundObject,
+        IComparable<ScriptStatus>
     {
         [AutoPK]
         public int ScriptID { get; set; }

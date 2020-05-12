@@ -6,7 +6,10 @@ namespace SqlSiphon.InformationSchema
     /// This is an entity object for the SQL standard 
     /// INFORMATION_SCHEMA.PARAMETERS view.
     /// </summary>
-    [Table(Include = false, Schema = "information_schema")]
+    [View(
+        Include = false,
+        Schema = "information_schema",
+        Name = "routines")]
     public class Routines : Typed
     {
         public string specific_schema { get; set; }
@@ -14,6 +17,7 @@ namespace SqlSiphon.InformationSchema
         public string routine_schema { get; set; }
         public string routine_name { get; set; }
         public string routine_definition { get; set; }
+
         public bool IsUDTT => "USER-DEFINED".Equals(data_type, System.StringComparison.InvariantCultureIgnoreCase);
 
         public override string ToString()
