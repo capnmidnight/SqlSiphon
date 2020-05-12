@@ -16,13 +16,7 @@ namespace SqlSiphon.InformationSchema
         public string constraint_name { get; set; }
         public string unique_constraint_schema { get; set; }
         public string unique_constraint_name { get; set; }
-        /*
-        public string constraint_catalog { get; set; }
-        public string unique_constraint_catalog { get; set; }        
-        public string match_option { get; set; }
-        public string update_rule { get; set; }
-        public string delete_rule { get; set; }
-        */
+
         public override string ToString()
         {
             return $"ReferentialConstraint: {constraint_name} to {unique_constraint_name}";

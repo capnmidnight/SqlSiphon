@@ -12,16 +12,12 @@ namespace SqlSiphon.InformationSchema
         Name = "table_constraints")]
     public class TableConstraint
     {
-        public string constraint_catalog { get; set; }
         public string constraint_schema { get; set; }
         public string constraint_name { get; set; }
-        public string table_catalog { get; set; }
         public string table_schema { get; set; }
         public string table_name { get; set; }
         public string constraint_type { get; set; }
-        public string is_deferrable { get; set; }
-        public string initially_deferred { get; set; }
-
+        
         public override string ToString()
         {
             return $"TableConstraint: {table_name}.{constraint_name}:({constraint_type})";

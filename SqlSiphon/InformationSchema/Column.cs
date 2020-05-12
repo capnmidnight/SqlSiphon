@@ -14,14 +14,12 @@ namespace SqlSiphon.InformationSchema
         Name = "Columns")]
     public class Column : Typed
     {
-        public string table_catalog { get; set; }
         public string table_schema { get; set; }
         public string table_name { get; set; }
         public string column_name { get; set; }
         public string column_default { get; set; }
         public string is_nullable { get; set; }
-        public int? is_identity { get; set; }
-
+        
         public override string ToString()
         {
             return $"Column: {table_name}.{column_name}:({data_type})";
