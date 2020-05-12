@@ -28,8 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Juniper.Root", "..\Juniper\src\Juniper.Root\Juniper.Root.csproj", "{6E0385A6-6BE2-448A-8265-3DA6BA96565C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,18 +118,6 @@ Global
 		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Release|x64.ActiveCfg = Release|Any CPU
 		{4AB6E77A-2FA1-4A30-B3FB-B09D3DA91127}.Release|x86.ActiveCfg = Release|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Debug|x64.Build.0 = Debug|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Debug|x86.Build.0 = Debug|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Release|x64.ActiveCfg = Release|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Release|x64.Build.0 = Release|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Release|x86.ActiveCfg = Release|Any CPU
-		{6E0385A6-6BE2-448A-8265-3DA6BA96565C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
