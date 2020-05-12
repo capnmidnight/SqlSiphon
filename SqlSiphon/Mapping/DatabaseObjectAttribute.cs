@@ -121,22 +121,22 @@ namespace SqlSiphon.Mapping
                 }).FirstOrDefault();
         }
 
-        public static TableAttribute GetTable(Type obj)
+        public static TableAttribute GetTable(ISqlSiphon dal, Type obj)
         {
             return GetAttributes<TableAttribute>(obj)
                 .Select(attr =>
                 {
-                    attr.InferProperties(obj);
+                    attr.InferProperties(dal, obj);
                     return attr;
                 }).FirstOrDefault();
         }
 
-        public static ViewAttribute GetView(Type obj)
+        public static ViewAttribute GetView(ISqlSiphon dal, Type obj)
         {
             return GetAttributes<ViewAttribute>(obj)
                 .Select(attr =>
                 {
-                    attr.InferProperties(obj);
+                    attr.InferProperties(dal, obj);
                     return attr;
                 }).FirstOrDefault();
         }
@@ -378,7 +378,7 @@ namespace SqlSiphon.Mapping
         /// constructor, we have to do it for it.
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
-        protected virtual void InferProperties(Type obj)
+        protected virtual void InferProperties(ISqlSiphon dal, Type obj)
         {
             SourceObject = obj;
             SetName(obj.Name);

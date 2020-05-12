@@ -80,9 +80,9 @@ namespace SqlSiphon.Mapping
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
         /// 
-        protected override void InferProperties(Type obj)
+        protected override void InferProperties(ISqlSiphon dal, Type obj)
         {
-            base.InferProperties(obj);
+            base.InferProperties(dal, obj);
             var props = obj.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .OrderByDescending(p =>
                 {

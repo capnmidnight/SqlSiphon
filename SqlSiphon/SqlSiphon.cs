@@ -27,9 +27,9 @@ namespace SqlSiphon
     {
 
         protected static readonly bool IsOnMonoRuntime = Type.GetType("Mono.Runtime") != null;
-        protected static List<ColumnAttribute> GetProperties(Type type)
+        protected List<ColumnAttribute> GetProperties(Type type)
         {
-            var attr = DatabaseObjectAttribute.GetTable(type) ?? new TableAttribute(type);
+            var attr = DatabaseObjectAttribute.GetTable(this, type) ?? new TableAttribute(this, type);
             return attr.Properties;
         }
 
@@ -212,7 +212,7 @@ namespace SqlSiphon
 
             if (data != null)
             {
-                var attr = DatabaseObjectAttribute.GetTable(t);
+                var attr = DatabaseObjectAttribute.GetTable(this, t);
                 if (attr == null)
                 {
                     throw new Exception($"Type {t.Namespace}.{t.Name} could not be automatically inserted.");

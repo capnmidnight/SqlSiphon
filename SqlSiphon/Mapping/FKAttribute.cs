@@ -29,14 +29,14 @@ namespace SqlSiphon.Mapping
         /// of ICustomAttributeProvider types, but InferProperties is.
         /// </summary>
         /// <param name="columnDef"></param>
-        public void InferProperties(ColumnAttribute columnDef)
+        public void InferProperties(ISqlSiphon dal, ColumnAttribute columnDef)
         {
             if (FromColumnName == null)
             {
                 FromColumnName = columnDef.Name;
             }
 
-            var targetTableDef = DatabaseObjectAttribute.GetTable(Target) ?? new TableAttribute(Target);
+            var targetTableDef = DatabaseObjectAttribute.GetTable(dal, Target) ?? new TableAttribute(dal, Target);
 
             foreach (var targetColumnDef in targetTableDef.Properties)
             {

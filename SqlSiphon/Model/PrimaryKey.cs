@@ -5,7 +5,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Model
 {
-    public class PrimaryKey : DatabaseObjectAttribute
+    public class PrimaryKey : DatabaseObject
     {
         public TableAttribute Table { get; private set; }
         public ColumnAttribute[] KeyColumns { get; private set; }
@@ -16,19 +16,18 @@ namespace SqlSiphon.Model
             InformationSchema.ConstraintColumnUsage[] uniqueConstraintColumns,
             InformationSchema.Column[] uniqueTableColumns,
             ISqlSiphon dal)
+            : base(constraint.constraint_schema, constraint.constraint_name)
         {
-            Schema = constraint.constraint_schema;
-            Name = constraint.constraint_name;
             Table = new TableAttribute(uniqueTableColumns, new InformationSchema.TableConstraint[] { uniqueConstraint }, null, uniqueConstraintColumns, null, dal);
             KeyColumns = Table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();
         }
 
-        internal PrimaryKey(TableAttribute table)
+        internal PrimaryKey(TableAttribute table, string name)
+            : base(table.Schema, name)
         {
             Table = table ?? throw new ArgumentNullException(nameof(table));
-            Schema = table.Schema;
             KeyColumns = table.Properties
                 .Where(p => p.IncludeInPrimaryKey)
                 .ToArray();
@@ -44,39 +43,9 @@ namespace SqlSiphon.Model
             }
         }
 
-        public override string Schema
+        internal PrimaryKey(ISqlSiphon dal, TableAttribute table)
+            : this(table, $"pk_{table.Schema ?? dal?.DefaultSchemaName}_{table.Name}".Replace("__", "_"))
         {
-            get
-            {
-                return base.Schema ?? Table?.Schema;
-            }
-            set
-            {
-                base.Schema = value;
-            }
-        }
-
-        public override string Name
-        {
-            get
-            {
-                if (base.Name is object)
-                {
-                    return base.Name;
-                }
-                else if (Table is object)
-                {
-                    return $"pk_{Table.Schema}_{Table.Name}".Replace("__", "_");
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            set
-            {
-                base.Name = value;
-            }
         }
 
         internal TableIndex ToIndex()
@@ -90,6 +59,11 @@ namespace SqlSiphon.Model
                 idx.Columns.Add(column.Name);
             }
             return idx;
+        }
+
+        public override string ToString()
+        {
+            return $"[{Schema}].[{Name}]";
         }
     }
 }

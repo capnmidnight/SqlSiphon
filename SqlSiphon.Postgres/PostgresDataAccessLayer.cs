@@ -457,7 +457,7 @@ namespace SqlSiphon.Postgres
             var baseType = DataConnector.CoalesceCollectionType(systemType);
             return baseType != typeof(void)
                 && !typeToString.ContainsKey(baseType)
-                && DatabaseObjectAttribute.GetTable(baseType) == null;
+                && DatabaseObjectAttribute.GetTable(this, baseType) == null;
         }
 
 
@@ -477,7 +477,7 @@ namespace SqlSiphon.Postgres
                 }
             }
 
-            var attr = DatabaseObjectAttribute.GetTable(type);
+            var attr = DatabaseObjectAttribute.GetTable(this, type);
             attr.Name = $"{type.Name}UserDefinedType";
             return attr;
         }
@@ -497,8 +497,8 @@ namespace SqlSiphon.Postgres
             }
             else
             {
-                var attr = DatabaseObjectAttribute.GetTable(baseType)
-                    ?? new TableAttribute(baseType);
+                var attr = DatabaseObjectAttribute.GetTable(this, baseType)
+                    ?? new TableAttribute(this, baseType);
                 sqlType = MakeIdentifier(attr.Schema ?? DefaultSchemaName, attr.Name);
             }
 

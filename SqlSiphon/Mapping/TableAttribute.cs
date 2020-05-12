@@ -28,10 +28,10 @@ namespace SqlSiphon.Mapping
             Indexes = new Dictionary<string, TableIndex>();
         }
 
-        public TableAttribute(Type t)
+        public TableAttribute(ISqlSiphon dal, Type t)
             : this()
         {
-            InferProperties(t);
+            InferProperties(dal, t);
         }
 
         public TableAttribute(
@@ -151,9 +151,9 @@ namespace SqlSiphon.Mapping
         /// </summary>
         /// <param name="obj">The object to InferProperties</param>
         /// 
-        protected override void InferProperties(Type obj)
+        protected override void InferProperties(ISqlSiphon dal, Type obj)
         {
-            base.InferProperties(obj);
+            base.InferProperties(dal, obj);
             if (obj.IsEnum)
             {
                 var valueColumn = new EnumerationTableColumn(obj, this, "Value", typeof(int))
@@ -166,7 +166,7 @@ namespace SqlSiphon.Mapping
                 Properties.Add(valueColumn);
                 Properties.Add(descriptionColumn);
 
-                PrimaryKey = new PrimaryKey(this);
+                PrimaryKey = new PrimaryKey(dal, this);
 
                 var names = obj.GetEnumNames();
                 foreach (var name in names)
@@ -215,7 +215,7 @@ namespace SqlSiphon.Mapping
 
                 if (hasPK)
                 {
-                    PrimaryKey = new PrimaryKey(this);
+                    PrimaryKey = new PrimaryKey(dal, this);
                 }
 
                 if (Properties.All(f => !f.Include))
@@ -225,7 +225,7 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public List<Relationship> GetRelationships()
+        public List<Relationship> GetRelationships(ISqlSiphon dal)
         {
             var fks = new List<Relationship>();
             var fkOrganizer = new Dictionary<Type, Dictionary<string, List<string>>>();
@@ -236,7 +236,7 @@ namespace SqlSiphon.Mapping
 
                 foreach (var fkDef in fkDefs)
                 {
-                    fkDef.InferProperties(columnDef);
+                    fkDef.InferProperties(dal, columnDef);
 
                     if (!fkOrganizer.ContainsKey(fkDef.Target))
                     {

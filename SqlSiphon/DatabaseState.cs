@@ -152,7 +152,7 @@ namespace SqlSiphon
                     routineDefTypes.Add(type);
                 }
 
-                FindTables(type, dal);
+                FindTables(dal, type);
 
                 var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
                 foreach (var method in methods)
@@ -400,7 +400,7 @@ namespace SqlSiphon
             var tablesBySystemType = Tables.Values.ToDictionary(t => t.SystemType);
             foreach (var table in Tables.Values)
             {
-                var relationships = table.GetRelationships();
+                var relationships = table.GetRelationships(dal);
                 foreach (var relationship in relationships)
                 {
                     relationship.ResolveColumns(tablesBySystemType, dal);
@@ -425,16 +425,16 @@ namespace SqlSiphon
             }
         }
 
-        private void FindTables(Type rootType, ISqlSiphon dal)
+        private void FindTables(ISqlSiphon dal, Type rootType)
         {
             foreach (var type in rootType.Assembly.GetTypes())
             {
-                var table = DatabaseObjectAttribute.GetTable(type);
+                var table = DatabaseObjectAttribute.GetTable(dal, type);
                 if (table != null)
                 {
                     AddTable(Tables, type, dal, table);
                 }
-                var view = DatabaseObjectAttribute.GetView(type);
+                var view = DatabaseObjectAttribute.GetView(dal, type);
                 if(view != null)
                 {
                     AddView(Views, type, dal, view);

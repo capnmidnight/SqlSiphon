@@ -30,7 +30,7 @@ namespace SqlSiphon.Postgres
                 var extSchema = Extensions.Keys.ToList();
                 RemoveExtensionObjects(extSchema, pg.Functions);
                 RemoveExtensionObjects(extSchema, pg.Indexes);
-                RemoveExtensionObjects(extSchema, pg.PrimaryKeys);
+                RemoveSchemaObjects(extSchema, pg.PrimaryKeys);
                 RemoveExtensionObjects(extSchema, pg.Relationships);
                 RemoveExtensionObjects(extSchema, pg.Tables);
                 RemoveExtensionObjects(extSchema, pg.UserDefinedTypes);
@@ -53,6 +53,18 @@ namespace SqlSiphon.Postgres
 
         private void RemoveExtensionObjects<T>(List<string> extSchema, Dictionary<string, T> collect)
             where T : Mapping.DatabaseObjectAttribute
+        {
+            var remove = collect
+                .Where(f => extSchema.Contains(f.Value.Schema))
+                .Select(f => f.Key).ToList();
+            foreach (var key in remove)
+            {
+                collect.Remove(key);
+            }
+        }
+
+        private void RemoveSchemaObjects<T>(List<string> extSchema, Dictionary<string, T> collect)
+            where T : Model.DatabaseObject
         {
             var remove = collect
                 .Where(f => extSchema.Contains(f.Value.Schema))
