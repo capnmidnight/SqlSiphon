@@ -29,7 +29,7 @@ namespace SqlSiphon.Postgres
                 /// by a Postgres Extension Module, which we will not want to uninstall.
                 var extSchema = Extensions.Keys.ToList();
                 RemoveExtensionObjects(extSchema, pg.Functions);
-                RemoveExtensionObjects(extSchema, pg.Indexes);
+                RemoveSchemaObjects(extSchema, pg.Indexes);
                 RemoveSchemaObjects(extSchema, pg.PrimaryKeys);
                 RemoveSchemaObjects(extSchema, pg.Relationships);
                 RemoveExtensionObjects(extSchema, pg.Tables);

@@ -4,7 +4,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Model
 {
-    public class TableIndex : DatabaseObjectAttribute
+    public class TableIndex : DatabaseObject
     {
         public TableAttribute Table { get; private set; }
         public List<string> Columns { get; private set; }
@@ -12,9 +12,8 @@ namespace SqlSiphon.Model
         public bool IsClustered { get; set; }
 
         internal TableIndex(TableAttribute table, string schema, string name)
+            : base(schema, name)
         {
-            Schema = schema;
-            Name = name;
             Table = table;
             Columns = new List<string>();
         }
