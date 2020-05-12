@@ -20,20 +20,20 @@ namespace SqlSiphon.InformationSchema
         public string user_defined_type_schema { get; set; }
         public string user_defined_type_name { get; set; }
         
-        public bool IsUDTT => user_defined_type_name is object || udt_name is object;
-        private bool IsSqlServerUDTT => IsUDTT && udt_name is null;
+        public bool IsUserDefinedType => user_defined_type_name is object || udt_name is object;
+        private bool IsSqlServerUserDefinedType => IsUserDefinedType && udt_name is null;
         public bool IsArray => "ARRAY".Equals(data_type, StringComparison.InvariantCultureIgnoreCase);
 
         public string TypeSchema =>
-            IsUDTT
-                ? IsSqlServerUDTT
+            IsUserDefinedType
+                ? IsSqlServerUserDefinedType
                     ? user_defined_type_schema
                     : udt_schema
                 : specific_schema;
 
         public string TypeName =>
-            IsUDTT
-                ? IsSqlServerUDTT
+            IsUserDefinedType
+                ? IsSqlServerUserDefinedType
                     ? user_defined_type_name
                     : udt_name
                 : specific_name;

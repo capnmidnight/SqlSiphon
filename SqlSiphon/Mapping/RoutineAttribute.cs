@@ -64,7 +64,7 @@ namespace SqlSiphon.Mapping
             CommandType = CommandType.StoredProcedure;
             Parameters = new List<ParameterAttribute>();
 
-            if (routine.IsUDTT)
+            if (routine.IsUserDefinedType)
             {
                 SqlType = dal.MakeIdentifier(routine.type_udt_schema, routine.type_udt_name);
             }

@@ -50,7 +50,7 @@ namespace SqlSiphon
         protected virtual string IdentifierPartBegin => "";
         protected virtual string IdentifierPartEnd => "";
         protected virtual string IdentifierPartSeperator => ".";
-        protected virtual string UDTTDeclarationPrefix => "";
+        protected virtual string UserDefinedTypeDeclarationPrefix => "";
 
         public ConnectionT Connection { get; private set; }
 
@@ -942,7 +942,7 @@ namespace SqlSiphon
 
         public abstract List<string> GetDatabaseLogins();
         public abstract List<InformationSchema.Column> GetTableColumns();
-        public abstract List<InformationSchema.Column> GetUDTTColumns();
+        public abstract List<InformationSchema.Column> GetUserDefinedTypeColumns();
         public abstract List<InformationSchema.View> GetViews();
         public abstract List<InformationSchema.Column> GetViewColumns();
         public abstract List<InformationSchema.IndexColumnUsage> GetIndexColumns();
@@ -988,7 +988,7 @@ namespace SqlSiphon
             return parameterSection;
         }
 
-        public string MakeCreateUDTTScript(TableAttribute info)
+        public string MakeCreateUserDefinedTypeScript(TableAttribute info)
         {
             if (info is null)
             {
@@ -1008,12 +1008,12 @@ namespace SqlSiphon
 
             var schema = info.Schema ?? DefaultSchemaName;
             var identifier = MakeIdentifier(schema, info.Name);
-            return $@"create type {identifier} as {UDTTDeclarationPrefix}(
+            return $@"create type {identifier} as {UserDefinedTypeDeclarationPrefix}(
     {columnSection}
 );";
         }
 
-        public string MakeDropUDTTScript(TableAttribute info)
+        public string MakeDropUserDefinedTypeScript(TableAttribute info)
         {
             if (info is null)
             {
@@ -1031,8 +1031,8 @@ namespace SqlSiphon
         protected abstract string MakeParameterString(ParameterAttribute p, bool withName);
 
         public abstract bool SupportsScriptType(ScriptType type);
-        public abstract bool IsUDTT(Type systemType);
-        public abstract TableAttribute MakeUDTTTableAttribute(Type type);
+        public abstract bool IsUserDefinedType(Type systemType);
+        public abstract TableAttribute MakeUserDefinedTypeTableAttribute(Type type);
         public abstract string MakeInsertScript(TableAttribute table, object value);
         public abstract string MakeCreateDatabaseLoginScript(string userName, string password, string database);
 

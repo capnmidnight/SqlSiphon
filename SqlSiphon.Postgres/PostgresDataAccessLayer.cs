@@ -452,7 +452,7 @@ namespace SqlSiphon.Postgres
             return changedReturnType ? "Return type changed" : base.RoutineChanged(a, b);
         }
 
-        public override bool IsUDTT(Type systemType)
+        public override bool IsUserDefinedType(Type systemType)
         {
             var baseType = DataConnector.CoalesceCollectionType(systemType);
             return baseType != typeof(void)
@@ -461,7 +461,7 @@ namespace SqlSiphon.Postgres
         }
 
 
-        public override TableAttribute MakeUDTTTableAttribute(Type type)
+        public override TableAttribute MakeUserDefinedTypeTableAttribute(Type type)
         {
             if (type is null)
             {
@@ -478,7 +478,7 @@ namespace SqlSiphon.Postgres
             }
 
             var attr = DatabaseObjectAttribute.GetTable(type);
-            attr.Name = $"{type.Name}UDTT";
+            attr.Name = $"{type.Name}UserDefinedType";
             return attr;
         }
 
@@ -1087,7 +1087,7 @@ from information_schema.attributes
 where udt_schema != 'information_schema'
     and udt_schema != 'pg_catalog'
 order by udt_catalog, udt_schema, udt_name, ordinal_position;")]
-        public override List<InformationSchema.Column> GetUDTTColumns()
+        public override List<InformationSchema.Column> GetUserDefinedTypeColumns()
         {
             return GetList<InformationSchema.Column>();
         }

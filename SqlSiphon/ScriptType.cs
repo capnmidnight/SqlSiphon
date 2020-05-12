@@ -10,7 +10,7 @@ namespace SqlSiphon
         TranslateData,
         DropIndex,
         DropRoutine,
-        DropUDTT,
+        DropUserDefinedType,
         DropView,
         DropRelationship,
         DropPrimaryKey,
@@ -24,7 +24,7 @@ namespace SqlSiphon
         CreatePrimaryKey,
         CreateRelationship,
         CreateView,
-        CreateUDTT,
+        CreateUserDefinedType,
         CreateRoutine,
         CreateIndex,
         InitializeData

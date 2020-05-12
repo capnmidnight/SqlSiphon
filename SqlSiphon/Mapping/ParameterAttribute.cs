@@ -34,7 +34,7 @@ namespace SqlSiphon.Mapping
             }
         }
 
-        public bool IsUDTT { get; private set; }
+        public bool IsUserDefinedType { get; private set; }
 
         public bool IsArray { get; private set; }
 
@@ -67,7 +67,7 @@ namespace SqlSiphon.Mapping
             }
 
             Schema = parameter.TypeSchema;
-            IsUDTT = parameter.IsUDTT;
+            IsUserDefinedType = parameter.IsUserDefinedType;
             IsArray = parameter.IsArray;
         }
 

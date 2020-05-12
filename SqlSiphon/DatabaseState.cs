@@ -29,7 +29,7 @@ namespace SqlSiphon
         }
 
         public Dictionary<string, TableAttribute> Tables { get; private set; }
-        public Dictionary<string, TableAttribute> UDTTs { get; private set; }
+        public Dictionary<string, TableAttribute> UserDefinedTypes { get; private set; }
         public Dictionary<string, ViewAttribute> Views { get; private set; }
         public Dictionary<string, TableIndex> Indexes { get; private set; }
         public Dictionary<string, RoutineAttribute> Functions { get; private set; }
@@ -52,7 +52,7 @@ namespace SqlSiphon
         /// <param name="logins"></param>
         private DatabaseState(
             Dictionary<string, TableAttribute> tables,
-            Dictionary<string, TableAttribute> udtts,
+            Dictionary<string, TableAttribute> userDefinedTypes,
             Dictionary<string, ViewAttribute> views,
             Dictionary<string, TableIndex> indexes,
             Dictionary<string, RoutineAttribute> routines,
@@ -66,7 +66,7 @@ namespace SqlSiphon
             bool? catalogueExists)
         {
             Tables = tables;
-            UDTTs = udtts;
+            UserDefinedTypes = userDefinedTypes;
             Views = views;
             Indexes = indexes;
             Functions = routines;
@@ -101,7 +101,7 @@ namespace SqlSiphon
         public DatabaseState(DatabaseState copy)
             : this(
                   copy.Tables,
-                  copy.UDTTs,
+                  copy.UserDefinedTypes,
                   copy.Views,
                   copy.Indexes,
                   copy.Functions,
@@ -174,7 +174,7 @@ namespace SqlSiphon
 
             Schemata.AddRange(GetSchemata(dal));
 
-            CreateUDTTs(dal);
+            CreateUserDefinedTypes(dal);
         }
 
         /// <summary>
@@ -311,10 +311,11 @@ namespace SqlSiphon
                         }
                     }
 
-                    var udttColumns = dal.GetUDTTColumns().ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
-                    foreach (var udtt in udttColumns)
+                    var userDefinedTypeColumns = dal.GetUserDefinedTypeColumns()
+                        .ToHash(col => dal.MakeIdentifier(col.table_schema, col.table_name));
+                    foreach (var userDefinedTypeColumn in userDefinedTypeColumns)
                     {
-                        UDTTs.Add(udtt.Key.ToLowerInvariant(), new TableAttribute(udtt.Value, dal));
+                        UserDefinedTypes.Add(userDefinedTypeColumn.Key.ToLowerInvariant(), new TableAttribute(userDefinedTypeColumn.Value, dal));
                     }
 
                     foreach (var idxKey in indexedColumnsByName.Keys)
@@ -533,15 +534,15 @@ namespace SqlSiphon
             }
         }
 
-        private void CreateUDTTs(ISqlSiphon dal)
+        private void CreateUserDefinedTypes(ISqlSiphon dal)
         {
             foreach (var type in Functions.Values.SelectMany(f => f.Parameters)
                 .Select(p => p.SystemType)
-                .Where(dal.IsUDTT)
+                .Where(dal.IsUserDefinedType)
                 .Distinct())
             {
-                var attr = dal.MakeUDTTTableAttribute(type);
-                AddTable(UDTTs, DataConnector.IsTypePrimitive(type) ? null : type, dal, attr);
+                var attr = dal.MakeUserDefinedTypeTableAttribute(type);
+                AddTable(UserDefinedTypes, DataConnector.IsTypePrimitive(type) ? null : type, dal, attr);
             }
         }
 

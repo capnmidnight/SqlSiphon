@@ -18,7 +18,7 @@ namespace SqlSiphon.InformationSchema
         public string routine_name { get; set; }
         public string routine_definition { get; set; }
 
-        public bool IsUDTT => "USER-DEFINED".Equals(data_type, System.StringComparison.InvariantCultureIgnoreCase);
+        public bool IsUserDefinedType => "USER-DEFINED".Equals(data_type, System.StringComparison.InvariantCultureIgnoreCase);
 
         public override string ToString()
         {

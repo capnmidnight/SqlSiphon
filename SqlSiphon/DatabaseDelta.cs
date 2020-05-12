@@ -122,7 +122,7 @@ namespace SqlSiphon
             ProcessDatabaseLogins(final.DatabaseLogins, initial?.DatabaseLogins?.Keys?.ToList(), final.CatalogueName, dal);
             ProcessSchemas(final.Schemata.ToDictionary(k => k), initial?.Schemata?.ToDictionary(k => k), dal, makeChangeScripts);
             ProcessTables(final.Tables, initial?.Tables, dal, makeChangeScripts);
-            ProcessUDTTs(final.UDTTs, initial?.UDTTs, dal, makeChangeScripts);
+            ProcessUserDefinedTypes(final.UserDefinedTypes, initial?.UserDefinedTypes, dal, makeChangeScripts);
             ProcessViews(final.Views, initial?.Views, dal, makeChangeScripts);
             ProcessIndexes(final.Indexes, initial?.Indexes, dal, makeChangeScripts);
             ProcessRelationships(final.Relationships, initial?.Relationships, dal, makeChangeScripts);
@@ -257,19 +257,19 @@ namespace SqlSiphon
                 }, makeChangeScripts);
         }
 
-        private void ProcessUDTTs(Dictionary<string, TableAttribute> finalUDTTs, Dictionary<string, TableAttribute> initialUDTTs, ISqlSiphon dal, bool makeChangeScripts)
+        private void ProcessUserDefinedTypes(Dictionary<string, TableAttribute> finalUserDefinedTypes, Dictionary<string, TableAttribute> initialUserDefinedTypes, ISqlSiphon dal, bool makeChangeScripts)
         {
-            DumpAll(Initial, initialUDTTs, ScriptType.CreateUDTT, dal.MakeCreateUDTTScript);
-            DumpAll(Final, finalUDTTs, ScriptType.CreateUDTT, dal.MakeCreateUDTTScript);
+            DumpAll(Initial, initialUserDefinedTypes, ScriptType.CreateUserDefinedType, dal.MakeCreateUserDefinedTypeScript);
+            DumpAll(Final, finalUserDefinedTypes, ScriptType.CreateUserDefinedType, dal.MakeCreateUserDefinedTypeScript);
             Traverse(
-                finalUDTTs,
-                initialUDTTs,
-                (UDTTName, initialUDTT) => Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, dal.MakeDropUDTTScript(initialUDTT), "User-defined table type no longer exists")),
-                (UDTTName, finalUDTT) => Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, dal.MakeCreateUDTTScript(finalUDTT), "User-defined table type does not exist")),
-                (UDTTName, finalUDTT, initialUDTT) =>
+                finalUserDefinedTypes,
+                initialUserDefinedTypes,
+                (userDefinedTypeName, initialUserDefinedType) => Scripts.Add(new ScriptStatus(ScriptType.DropUserDefinedType, userDefinedTypeName, dal.MakeDropUserDefinedTypeScript(initialUserDefinedType), "User-defined table type no longer exists")),
+                (userDefinedTypeName, finalUserDefinedType) => Scripts.Add(new ScriptStatus(ScriptType.CreateUserDefinedType, userDefinedTypeName, dal.MakeCreateUserDefinedTypeScript(finalUserDefinedType), "User-defined table type does not exist")),
+                (userDefinedTypeName, finalUserDefinedType, initialUserDefinedType) =>
                 {
-                    var finalColumns = finalUDTT.Properties.ToDictionary(p => dal.MakeIdentifier(finalUDTT.Schema ?? dal.DefaultSchemaName, finalUDTT.Name, p.Name));
-                    var initialColumns = initialUDTT.Properties.ToDictionary(p => dal.MakeIdentifier(initialUDTT.Schema ?? dal.DefaultSchemaName, initialUDTT.Name, p.Name));
+                    var finalColumns = finalUserDefinedType.Properties.ToDictionary(p => dal.MakeIdentifier(finalUserDefinedType.Schema ?? dal.DefaultSchemaName, finalUserDefinedType.Name, p.Name));
+                    var initialColumns = initialUserDefinedType.Properties.ToDictionary(p => dal.MakeIdentifier(initialUserDefinedType.Schema ?? dal.DefaultSchemaName, initialUserDefinedType.Name, p.Name));
 
                     var changed = false;
                     Traverse(
@@ -284,16 +284,16 @@ namespace SqlSiphon
                         }, true);
                     if (changed)
                     {
-                        Scripts.Add(new ScriptStatus(ScriptType.DropUDTT, UDTTName, dal.MakeDropUDTTScript(initialUDTT), "User-defined table type has changed"));
-                        Scripts.Add(new ScriptStatus(ScriptType.CreateUDTT, UDTTName, dal.MakeCreateUDTTScript(finalUDTT), "User-defined table type has changed"));
+                        Scripts.Add(new ScriptStatus(ScriptType.DropUserDefinedType, userDefinedTypeName, dal.MakeDropUserDefinedTypeScript(initialUserDefinedType), "User-defined table type has changed"));
+                        Scripts.Add(new ScriptStatus(ScriptType.CreateUserDefinedType, userDefinedTypeName, dal.MakeCreateUserDefinedTypeScript(finalUserDefinedType), "User-defined table type has changed"));
                     }
                 }, makeChangeScripts);
         }
 
         private void ProcessViews(Dictionary<string, ViewAttribute> finalViews, Dictionary<string, ViewAttribute> initialViews, ISqlSiphon dal, bool makeChangeScripts)
         {
-            DumpAll(Initial, initialViews, ScriptType.CreateUDTT, dal.MakeCreateViewScript);
-            DumpAll(Final, finalViews, ScriptType.CreateUDTT, dal.MakeCreateViewScript);
+            DumpAll(Initial, initialViews, ScriptType.CreateUserDefinedType, dal.MakeCreateViewScript);
+            DumpAll(Final, finalViews, ScriptType.CreateUserDefinedType, dal.MakeCreateViewScript);
             Traverse(
                 finalViews,
                 initialViews,

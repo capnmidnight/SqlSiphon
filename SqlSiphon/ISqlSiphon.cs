@@ -35,7 +35,7 @@ namespace SqlSiphon
         List<string> GetScriptStatus();
         List<string> GetDatabaseLogins();
         List<InformationSchema.Column> GetTableColumns();
-        List<InformationSchema.Column> GetUDTTColumns();
+        List<InformationSchema.Column> GetUserDefinedTypeColumns();
         List<InformationSchema.View> GetViews();
         List<InformationSchema.Column> GetViewColumns();
         List<InformationSchema.IndexColumnUsage> GetIndexColumns();
@@ -47,7 +47,7 @@ namespace SqlSiphon
         List<InformationSchema.ReferentialConstraint> GetReferentialConstraints();
         bool SupportsScriptType(ScriptType type);
 
-        bool IsUDTT(Type systemType);
+        bool IsUserDefinedType(Type systemType);
 
         string MakeInsertScript(TableAttribute table, object value);
 
@@ -62,9 +62,9 @@ namespace SqlSiphon
         string MakeCreateTableScript(TableAttribute table);
         string MakeDropTableScript(TableAttribute table);
 
-        TableAttribute MakeUDTTTableAttribute(Type type);
-        string MakeCreateUDTTScript(TableAttribute info);
-        string MakeDropUDTTScript(TableAttribute info);
+        TableAttribute MakeUserDefinedTypeTableAttribute(Type type);
+        string MakeCreateUserDefinedTypeScript(TableAttribute info);
+        string MakeDropUserDefinedTypeScript(TableAttribute info);
 
         string MakeCreateViewScript(ViewAttribute info);
         string MakeDropViewScript(ViewAttribute info);
