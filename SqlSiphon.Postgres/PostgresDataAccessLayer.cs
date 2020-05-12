@@ -179,48 +179,6 @@ namespace SqlSiphon.Postgres
         {
         }
 
-        public PostgresDataAccessLayer(string server, string database, string userName, string password)
-            : base(server, database, userName, password)
-        {
-        }
-
-        public override string MakeConnectionString(string server, string database, string userName, string password)
-        {
-            if (server is null)
-            {
-                throw new ArgumentNullException(nameof(server));
-            }
-
-            var builder = new NpgsqlConnectionStringBuilder();
-            if (database is object)
-            {
-                builder.Database = database;
-            }
-
-            if (!string.IsNullOrWhiteSpace(userName)
-                && !string.IsNullOrWhiteSpace(password))
-            {
-                builder.Add("Username", userName.Trim());
-                builder.Add("Password", password.Trim());
-            }
-
-            var i = server.IndexOf(":", StringComparison.InvariantCultureIgnoreCase);
-            if (i > -1)
-            {
-                builder.Host = server.Substring(0, i);
-                if (int.TryParse(server.Substring(i + 1), out var port))
-                {
-                    builder.Port = port;
-                }
-            }
-            else
-            {
-                builder.Host = server;
-            }
-
-            return builder.ConnectionString;
-        }
-
         public override bool RunCommandLine(string executablePath, string configurationPath, string server, string database, string adminUser, string adminPass, string query)
         {
             /// This is no longer necessary. It's only here to satisfy the interface.

@@ -59,26 +59,15 @@ namespace SqlSiphon
         /// opens the connection. 
         /// </summary>
         /// <param name="connectionString">a standard MS SQL Server connection string</param>
-        private SqlSiphon(bool isConnectionOwned)
+        private SqlSiphon(bool isConnectionOwned, ConnectionT connection)
         {
             this.isConnectionOwned = isConnectionOwned;
-        }
-
-        protected SqlSiphon()
-        {
-
+            Connection = connection;
         }
 
         protected SqlSiphon(string connectionString)
-            : this(true)
+            : this(true, new ConnectionT { ConnectionString = connectionString })
         {
-            SetConnection(connectionString);
-        }
-
-        protected SqlSiphon(string server, string database, string userName, string password)
-            : this(true)
-        {
-            SetConnection(MakeConnectionString(server, database, userName, password));
         }
 
         /// <summary>
@@ -87,29 +76,14 @@ namespace SqlSiphon
         /// </summary>
         /// <param name="connection"></param>
         protected SqlSiphon(ConnectionT connection)
-            : this(false)
+            : this(false, connection)
         {
-            SetConnection(connection);
         }
 
         protected SqlSiphon(SqlSiphon<ConnectionT, CommandT, ParameterT, DataAdapterT, DataReaderT> dal)
-            : this(false)
+            : this(false, dal?.Connection)
         {
-            SetConnection(dal?.Connection);
         }
-
-        private void SetConnection(string connectionString)
-        {
-            SetConnection(new ConnectionT { ConnectionString = connectionString });
-        }
-
-        private void SetConnection(ConnectionT connection)
-        {
-            Connection = connection;
-        }
-
-
-        public abstract string MakeConnectionString(string server, string database, string user, string password);
 
         /// <summary>
         /// Cleans up the connection with the database.
