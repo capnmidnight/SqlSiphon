@@ -256,6 +256,67 @@ namespace InitDB
             {
                 var name = DataConnector.GetDatabaseVendorName(type);
                 var path = DataConnector.GetDatabaseCommandDefaultPath(type);
+                var options = new List<string>();
+                if (!path.Contains("*"))
+                {
+                    options.Add(path);
+                }
+                else
+                {
+                    var parts = path.Split('*');
+                    for (var i = 0; i < parts.Length; i++)
+                    {
+                        var part = parts[i];
+                        if (i == 0)
+                        {
+                            if (part.Length == 0)
+                            {
+                                options.AddRange(Directory.GetLogicalDrives());
+                            }
+                            else
+                            {
+                                options.AddRange(Directory.GetDirectories(part));
+                            }
+                        }
+                        else if (i == parts.Length - 1)
+                        {
+                            for (var j = 0; j < options.Count; ++j)
+                            {
+                                options[j] = Path.Combine(
+                                    options[j],
+                                    part.Substring(1));
+                            }
+                        }
+                        else
+                        {
+                            for (var j = options.Count - 1; j >= 0; --j)
+                            {
+                                try
+                                {
+                                    var str = Path.Combine(
+                                        options[j],
+                                        part.Substring(1));
+                                    if (Directory.Exists(str))
+                                    {
+                                        options.AddRange(Directory.GetDirectories(str));
+                                    }
+                                }
+                                catch (UnauthorizedAccessException)
+                                {
+                                }
+                                finally
+                                {
+                                    options.RemoveAt(j);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                path = options
+                    .Where(o => File.Exists(o))
+                    .FirstOrDefault();
+
                 optionsDialog.SetPath(name, CoalesceOption(name, path));
             }
 

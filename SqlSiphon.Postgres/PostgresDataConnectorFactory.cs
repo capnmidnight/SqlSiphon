@@ -1,6 +1,6 @@
 namespace SqlSiphon.Postgres
 {
-    [DatabaseVendorInfo("PostgreSQL", "PSQL", @"C:\Program Files\PostgreSQL\9.3\bin\psql.exe")]
+    [DatabaseVendorInfo("PostgreSQL", "PSQL", @"*\*\PostgreSQL\*\bin\psql.exe")]
     public class PostgresDataConnectorFactory : IDataConnectorFactory
     {
         public IDataConnector MakeConnector(string connectionString)
