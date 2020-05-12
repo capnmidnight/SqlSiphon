@@ -6,7 +6,7 @@ using SqlSiphon.Mapping;
 
 namespace SqlSiphon.Model
 {
-    public class Relationship : DatabaseObjectAttribute
+    public class Relationship : DatabaseObject
     {
         public Type ToType { get; private set; }
         private readonly string[] fromColumnNames;
@@ -30,9 +30,8 @@ namespace SqlSiphon.Model
             InformationSchema.ConstraintColumnUsage[] toTablePKConstraintColumns,
             InformationSchema.KeyColumnUsage[] toTableKeyColumns,
             ISqlSiphon dal)
+            : base(fromTableFKConstraint.constraint_schema, fromTableFKConstraint.constraint_name)
         {
-            Schema = fromTableFKConstraint.constraint_schema;
-            Name = fromTableFKConstraint.constraint_name;
             To = new TableAttribute(toTableColumns, new InformationSchema.TableConstraint[] { toTablePKConstraint }, fromTableFKConstraintColumns, toTablePKConstraintColumns, null, dal)
             {
                 PrimaryKey = new PrimaryKey(fromTableFKConstraint, toTablePKConstraint, toTablePKConstraintColumns, toTableColumns, dal)
@@ -43,6 +42,8 @@ namespace SqlSiphon.Model
         }
 
         internal Relationship(string prefix, TableAttribute from, Type toType, bool autoCreateIndex, string[] fromColumns)
+            : base(from.Schema, $"fk_{prefix}_from_{from.Schema}_{from.Name}_to_pk_{from.Schema}_{toType.Name}"
+                .Replace("__", "_"))
         {
             Prefix = prefix;
             ToType = toType;
@@ -105,7 +106,7 @@ namespace SqlSiphon.Model
                     throw new Exception($"FK column {b.Name} in {From.Schema}.{From.Name} does not match column {a.Name} in {To.Schema}.{To.Name}. Expected: {a.SystemType.Name}. Received: {b.SystemType.Name}.");
                 }
             }
-            Name = GetRelationshipName(dal);
+
             if (AutoCreateIndex)
             {
                 var fkIndex = new TableIndex(From, Schema, "idx_" + Name);
@@ -113,18 +114,6 @@ namespace SqlSiphon.Model
                 var fkIndexNameKey = dal.MakeIdentifier(From.Schema ?? dal.DefaultSchemaName, fkIndex.Name).ToLowerInvariant();
                 From.Indexes.Add(fkIndexNameKey, fkIndex);
             }
-        }
-
-        public string GetRelationshipName(ISqlSiphon dal)
-        {
-            if (dal is null)
-            {
-                throw new ArgumentNullException(nameof(dal));
-            }
-
-            var fromSchemaName = From.Schema ?? dal.DefaultSchemaName;
-            return base.Name ?? $"fk_{Prefix}_from_{fromSchemaName}_{From.Name}_to_{To.PrimaryKey.Name}"
-                .Replace("__", "_");
         }
 
         public override string ToString()

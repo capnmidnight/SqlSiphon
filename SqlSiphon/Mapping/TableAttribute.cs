@@ -263,10 +263,7 @@ namespace SqlSiphon.Mapping
                 foreach (var prefix in fkOrganizer[targetType].Keys)
                 {
                     var columns = fkOrganizer[targetType][prefix];
-                    var r = new Relationship(prefix, this, targetType, autoCreateIndex[targetType][prefix], columns.ToArray())
-                    {
-                        Schema = Schema
-                    };
+                    var r = new Relationship(prefix, this, targetType, autoCreateIndex[targetType][prefix], columns.ToArray());
                     fks.Add(r);
                 }
             }

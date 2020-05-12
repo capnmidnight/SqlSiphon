@@ -896,7 +896,7 @@ end;";
 
             var fromSchemName = relation.From.Schema ?? DefaultSchemaName;
             var fromTableName = MakeIdentifier(fromSchemName, relation.From.Name);
-            var constraintName = MakeIdentifier(relation.GetRelationshipName(this));
+            var constraintName = MakeIdentifier(relation.Name);
             var fromColumns = string.Join(", ", relation.FromColumns.Select(c => MakeIdentifier(c.Name)));
             var toSchemaName = relation.To.Schema ?? DefaultSchemaName;
             var toTableName = MakeIdentifier(toSchemaName, relation.To.Name);
@@ -914,7 +914,7 @@ end;";
             }
 
             var tableName = MakeIdentifier(relation.From.Schema ?? DefaultSchemaName, relation.From.Name);
-            var constraintName = MakeIdentifier(relation.GetRelationshipName(this));
+            var constraintName = MakeIdentifier(relation.Name);
             return $@"alter table if exists {tableName} drop constraint if exists {constraintName};";
         }
 

@@ -31,7 +31,7 @@ namespace SqlSiphon.Postgres
                 RemoveExtensionObjects(extSchema, pg.Functions);
                 RemoveExtensionObjects(extSchema, pg.Indexes);
                 RemoveSchemaObjects(extSchema, pg.PrimaryKeys);
-                RemoveExtensionObjects(extSchema, pg.Relationships);
+                RemoveSchemaObjects(extSchema, pg.Relationships);
                 RemoveExtensionObjects(extSchema, pg.Tables);
                 RemoveExtensionObjects(extSchema, pg.UserDefinedTypes);
                 RemoveExtensionObjects(extSchema, pg.Views);
